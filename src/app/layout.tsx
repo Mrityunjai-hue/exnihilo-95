@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "../styles/win95.css";
 
 export const metadata: Metadata = {
-  title: "ExNihio 95 — Zero-Config SQL IDE",
+  title: "ExNihilo 95 — Zero-Config SQL IDE",
   description: "The SQL database environment with zero 'table not found' errors. Automatic schema inference and synthetic data generation inside your browser.",
 };
 

@@ -1,6 +1,6 @@
 # 🗄️ ExNihilo 95 — Zero-Config In-Browser SQL IDE
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-exnihio--app.vercel.app-brightgreen.svg)](https://exnihio-app.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-exnihilo--95.vercel.app-brightgreen.svg)](https://exnihilo-95.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16.3.2-black.svg)](https://nextjs.org/)
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-sql.js_3.49.1-purple.svg)](https://sql.js.org/)
@@ -10,7 +10,7 @@
 > **The SQL database environment with ZERO "Table not found" errors.**  
 > Built in the authentic nostalgic aesthetic of **Windows 95**, ExNihilo dynamically parses your SQL query's AST, automatically deduces column data types, maps foreign key relationships, synthesizes realistic test data on the fly, and executes queries entirely inside your browser via WebAssembly.
 >
-> 🌐 **Try it Live in Browser:** **[https://exnihio-app.vercel.app](https://exnihio-app.vercel.app)**
+> 🌐 **Try it Live in Browser:** **[https://exnihilo-95.vercel.app](https://exnihilo-95.vercel.app)**
 
 ---
 
@@ -102,7 +102,7 @@ ExNihilo has been validated end-to-end against the complete 14-query acceptance 
 
 ### 🌐 Instant Web Access
 No installation required — launch the full application in your browser:  
-👉 **[https://exnihio-app.vercel.app](https://exnihio-app.vercel.app)**
+👉 **[https://exnihilo-95.vercel.app](https://exnihilo-95.vercel.app)**
 
 ### 💻 Local Installation & Run
 
