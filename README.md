@@ -9,6 +9,8 @@
 
 > **The SQL database environment with ZERO "Table not found" errors.**  
 > Built in the authentic nostalgic aesthetic of **Windows 95**, ExNihilo dynamically parses your SQL query's AST, automatically deduces column data types, maps foreign key relationships, synthesizes realistic test data on the fly, and executes queries entirely inside your browser via WebAssembly.
+>
+> 🌐 **Try it Live in Browser:** **[https://exnihio-app.vercel.app](https://exnihio-app.vercel.app)**
 
 ---
 
@@ -98,11 +100,11 @@ ExNihilo has been validated end-to-end against the complete 14-query acceptance 
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [npm](https://www.npmjs.com/)
+### 🌐 Instant Web Access
+No installation required — launch the full application in your browser:  
+👉 **[https://exnihio-app.vercel.app](https://exnihio-app.vercel.app)**
 
-### Installation & Run
+### 💻 Local Installation & Run
 
 1. Clone the repository:
    ```bash
