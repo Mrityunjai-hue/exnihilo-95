@@ -16,6 +16,7 @@ import { SettingsDialog } from './SettingsDialog';
 import { ErrorDialog } from './ErrorDialog';
 import { WelcomeWindow } from './WelcomeWindow';
 import { Win95Tour } from '../Tour/Win95Tour';
+import { BootAnimation } from './BootAnimation';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -45,6 +46,9 @@ export const Desktop: React.FC = () => {
     wizard: false,
     settings: false,
   });
+
+  // Boot Animation State
+  const [showBootAnimation, setShowBootAnimation] = useState(true);
 
   // Tour State
   const [tourOpen, setTourOpen] = useState(false);
@@ -272,12 +276,26 @@ export const Desktop: React.FC = () => {
 
         <div
           className="win95-desktop-icon"
+          onClick={() => setShowBootAnimation(true)}
+          title="Play Windows 95 Opening Animation"
+        >
+          <div className="icon-symbol">🔄</div>
+          <span>Reboot 95</span>
+        </div>
+
+        <div
+          className="win95-desktop-icon"
           onClick={handleResetSession}
         >
           <div className="icon-symbol">🗑️</div>
           <span>Recycle Bin (Reset)</span>
         </div>
       </div>
+
+      {/* Opening Boot Animation */}
+      {showBootAnimation && (
+        <BootAnimation onComplete={() => setShowBootAnimation(false)} />
+      )}
 
       {/* Landing / Welcome Information Dialog */}
       <WelcomeWindow
