@@ -654,7 +654,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '12px' }}>
                   <div className="win95-sunken" style={{ padding: '6px', background: '#dfdfdf', fontSize: '10px', textAlign: 'center' }}>
                     <div style={{ fontWeight: 'bold', color: '#000080' }}>🆓 Free</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>$0</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.symbol}0</div>
                     <div style={{ color: '#555', fontSize: '9px' }}>3 Tabs, Synthetic Data, 4 Dialects</div>
                   </div>
                   <div className="win95-sunken" style={{ padding: '6px', background: '#ffffcc', border: '2px solid #000080', fontSize: '10px', textAlign: 'center' }}>
@@ -664,12 +664,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                   <div className="win95-sunken" style={{ padding: '6px', background: '#dfdfdf', fontSize: '10px', textAlign: 'center' }}>
                     <div style={{ fontWeight: 'bold', color: '#000080' }}>👥 Team</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>$19/mo</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.teamLabel}</div>
                     <div style={{ color: '#555', fontSize: '9px' }}>Shared Library, Live Cursors</div>
                   </div>
                   <div className="win95-sunken" style={{ padding: '6px', background: '#dfdfdf', fontSize: '10px', textAlign: 'center' }}>
                     <div style={{ fontWeight: 'bold', color: '#000080' }}>🎓 Education</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>$4/mo</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.eduLabel}</div>
                     <div style={{ color: '#555', fontSize: '9px' }}>Classrooms & Progress Tracking</div>
                   </div>
                 </div>
