@@ -1,5 +1,7 @@
 /**
  * HelpWindow.tsx — Windows 95 Help Manual & SQL Query Tutorial (winhlp32 style)
+ * Fully updated with multi-tab workspace, selection execution, cascading menus,
+ * color highlighting guides, and advanced SQL query patterns (Window functions, CTEs, Subqueries).
  */
 
 import React, { useState } from 'react';
@@ -33,7 +35,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
   onLoadQuery,
 }) => {
   const [selectedTopicId, setSelectedTopicId] = useState<string>('intro');
-  const { position, handleMouseDown } = useDraggable({ x: 90, y: 55 });
+  const { position, handleMouseDown } = useDraggable({ x: 80, y: 45 });
 
   if (!isOpen || isMinimized) return null;
 
@@ -41,88 +43,184 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
     {
       id: 'intro',
       category: '1. Fundamentals',
-      title: 'How ExNihio Works (Zero Table-Not-Found)',
-      summary: 'Never see "table not found" error again.',
+      title: 'How ExNihilo Works (Zero-Config SQL)',
+      summary: 'Never see "table not found" errors again.',
       content: (
         <div>
           <h3 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #808080', paddingBottom: '4px' }}>
-            📖 How ExNihio Works
+            📖 How ExNihilo 95 Works
           </h3>
           <p>
-            In traditional SQL database environments, querying a table that does not exist results in an immediate execution failure:
+            In traditional SQL database systems, executing a query for a table that has not yet been defined produces an immediate runtime failure:
           </p>
           <div style={{ background: '#000', color: '#ff5555', padding: '6px', fontFamily: 'var(--w95-mono)', marginBottom: '8px' }}>
             ERROR 1146 (42S02): Table 'database.customers' doesn't exist
           </div>
           <p>
-            <strong>ExNihio</strong> operates differently:
+            <strong>ExNihilo 95</strong> (*"Out of nothing"*) eliminates this obstacle through client-side AST analysis:
           </p>
           <ol style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
-            <li><strong>AST Parsing:</strong> ExNihio parses your SQL query according to your selected SQL dialect (MySQL, PostgreSQL, SQLite, or SSMS).</li>
-            <li><strong>Schema Inference:</strong> It inspects every column reference, comparison operator, function, and JOIN condition to deduce column data types.</li>
-            <li><strong>Relationship Graph:</strong> It discovers foreign keys and builds a dependency graph to generate parent tables before children.</li>
-            <li><strong>Synthetic Data Generation:</strong> It generates type-appropriate, realistic mock rows adhering to referential integrity.</li>
-            <li><strong>In-Browser Execution:</strong> Everything executes client-side inside WebAssembly SQLite (sql.js) in milliseconds.</li>
+            <li><strong>Multi-Dialect AST Parsing:</strong> Uses concrete dialect grammars for MySQL, PostgreSQL, SQLite, and SSMS / T-SQL.</li>
+            <li><strong>Intelligent Schema Inference:</strong> Deduces column types, primary keys, and relationships from predicates, functions, and WHERE clauses.</li>
+            <li><strong>Referential DAG Sorting:</strong> Discovers foreign key dependencies (e.g. <code>orders.customer_id = customers.id</code>) and generates parent tables first.</li>
+            <li><strong>Realistic Synthetic Data:</strong> Generates context-aware mock rows with realistic names, emails, prices, dates, and orphan ratios.</li>
+            <li><strong>100% In-Browser WASM:</strong> Executes queries client-side in SQLite WebAssembly at native speeds with zero server dependencies.</li>
           </ol>
         </div>
       ),
     },
     {
-      id: 'writing-queries',
-      category: '2. Query Tutorial',
-      title: 'Writing SELECT, WHERE & Aggregates',
-      summary: 'Learn how to write queries with type inference.',
+      id: 'workspace-features',
+      category: '2. IDE & Navigation',
+      title: 'Multi-Tab Editor & Cascading Menus',
+      summary: 'Tab management, shortcuts, and menu bar operations.',
       content: (
         <div>
           <h3 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #808080', paddingBottom: '4px' }}>
-            ✍️ Writing Queries in ExNihio
+            🖥️ Multi-Tab Workspace & Windows 95 Menus
           </h3>
-          <p>
-            You can write standard SQL just like in any production database. ExNihio infers data types automatically from your syntax:
-          </p>
+
+          <div style={{ marginTop: '10px' }}>
+            <strong>📑 Multi-Tab Query Strips:</strong>
+            <p style={{ margin: '4px 0' }}>
+              Work on multiple SQL scripts simultaneously without losing query history. Click <strong>[ + ]</strong> or press <code>Ctrl+T</code> to open a new tab. Each tab maintains its own editor text, query results, row counts, and execution metrics.
+            </p>
+          </div>
 
           <div style={{ marginTop: '12px' }}>
-            <strong>1. Numeric Comparisons:</strong>
-            <p style={{ margin: '4px 0' }}>Comparing a column against numbers tells ExNihio the column is NUMERIC.</p>
-            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)' }}>
-              SELECT * FROM customers WHERE age &gt; 30
+            <strong>📂 Table-Click Dedicated Tabs:</strong>
+            <p style={{ margin: '4px 0' }}>
+              Clicking any table in the left <strong>Schema Explorer</strong> tree opens a new dedicated tab titled <code>{'{table}'}.sql</code> with <code>SELECT * FROM {'{table}'};</code> without overwriting any of your existing queries!
+            </p>
+          </div>
+
+          <div style={{ marginTop: '12px' }}>
+            <strong>🔽 Cascading Windows 95 Dropdown Menus:</strong>
+            <ul style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
+              <li><strong>File:</strong> New Query Tab (<code>Ctrl+T</code>), Save / Export <code>.sql</code> File (<code>Ctrl+S</code>), Close Tab, Exit Studio.</li>
+              <li><strong>Edit:</strong> Clear Query, Insert Sample JOIN, Insert Sample GROUP BY, Insert Sample CTE.</li>
+              <li><strong>Query:</strong> Execute Active Script (<code>F5</code>), Execute Highlighted Selection, Clear Results.</li>
+              <li><strong>View:</strong> Show/Hide Schema Tree Explorer Pane, Refresh Schema (<code>F5</code>), Maximize/Restore.</li>
+              <li><strong>Tools:</strong> Options & Control Panel, Reset In-Memory Database Session.</li>
+              <li><strong>Help:</strong> SQL Query Tutorial, Guided Balloon Tour, About ExNihilo 95.</li>
+            </ul>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'highlighting',
+      category: '3. Editor & Syntax',
+      title: 'Color Highlighting & Selection Execution',
+      summary: 'Green quotes, purple numbers, and partial query execution.',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #808080', paddingBottom: '4px' }}>
+            🎨 Syntax Highlighting & Selection Execution
+          </h3>
+
+          <div style={{ marginTop: '10px' }}>
+            <strong>🎨 Custom High-Contrast SQL Theme:</strong>
+            <ul style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
+              <li><span style={{ color: '#008800', fontWeight: 'bold' }}>🟢 Vibrant Green:</span> Quoted text literals between single or double quotes (e.g. <code>'@gmail.com'</code>, <code>'Engineering'</code>).</li>
+              <li><span style={{ color: '#800080', fontWeight: 'bold' }}>🟣 Bold Purple:</span> Numbers and numeric comparison targets (e.g. <code>age &gt; 30</code>, <code>100</code>, <code>25.50</code>).</li>
+              <li><span style={{ color: '#b00020', fontWeight: 'bold' }}>🔴 Bold Crimson:</span> Comparison and logical operators (<code>=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>!=</code>).</li>
+              <li><span style={{ color: '#000080', fontWeight: 'bold' }}>🔵 Navy Blue:</span> Standard SQL keywords (<code>SELECT</code>, <code>FROM</code>, <code>WHERE</code>, <code>JOIN</code>, <code>GROUP BY</code>).</li>
+            </ul>
+          </div>
+
+          <div style={{ marginTop: '14px' }}>
+            <strong>▶️ Selection-Aware Query Execution:</strong>
+            <p style={{ margin: '4px 0' }}>
+              When you highlight or select a portion of text in the CodeMirror editor, the toolbar automatically updates to <strong>`▶ Run Selection (F5)`</strong> and executes only your highlighted query block.
+            </p>
+          </div>
+
+          <div style={{ marginTop: '14px' }}>
+            <strong>📊 Multi-Query Semicolon Result Tabs:</strong>
+            <p style={{ margin: '4px 0' }}>
+              If your editor contains multiple queries separated by semicolons (<code>;</code>), ExNihilo executes each statement sequentially and renders dedicated result tabs:
+            </p>
+            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)', fontSize: '11px' }}>
+              SELECT id, name FROM authors LIMIT 3; <br />
+              SELECT id, title, author_id FROM books LIMIT 5;
             </div>
             <button
               className="win95-button"
               style={{ marginTop: '6px', fontSize: '11px' }}
-              onClick={() => onLoadQuery('SELECT * FROM customers WHERE age > 30', 'MySQL')}
+              onClick={() => onLoadQuery('SELECT id, name FROM authors LIMIT 3; SELECT id, title, author_id FROM books LIMIT 5;', 'SQLite')}
+            >
+              👉 Try multi-query batch in IDE
+            </button>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'advanced-queries',
+      category: '4. SQL Archetypes',
+      title: 'Subqueries, CTEs & Window Functions',
+      summary: 'Nested queries, common table expressions, and ranking.',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #808080', paddingBottom: '4px' }}>
+            ⚡ Advanced SQL Query Archetypes
+          </h3>
+          <p>ExNihilo 95 supports complex modern SQL constructs:</p>
+
+          <div style={{ marginTop: '12px' }}>
+            <strong>1. Subqueries with IN:</strong>
+            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)', fontSize: '11px' }}>
+              SELECT id, name, budget FROM projects WHERE client_id IN (SELECT id FROM clients WHERE tier = 'enterprise')
+            </div>
+            <button
+              className="win95-button"
+              style={{ marginTop: '6px', fontSize: '11px' }}
+              onClick={() => onLoadQuery("SELECT id, name, budget FROM projects WHERE client_id IN (SELECT id FROM clients WHERE tier = 'enterprise');", 'PostgreSQL')}
             >
               👉 Try this query in IDE
             </button>
           </div>
 
-          <div style={{ marginTop: '16px' }}>
-            <strong>2. String Pattern Matching (LIKE):</strong>
-            <p style={{ margin: '4px 0' }}>Using <code>LIKE '%@gmail.com'</code> infers a VARCHAR text column.</p>
-            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)' }}>
-              {"SELECT name, email FROM users WHERE email LIKE '%@gmail.com'"}
+          <div style={{ marginTop: '14px' }}>
+            <strong>2. Window Functions (ROW_NUMBER &amp; AVG OVER):</strong>
+            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)', fontSize: '11px' }}>
+              SELECT id, department, salary, ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) as dept_rank FROM staff_members
             </div>
             <button
               className="win95-button"
               style={{ marginTop: '6px', fontSize: '11px' }}
-              onClick={() => onLoadQuery("SELECT name, email FROM users WHERE email LIKE '%@gmail.com'", 'PostgreSQL')}
+              onClick={() => onLoadQuery('SELECT id, department, salary, ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) as dept_rank, AVG(salary) OVER (PARTITION BY department) as dept_avg FROM staff_members;', 'SQLite')}
             >
-              👉 Try this query in IDE
+              👉 Try window functions in IDE
             </button>
           </div>
 
-          <div style={{ marginTop: '16px' }}>
-            <strong>3. Group By and Aggregates:</strong>
-            <p style={{ margin: '4px 0' }}><code>AVG(salary)</code> infers salary as NUMERIC, while department is categorical VARCHAR.</p>
-            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)' }}>
-              SELECT department, AVG(salary) FROM employees GROUP BY department
+          <div style={{ marginTop: '14px' }}>
+            <strong>3. Chained Common Table Expressions (CTEs):</strong>
+            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)', fontSize: '11px' }}>
+              WITH high_val AS (SELECT customer_id, SUM(total) as lifetime_spent FROM orders GROUP BY customer_id HAVING lifetime_spent &gt; 100) SELECT c.name, hv.lifetime_spent FROM customers c JOIN high_val hv ON c.id = hv.customer_id
             </div>
             <button
               className="win95-button"
               style={{ marginTop: '6px', fontSize: '11px' }}
-              onClick={() => onLoadQuery('SELECT department, AVG(salary) FROM employees GROUP BY department', 'MySQL')}
+              onClick={() => onLoadQuery('WITH high_val AS (SELECT customer_id, SUM(total) as lifetime_spent FROM customer_orders GROUP BY customer_id HAVING lifetime_spent > 100) SELECT c.name, c.email, hv.lifetime_spent FROM store_customers c JOIN high_val hv ON c.id = hv.customer_id ORDER BY lifetime_spent DESC;', 'PostgreSQL')}
             >
-              👉 Try this query in IDE
+              👉 Try chained CTEs in IDE
+            </button>
+          </div>
+
+          <div style={{ marginTop: '14px' }}>
+            <strong>4. Conditional CASE Expressions:</strong>
+            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)', fontSize: '11px' }}>
+              SELECT id, name, age, CASE WHEN age &lt; 18 THEN 'Minor' WHEN age &lt; 65 THEN 'Adult' ELSE 'Senior' END as age_group FROM patients
+            </div>
+            <button
+              className="win95-button"
+              style={{ marginTop: '6px', fontSize: '11px' }}
+              onClick={() => onLoadQuery("SELECT id, name, age, CASE WHEN age < 18 THEN 'Minor' WHEN age < 65 THEN 'Adult' ELSE 'Senior' END as age_group FROM patients;", 'MySQL')}
+            >
+              👉 Try CASE query in IDE
             </button>
           </div>
         </div>
@@ -130,16 +228,16 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
     },
     {
       id: 'joins',
-      category: '3. Advanced Joins',
+      category: '5. Relational Graph',
       title: 'JOINs & Referential Integrity',
-      summary: 'Multi-table joins, self-joins, and outer join orphan ratios.',
+      summary: 'Multi-table joins, self-joins, and foreign key hierarchies.',
       content: (
         <div>
           <h3 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #808080', paddingBottom: '4px' }}>
-            🔗 JOINs and Foreign Keys
+            🔗 Relational Foreign Keys &amp; Multi-Joins
           </h3>
           <p>
-            When you join tables on keys (e.g. <code>orders.customer_id = customers.id</code>), ExNihio automatically connects the generated keys:
+            When tables are connected via join predicates (e.g. <code>orders.customer_id = customers.id</code>), ExNihio maps them into a topological dependency graph:
           </p>
 
           <div style={{ marginTop: '12px' }}>
@@ -152,88 +250,80 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
               style={{ marginTop: '6px', fontSize: '11px' }}
               onClick={() => onLoadQuery('SELECT c.name, o.id, p.name FROM customers c JOIN orders o ON c.id = o.customer_id JOIN order_items oi ON o.id = oi.order_id JOIN products p ON oi.product_id = p.id', 'MySQL')}
             >
-              👉 Try this query in IDE
+              👉 Try 4-table join in IDE
             </button>
           </div>
 
-          <div style={{ marginTop: '16px' }}>
+          <div style={{ marginTop: '14px' }}>
             <strong>2. Hierarchical Self-Joins:</strong>
-            <p style={{ margin: '4px 0' }}>Joining <code>employees</code> to itself creates a company hierarchy with a top-level manager having <code>NULL</code> manager_id.</p>
-            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)' }}>
-              SELECT e.name AS employee, m.name AS manager FROM employees e LEFT JOIN employees m ON e.manager_id = m.id
+            <p style={{ margin: '4px 0' }}>Joining <code>team_members</code> to itself creates a valid management hierarchy with a top-level manager having <code>NULL</code> manager_id.</p>
+            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)', fontSize: '11px' }}>
+              SELECT emp.name AS employee, mgr.name AS manager FROM team_members emp LEFT JOIN team_members mgr ON emp.manager_id = mgr.id
             </div>
             <button
               className="win95-button"
               style={{ marginTop: '6px', fontSize: '11px' }}
-              onClick={() => onLoadQuery('SELECT e.name AS employee, m.name AS manager FROM employees e LEFT JOIN employees m ON e.manager_id = m.id', 'PostgreSQL')}
+              onClick={() => onLoadQuery('SELECT emp.name AS employee, emp.title, mgr.name AS manager FROM team_members emp LEFT JOIN team_members mgr ON emp.manager_id = mgr.id', 'PostgreSQL')}
             >
-              👉 Try this query in IDE
+              👉 Try self-join in IDE
             </button>
           </div>
 
-          <div style={{ marginTop: '16px' }}>
-            <strong>3. LEFT JOIN with Realistic Unmatched Rows:</strong>
-            <p style={{ margin: '4px 0' }}>Outer joins simulate ~80% matched records and ~20% unmatched/null records.</p>
-            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)' }}>
-              SELECT c.name, o.id FROM customers c LEFT JOIN orders o ON c.id = o.customer_id
+          <div style={{ marginTop: '14px' }}>
+            <strong>3. Set Operations (UNION ALL):</strong>
+            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)', fontSize: '11px' }}>
+              SELECT id, name, email, 'US' as region FROM us_customers UNION ALL SELECT id, name, email, 'EU' as region FROM eu_customers
             </div>
             <button
               className="win95-button"
               style={{ marginTop: '6px', fontSize: '11px' }}
-              onClick={() => onLoadQuery('SELECT c.name, o.id FROM customers c LEFT JOIN orders o ON c.id = o.customer_id', 'SQLite')}
+              onClick={() => onLoadQuery("SELECT id, name, email, 'US_Customer' as source FROM us_customers UNION ALL SELECT id, name, email, 'EU_Customer' as source FROM eu_customers;", 'SQLite')}
             >
-              👉 Try this query in IDE
+              👉 Try UNION ALL in IDE
             </button>
           </div>
         </div>
       ),
     },
     {
-      id: 'dialects',
-      category: '4. Dialects & Tips',
-      title: 'Dialect Specifics (Postgres, SSMS, MySQL, SQLite)',
-      summary: 'Syntax variations across SQL dialects.',
+      id: 'diagnostics',
+      category: '6. Diagnostics & System',
+      title: 'Error Diagnostics & Shut Down',
+      summary: '1-click error traces, clipboard copy, and Win95 shut down.',
       content: (
         <div>
           <h3 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #808080', paddingBottom: '4px' }}>
-            🎛️ SQL Dialect Support
+            🛠️ Error Diagnostics &amp; System Features
           </h3>
-          <p>ExNihio provides native parser support for 5 dialect configurations:</p>
-          <ul style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
-            <li><strong>MySQL:</strong> Full support for backticks, <code>LIMIT</code>, <code>GROUP BY</code>.</li>
-            <li><strong>PostgreSQL:</strong> Supports <code>::type</code> casting (e.g. <code>score::float</code>) and CTEs (<code>WITH ...</code>).</li>
-            <li><strong>SQLite:</strong> Standard ANSI SQL, AUTOINCREMENT, zero-configuration execution.</li>
-            <li><strong>SSMS / Transact-SQL:</strong> Supports bracket identifiers <code>[dbo].[table]</code> and <code>TOP N</code> clauses.</li>
-          </ul>
 
-          <div style={{ marginTop: '12px' }}>
-            <strong>PostgreSQL CTE Example:</strong>
-            <div style={{ background: '#f5f5f5', padding: '6px', border: '1px solid #ccc', fontFamily: 'var(--w95-mono)', fontSize: '11px' }}>
-              {"WITH recent AS (SELECT * FROM sales WHERE sale_date > '2026-01-01') SELECT * FROM recent"}
-            </div>
-            <button
-              className="win95-button"
-              style={{ marginTop: '6px', fontSize: '11px' }}
-              onClick={() => onLoadQuery("WITH recent AS (SELECT * FROM sales WHERE sale_date > '2026-01-01') SELECT * FROM recent", 'PostgreSQL')}
-            >
-              👉 Try this query in IDE
-            </button>
+          <div style={{ marginTop: '10px' }}>
+            <strong>📋 1-Click Error Diagnostics Copy:</strong>
+            <p style={{ margin: '4px 0' }}>
+              If a query encounters a syntax error or ambiguous column reference across joined tables, the authentic Windows 95 <strong>Error Dialog</strong> appears with detailed AST traces and a convenient <strong>`📋 Copy Error`</strong> button for instant clipboard sharing.
+            </p>
+          </div>
+
+          <div style={{ marginTop: '14px' }}>
+            <strong>🔌 Start Menu Shut Down:</strong>
+            <p style={{ margin: '4px 0' }}>
+              Access the classic <strong>Shut Down...</strong> dialog from the Start Menu to restart the environment, reset in-memory catalog databases, or clear desktop windows.
+            </p>
           </div>
         </div>
       ),
     },
     {
       id: 'about',
-      category: '5. About & Community',
-      title: 'About ExNihilo & N8N Community',
-      summary: 'Author attribution and community links.',
+      category: '7. About & Community',
+      title: 'About ExNihilo 95 & Attribution',
+      summary: 'Original creator attribution and community partnership.',
       content: (
         <div>
           <h3 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #808080', paddingBottom: '4px' }}>
             ✨ About ExNihilo 95
           </h3>
           <p>
-            <strong>ExNihilo</strong> is a zero-configuration in-browser SQL development environment that eliminates <code>Table not found</code> errors through intelligent schema deduction and referential mock data generation.
+            <strong>ExNihilo 95</strong> is an original zero-configuration in-browser SQL development environment conceived by Mrityunjai and built with AI.
           </p>
           <div
             className="win95-sunken"
@@ -245,7 +335,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
             }}
           >
             <p style={{ margin: '0 0 8px 0', fontSize: '12px' }}>
-              👨‍💻 <strong>Built by:</strong>{' '}
+              👨‍💻 <strong>Original Idea &amp; Creator:</strong>{' '}
               <a
                 href="https://github.com/Mrityunjai-hue"
                 target="_blank"
@@ -256,7 +346,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
               </a>
             </p>
             <p style={{ margin: '0 0 8px 0', fontSize: '12px' }}>
-              🌐 <strong>Powered by:</strong>{' '}
+              🌐 <strong>Community Partner:</strong>{' '}
               <a
                 href="https://n8n-ds-community.netlify.app/"
                 target="_blank"
@@ -268,7 +358,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
               using AI
             </p>
             <p style={{ margin: 0, fontSize: '10px', color: '#555' }}>
-              Join the community for tools, tutorials, workflows, and discussions in AI &amp; data science!
+              Built with Next.js, WebAssembly SQLite (sql.js), CodeMirror 6, and authentic Windows 95 styling.
             </p>
           </div>
         </div>
@@ -285,8 +375,8 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
         position: 'absolute',
         top: `${position.y}px`,
         left: `${position.x}px`,
-        width: '680px',
-        height: '460px',
+        width: '700px',
+        height: '480px',
         zIndex,
       }}
       onMouseDown={onFocus}
@@ -324,7 +414,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
         {/* Topics Sidebar */}
         <div
           className="win95-inset"
-          style={{ width: '220px', height: '100%', overflowY: 'auto', padding: '4px' }}
+          style={{ width: '230px', height: '100%', overflowY: 'auto', padding: '4px' }}
         >
           <div style={{ fontWeight: 'bold', marginBottom: '6px', fontSize: '11px', color: '#000080' }}>
             📂 Help Topics
@@ -342,6 +432,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
+                marginBottom: '2px',
               }}
             >
               <span>📄</span>

@@ -92,13 +92,14 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   ]);
   const [activeTabId, setActiveTabId] = useState<string>('tab_1');
 
-  // Sync external props with active tab
+  // Sync external props with active tab (including queryText from Help tutorial or wizard)
   useEffect(() => {
     setTabs((prev) =>
       prev.map((tab) =>
         tab.id === activeTabId
           ? {
               ...tab,
+              queryText: initialQueryText !== undefined && initialQueryText !== '' ? initialQueryText : tab.queryText,
               result: initialResult,
               isLoading: initialIsLoading,
               executionTimeMs: initialExecutionTimeMs,
@@ -106,7 +107,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           : tab
       )
     );
-  }, [initialResult, initialIsLoading, initialExecutionTimeMs]);
+  }, [initialQueryText, initialResult, initialIsLoading, initialExecutionTimeMs, activeTabId]);
 
   // Close menus on outside click
   useEffect(() => {

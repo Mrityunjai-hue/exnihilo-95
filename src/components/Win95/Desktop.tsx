@@ -137,6 +137,7 @@ export const Desktop: React.FC = () => {
   const handleLoadQuery = (sql: string, newDialect?: string) => {
     setQueryText(sql);
     if (newDialect) setDialect(newDialect as Dialect);
+    setOpenWindows((prev) => ({ ...prev, help: false }));
     focusWindow('ide');
   };
 
