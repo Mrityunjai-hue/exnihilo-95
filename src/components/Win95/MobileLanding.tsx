@@ -135,6 +135,39 @@ export const MobileLanding: React.FC<MobileLandingProps> = ({ onForceDesktop }) 
             </p>
           </div>
 
+          {/* Target Audience / Personas Section */}
+          <div
+            className="win95-inset"
+            style={{
+              padding: '12px',
+              backgroundColor: '#ffffff',
+              marginBottom: '16px',
+              fontSize: '11px',
+              lineHeight: '1.5',
+            }}
+          >
+            <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', color: '#000080', fontSize: '12px' }}>
+              🎯 Who is ExNihilo 95 Built For?
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 8px' }}>
+                🎓 <strong>Students &amp; Learners:</strong> Practice SQL with zero installation, DB setup, or dataset imports.
+              </div>
+              <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 8px' }}>
+                💼 <strong>Recruiters &amp; Interviewers:</strong> Conduct live candidate SQL interviews without setting up test DB instances.
+              </div>
+              <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 8px' }}>
+                🏫 <strong>Educators &amp; Teachers:</strong> Demonstrate complex queries (JOINs, CTEs, Window Functions) live in class.
+              </div>
+              <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 8px' }}>
+                👨‍💻 <strong>Developers &amp; DBAs:</strong> Prototype and dry-run query logic before writing migrations or staging tables.
+              </div>
+              <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 8px' }}>
+                🧪 <strong>QA &amp; Data Analysts:</strong> Test query edge-cases against auto-generated relational data on demand.
+              </div>
+            </div>
+          </div>
+
           {/* Retro Win95 Media Player Container for Demo Video */}
           <div
             className="win95-window"

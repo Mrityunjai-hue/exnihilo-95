@@ -43,6 +43,20 @@ ExNihilo 95 is an open-source project created by **Mrityunjai ([@Mrityunjai-hue]
 
 ---
 
+## 🎯 Who is ExNihilo 95 Built For?
+
+> **Eliminating environment setup friction for students, recruiters, educators, and developers worldwide.**
+
+| Persona | Why ExNihilo 95 is a Must-Use Tool |
+|---------|-----------------------------------|
+| 🎓 **Students & Self-Learners** | Practice writing SQL queries instantly with zero database installation, server setup, or dataset imports. |
+| 💼 **Recruiters & Interviewers** | Conduct live candidate SQL coding tests on the spot without setting up test database instances or dummy tables. |
+| 🏫 **Educators & CS Teachers** | Demonstrate complex SQL concepts (JOINs, CTEs, Window Functions) live in class with zero setup friction. |
+| 👨‍💻 **Software Developers & DBAs** | Prototype and dry-run query logic before writing production database migrations or creating staging tables. |
+| 🧪 **QA & Data Analysts** | Test query edge-cases and referential integrity against auto-synthesized relational data on demand. |
+
+---
+
 ## 🌐 Community Partnership
 ExNihilo 95 is proudly powered by the **[N8N Data Science Community](https://n8n-ds-community.netlify.app/)** using AI.  
 Join the community for AI tools, automation workflows, tutorials, and data science discussions!

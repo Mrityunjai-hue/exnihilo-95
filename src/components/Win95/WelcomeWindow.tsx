@@ -121,6 +121,28 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
             <li><strong>CodeMirror 6 Editor:</strong> Syntax highlighting, line numbers, and F5 / Ctrl+Enter execution.</li>
           </ul>
 
+          {/* Target Audience / Personas Section */}
+          <h4 style={{ margin: '14px 0 6px 0', color: '#000080', fontSize: '12px' }}>
+            🎯 Who is ExNihilo 95 Built For?
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+            <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 10px', fontSize: '10.5px' }}>
+              🎓 <strong>Students &amp; Self-Learners:</strong> Practice SQL instantly with zero DB setup, installation, or dataset imports.
+            </div>
+            <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 10px', fontSize: '10.5px' }}>
+              💼 <strong>Recruiters &amp; Interviewers:</strong> Conduct live candidate SQL coding interviews without provisioning test database instances.
+            </div>
+            <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 10px', fontSize: '10.5px' }}>
+              🏫 <strong>Educators &amp; Teachers:</strong> Demonstrate complex queries (JOINs, CTEs, Window Functions) live in class with zero friction.
+            </div>
+            <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 10px', fontSize: '10.5px' }}>
+              👨‍💻 <strong>Software Developers &amp; DBAs:</strong> Prototype and dry-run query logic before writing migrations or staging tables.
+            </div>
+            <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 10px', fontSize: '10.5px' }}>
+              🧪 <strong>QA Engineers &amp; Data Analysts:</strong> Test complex query corner-cases against auto-generated relational data on demand.
+            </div>
+          </div>
+
           {/* Attribution & Community Badge */}
           <div
             className="win95-sunken"
