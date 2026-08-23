@@ -1,5 +1,6 @@
 /**
  * AdminDashboard.tsx — Windows 95 Account & Admin Control Panel
+ * Features 4 main tabs, complete 10-pillar Pro Tier roadmap, regional pricing, and session metrics.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -43,6 +44,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onClearHistory,
 }) => {
   const [activeTab, setActiveTab] = useState<'account' | 'pro' | 'usage' | 'logout'>('account');
+  const [proFilter, setProFilter] = useState<'all' | 'productivity' | 'ai' | 'cloud' | 'viz' | 'themes'>('all');
   const [modalNotice, setModalNotice] = useState<string | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -60,7 +62,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const { region, selectedCurrency, setCurrencyOverride, pricingTier, availableCurrencies } =
     useRegionalPricing(currentUser ? currentUser.usernameNorm : null);
 
-  const { position, handleMouseDown } = useDraggable({ x: 180, y: 60 });
+  const { position, handleMouseDown } = useDraggable({ x: 160, y: 50 });
 
   // Format session duration
   const [elapsedText, setElapsedText] = useState('0m');
@@ -122,6 +124,105 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
+  // Complete 10 Pro Pillars Roadmap Data
+  const ALL_PRO_PILLARS = [
+    {
+      cat: 'productivity',
+      categoryTitle: '🗂️ 1. Unlimited Tabs & Workspaces',
+      feature: 'Unlimited Tabs & Named Workspaces',
+      free: '3 Tabs Max',
+      pro: 'Unlimited Tabs + Named Workspaces (E-Commerce, Analytics)',
+    },
+    {
+      cat: 'productivity',
+      categoryTitle: '🗂️ 1. Unlimited Tabs & Workspaces',
+      feature: 'Tab Grouping & Pinning',
+      free: '✕ None',
+      pro: 'Color-coded Tab Groups, Drag-reorder & Pin Critical Tabs',
+    },
+    {
+      cat: 'cloud',
+      categoryTitle: '💾 2. Persistent Sessions & Cloud Sync',
+      feature: 'Auto-Save & Cross-Device Cloud Sync',
+      free: 'Local Device Only',
+      pro: 'Auto-save to Cloud + Sync across GitHub/Google Logins',
+    },
+    {
+      cat: 'cloud',
+      categoryTitle: '💾 2. Persistent Sessions & Cloud Sync',
+      feature: 'Full Query History & Git-Style Versioning',
+      free: 'Last 10 Session Queries',
+      pro: 'Unlimited History Timeline + Tab Version Revert with Diff',
+    },
+    {
+      cat: 'ai',
+      categoryTitle: '🤖 3. AI SQL Assistant (Copilot)',
+      feature: 'Natural Language → SQL Generation',
+      free: '✕ None',
+      pro: 'Type "top 5 revenue customers" → Instant SQL',
+    },
+    {
+      cat: 'ai',
+      categoryTitle: '🤖 3. AI SQL Assistant (Copilot)',
+      feature: 'AI Error Fixer & Query Optimization',
+      free: '✕ None',
+      pro: 'Automatic error root cause fix + index performance hints',
+    },
+    {
+      cat: 'viz',
+      categoryTitle: '📊 4. Advanced Data Visualization',
+      feature: 'Built-in Chart Builder & Dashboard Mode',
+      free: 'Raw Result Grid Only',
+      pro: 'Bar/Line/Pie Charts, Pivot Tables & Printable Dashboards',
+    },
+    {
+      cat: 'cloud',
+      categoryTitle: '🎲 5. Advanced Synthetic Data Rules',
+      feature: 'High Capacity Data Generation',
+      free: '20 Rows / 25 Tables',
+      pro: 'Up to 10,000 Rows, Custom Data Profiles & Seed CSV Upload',
+    },
+    {
+      cat: 'cloud',
+      categoryTitle: '🔗 6. Real Live Database Connections',
+      feature: 'Live Database Proxy Connections',
+      free: 'In-Memory Synthetic Only',
+      pro: 'Connect live to MySQL, Postgres, SQL Server with Read-Safety',
+    },
+    {
+      cat: 'viz',
+      categoryTitle: '📤 7. Advanced Export & Sharing',
+      feature: 'Multi-Format Export & Embedded Queries',
+      free: 'CSV Only',
+      pro: 'Export JSON, DDL Scripts, Executable INSERTs & Embed Widgets',
+    },
+    {
+      cat: 'themes',
+      categoryTitle: '🎨 8. Themes & Retro Skins',
+      feature: 'Retro Theme Pack & Dark Mode Noir',
+      free: 'Win95 Teal Classic',
+      pro: 'Windows 98, XP Luna, Dark Mode Noir, Sound FX & CRT Filter',
+    },
+    {
+      cat: 'themes',
+      categoryTitle: '👥 9. Collaboration & Team Workspaces',
+      feature: 'Real-Time Team Query Library',
+      free: 'Single User Only',
+      pro: 'Shared Query Repositories, Live Multi-User Cursors & Role Access',
+    },
+    {
+      cat: 'themes',
+      categoryTitle: '🧪 10. Teaching & Challenge Mode',
+      feature: 'SQL Puzzles & Progress Certificates',
+      free: 'Help Guide Only',
+      pro: 'Interactive Challenges (Easy → Expert) & Classroom Mode',
+    },
+  ];
+
+  const filteredPillars = proFilter === 'all'
+    ? ALL_PRO_PILLARS
+    : ALL_PRO_PILLARS.filter((p) => p.cat === proFilter);
+
   return (
     <>
       <div
@@ -130,7 +231,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           position: 'absolute',
           top: `${position.y}px`,
           left: `${position.x}px`,
-          width: '580px',
+          width: '620px',
           zIndex,
         }}
         onMouseDown={onFocus}
@@ -232,7 +333,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* Tab Content Area */}
           <div
             className="win95-inset"
-            style={{ padding: '14px', background: '#c0c0c0', minHeight: '300px', maxHeight: '420px', overflowY: 'auto' }}
+            style={{ padding: '14px', background: '#c0c0c0', minHeight: '320px', maxHeight: '440px', overflowY: 'auto' }}
           >
             {/* TAB 1: MY ACCOUNT */}
             {activeTab === 'account' && (
@@ -245,8 +346,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
                     <tbody>
                       <tr>
-                        <td style={{ fontWeight: 'bold', width: '130px', padding: '4px 0' }}>Display Name:</td>
-                        <td>{currentUser.displayName}</td>
+                        <td style={{ fontWeight: 'bold', width: '130px', padding: '4px 0' }}>Avatar & Name:</td>
+                        <td>{currentUser.avatar || '💻'} {currentUser.displayName}</td>
                       </tr>
                       <tr>
                         <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Username:</td>
@@ -439,16 +540,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             )}
 
-            {/* TAB 2: UPGRADE TO PRO */}
+            {/* TAB 2: UPGRADE TO PRO (RICH 10-PILLAR PRESENTATION) */}
             {activeTab === 'pro' && (
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <div style={{ fontSize: '11px' }}>
-                    Region: <strong>{region.flag} {region.countryName}</strong>
+                    Detected Region: <strong>{region.flag} {region.countryName}</strong>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
-                    <label>Currency:</label>
+                    <label>Display Currency:</label>
                     <select
                       value={selectedCurrency}
                       onChange={(e) => setCurrencyOverride(e.target.value)}
@@ -464,69 +565,121 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                 </div>
 
-                {/* Pricing Banner */}
+                {/* Hero Banner */}
                 <div
                   style={{
-                    background: '#000080',
+                    background: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
                     color: '#ffffff',
-                    padding: '10px',
+                    padding: '12px',
                     textAlign: 'center',
-                    marginBottom: '12px',
+                    marginBottom: '10px',
                     border: '2px outset #dfdfdf',
                   }}
                 >
-                  <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>
-                    ExNihilo 95 Pro Tier — {pricingTier.label}
+                  <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '4px' }}>
+                    ExNihilo 95 Pro — {pricingTier.label}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#c0c0c0' }}>
-                    {pricingTier.usdRef ? `Reference: ${pricingTier.usdRef} | ` : ''}Prices shown for reference only. Actual billing currency confirmed at checkout.
+                  <div style={{ fontSize: '11px', color: '#dfdfdf' }}>
+                    Power-User Workflows, AI Intelligence, Persistence & Live Database Sync
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#c0c0c0', marginTop: '4px' }}>
+                    {pricingTier.usdRef ? `Reference: ${pricingTier.usdRef} | ` : ''}Prices shown for reference. Actual billing currency confirmed at checkout.
                   </div>
                 </div>
 
-                {/* Comparison Matrix */}
-                <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', marginBottom: '14px' }}>
-                  <thead>
-                    <tr style={{ background: '#808080', color: '#fff' }}>
-                      <th style={{ padding: '4px', textAlign: 'left' }}>Feature</th>
-                      <th style={{ padding: '4px', textAlign: 'center', width: '90px' }}>Base (Free)</th>
-                      <th style={{ padding: '4px', textAlign: 'center', width: '90px' }}>Pro Tier</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr style={{ background: '#dfdfdf' }}>
-                      <td style={{ padding: '4px' }}>SQL Engine & Query Tabs</td>
-                      <td style={{ padding: '4px', textAlign: 'center' }}>✓ Full</td>
-                      <td style={{ padding: '4px', textAlign: 'center' }}>✓ Full</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '4px' }}>Multi-Dialect Translation</td>
-                      <td style={{ padding: '4px', textAlign: 'center' }}>✓ 4 Dialects</td>
-                      <td style={{ padding: '4px', textAlign: 'center' }}>✓ All + Custom</td>
-                    </tr>
-                    <tr style={{ background: '#dfdfdf' }}>
-                      <td style={{ padding: '4px' }}>Cloud Database Integration</td>
-                      <td style={{ padding: '4px', textAlign: 'center' }}>✕ Local only</td>
-                      <td style={{ padding: '4px', textAlign: 'center' }}>🔜 Coming Soon</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '4px' }}>Cross-Device Cloud Sync</td>
-                      <td style={{ padding: '4px', textAlign: 'center' }}>✕ Device only</td>
-                      <td style={{ padding: '4px', textAlign: 'center' }}>🔜 Coming Soon</td>
-                    </tr>
-                    <tr style={{ background: '#dfdfdf' }}>
-                      <td style={{ padding: '4px' }}>AI Query Generator & Copilot</td>
-                      <td style={{ padding: '4px', textAlign: 'center' }}>✕ None</td>
-                      <td style={{ padding: '4px', textAlign: 'center' }}>🔜 Coming Soon</td>
-                    </tr>
-                  </tbody>
-                </table>
+                {/* Category Sub-Filter Tabs */}
+                <div style={{ display: 'flex', gap: '4px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                  {[
+                    { id: 'all', label: 'All 10 Pillars' },
+                    { id: 'productivity', label: '🗂️ Workspace' },
+                    { id: 'ai', label: '🤖 AI Copilot' },
+                    { id: 'cloud', label: '💾 Cloud & Sync' },
+                    { id: 'viz', label: '📊 Visualizations' },
+                    { id: 'themes', label: '🎨 Themes & Extras' },
+                  ].map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setProFilter(cat.id as any)}
+                      className="win95-button"
+                      style={{
+                        fontSize: '10px',
+                        padding: '2px 6px',
+                        fontWeight: proFilter === cat.id ? 'bold' : 'normal',
+                        border: proFilter === cat.id ? '2px inset #000' : '2px outset #fff',
+                        background: proFilter === cat.id ? '#dfdfdf' : '#c0c0c0',
+                      }}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Comprehensive Feature Comparison Matrix */}
+                <div className="win95-sunken" style={{ background: '#ffffff', padding: '4px', marginBottom: '12px' }}>
+                  <table style={{ width: '100%', fontSize: '10px', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: '#000080', color: '#fff' }}>
+                        <th style={{ padding: '5px', textAlign: 'left' }}>Feature Pillar</th>
+                        <th style={{ padding: '5px', textAlign: 'center', width: '100px' }}>Free (Base)</th>
+                        <th style={{ padding: '5px', textAlign: 'center', width: '160px' }}>ExNihilo 95 Pro</th>
+                        <th style={{ padding: '5px', textAlign: 'center', width: '70px' }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredPillars.map((p, idx) => (
+                        <tr
+                          key={idx}
+                          style={{
+                            background: idx % 2 === 0 ? '#f5f5f5' : '#ffffff',
+                            borderBottom: '1px solid #eeeeee',
+                          }}
+                        >
+                          <td style={{ padding: '5px', fontWeight: 'bold' }}>{p.feature}</td>
+                          <td style={{ padding: '5px', textAlign: 'center', color: '#666' }}>{p.free}</td>
+                          <td style={{ padding: '5px', textAlign: 'center', color: '#000080', fontWeight: 'bold' }}>
+                            {p.pro}
+                          </td>
+                          <td style={{ padding: '5px', textAlign: 'center' }}>
+                            <span style={{ background: '#ffffcc', border: '1px solid #999', padding: '1px 3px', fontSize: '9px' }}>
+                              🔜 Soon
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Audience Plan Overview Cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '12px' }}>
+                  <div className="win95-sunken" style={{ padding: '6px', background: '#dfdfdf', fontSize: '10px', textAlign: 'center' }}>
+                    <div style={{ fontWeight: 'bold', color: '#000080' }}>🆓 Free</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>$0</div>
+                    <div style={{ color: '#555', fontSize: '9px' }}>3 Tabs, Synthetic Data, 4 Dialects</div>
+                  </div>
+                  <div className="win95-sunken" style={{ padding: '6px', background: '#ffffcc', border: '2px solid #000080', fontSize: '10px', textAlign: 'center' }}>
+                    <div style={{ fontWeight: 'bold', color: '#000080' }}>⭐ Pro</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.label}</div>
+                    <div style={{ color: '#555', fontSize: '9px' }}>AI Copilot, Cloud Sync, Live DBs</div>
+                  </div>
+                  <div className="win95-sunken" style={{ padding: '6px', background: '#dfdfdf', fontSize: '10px', textAlign: 'center' }}>
+                    <div style={{ fontWeight: 'bold', color: '#000080' }}>👥 Team</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>$19/mo</div>
+                    <div style={{ color: '#555', fontSize: '9px' }}>Shared Library, Live Cursors</div>
+                  </div>
+                  <div className="win95-sunken" style={{ padding: '6px', background: '#dfdfdf', fontSize: '10px', textAlign: 'center' }}>
+                    <div style={{ fontWeight: 'bold', color: '#000080' }}>🎓 Education</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>$4/mo</div>
+                    <div style={{ color: '#555', fontSize: '9px' }}>Classrooms & Progress Tracking</div>
+                  </div>
+                </div>
 
                 {/* Upgrade CTAs */}
                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                   <button
                     className="win95-button"
-                    style={{ fontWeight: 'bold', padding: '4px 12px' }}
-                    onClick={() => setModalNotice('Pro Tier upgrades are coming soon! Stay tuned.')}
+                    style={{ fontWeight: 'bold', padding: '4px 14px' }}
+                    onClick={() => setModalNotice('Pro Tier upgrades are coming soon! Thank you for your interest.')}
                   >
                     🚀 Upgrade to Pro ({pricingTier.label})
                   </button>
@@ -536,7 +689,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     rel="noreferrer"
                     style={{ textDecoration: 'none' }}
                   >
-                    <button className="win95-button" style={{ padding: '4px 12px' }}>
+                    <button className="win95-button" style={{ padding: '4px 14px' }}>
                       💬 Join the Discussion on GitHub
                     </button>
                   </a>
