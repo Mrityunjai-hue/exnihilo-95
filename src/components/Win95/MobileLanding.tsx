@@ -15,6 +15,7 @@ interface MobileLandingProps {
 
 export const MobileLanding: React.FC<MobileLandingProps> = ({ onForceDesktop }) => {
   const [isPlaying, setIsPlaying] = useState(true);
+  const [showSystemInfo, setShowSystemInfo] = useState(false);
 
   return (
     <div
@@ -30,6 +31,7 @@ export const MobileLanding: React.FC<MobileLandingProps> = ({ onForceDesktop }) 
         flexDirection: 'column',
         alignItems: 'center',
         fontFamily: "'Windows 95', 'MS Sans Serif', Tahoma, Verdana, sans-serif",
+        position: 'relative',
       }}
     >
       {/* Re-flowed Installer / Compatibility Dialog Window */}
@@ -50,8 +52,23 @@ export const MobileLanding: React.FC<MobileLandingProps> = ({ onForceDesktop }) 
             <span>💾</span>
             <span>ExNihilo 95 Setup — System Compatibility Notice</span>
           </div>
-          <div className="win95-titlebar-controls">
-            <button className="win95-btn-titlebar" title="System Info">?</button>
+          <div className="win95-titlebar-controls" style={{ display: 'flex', gap: '2px' }}>
+            <button
+              className="win95-btn-titlebar"
+              title="System Information & Hardware Specs"
+              onClick={() => setShowSystemInfo(true)}
+              style={{ cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              ?
+            </button>
+            <button
+              className="win95-btn-titlebar"
+              title="System Requirements Warning"
+              onClick={() => setShowSystemInfo(true)}
+              style={{ cursor: 'pointer', fontWeight: 'bold', color: '#ffcc00' }}
+            >
+              !
+            </button>
           </div>
         </div>
 
@@ -360,6 +377,89 @@ export const MobileLanding: React.FC<MobileLandingProps> = ({ onForceDesktop }) 
 
         </div>
       </div>
+
+      {/* Win95 System Information Modal Dialog */}
+      {showSystemInfo && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 999999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+            boxSizing: 'border-box',
+          }}
+          onClick={() => setShowSystemInfo(false)}
+        >
+          <div
+            className="win95-window"
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              boxShadow: '4px 4px 20px rgba(0,0,0,0.8)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Titlebar */}
+            <div className="win95-titlebar">
+              <div className="win95-titlebar-text">
+                <span>ℹ️</span>
+                <span>System Information — Hardware Diagnostics</span>
+              </div>
+              <div className="win95-titlebar-controls">
+                <button className="win95-btn-titlebar" onClick={() => setShowSystemInfo(false)}>✕</button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '14px', backgroundColor: '#c0c0c0' }}>
+              <div
+                className="win95-inset"
+                style={{
+                  padding: '12px',
+                  backgroundColor: '#ffffff',
+                  marginBottom: '14px',
+                  fontSize: '11px',
+                  lineHeight: '1.6',
+                }}
+              >
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '28px' }}>💻</div>
+                  <div>
+                    <strong style={{ color: '#000080', fontSize: '12px' }}>ExNihilo 95 Environment Diagnostics</strong>
+                    <div style={{ color: '#800000', fontWeight: 'bold', fontSize: '11px' }}>
+                      Status: Hardware Specification Warning
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ borderTop: '1px solid #c0c0c0', paddingTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div>📱 <strong>Detected Viewport:</strong> {typeof window !== 'undefined' ? window.innerWidth : 390}px width</div>
+                  <div>🖥️ <strong>Required Viewport:</strong> 1024px+ width (Desktop)</div>
+                  <div>⚙️ <strong>SQL Engine:</strong> sql.js (WebAssembly SQLite 3.49.1)</div>
+                  <div>🌳 <strong>Schema Inferencer:</strong> AST Precedence Visitor (Ready)</div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <button
+                  className="win95-button win95-button-default"
+                  onClick={() => setShowSystemInfo(false)}
+                  style={{ padding: '4px 16px', fontSize: '11px', fontWeight: 'bold' }}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
