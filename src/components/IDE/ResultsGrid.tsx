@@ -2,6 +2,8 @@
  * ResultsGrid.tsx — Enhanced Windows 95 ListView Results Grid
  * Supports multi-statement tabs, export (CSV, JSON, INSERTs), column sorting,
  * quick row search filtering, and cell value inspection.
+ *
+ * NOTE: All React Hooks are declared unconditionally at top of component (Rules of Hooks).
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -43,11 +45,57 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     setInspectedCell(null);
   }, [result]);
 
+  // Extract raw active rows safely for useMemo hook at top level
+  const rawRows = useMemo(() => {
+    if (!result) return [];
+    const hasMultiple = Boolean(result.allResults && result.allResults.length > 1);
+    if (hasMultiple && result.allResults && result.allResults[activeTab]) {
+      return result.allResults[activeTab].rows || [];
+    }
+    return result.rows || [];
+  }, [result, activeTab]);
+
+  // Filtered and Sorted Rows computation (Hook at top level)
+  const processedRows = useMemo(() => {
+    if (!rawRows || rawRows.length === 0) return [];
+    let list = rawRows.map((row, originalIndex) => ({ row, originalIndex }));
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(({ row }) =>
+        row.some((cell) => cell !== null && cell !== undefined && String(cell).toLowerCase().includes(q))
+      );
+    }
+
+    // Sort
+    if (sortColIdx !== null) {
+      list.sort((a, b) => {
+        const valA = a.row[sortColIdx];
+        const valB = b.row[sortColIdx];
+
+        if (valA === null || valA === undefined) return 1;
+        if (valB === null || valB === undefined) return -1;
+
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          return sortDir === 'asc' ? valA - valB : valB - valA;
+        }
+
+        const strA = String(valA).toLowerCase();
+        const strB = String(valB).toLowerCase();
+        return sortDir === 'asc' ? strA.localeCompare(strB) : strB.localeCompare(strA);
+      });
+    }
+
+    return list;
+  }, [rawRows, searchQuery, sortColIdx, sortDir]);
+
   const showToast = (msg: string) => {
     setToastNotice(msg);
     setTimeout(() => setToastNotice(null), 2500);
   };
 
+  // Early returns AFTER all hooks have been declared unconditionally
   if (isLoading) {
     return (
       <div
@@ -101,7 +149,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     ? allResults[activeTab]
     : { columns: result.columns, rows: result.rows, rowCount: result.rowCount };
 
-  const { columns, rows, rowCount } = currentResult;
+  const { columns, rowCount } = currentResult;
 
   // Handle column header click for sorting
   const handleColumnSort = (colIdx: number) => {
@@ -118,45 +166,12 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     }
   };
 
-  // Filtered and Sorted Rows computation
-  const processedRows = useMemo(() => {
-    let list = rows.map((row, originalIndex) => ({ row, originalIndex }));
-
-    // Search filter
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      list = list.filter(({ row }) =>
-        row.some((cell) => cell !== null && cell !== undefined && String(cell).toLowerCase().includes(q))
-      );
-    }
-
-    // Sort
-    if (sortColIdx !== null) {
-      list.sort((a, b) => {
-        const valA = a.row[sortColIdx];
-        const valB = b.row[sortColIdx];
-
-        if (valA === null || valA === undefined) return 1;
-        if (valB === null || valB === undefined) return -1;
-
-        if (typeof valA === 'number' && typeof valB === 'number') {
-          return sortDir === 'asc' ? valA - valB : valB - valA;
-        }
-
-        const strA = String(valA).toLowerCase();
-        const strB = String(valB).toLowerCase();
-        return sortDir === 'asc' ? strA.localeCompare(strB) : strB.localeCompare(strA);
-      });
-    }
-
-    return list;
-  }, [rows, searchQuery, sortColIdx, sortDir]);
-
   // Export handlers
   const handleExportCSV = () => {
-    if (rows.length === 0) return;
+    const rowsToExport = rawRows;
+    if (rowsToExport.length === 0) return;
     const header = columns.map((c) => `"${c.replace(/"/g, '""')}"`).join(',');
-    const body = rows
+    const body = rowsToExport
       .map((r) =>
         r
           .map((v) => {
@@ -179,8 +194,9 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   };
 
   const handleCopyJSON = () => {
-    if (rows.length === 0) return;
-    const jsonArr = rows.map((r) => {
+    const rowsToExport = rawRows;
+    if (rowsToExport.length === 0) return;
+    const jsonArr = rowsToExport.map((r) => {
       const obj: Record<string, any> = {};
       columns.forEach((col, i) => {
         obj[col] = r[i];
@@ -193,9 +209,10 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   };
 
   const handleExportInserts = () => {
-    if (rows.length === 0) return;
+    const rowsToExport = rawRows;
+    if (rowsToExport.length === 0) return;
     const tableName = inferredTables[0] || 'result_data';
-    const insertStatements = rows
+    const insertStatements = rowsToExport
       .map((r) => {
         const vals = r
           .map((v) => {
