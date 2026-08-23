@@ -242,7 +242,7 @@ export const Desktop: React.FC = () => {
     { id: 'contributors', title: 'Join the Team', icon: '🤝', isOpen: openWindows.contributors, isMinimized: minimizedWindows.contributors, zIndex: getZIndex('contributors') },
     { id: 'legal', title: 'Legal & IP Protection', icon: '⚖️', isOpen: openWindows.legal, isMinimized: minimizedWindows.legal, zIndex: getZIndex('legal') },
     { id: 'auth', title: 'Security Logon', icon: '🔑', isOpen: openWindows.auth, isMinimized: false, zIndex: getZIndex('auth') },
-    { id: 'admin', title: 'Admin Control Panel', icon: '👤', isOpen: openWindows.admin, isMinimized: false, zIndex: getZIndex('admin') },
+    { id: 'admin', title: 'Admin Control Panel', icon: '🎛️', isOpen: openWindows.admin, isMinimized: false, zIndex: getZIndex('admin') },
   ];
 
   const activeWindowId = windowOrder[windowOrder.length - 1] || null;
@@ -325,9 +325,9 @@ export const Desktop: React.FC = () => {
           title={isLoggedIn ? `Logged in as ${currentUser?.displayName}` : 'Log in or Register'}
         >
           <div className="icon-symbol" style={{ opacity: isSecureContext ? 1 : 0.5 }}>
-            👤
+            {isLoggedIn ? (currentUser?.avatar || '🎛️') : '🎛️'}
           </div>
-          <span>{isLoggedIn ? `👤 ${currentUser?.displayName}` : '👤 Guest'}</span>
+          <span>{isLoggedIn ? `${currentUser?.avatar || '🎛️'} ${currentUser?.displayName}` : '🎛️ Admin Control'}</span>
         </div>
 
         <div
