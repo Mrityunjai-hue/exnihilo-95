@@ -1,20 +1,26 @@
 /**
- * Toolbar.tsx — Windows 95 IDE Action Toolbar
+ * Toolbar.tsx — Enhanced Windows 95 IDE Action Toolbar
+ * Includes SQL Beautifier/Formatter, Template Snippet Selector, History Toggle,
+ * Dialect Selector, and Action Controls.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialect } from '../../engine/parser';
 
 interface ToolbarProps {
-  dialect:          Dialect;
-  onDialectChange:  (dialect: Dialect) => void;
-  onRun:            () => void;
-  onReset:          () => void;
-  onOpenHelp:       () => void;
-  onOpenSettings:   () => void;
-  onStartTour:      () => void;
-  isLoading:        boolean;
-  hasSelection?:    boolean;
+  dialect:           Dialect;
+  onDialectChange:   (dialect: Dialect) => void;
+  onRun:             () => void;
+  onReset:           () => void;
+  onFormatSql?:      () => void;
+  onInsertTemplate?: (templateSql: string) => void;
+  onToggleHistory?:  () => void;
+  onOpenHelp:        () => void;
+  onOpenSettings:    () => void;
+  onStartTour:       () => void;
+  isLoading:         boolean;
+  hasSelection?:     boolean;
+  historyCount?:     number;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -22,12 +28,48 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onDialectChange,
   onRun,
   onReset,
+  onFormatSql,
+  onInsertTemplate,
+  onToggleHistory,
   onOpenHelp,
   onOpenSettings,
   onStartTour,
   isLoading,
   hasSelection = false,
+  historyCount = 0,
 }) => {
+  const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
+
+  const templates = [
+    {
+      label: '⚡ Basic SELECT Query',
+      sql: `-- Basic SELECT Query\nSELECT id, name, category, price\nFROM products\nWHERE price > 50\nORDER BY price DESC;`,
+    },
+    {
+      label: '🔗 INNER JOIN Aggregation',
+      sql: `-- INNER JOIN & Group Aggregation\nSELECT c.country, COUNT(o.id) AS order_count, SUM(o.total_amount) AS total_revenue\nFROM customers c\nJOIN orders o ON c.id = o.customer_id\nGROUP BY c.country\nHAVING order_count >= 2\nORDER BY total_revenue DESC;`,
+    },
+    {
+      label: '📂 LEFT JOIN & NULL Filter',
+      sql: `-- LEFT JOIN (Find customers with zero orders)\nSELECT c.id, c.name, c.email\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id\nWHERE o.id IS NULL;`,
+    },
+    {
+      label: '📊 CTE & Subquery (WITH Clause)',
+      sql: `-- Common Table Expression (CTE)\nWITH HighValueOrders AS (\n  SELECT customer_id, SUM(total_amount) AS total_spent\n  FROM orders\n  GROUP BY customer_id\n)\nSELECT c.name, h.total_spent\nFROM HighValueOrders h\nJOIN customers c ON h.customer_id = c.id\nORDER BY h.total_spent DESC;`,
+    },
+    {
+      label: '📝 INSERT INTO Record',
+      sql: `-- INSERT INTO Statement\nINSERT INTO customers (name, email, country)\nVALUES ('Alice Walker', 'alice@example.com', 'United States');`,
+    },
+  ];
+
+  const handleSelectTemplate = (templateSql: string) => {
+    if (onInsertTemplate) {
+      onInsertTemplate(templateSql);
+    }
+    setTemplateMenuOpen(false);
+  };
+
   return (
     <div
       style={{
@@ -39,10 +81,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         borderBottom: '1px solid #808080',
         gap: '6px',
         flexWrap: 'wrap',
+        position: 'relative',
+        zIndex: 10,
       }}
     >
       {/* Left Action Buttons */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
         <button
           id="btn-run"
           className="win95-button"
@@ -60,6 +104,72 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </button>
 
         <button
+          id="btn-format"
+          className="win95-button"
+          onClick={onFormatSql}
+          disabled={isLoading}
+          title="Format & Beautify SQL Query"
+        >
+          <span>🧹</span>
+          <span>Format SQL</span>
+        </button>
+
+        {/* Template Snippets Menu */}
+        <div style={{ position: 'relative' }}>
+          <button
+            className="win95-button"
+            onClick={() => setTemplateMenuOpen((prev) => !prev)}
+            title="Insert Prebuilt SQL Query Templates"
+          >
+            <span>📜</span>
+            <span>Templates ▾</span>
+          </button>
+
+          {templateMenuOpen && (
+            <div
+              className="win95-window"
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                marginTop: '2px',
+                width: '240px',
+                background: '#c0c0c0',
+                boxShadow: '2px 2px 8px rgba(0,0,0,0.3)',
+                padding: '2px',
+                zIndex: 99999,
+              }}
+            >
+              {templates.map((tpl, i) => (
+                <div
+                  key={i}
+                  className="win95-menu-item"
+                  onClick={() => handleSelectTemplate(tpl.sql)}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '11px',
+                    cursor: 'pointer',
+                    borderRadius: '0',
+                  }}
+                >
+                  {tpl.label}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button
+          id="btn-history"
+          className="win95-button"
+          onClick={onToggleHistory}
+          title="View Query History Log"
+        >
+          <span>🕒</span>
+          <span>History ({historyCount})</span>
+        </button>
+
+        <button
           id="btn-reset"
           className="win95-button"
           onClick={onReset}
@@ -71,7 +181,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </button>
 
         {/* Dialect Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '4px' }}>
           <label htmlFor="dialect-select" style={{ fontSize: '11px', fontWeight: 'bold' }}>
             Dialect:
           </label>

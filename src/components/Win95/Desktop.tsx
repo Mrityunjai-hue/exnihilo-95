@@ -442,10 +442,10 @@ export const Desktop: React.FC = () => {
         zIndex={getZIndex('ide')}
         executor={executor}
         dialect={dialect}
-        queryText={queryText}
-        result={result}
-        isLoading={isLoading}
-        executionTimeMs={executionTimeMs}
+        initialQueryText={queryText}
+        initialResult={result}
+        initialIsLoading={isLoading}
+        initialExecutionTimeMs={executionTimeMs}
         onQueryChange={setQueryText}
         onDialectChange={setDialect}
         onRun={handleRunQuery}
