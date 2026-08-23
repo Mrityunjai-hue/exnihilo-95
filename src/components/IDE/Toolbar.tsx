@@ -14,6 +14,7 @@ interface ToolbarProps {
   onOpenSettings:   () => void;
   onStartTour:      () => void;
   isLoading:        boolean;
+  hasSelection?:    boolean;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -25,6 +26,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onOpenSettings,
   onStartTour,
   isLoading,
+  hasSelection = false,
 }) => {
   return (
     <div
@@ -44,13 +46,17 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <button
           id="btn-run"
           className="win95-button"
-          style={{ fontWeight: 'bold', color: '#006600' }}
+          style={{
+            fontWeight: 'bold',
+            color: hasSelection ? '#800080' : '#006600',
+            background: hasSelection ? '#f0e6f6' : undefined,
+          }}
           onClick={onRun}
           disabled={isLoading}
-          title="Execute Query (F5 or Ctrl+Enter)"
+          title={hasSelection ? 'Execute Selected Query (F5 or Ctrl+Enter)' : 'Execute All Queries (F5 or Ctrl+Enter)'}
         >
           <span>▶</span>
-          <span>Run (F5)</span>
+          <span>{hasSelection ? 'Run Selection (F5)' : 'Run (F5)'}</span>
         </button>
 
         <button

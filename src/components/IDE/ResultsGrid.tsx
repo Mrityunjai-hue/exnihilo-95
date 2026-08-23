@@ -1,8 +1,9 @@
 /**
  * ResultsGrid.tsx — Windows 95 ListView Results Grid
+ * Supports single and multi-statement query results with tabbed navigation.
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ExecutionSuccess } from '../../engine/executor';
 
 interface ResultsGridProps {
@@ -16,6 +17,13 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   isLoading,
   executionTimeMs,
 }) => {
+  const [activeTab, setActiveTab] = useState(0);
+
+  // Reset tab index when new query result arrives
+  useEffect(() => {
+    setActiveTab(0);
+  }, [result]);
+
   if (isLoading) {
     return (
       <div
@@ -54,12 +62,22 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
         }}
       >
         <div style={{ fontSize: '24px', marginBottom: '4px' }}>📋</div>
-        <div style={{ fontSize: '11px' }}>Ready for execution. Press <strong>F5</strong> or click <strong>▶ Run</strong>.</div>
+        <div style={{ fontSize: '11px' }}>
+          Ready for execution. Highlight any query or press <strong>F5</strong> to run.
+        </div>
       </div>
     );
   }
 
-  const { columns, rows, rowCount, inferredTables, reusedTables } = result;
+  const { inferredTables, reusedTables, allResults } = result;
+
+  // Active query result data
+  const hasMultipleResults = Boolean(allResults && allResults.length > 1);
+  const currentResult = (hasMultipleResults && allResults && allResults[activeTab])
+    ? allResults[activeTab]
+    : { columns: result.columns, rows: result.rows, rowCount: result.rowCount };
+
+  const { columns, rows, rowCount } = currentResult;
 
   return (
     <div
@@ -73,6 +91,43 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
         overflow: 'hidden',
       }}
     >
+      {/* Multi-Query Result Tabs */}
+      {hasMultipleResults && allResults && (
+        <div
+          style={{
+            display: 'flex',
+            gap: '2px',
+            background: '#d4d0c8',
+            padding: '3px 4px 0 4px',
+            borderBottom: '1px solid #808080',
+            overflowX: 'auto',
+          }}
+        >
+          {allResults.map((r, idx) => {
+            const isActive = activeTab === idx;
+            return (
+              <button
+                key={idx}
+                className={`win95-tab ${isActive ? 'active' : ''}`}
+                style={{
+                  fontSize: '11px',
+                  padding: '2px 8px',
+                  fontWeight: isActive ? 'bold' : 'normal',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => setActiveTab(idx)}
+              >
+                <span>📊</span>
+                <span>Query #{r.queryIndex} ({r.rowCount} rows)</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Scrollable Grid Table */}
       <div style={{ flex: 1, overflow: 'auto' }}>
         <table className="win95-grid">
@@ -117,6 +172,11 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
 
       {/* Grid Status Footer */}
       <div className="win95-statusbar">
+        {hasMultipleResults && allResults && (
+          <div className="win95-statusbar-pane" style={{ color: '#800080', fontWeight: 'bold' }}>
+            Viewing Query {activeTab + 1} of {allResults.length}
+          </div>
+        )}
         <div className="win95-statusbar-pane">
           Rows: <strong>{rowCount}</strong>
         </div>

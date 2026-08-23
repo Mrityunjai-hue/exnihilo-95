@@ -1,6 +1,7 @@
 /**
  * QueryEditor.tsx — CodeMirror 6 SQL Editor with Windows 95 styling
  * Features:
+ *  - Selection-aware execution (executes selected query if highlighted)
  *  - Strings in quotes -> Distinct Green (#008800)
  *  - Numbers & numerical comparisons -> Distinct Purple (#800080)
  *  - Comparison operators (=, >, <, >=, <=, !=) -> Bold Crimson (#b00020)
@@ -17,10 +18,11 @@ import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags } from '@lezer/highlight';
 
 interface QueryEditorProps {
-  value:     string;
-  onChange:  (value: string) => void;
-  onRun:     () => void;
-  dialect:   string;
+  value:              string;
+  onChange:           (value: string) => void;
+  onRun:              (queryToRun?: string) => void;
+  dialect:            string;
+  onSelectionChange?: (hasSelection: boolean, selectedText: string) => void;
 }
 
 // Custom Windows 95 IDE Syntax Theme
@@ -86,15 +88,18 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
   onChange,
   onRun,
   dialect,
+  onSelectionChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
-  // Keep latest onRun & onChange in refs for keymap
+  // Keep latest handlers in refs for keymap and listeners
   const onRunRef = useRef(onRun);
   onRunRef.current = onRun;
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const onSelectionChangeRef = useRef(onSelectionChange);
+  onSelectionChangeRef.current = onSelectionChange;
 
   const getSqlDialectExtension = (d: string) => {
     switch (d) {
@@ -115,6 +120,16 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
     if (!containerRef.current) return;
 
     const runCommand = () => {
+      if (viewRef.current) {
+        const sel = viewRef.current.state.selection.main;
+        if (!sel.empty) {
+          const selectedText = viewRef.current.state.sliceDoc(sel.from, sel.to).trim();
+          if (selectedText.length > 0) {
+            onRunRef.current(selectedText);
+            return true;
+          }
+        }
+      }
       onRunRef.current();
       return true;
     };
@@ -129,6 +144,12 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
     const updateListener = EditorView.updateListener.of((update) => {
       if (update.docChanged) {
         onChangeRef.current(update.state.doc.toString());
+      }
+      if (update.selectionSet || update.docChanged) {
+        const sel = update.state.selection.main;
+        const isSelected = !sel.empty;
+        const txt = isSelected ? update.state.sliceDoc(sel.from, sel.to).trim() : '';
+        onSelectionChangeRef.current?.(Boolean(txt), txt);
       }
     });
 

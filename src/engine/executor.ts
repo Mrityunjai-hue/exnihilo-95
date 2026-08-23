@@ -25,6 +25,13 @@ import { SessionCatalog, globalCatalog } from './catalog';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+export interface SingleQueryResult {
+  queryIndex: number;
+  columns:    string[];
+  rows:       any[][];
+  rowCount:   number;
+}
+
 export interface ExecutionSuccess {
   ok:              true;
   columns:         string[];
@@ -33,6 +40,7 @@ export interface ExecutionSuccess {
   executionTimeMs: number;
   inferredTables:  string[];
   reusedTables:    string[];
+  allResults?:     SingleQueryResult[];
 }
 
 export interface ExecutionFailure {
@@ -214,6 +222,13 @@ export class SQLExecutor {
         };
       }
 
+      const allResults: SingleQueryResult[] = results.map((r, idx) => ({
+        queryIndex: idx + 1,
+        columns:    r.columns,
+        rows:       r.values,
+        rowCount:   r.values.length,
+      }));
+
       const firstResult = results[0];
       return {
         ok: true,
@@ -223,6 +238,7 @@ export class SQLExecutor {
         executionTimeMs,
         inferredTables,
         reusedTables,
+        allResults,
       };
     } catch (err: any) {
       const errMsg: string = err?.message || String(err);
@@ -292,6 +308,13 @@ export class SQLExecutor {
                 };
               }
 
+              const allRetryResults: SingleQueryResult[] = retryResults.map((r, idx) => ({
+                queryIndex: idx + 1,
+                columns:    r.columns,
+                rows:       r.values,
+                rowCount:   r.values.length,
+              }));
+
               return {
                 ok: true,
                 columns: retryResults[0].columns,
@@ -300,6 +323,7 @@ export class SQLExecutor {
                 executionTimeMs,
                 inferredTables,
                 reusedTables,
+                allResults: allRetryResults,
               };
             }
           } catch (retryErr: any) {

@@ -23,7 +23,7 @@ interface IDEShellProps {
   executionTimeMs: number | null;
   onQueryChange:  (query: string) => void;
   onDialectChange: (dialect: Dialect) => void;
-  onRun:          () => void;
+  onRun:          (queryToRun?: string) => void;
   onReset:        () => void;
   onClose:        () => void;
   onMinimize:     () => void;
@@ -55,6 +55,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   onStartTour,
 }) => {
   const [isMaximized, setIsMaximized] = useState(false);
+  const [hasSelection, setHasSelection] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
   const [, setRefreshKey] = useState(0);
   const { position, handleMouseDown } = useDraggable({ x: 50, y: 30 });
 
@@ -109,7 +111,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
       {/* Menu Strip */}
       <div style={{ display: 'flex', gap: '12px', padding: '2px 6px', borderBottom: '1px solid #808080', fontSize: '11px' }}>
-        <span style={{ cursor: 'pointer' }} onClick={onRun}><u>Q</u>uery</span>
+        <span style={{ cursor: 'pointer' }} onClick={() => onRun(hasSelection && selectedText ? selectedText : undefined)}><u>Q</u>uery</span>
         <span style={{ cursor: 'pointer' }} onClick={onReset}><u>E</u>dit</span>
         <span style={{ cursor: 'pointer' }} onClick={handleRefresh}><u>V</u>iew</span>
         <span style={{ cursor: 'pointer' }} onClick={onOpenSettings}><u>T</u>ools</span>
@@ -120,12 +122,13 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       <Toolbar
         dialect={dialect}
         onDialectChange={onDialectChange}
-        onRun={onRun}
+        onRun={() => onRun(hasSelection && selectedText ? selectedText : undefined)}
         onReset={onReset}
         onOpenHelp={onOpenHelp}
         onOpenSettings={onOpenSettings}
         onStartTour={onStartTour}
         isLoading={isLoading}
+        hasSelection={hasSelection}
       />
 
       {/* Main Studio Body Layout */}
@@ -148,6 +151,10 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               onChange={onQueryChange}
               onRun={onRun}
               dialect={dialect}
+              onSelectionChange={(hasSel, selText) => {
+                setHasSelection(hasSel);
+                setSelectedText(selText);
+              }}
             />
           </div>
 

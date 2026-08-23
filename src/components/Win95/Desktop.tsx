@@ -91,14 +91,18 @@ export const Desktop: React.FC = () => {
     return idx === -1 ? 10 : 10 + idx * 5;
   };
 
-  // Run Query
-  const handleRunQuery = async () => {
+  // Run Query (Supports highlighted query execution or full multi-query execution)
+  const handleRunQuery = async (customQueryText?: string) => {
     if (isLoading) return;
     setIsLoading(true);
     setActiveError(null);
 
+    const targetSql = typeof customQueryText === 'string' && customQueryText.trim()
+      ? customQueryText.trim()
+      : queryText;
+
     try {
-      const res = await executor.execute(queryText, dialect, {
+      const res = await executor.execute(targetSql, dialect, {
         rowsPerTable,
         tableCap,
       });
