@@ -647,10 +647,14 @@ export const Desktop: React.FC = () => {
       <Taskbar
         windows={windowsMeta}
         activeWindowId={activeWindowId}
+        currentUser={currentUser}
+        isLoggedIn={isLoggedIn}
+        isSecureContext={isSecureContext}
         onFocusWindow={focusWindow}
         onToggleMinimize={toggleMinimize}
         onOpenWindow={focusWindow}
         onResetSession={handleResetSession}
+        onLogout={handleLogout}
       />
     </div>
   );

@@ -12,6 +12,7 @@ export interface StoredUser {
   displayName:       string;
   email:             string;
   joinDate:          string;
+  avatar?:           string;
   tier:              'free';
   passwordRecord:    string; // "pbkdf2_hex:salt_hex"
   currentSessionId:  string | null;
@@ -222,7 +223,8 @@ export function useAuth() {
     rawFullName: string,
     rawUsername: string,
     rawEmail: string,
-    rawPassword: string
+    rawPassword: string,
+    avatar?: string
   ): Promise<{ success: boolean; error?: string }> => {
     if (!window.isSecureContext || !window.crypto?.subtle) {
       return { success: false, error: 'HTTPS connection is required for account operations.' };
@@ -306,6 +308,7 @@ export function useAuth() {
       displayName,
       email: emailNorm,
       joinDate: nowIso.split('T')[0],
+      avatar: avatar || '💻',
       tier: 'free',
       passwordRecord,
       currentSessionId: sessionId,

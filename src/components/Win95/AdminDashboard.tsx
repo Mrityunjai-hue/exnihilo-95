@@ -145,7 +145,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           style={{ cursor: 'move' }}
         >
           <div className="win95-titlebar-text">
-            <span>👤</span>
+            <span>{currentUser.avatar || '👤'}</span>
             <span>ExNihilo Control Panel — @{currentUser.usernameNorm}</span>
           </div>
           <div className="win95-titlebar-controls">
@@ -178,7 +178,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '24px' }}>👤</span>
+              <span style={{ fontSize: '26px' }}>{currentUser.avatar || '👤'}</span>
               <div>
                 <div style={{ fontWeight: 'bold', fontSize: '13px' }}>{currentUser.displayName}</div>
                 <div style={{ fontSize: '10px', color: '#dfdfdf' }}>
@@ -646,6 +646,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Win95 Footer Status Bar */}
+          <div
+            style={{
+              marginTop: '6px',
+              display: 'flex',
+              gap: '4px',
+              fontSize: '10px',
+            }}
+          >
+            <div className="win95-sunken" style={{ flex: 1, padding: '2px 6px', background: '#c0c0c0' }}>
+              🔒 Security: PBKDF2 (600k iter)
+            </div>
+            <div className="win95-sunken" style={{ flex: 1, padding: '2px 6px', background: '#c0c0c0' }}>
+              ⚡ Token: Active (24h TTL)
+            </div>
+            <div className="win95-sunken" style={{ flex: 1, padding: '2px 6px', background: '#c0c0c0' }}>
+              {region.flag} Currency: {selectedCurrency}
+            </div>
           </div>
         </div>
       </div>

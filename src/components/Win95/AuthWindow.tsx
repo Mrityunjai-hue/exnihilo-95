@@ -1,8 +1,9 @@
 /**
  * AuthWindow.tsx — Authentic Windows 95 Login & Sign Up Dialog
+ * Features Win95 segmented password strength meter, avatar selector, caps lock detection, and status bar.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
 import { StoredUser } from '../../hooks/useAuth';
 
@@ -16,7 +17,8 @@ interface AuthWindowProps {
     fullName: string,
     username: string,
     email: string,
-    pass: string
+    pass: string,
+    avatar?: string
   ) => Promise<{ success: boolean; error?: string }>;
   onLogin: (
     username: string,
@@ -24,6 +26,8 @@ interface AuthWindowProps {
   ) => Promise<{ success: boolean; error?: string }>;
   currentUser: StoredUser | null;
 }
+
+const AVATAR_OPTIONS = ['💻', '🧙‍♂️', '💾', '🕹️', '⚡', '⚙️', '🛡️', '✨'];
 
 export const AuthWindow: React.FC<AuthWindowProps> = ({
   isOpen,
@@ -43,6 +47,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
   const [signUpEmail, setSignUpEmail] = useState('');
   const [signUpPass, setSignUpPass] = useState('');
   const [signUpConfirm, setSignUpConfirm] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState('💻');
 
   // Login form state
   const [loginUser, setLoginUser] = useState('');
@@ -52,8 +57,24 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorModalText, setErrorModalText] = useState<string | null>(null);
+  const [capsLockOn, setCapsLockOn] = useState(false);
 
   const { position, handleMouseDown } = useDraggable({ x: 200, y: 80 });
+
+  // Caps Lock Listener
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.getModifierState) {
+        setCapsLockOn(e.getModifierState('CapsLock'));
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    window.addEventListener('keyup', handleKey);
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      window.removeEventListener('keyup', handleKey);
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -61,6 +82,26 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
     setErrorModalText(null);
     onClose();
   };
+
+  // Password Strength Score (0 to 4)
+  const calculatePasswordStrength = (pass: string) => {
+    if (!pass) return { score: 0, label: 'None', color: '#808080' };
+    let score = 0;
+    if (pass.length >= 10) score += 1;
+    if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) score += 1;
+    if (/\d/.test(pass)) score += 1;
+    if (/[!@#$%^&*()_+\-=[\]{}]/.test(pass)) score += 1;
+
+    switch (score) {
+      case 1: return { score: 1, label: 'Weak', color: '#800000' };
+      case 2: return { score: 2, label: 'Fair', color: '#808000' };
+      case 3: return { score: 3, label: 'Strong', color: '#000080' };
+      case 4: return { score: 4, label: 'Very Strong', color: '#008000' };
+      default: return { score: 0, label: 'Too Short', color: '#800000' };
+    }
+  };
+
+  const strength = calculatePasswordStrength(signUpPass);
 
   // Submit Sign Up
   const handleSignUpSubmit = async (e: React.FormEvent) => {
@@ -80,7 +121,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
       }
 
       setIsLoading(true);
-      const res = await onSignUp(signUpName, signUpUser, signUpEmail, signUpPass);
+      const res = await onSignUp(signUpName, signUpUser, signUpEmail, signUpPass, selectedAvatar);
       setIsLoading(false);
 
       if (!res.success) {
@@ -129,7 +170,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
           position: 'absolute',
           top: `${position.y}px`,
           left: `${position.x}px`,
-          width: '420px',
+          width: '440px',
           zIndex,
         }}
         onMouseDown={onFocus}
@@ -169,18 +210,18 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
-              padding: '8px',
+              padding: '8px 12px',
               marginBottom: '8px',
               background: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
               color: '#ffffff',
               border: '2px inset #dfdfdf',
             }}
           >
-            <span style={{ fontSize: '24px' }}>💻</span>
+            <span style={{ fontSize: '26px' }}>{selectedAvatar || '💻'}</span>
             <div>
               <div style={{ fontWeight: 'bold', fontSize: '13px' }}>ExNihilo 95 Security Logon</div>
-              <div style={{ fontSize: '10px', color: '#c0c0c0' }}>
-                Single-Device Local Authentication System
+              <div style={{ fontSize: '10px', color: '#dfdfdf' }}>
+                Single-Device PBKDF2 Local Auth System
               </div>
             </div>
           </div>
@@ -191,7 +232,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
               style={{
                 background: '#ffcccc',
                 border: '1px solid #ff0000',
-                padding: '6px',
+                padding: '6px 10px',
                 marginBottom: '8px',
                 fontSize: '11px',
                 color: '#990000',
@@ -221,7 +262,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
           {/* Tab Inset Content */}
           <div
             className="win95-inset"
-            style={{ padding: '14px', background: '#c0c0c0', minHeight: '220px' }}
+            style={{ padding: '14px', background: '#c0c0c0', minHeight: '260px' }}
           >
             {activeTab === 'login' ? (
               <form onSubmit={handleLoginSubmit}>
@@ -262,17 +303,23 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                   />
                 </div>
 
+                {capsLockOn && (
+                  <div style={{ color: '#800000', fontSize: '10px', fontWeight: 'bold', marginBottom: '8px' }}>
+                    ⚠️ CAPS LOCK is ON
+                  </div>
+                )}
+
                 {isLoading && (
                   <div style={{ fontStyle: 'italic', color: '#000080', fontSize: '11px', marginBottom: '8px' }}>
                     ⏳ Verifying credentials (PBKDF2 600k iterations), please wait…
                   </div>
                 )}
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
                   <button
                     type="submit"
                     className="win95-button"
-                    style={{ minWidth: '80px', fontWeight: 'bold' }}
+                    style={{ minWidth: '85px', fontWeight: 'bold' }}
                     disabled={isSubmitting || isLoading || !isSecureContext}
                   >
                     {isLoading ? 'Wait...' : 'Log In'}
@@ -284,12 +331,33 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
               </form>
             ) : (
               <form onSubmit={handleSignUpSubmit}>
-                <div style={{ fontSize: '11px', marginBottom: '10px' }}>
-                  Register a new account on this device (Max 10 per device):
+                {/* Avatar Choice */}
+                <div style={{ marginBottom: '8px' }}>
+                  <label style={{ display: 'block', marginBottom: '3px', fontSize: '10px', fontWeight: 'bold' }}>
+                    Choose Vintage Avatar Icon:
+                  </label>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    {AVATAR_OPTIONS.map((icon) => (
+                      <button
+                        key={icon}
+                        type="button"
+                        onClick={() => setSelectedAvatar(icon)}
+                        style={{
+                          fontSize: '14px',
+                          padding: '2px 4px',
+                          border: selectedAvatar === icon ? '2px inset #000' : '2px outset #fff',
+                          background: selectedAvatar === icon ? '#dfdfdf' : '#c0c0c0',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {icon}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <div style={{ marginBottom: '8px' }}>
-                  <label htmlFor="signUpName" style={{ display: 'block', marginBottom: '2px', fontSize: '11px', fontWeight: 'bold' }}>
+                <div style={{ marginBottom: '6px' }}>
+                  <label htmlFor="signUpName" style={{ display: 'block', marginBottom: '2px', fontSize: '10px', fontWeight: 'bold' }}>
                     Full Name:
                   </label>
                   <input
@@ -305,8 +373,8 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                   />
                 </div>
 
-                <div style={{ marginBottom: '8px' }}>
-                  <label htmlFor="signUpUser" style={{ display: 'block', marginBottom: '2px', fontSize: '11px', fontWeight: 'bold' }}>
+                <div style={{ marginBottom: '6px' }}>
+                  <label htmlFor="signUpUser" style={{ display: 'block', marginBottom: '2px', fontSize: '10px', fontWeight: 'bold' }}>
                     Username (3-20 chars, letters/numbers/_):
                   </label>
                   <input
@@ -322,9 +390,9 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                   />
                 </div>
 
-                <div style={{ marginBottom: '8px' }}>
-                  <label htmlFor="signUpEmail" style={{ display: 'block', marginBottom: '2px', fontSize: '11px', fontWeight: 'bold' }}>
-                    Contact Email (unverified):
+                <div style={{ marginBottom: '6px' }}>
+                  <label htmlFor="signUpEmail" style={{ display: 'block', marginBottom: '2px', fontSize: '10px', fontWeight: 'bold' }}>
+                    Contact Email <span style={{ color: '#800000', fontSize: '9px' }}>(unverified string)</span>:
                   </label>
                   <input
                     id="signUpEmail"
@@ -339,9 +407,9 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
                   <div style={{ flex: 1 }}>
-                    <label htmlFor="signUpPass" style={{ display: 'block', marginBottom: '2px', fontSize: '11px', fontWeight: 'bold' }}>
+                    <label htmlFor="signUpPass" style={{ display: 'block', marginBottom: '2px', fontSize: '10px', fontWeight: 'bold' }}>
                       Password:
                     </label>
                     <input
@@ -357,7 +425,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label htmlFor="signUpConfirm" style={{ display: 'block', marginBottom: '2px', fontSize: '11px', fontWeight: 'bold' }}>
+                    <label htmlFor="signUpConfirm" style={{ display: 'block', marginBottom: '2px', fontSize: '10px', fontWeight: 'bold' }}>
                       Confirm:
                     </label>
                     <input
@@ -373,6 +441,30 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                   </div>
                 </div>
 
+                {/* Retro Segmented Password Strength Bar */}
+                {signUpPass.length > 0 && (
+                  <div style={{ marginBottom: '10px', fontSize: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                      <span>Strength:</span>
+                      <span style={{ fontWeight: 'bold', color: strength.color }}>{strength.label}</span>
+                    </div>
+                    <div
+                      className="win95-sunken"
+                      style={{ background: '#ffffff', height: '10px', padding: '1px', display: 'flex', gap: '2px' }}
+                    >
+                      {[1, 2, 3, 4].map((step) => (
+                        <div
+                          key={step}
+                          style={{
+                            flex: 1,
+                            background: step <= strength.score ? strength.color : '#dfdfdf',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {isLoading && (
                   <div style={{ fontStyle: 'italic', color: '#000080', fontSize: '11px', marginBottom: '8px' }}>
                     ⏳ Generating key (PBKDF2 600k iterations), please wait…
@@ -383,7 +475,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                   <button
                     type="submit"
                     className="win95-button"
-                    style={{ minWidth: '90px', fontWeight: 'bold' }}
+                    style={{ minWidth: '95px', fontWeight: 'bold' }}
                     disabled={isSubmitting || isLoading || !isSecureContext}
                   >
                     {isLoading ? 'Wait...' : 'Create Account'}
@@ -394,6 +486,26 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                 </div>
               </form>
             )}
+          </div>
+
+          {/* Win95 Footer Status Bar */}
+          <div
+            style={{
+              marginTop: '6px',
+              display: 'flex',
+              gap: '4px',
+              fontSize: '10px',
+            }}
+          >
+            <div className="win95-sunken" style={{ flex: 1, padding: '2px 6px', background: '#c0c0c0' }}>
+              {isSecureContext ? '🔒 SSL Encrypted (Local)' : '⚠️ Plain HTTP'}
+            </div>
+            <div className="win95-sunken" style={{ flex: 1, padding: '2px 6px', background: '#c0c0c0' }}>
+              PBKDF2 (600,000 iter)
+            </div>
+            <div className="win95-sunken" style={{ width: '65px', padding: '2px 6px', background: '#c0c0c0', textAlign: 'center', color: capsLockOn ? '#800000' : '#808080', fontWeight: capsLockOn ? 'bold' : 'normal' }}>
+              {capsLockOn ? 'CAPS' : 'caps off'}
+            </div>
           </div>
         </div>
       </div>

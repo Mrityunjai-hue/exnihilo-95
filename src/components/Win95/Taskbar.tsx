@@ -1,34 +1,43 @@
 /**
- * Taskbar.tsx — Windows 95 Taskbar & Start Menu
+ * Taskbar.tsx — Windows 95 Taskbar, System Tray & Start Menu
  */
 
 import React, { useState, useEffect } from 'react';
+import { StoredUser } from '../../hooks/useAuth';
 
 export interface WindowMeta {
-  id:        string;
-  title:     string;
-  icon:      string;
-  isOpen:    boolean;
+  id:          string;
+  title:       string;
+  icon:        string;
+  isOpen:      boolean;
   isMinimized: boolean;
-  zIndex:    number;
+  zIndex:      number;
 }
 
 interface TaskbarProps {
   windows:           WindowMeta[];
   activeWindowId:    string | null;
+  currentUser:       StoredUser | null;
+  isLoggedIn:        boolean;
+  isSecureContext:   boolean;
   onFocusWindow:     (id: string) => void;
   onToggleMinimize:  (id: string) => void;
   onOpenWindow:      (id: string) => void;
   onResetSession:    () => void;
+  onLogout:          () => void;
 }
 
 export const Taskbar: React.FC<TaskbarProps> = ({
   windows,
   activeWindowId,
+  currentUser,
+  isLoggedIn,
+  isSecureContext,
   onFocusWindow,
   onToggleMinimize,
   onOpenWindow,
   onResetSession,
+  onLogout,
 }) => {
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [timeStr, setTimeStr] = useState('');
@@ -57,6 +66,25 @@ export const Taskbar: React.FC<TaskbarProps> = ({
             Windows<span style={{ fontWeight: 'normal', opacity: 0.9 }}>95</span>
           </div>
           <div className="win95-start-items">
+            {/* Account Item */}
+            <div
+              className="win95-start-item"
+              onClick={() => {
+                onOpenWindow(isLoggedIn ? 'admin' : 'auth');
+                setStartMenuOpen(false);
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>{isLoggedIn ? (currentUser?.avatar || '👤') : '🔑'}</span>
+              <div>
+                <strong>{isLoggedIn ? currentUser?.displayName : 'User Logon / Sign Up'}</strong>
+                <div style={{ fontSize: '10px', color: '#555' }}>
+                  {isLoggedIn ? `@${currentUser?.usernameNorm} (Control Panel)` : 'Single-Device Account Access'}
+                </div>
+              </div>
+            </div>
+
+            <div className="win95-start-divider" />
+
             <div
               className="win95-start-item"
               onClick={() => { onOpenWindow('welcome'); setStartMenuOpen(false); }}
@@ -121,6 +149,23 @@ export const Taskbar: React.FC<TaskbarProps> = ({
 
             <div className="win95-start-divider" />
 
+            {/* Log Off Item (Classic Windows 95/98 Style) */}
+            {isLoggedIn && (
+              <div
+                className="win95-start-item"
+                onClick={() => {
+                  onLogout();
+                  setStartMenuOpen(false);
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>🚪</span>
+                <div>
+                  <strong>Log Off {currentUser?.displayName}...</strong>
+                  <div style={{ fontSize: '10px', color: '#555' }}>Clear local session token</div>
+                </div>
+              </div>
+            )}
+
             <div
               className="win95-start-item"
               onClick={() => { onOpenWindow('shutdown'); setStartMenuOpen(false); }}
@@ -176,9 +221,27 @@ export const Taskbar: React.FC<TaskbarProps> = ({
             })}
         </div>
 
-        {/* System Tray with Clock */}
-        <div className="win95-systray">
-          <span title="Volume Control" style={{ fontSize: '12px', cursor: 'pointer' }}>🔊</span>
+        {/* System Tray with Account Status, Security Shield, and Clock */}
+        <div className="win95-systray" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 6px' }}>
+          {/* Security Context Shield */}
+          <span
+            title={isSecureContext ? 'WebCrypto PBKDF2 Enabled (HTTPS)' : 'Plain HTTP (Crypto Features Disabled)'}
+            style={{ fontSize: '11px', cursor: 'help', opacity: isSecureContext ? 1 : 0.4 }}
+          >
+            {isSecureContext ? '🛡️' : '⚠️'}
+          </span>
+
+          {/* Account Tray Icon */}
+          <span
+            title={isLoggedIn ? `Logged in as @${currentUser?.usernameNorm} (Free Tier)` : 'Click to Log In / Register'}
+            style={{ fontSize: '12px', cursor: 'pointer' }}
+            onClick={() => onOpenWindow(isLoggedIn ? 'admin' : 'auth')}
+          >
+            {isLoggedIn ? (currentUser?.avatar || '👤') : '🔑'}
+          </span>
+
+          <span style={{ borderLeft: '1px solid #808080', height: '12px' }} />
+
           <span>{timeStr || '12:00 PM'}</span>
         </div>
       </footer>
