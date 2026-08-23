@@ -8,6 +8,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { LegalWindow } from './LegalWindow';
 
 interface MobileLandingProps {
   onForceDesktop: () => void;
@@ -16,6 +17,7 @@ interface MobileLandingProps {
 export const MobileLanding: React.FC<MobileLandingProps> = ({ onForceDesktop }) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [showSystemInfo, setShowSystemInfo] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
 
   return (
     <div
@@ -302,24 +304,18 @@ export const MobileLanding: React.FC<MobileLandingProps> = ({ onForceDesktop }) 
                 </button>
               </a>
 
-              <a
-                href="https://github.com/Mrityunjai-hue/exnihilo-95/blob/main/COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ textDecoration: 'none' }}
+              <button
+                className="win95-button"
+                onClick={() => setShowLegalModal(true)}
+                style={{
+                  width: '100%',
+                  padding: '6px',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                }}
               >
-                <button
-                  className="win95-button"
-                  style={{
-                    width: '100%',
-                    padding: '6px',
-                    fontSize: '11px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ⚖️ Legal & IP Protection
-                </button>
-              </a>
+                ⚖️ Legal & IP Protection
+              </button>
             </div>
 
             {/* Optional Force Desktop Override */}
@@ -460,6 +456,13 @@ export const MobileLanding: React.FC<MobileLandingProps> = ({ onForceDesktop }) 
           </div>
         </div>
       )}
+
+      {/* In-App Win95 Legal & IP Protection Modal */}
+      <LegalWindow
+        isOpen={showLegalModal}
+        isModal={true}
+        onClose={() => setShowLegalModal(false)}
+      />
     </div>
   );
 };

@@ -20,6 +20,7 @@ import { BootAnimation } from './BootAnimation';
 import { ShutDownDialog } from './ShutDownDialog';
 import { ContributorsWindow } from './ContributorsWindow';
 import { MobileLanding } from './MobileLanding';
+import { LegalWindow } from './LegalWindow';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -43,6 +44,7 @@ export const Desktop: React.FC = () => {
     settings: false,
     shutdown: false,
     contributors: false,
+    legal: false,
   });
   const [minimizedWindows, setMinimizedWindows] = useState<Record<string, boolean>>({
     ide: false,
@@ -52,6 +54,7 @@ export const Desktop: React.FC = () => {
     settings: false,
     shutdown: false,
     contributors: false,
+    legal: false,
   });
 
   // Boot Animation State
@@ -181,6 +184,7 @@ export const Desktop: React.FC = () => {
     { id: 'wizard', title: 'Setup Wizard', icon: '🧙‍♂️', isOpen: openWindows.wizard, isMinimized: minimizedWindows.wizard, zIndex: getZIndex('wizard') },
     { id: 'settings', title: 'Options & Control Panel', icon: '⚙️', isOpen: openWindows.settings, isMinimized: false, zIndex: getZIndex('settings') },
     { id: 'contributors', title: 'Join the Team', icon: '🤝', isOpen: openWindows.contributors, isMinimized: minimizedWindows.contributors, zIndex: getZIndex('contributors') },
+    { id: 'legal', title: 'Legal & IP Protection', icon: '⚖️', isOpen: openWindows.legal, isMinimized: minimizedWindows.legal, zIndex: getZIndex('legal') },
   ];
 
   const activeWindowId = windowOrder[windowOrder.length - 1] || null;
@@ -327,6 +331,14 @@ export const Desktop: React.FC = () => {
 
         <div
           className="win95-desktop-icon"
+          onClick={() => focusWindow('legal')}
+        >
+          <div className="icon-symbol">⚖️</div>
+          <span>Legal & IP Notice</span>
+        </div>
+
+        <div
+          className="win95-desktop-icon"
           onClick={handleResetSession}
         >
           <div className="icon-symbol">🗑️</div>
@@ -441,6 +453,7 @@ export const Desktop: React.FC = () => {
             settings: false,
             shutdown: false,
             contributors: false,
+            legal: false,
           });
         }}
       />
@@ -453,6 +466,16 @@ export const Desktop: React.FC = () => {
         onClose={() => closeWindow('contributors')}
         onMinimize={() => toggleMinimize('contributors')}
         onFocus={() => focusWindow('contributors')}
+      />
+
+      {/* Legal & IP Protection Window */}
+      <LegalWindow
+        isOpen={openWindows.legal}
+        isMinimized={minimizedWindows.legal}
+        zIndex={getZIndex('legal')}
+        onClose={() => closeWindow('legal')}
+        onMinimize={() => toggleMinimize('legal')}
+        onFocus={() => focusWindow('legal')}
       />
 
       {/* Interactive Tour Balloon */}
