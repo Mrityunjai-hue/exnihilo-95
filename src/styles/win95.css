@@ -53,6 +53,14 @@ html, body {
   -webkit-font-smoothing: none;
 }
 
+@media (max-width: 1023px) {
+  html, body {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100%;
+  }
+}
+
 /* Desktop Background */
 .win95-desktop {
   position: relative;

@@ -19,6 +19,7 @@ import { Win95Tour } from '../Tour/Win95Tour';
 import { BootAnimation } from './BootAnimation';
 import { ShutDownDialog } from './ShutDownDialog';
 import { ContributorsWindow } from './ContributorsWindow';
+import { MobileLanding } from './MobileLanding';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -70,6 +71,22 @@ export const Desktop: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [executionTimeMs, setExecutionTimeMs] = useState<number | null>(null);
   const [activeError, setActiveError] = useState<ClassifiedError | null>(null);
+
+  // Mobile Viewport Detection & Force Desktop Override
+  const [isMobileViewport, setIsMobileViewport] = useState<boolean>(false);
+  const [forceDesktop, setForceDesktop] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileSize = window.innerWidth < 1024;
+      const isTouchUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobileViewport(isMobileSize || isTouchUserAgent);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -150,6 +167,11 @@ export const Desktop: React.FC = () => {
         Starting ExNihilo 95...
       </div>
     );
+  }
+
+  // Mobile Landing Screen Guard
+  if (isMobileViewport && !forceDesktop) {
+    return <MobileLanding onForceDesktop={() => setForceDesktop(true)} />;
   }
 
   const windowsMeta: WindowMeta[] = [
