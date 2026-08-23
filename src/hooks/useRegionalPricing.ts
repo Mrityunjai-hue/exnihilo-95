@@ -1,5 +1,5 @@
 /**
- * src/hooks/useRegionalPricing.ts — Regional Currency Detection & Scoped Manual Override
+ * src/hooks/useRegionalPricing.ts — Bulletproof Regional Currency Detection & Scoped Manual Override
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -14,29 +14,83 @@ interface RegionInfo {
 export function detectRegion(): RegionInfo {
   try {
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-    const locale = navigator.language || 'en-US';
+    const locale = (navigator.language || '').toUpperCase();
+    const languages = (navigator.languages || []).map((l) => l.toUpperCase());
+    const offsetMinutes = new Date().getTimezoneOffset(); // -330 for UTC+5:30 (India)
 
-    if (timeZone.includes('Asia/Kolkata') || locale.includes('IN') || timeZone.includes('India')) {
+    // 🇮🇳 INDIA DETECTION (Asia/Kolkata, Asia/Calcutta, UTC+5:30 offset = -330, en-IN, hi-IN)
+    if (
+      timeZone.includes('Kolkata') ||
+      timeZone.includes('Calcutta') ||
+      offsetMinutes === -330 ||
+      locale.includes('IN') ||
+      locale.includes('HI') ||
+      languages.some((l) => l.includes('IN') || l.includes('HI'))
+    ) {
       return { countryName: 'India', flag: '🇮🇳', detectedCurrency: 'INR' };
     }
-    if (timeZone.includes('Europe/London') || locale.includes('GB')) {
+
+    // 🇬🇧 UNITED KINGDOM
+    if (
+      timeZone.includes('London') ||
+      locale.includes('GB') ||
+      languages.some((l) => l.includes('GB'))
+    ) {
       return { countryName: 'United Kingdom', flag: '🇬🇧', detectedCurrency: 'GBP' };
     }
-    if (timeZone.includes('Europe/') || locale.includes('DE') || locale.includes('FR') || locale.includes('ES') || locale.includes('IT')) {
+
+    // 🇪🇺 EUROPEAN UNION
+    if (
+      timeZone.includes('Paris') ||
+      timeZone.includes('Berlin') ||
+      timeZone.includes('Rome') ||
+      timeZone.includes('Madrid') ||
+      timeZone.includes('Amsterdam') ||
+      timeZone.includes('Brussels') ||
+      timeZone.includes('Europe') ||
+      locale.includes('FR') ||
+      locale.includes('DE') ||
+      locale.includes('ES') ||
+      locale.includes('IT') ||
+      locale.includes('NL')
+    ) {
       return { countryName: 'European Union', flag: '🇪🇺', detectedCurrency: 'EUR' };
     }
-    if (timeZone.includes('Asia/Tokyo') || locale.includes('JP')) {
+
+    // 🇯🇵 JAPAN
+    if (
+      timeZone.includes('Tokyo') ||
+      offsetMinutes === -540 ||
+      locale.includes('JP') ||
+      locale.includes('JA')
+    ) {
       return { countryName: 'Japan', flag: '🇯🇵', detectedCurrency: 'JPY' };
     }
-    if (timeZone.includes('America/Sao_Paulo') || locale.includes('BR')) {
+
+    // 🇧🇷 BRAZIL
+    if (
+      timeZone.includes('Sao_Paulo') ||
+      locale.includes('BR') ||
+      locale.includes('PT-BR')
+    ) {
       return { countryName: 'Brazil', flag: '🇧🇷', detectedCurrency: 'BRL' };
     }
-    if (timeZone.includes('Australia/') || locale.includes('AU')) {
+
+    // 🇦🇺 AUSTRALIA
+    if (
+      timeZone.includes('Sydney') ||
+      timeZone.includes('Melbourne') ||
+      timeZone.includes('Brisbane') ||
+      timeZone.includes('Perth') ||
+      timeZone.includes('Australia') ||
+      locale.includes('AU')
+    ) {
       return { countryName: 'Australia', flag: '🇦🇺', detectedCurrency: 'AUD' };
     }
   } catch (e) {
     // Fallback
   }
+
   return { countryName: 'United States', flag: '🇺🇸', detectedCurrency: 'USD' };
 }
 
