@@ -60,7 +60,7 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
           <span>Welcome to ExNihilo 95 — Zero-Config SQL IDE</span>
         </div>
         <div className="win95-titlebar-controls">
-          <button className="win95-btn-titlebar" onClick={onClose} title="Close">✕</button>
+          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }} title="Close">✕</button>
         </div>
       </div>
 

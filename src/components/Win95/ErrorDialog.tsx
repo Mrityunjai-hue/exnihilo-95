@@ -72,7 +72,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
           <span>{title}</span>
         </div>
         <div className="win95-titlebar-controls">
-          <button className="win95-btn-titlebar" onClick={onClose}>✕</button>
+          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }}>✕</button>
         </div>
       </div>
 

@@ -67,17 +67,23 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
   ];
 
   return (
-    <div className="win95-window" style={windowStyle} onClick={onFocus}>
-      {/* Titlebar */}
-      <div className="win95-titlebar" onMouseDown={handleMouseDown}>
+    <div className="win95-window" style={windowStyle} onMouseDown={onFocus}>
+      <div
+        className="win95-titlebar"
+        onMouseDown={(e) => {
+          onFocus();
+          handleMouseDown(e);
+        }}
+        style={{ cursor: 'move' }}
+      >
         <div className="win95-titlebar-text">
           <span>🤝</span>
           <span>ExNihilo 95 — Join the Team</span>
         </div>
         <div className="win95-titlebar-controls">
-          <button className="win95-btn-titlebar" onClick={onMinimize}>_</button>
-          <button className="win95-btn-titlebar" onClick={() => setIsMaximized(!isMaximized)}>□</button>
-          <button className="win95-btn-titlebar" onClick={onClose}>✕</button>
+          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onMinimize(); }}>_</button>
+          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); setIsMaximized(!isMaximized); }}>□</button>
+          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }}>✕</button>
         </div>
       </div>
 

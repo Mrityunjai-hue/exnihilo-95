@@ -395,8 +395,8 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
           <span>ExNihilo SQL Help & Query Guide</span>
         </div>
         <div className="win95-titlebar-controls">
-          <button className="win95-btn-titlebar" onClick={onMinimize}>_</button>
-          <button className="win95-btn-titlebar" onClick={onClose}>✕</button>
+          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onMinimize(); }}>_</button>
+          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }}>✕</button>
         </div>
       </div>
 
