@@ -532,7 +532,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       <div ref={studioBodyRef} style={{ display: 'flex', flex: 1, padding: '4px', gap: '2px', overflow: 'hidden', position: 'relative' }}>
         {/* Left Explorer Pane (Schema Tree) */}
         {showExplorer && (
-          <div style={{ width: `${sidebarWidth}px`, height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div id="tour-schema-tree" style={{ width: `${sidebarWidth}px`, height: '100%', display: 'flex', flexDirection: 'column' }}>
             <SchemaTree
               catalog={catalog}
               onSelectTable={handleSelectTable}
@@ -559,7 +559,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         {/* Right Work Area */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px', height: '100%', overflow: 'hidden' }}>
           {/* Query Editor Multi-Tab Bar */}
-          <div className="win95-editor-tabs">
+          <div id="tour-query-tabs" className="win95-editor-tabs">
             {tabs.map((tab) => {
               const isActive = tab.id === activeTabId;
               return (
@@ -601,7 +601,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           </div>
 
           {/* Query Editor Pane */}
-          <div style={{ height: `${editorHeightPercent}%`, minHeight: '110px' }}>
+          <div id="tour-query-editor" style={{ height: `${editorHeightPercent}%`, minHeight: '110px' }}>
             <QueryEditor
               value={activeTab.queryText}
               onChange={handleActiveQueryChange}
@@ -628,7 +628,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           />
 
           {/* Results Grid Pane */}
-          <div style={{ flex: 1, overflow: 'hidden' }}>
+          <div id="tour-results-grid" style={{ flex: 1, overflow: 'hidden' }}>
             <ResultsGrid
               result={activeTab.result}
               isLoading={activeTab.isLoading}

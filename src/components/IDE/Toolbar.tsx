@@ -117,6 +117,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         {/* Template Snippets Menu */}
         <div style={{ position: 'relative' }}>
           <button
+            id="btn-templates"
             className="win95-button"
             onClick={() => setTemplateMenuOpen((prev) => !prev)}
             title="Insert Prebuilt SQL Query Templates"
