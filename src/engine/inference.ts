@@ -205,6 +205,8 @@ function walkExpr(
   scopeTables: string[],
   signals:     SignalMap,
   colRefs:     ColRefMap,
+  tableSet:    Set<string> = new Set(),
+  cteNames:    Set<string> = new Set(),
 ): void {
   if (!expr || typeof expr !== 'object') return;
 
@@ -237,7 +239,7 @@ function walkExpr(
           addSignal(signals, t, c, 'VARCHAR', P_FUNCTION,
             `spec 3.2 row 4: ${op} operator → VARCHAR`);
         }
-        walkExpr(rhs, aliasMap, scopeTables, signals, colRefs);
+        walkExpr(rhs, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
         return;
       }
 
@@ -264,8 +266,8 @@ function walkExpr(
           addSignal(signals, t, c, 'NUMERIC', P_FUNCTION,
             `spec 3.2 row 6: arithmetic '${expr.operator}' context → NUMERIC`);
         }
-        walkExpr(lhs, aliasMap, scopeTables, signals, colRefs);
-        walkExpr(rhs, aliasMap, scopeTables, signals, colRefs);
+        walkExpr(lhs, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
+        walkExpr(rhs, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
         return;
       }
 
@@ -291,8 +293,8 @@ function walkExpr(
       }
 
       // Recurse
-      walkExpr(lhs, aliasMap, scopeTables, signals, colRefs);
-      walkExpr(rhs, aliasMap, scopeTables, signals, colRefs);
+      walkExpr(lhs, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
+      walkExpr(rhs, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
       break;
     }
 
@@ -311,7 +313,7 @@ function walkExpr(
         addSignal(signals, tbl, col, 'NUMERIC', P_FUNCTION,
           `spec 3.2 row 6: ${funcName}() aggregate → NUMERIC`);
       } else if (argExpr) {
-        walkExpr(argExpr, aliasMap, scopeTables, signals, colRefs);
+        walkExpr(argExpr, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
       }
       break;
     }
@@ -343,7 +345,7 @@ function walkExpr(
       }
 
       for (const arg of args) {
-        walkExpr(arg, aliasMap, scopeTables, signals, colRefs);
+        walkExpr(arg, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
       }
       break;
     }
@@ -363,7 +365,7 @@ function walkExpr(
         addSignal(signals, tbl, col, targetType, P_CAST,
           `spec 3.2 row 1: CAST(${col} AS ${expr.target?.[0]?.dataType}) → ${targetType}`);
       } else if (inner) {
-        walkExpr(inner, aliasMap, scopeTables, signals, colRefs);
+        walkExpr(inner, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
       }
       break;
     }
@@ -383,15 +385,15 @@ function walkExpr(
           addSignal(signals, tbl, col, targetType, P_CAST,
             `spec 3.2 row 1: ${col}::${expr.target?.[0]?.dataType} → ${targetType}`);
         } else if (inner) {
-          walkExpr(inner, aliasMap, scopeTables, signals, colRefs);
+          walkExpr(inner, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
         }
         break;
       }
       for (const v of Object.values(expr)) {
         if (v && typeof v === 'object') {
           Array.isArray(v)
-            ? v.forEach(item => walkExpr(item, aliasMap, scopeTables, signals, colRefs))
-            : walkExpr(v, aliasMap, scopeTables, signals, colRefs);
+            ? v.forEach(item => walkExpr(item, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames))
+            : walkExpr(v, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
         }
       }
       break;
@@ -411,23 +413,39 @@ function walkExpr(
 
     // ── Subquery (correlated subquery in WHERE/SELECT/HAVING) ────────────────
     case 'select': {
-      walkStatement(expr, signals, colRefs, new Set<string>(), new Set<string>(), new Map<string, string>());
+      walkStatement(expr, signals, colRefs, tableSet, cteNames, aliasMap);
+      break;
+    }
+
+    // ── Expression list (IN (...), VALUES, subquery list) ────────────────────
+    case 'expr_list': {
+      const items = Array.isArray(expr.value) ? expr.value : [];
+      for (const item of items) {
+        if (item?.ast) {
+          walkStatement(item.ast, signals, colRefs, tableSet, cteNames, aliasMap);
+        } else if (item) {
+          walkExpr(item, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
+        }
+      }
       break;
     }
 
     // ── Unary expression ─────────────────────────────────────────────────────
     case 'unary_expr': {
-      walkExpr(expr.expr, aliasMap, scopeTables, signals, colRefs);
+      walkExpr(expr.expr, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
       break;
     }
 
     // ── Default: recurse into any child objects ───────────────────────────────
     default: {
+      if (expr.ast) {
+        walkStatement(expr.ast, signals, colRefs, tableSet, cteNames, aliasMap);
+      }
       for (const v of Object.values(expr)) {
         if (v && typeof v === 'object') {
           Array.isArray(v)
-            ? v.forEach(item => walkExpr(item, aliasMap, scopeTables, signals, colRefs))
-            : walkExpr(v, aliasMap, scopeTables, signals, colRefs);
+            ? v.forEach(item => walkExpr(item, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames))
+            : walkExpr(v, aliasMap, scopeTables, signals, colRefs, tableSet, cteNames);
         }
       }
     }
@@ -500,11 +518,25 @@ function walkFrom(
       if (alias !== tableName) aliasMap.set(tableName, tableName);
 
       if (item.on) {
-        walkExpr(item.on, aliasMap, scope, signals, colRefs);
+        walkExpr(item.on, aliasMap, scope, signals, colRefs, tableSet, cteNames);
       }
     } else if (item.expr) {
       const subAst = item.expr.ast ?? item.expr;
-      walkStatement(subAst, signals, colRefs, new Set<string>(), cteNames, new Map<string, string>());
+      if (subAst) {
+        walkStatement(subAst, signals, colRefs, tableSet, cteNames, aliasMap);
+        if (Array.isArray(subAst.from)) {
+          for (const f of subAst.from) {
+            if (f && f.table) {
+              const subTbl = normTable(f.table);
+              scope.push(subTbl);
+              if (item.as) {
+                const alias = normTable(item.as);
+                aliasMap.set(alias, subTbl);
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -561,14 +593,14 @@ function walkSelect(
 
   // 3. Walk WHERE
   if (ast.where) {
-    walkExpr(ast.where, aliasMap, scope, signals, colRefs);
+    walkExpr(ast.where, aliasMap, scope, signals, colRefs, tableSet, cteNames);
   }
 
   // 4. Walk SELECT column list
   if (Array.isArray(ast.columns)) {
     for (const col of ast.columns) {
       if (col?.expr) {
-        walkExpr(col.expr, aliasMap, scope, signals, colRefs);
+        walkExpr(col.expr, aliasMap, scope, signals, colRefs, tableSet, cteNames);
       }
     }
   }
@@ -590,7 +622,7 @@ function walkSelect(
 
   // 6. Walk HAVING
   if (ast.having) {
-    walkExpr(ast.having, aliasMap, scope, signals, colRefs);
+    walkExpr(ast.having, aliasMap, scope, signals, colRefs, tableSet, cteNames);
   }
 
   // 7. Walk UNION / INTERSECT / EXCEPT via _next chain (spec 3.1)
