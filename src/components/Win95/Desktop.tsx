@@ -18,6 +18,7 @@ import { WelcomeWindow } from './WelcomeWindow';
 import { Win95Tour } from '../Tour/Win95Tour';
 import { BootAnimation } from './BootAnimation';
 import { ShutDownDialog } from './ShutDownDialog';
+import { ContributorsWindow } from './ContributorsWindow';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -40,6 +41,7 @@ export const Desktop: React.FC = () => {
     wizard: false,
     settings: false,
     shutdown: false,
+    contributors: false,
   });
   const [minimizedWindows, setMinimizedWindows] = useState<Record<string, boolean>>({
     ide: false,
@@ -48,6 +50,7 @@ export const Desktop: React.FC = () => {
     wizard: false,
     settings: false,
     shutdown: false,
+    contributors: false,
   });
 
   // Boot Animation State
@@ -155,6 +158,7 @@ export const Desktop: React.FC = () => {
     { id: 'help', title: 'ExNihilo Query Guide', icon: '📖', isOpen: openWindows.help, isMinimized: minimizedWindows.help, zIndex: getZIndex('help') },
     { id: 'wizard', title: 'Setup Wizard', icon: '🧙‍♂️', isOpen: openWindows.wizard, isMinimized: minimizedWindows.wizard, zIndex: getZIndex('wizard') },
     { id: 'settings', title: 'Options & Control Panel', icon: '⚙️', isOpen: openWindows.settings, isMinimized: false, zIndex: getZIndex('settings') },
+    { id: 'contributors', title: 'Join the Team', icon: '🤝', isOpen: openWindows.contributors, isMinimized: minimizedWindows.contributors, zIndex: getZIndex('contributors') },
   ];
 
   const activeWindowId = windowOrder[windowOrder.length - 1] || null;
@@ -293,6 +297,14 @@ export const Desktop: React.FC = () => {
 
         <div
           className="win95-desktop-icon"
+          onClick={() => focusWindow('contributors')}
+        >
+          <div className="icon-symbol">🤝</div>
+          <span>Join the Team</span>
+        </div>
+
+        <div
+          className="win95-desktop-icon"
           onClick={handleResetSession}
         >
           <div className="icon-symbol">🗑️</div>
@@ -406,8 +418,19 @@ export const Desktop: React.FC = () => {
             wizard: false,
             settings: false,
             shutdown: false,
+            contributors: false,
           });
         }}
+      />
+
+      {/* Contributors / Join the Team Window */}
+      <ContributorsWindow
+        isOpen={openWindows.contributors}
+        isMinimized={minimizedWindows.contributors}
+        zIndex={getZIndex('contributors')}
+        onClose={() => closeWindow('contributors')}
+        onMinimize={() => toggleMinimize('contributors')}
+        onFocus={() => focusWindow('contributors')}
       />
 
       {/* Interactive Tour Balloon */}
