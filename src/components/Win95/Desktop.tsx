@@ -204,6 +204,22 @@ export const Desktop: React.FC = () => {
     }
   };
 
+  // Global F5 Intercept: Prevents browser page refresh and executes query if IDE is open
+  useEffect(() => {
+    const handleGlobalF5 = (e: KeyboardEvent) => {
+      if (e.key === 'F5' || e.code === 'F5') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (openWindows.ide && !minimizedWindows.ide) {
+          handleRunQuery();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalF5, true);
+    return () => window.removeEventListener('keydown', handleGlobalF5, true);
+  }, [openWindows.ide, minimizedWindows.ide, handleRunQuery]);
+
   // Reset Session
   const handleResetSession = () => {
     executor.reset();

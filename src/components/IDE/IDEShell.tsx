@@ -320,6 +320,22 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     setActiveMenu(null);
   };
 
+  // Global F5 & Ctrl+Enter shortcut intercept inside IDE window
+  useEffect(() => {
+    if (!isOpen || isMinimized) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F5' || e.code === 'F5' || (e.key === 'Enter' && (e.ctrlKey || e.metaKey))) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleExecute();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isOpen, isMinimized, handleExecute]);
+
   const handleDownloadSql = () => {
     const blob = new Blob([activeTab.queryText], { type: 'text/sql' });
     const url = URL.createObjectURL(blob);
