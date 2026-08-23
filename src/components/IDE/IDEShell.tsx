@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useDraggable } from '../../hooks/useDraggable';
 import { Dialect } from '../../engine/parser';
 import { SQLExecutor, ExecutionSuccess } from '../../engine/executor';
 import { QueryEditor } from './QueryEditor';
@@ -61,7 +62,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   isOpen,
   isMinimized,
   zIndex,
-  position,
+  position: propPosition,
   dialect,
   initialQueryText,
   initialResult,
@@ -79,6 +80,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   onOpenSettings,
   onStartTour,
 }) => {
+  const { position, handleMouseDown: handleHeaderDrag } = useDraggable(propPosition || { x: 40, y: 30 });
   const [activeMenu, setActiveMenu] = useState<'file' | 'edit' | 'query' | 'view' | 'tools' | 'help' | null>(null);
   const [showExplorer, setShowExplorer] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(240);
@@ -357,8 +359,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       className="win95-window"
       style={{
         position: 'absolute',
-        top: position ? `${position.y}px` : '40px',
-        left: position ? `${position.x}px` : '40px',
+        top: `${position.y}px`,
+        left: `${position.x}px`,
         width: 'calc(100vw - 100px)',
         height: 'calc(100vh - 100px)',
         maxWidth: '1280px',
@@ -369,8 +371,15 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       }}
       onMouseDown={onFocus}
     >
-      {/* Titlebar */}
-      <div className="win95-titlebar" onMouseDown={onFocus} style={{ cursor: 'default' }}>
+      {/* Titlebar with Drag Handler */}
+      <div
+        className="win95-titlebar"
+        onMouseDown={(e) => {
+          onFocus();
+          handleHeaderDrag(e);
+        }}
+        style={{ cursor: 'move' }}
+      >
         <div className="win95-titlebar-text">
           <span>🗄️</span>
           <span>ExNihilo SQL Studio — [{dialect}] — {activeTab.title}</span>
