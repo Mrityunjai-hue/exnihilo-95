@@ -59,10 +59,18 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
       className="win95-window"
       style={
         isModal
-          ? { width: '100%', maxWidth: '560px', boxShadow: '4px 4px 20px rgba(0,0,0,0.8)' }
+          ? {
+              width: '94vw',
+              maxWidth: '540px',
+              maxHeight: '88vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '4px 4px 20px rgba(0,0,0,0.8)',
+              boxSizing: 'border-box',
+            }
           : isMaximized
-          ? { position: 'fixed', top: 0, left: 0, width: '100vw', height: 'calc(100vh - 36px)', zIndex }
-          : { position: 'absolute', top: position.y, left: position.x, width: '660px', height: '520px', zIndex }
+          ? { position: 'fixed', top: 0, left: 0, width: '100vw', height: 'calc(100vh - 36px)', zIndex, display: 'flex', flexDirection: 'column' }
+          : { position: 'absolute', top: position.y, left: position.x, width: '660px', height: '520px', zIndex, display: 'flex', flexDirection: 'column' }
       }
       onMouseDown={onFocus}
       onClick={(e) => e.stopPropagation()}
@@ -74,13 +82,13 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
           if (onFocus) onFocus();
           if (!isMaximized && !isModal) handleMouseDown(e);
         }}
-        style={{ cursor: isModal ? 'default' : 'move' }}
+        style={{ cursor: isModal ? 'default' : 'move', flexShrink: 0 }}
       >
-        <div className="win95-titlebar-text">
+        <div className="win95-titlebar-text" style={{ fontSize: '11px' }}>
           <span>⚖️</span>
           <span>ExNihilo 95 — Copyright & Intellectual Property Protection</span>
         </div>
-        <div className="win95-titlebar-controls">
+        <div className="win95-titlebar-controls" style={{ flexShrink: 0 }}>
           {onMinimize && !isModal && (
             <button
               className="win95-btn-titlebar"
@@ -113,20 +121,30 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
       </div>
 
       {/* Tab Bar */}
-      <div style={{ display: 'flex', background: '#c0c0c0', borderBottom: '1px solid #808080', padding: '2px 4px 0' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          background: '#c0c0c0',
+          borderBottom: '1px solid #808080',
+          padding: '2px 4px 0',
+          gap: '2px',
+          flexShrink: 0,
+        }}
+      >
         {tabs.map((tab) => (
           <button
             key={tab.id}
             className="win95-button"
             onClick={() => setActiveTab(tab.id)}
             style={{
-              fontSize: '11px',
-              padding: '3px 10px',
-              marginRight: '2px',
+              fontSize: '10px',
+              padding: '3px 8px',
               borderBottom: activeTab === tab.id ? '2px solid #000080' : '2px solid transparent',
               fontWeight: activeTab === tab.id ? 'bold' : 'normal',
               background: activeTab === tab.id ? '#ffffff' : '#c0c0c0',
               cursor: 'pointer',
+              whiteSpace: 'nowrap',
             }}
           >
             {tab.label}
@@ -135,7 +153,7 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
       </div>
 
       {/* Content Area */}
-      <div style={{ flex: 1, overflowY: 'auto', background: '#ffffff', padding: '14px', fontSize: '11px', lineHeight: '1.7' }}>
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: '#ffffff', padding: '12px', fontSize: '11px', lineHeight: '1.6' }}>
 
         {/* ─── TAB 1: ORIGINALITY CLAIM ─── */}
         {activeTab === 'originality' && (
@@ -263,7 +281,7 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
               {ATTRIBUTION_TEXT}
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
               <button
                 className="win95-button win95-button-default"
                 onClick={handleCopyNotice}
@@ -288,7 +306,7 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
       </div>
 
       {/* Footer Controls */}
-      <div style={{ padding: '8px 14px', background: '#c0c0c0', borderTop: '1px solid #808080', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '8px 14px', background: '#c0c0c0', borderTop: '1px solid #808080', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
         <div style={{ fontSize: '10px', color: '#444' }}>
           Owner: <strong>Mrityunjai (@Mrityunjai-hue)</strong>
         </div>

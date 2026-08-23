@@ -284,7 +284,7 @@ export const MobileLanding: React.FC<MobileLandingProps> = ({ onForceDesktop }) 
               </button>
             </a>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
               <a
                 href="https://github.com/Mrityunjai-hue/exnihilo-95/blob/main/PREMIUM_FEATURES.md"
                 target="_blank"
