@@ -88,6 +88,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const [hasSelection, setHasSelection] = useState(false);
   const [selectedText, setSelectedText] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isMaximized, setIsMaximized] = useState(false);
 
   // Query History State
   const [queryHistory, setQueryHistory] = useState<QueryHistoryItem[]>([]);
@@ -359,28 +360,45 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   return (
     <div
       className="win95-window"
-      style={{
-        position: 'absolute',
-        top: `${position.y}px`,
-        left: `${position.x}px`,
-        width: 'calc(100vw - 100px)',
-        height: 'calc(100vh - 100px)',
-        maxWidth: '1280px',
-        maxHeight: '800px',
-        zIndex,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
+      style={
+        isMaximized
+          ? {
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: 'calc(100vh - 28px)',
+              maxWidth: '100vw',
+              maxHeight: 'calc(100vh - 28px)',
+              zIndex,
+              display: 'flex',
+              flexDirection: 'column',
+              borderRadius: 0,
+            }
+          : {
+              position: 'absolute',
+              top: `${position.y}px`,
+              left: `${position.x}px`,
+              width: 'calc(100vw - 100px)',
+              height: 'calc(100vh - 100px)',
+              maxWidth: '1280px',
+              maxHeight: '800px',
+              zIndex,
+              display: 'flex',
+              flexDirection: 'column',
+            }
+      }
       onMouseDown={onFocus}
     >
-      {/* Titlebar with Drag Handler */}
+      {/* Titlebar with Drag & Double-Click Maximize */}
       <div
         className="win95-titlebar"
         onMouseDown={(e) => {
           onFocus();
-          handleHeaderDrag(e);
+          if (!isMaximized) handleHeaderDrag(e);
         }}
-        style={{ cursor: 'move' }}
+        onDoubleClick={() => setIsMaximized((prev) => !prev)}
+        style={{ cursor: isMaximized ? 'default' : 'move' }}
       >
         <div className="win95-titlebar-text">
           <span>🗄️</span>
@@ -397,6 +415,17 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             title="Minimize"
           >
             _
+          </button>
+          <button
+            className="win95-btn-titlebar"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMaximized((prev) => !prev);
+            }}
+            title={isMaximized ? 'Restore Window' : 'Maximize Window'}
+          >
+            {isMaximized ? '🗗' : '🗖'}
           </button>
           <button
             className="win95-btn-titlebar"
