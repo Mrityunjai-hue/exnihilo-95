@@ -21,6 +21,9 @@ import { ShutDownDialog } from './ShutDownDialog';
 import { ContributorsWindow } from './ContributorsWindow';
 import { MobileLanding } from './MobileLanding';
 import { LegalWindow } from './LegalWindow';
+import { useAuth } from '../../hooks/useAuth';
+import { AuthWindow } from './AuthWindow';
+import { AdminDashboard, SessionStats } from './AdminDashboard';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -34,6 +37,29 @@ export const Desktop: React.FC = () => {
   const [mounted, setMounted] = useState(false);
   const executor = useMemo(() => new SQLExecutor(), []);
 
+  // Auth Hook
+  const {
+    currentUser,
+    activeSession,
+    isLoggedIn,
+    isSecureContext,
+    sessionExpiredNotice,
+    dismissSessionNotice,
+    signUp,
+    login,
+    changePassword,
+    logout,
+    deleteAccount,
+  } = useAuth();
+
+  // Session Stats State
+  const [sessionStats, setSessionStats] = useState<SessionStats>({
+    queriesRun: 0,
+    rowsGenerated: 0,
+    sessionStartTime: Date.now(),
+    queryHistory: [],
+  });
+
   // Window State
   const [windowOrder, setWindowOrder] = useState<string[]>(['ide', 'welcome']);
   const [openWindows, setOpenWindows] = useState<Record<string, boolean>>({
@@ -45,6 +71,8 @@ export const Desktop: React.FC = () => {
     shutdown: false,
     contributors: false,
     legal: false,
+    auth: false,
+    admin: false,
   });
   const [minimizedWindows, setMinimizedWindows] = useState<Record<string, boolean>>({
     ide: false,
@@ -55,6 +83,8 @@ export const Desktop: React.FC = () => {
     shutdown: false,
     contributors: false,
     legal: false,
+    auth: false,
+    admin: false,
   });
 
   // Boot Animation State
@@ -117,6 +147,18 @@ export const Desktop: React.FC = () => {
     return idx === -1 ? 10 : 10 + idx * 5;
   };
 
+  // Handle Logout (Resets session usage stats cleanly)
+  const handleLogout = () => {
+    logout();
+    setSessionStats({
+      queriesRun: 0,
+      rowsGenerated: 0,
+      sessionStartTime: Date.now(),
+      queryHistory: [],
+    });
+    closeWindow('admin');
+  };
+
   // Run Query (Supports highlighted query execution or full multi-query execution)
   const handleRunQuery = async (customQueryText?: string) => {
     if (isLoading) return;
@@ -136,6 +178,20 @@ export const Desktop: React.FC = () => {
       if (res.ok) {
         setResult(res);
         setExecutionTimeMs(res.executionTimeMs);
+
+        // Calculate rows generated
+        const rowsCount = res.rowCount || 0;
+        const now = new Date().toLocaleTimeString();
+
+        setSessionStats((prev) => ({
+          ...prev,
+          queriesRun: prev.queriesRun + 1,
+          rowsGenerated: prev.rowsGenerated + rowsCount,
+          queryHistory: [
+            { sql: targetSql.split('\n')[0].substring(0, 60), timeMs: res.executionTimeMs, timestamp: now },
+            ...prev.queryHistory.slice(0, 9),
+          ],
+        }));
       } else {
         const classified = classifyError(res);
         setActiveError(classified);
@@ -185,6 +241,8 @@ export const Desktop: React.FC = () => {
     { id: 'settings', title: 'Options & Control Panel', icon: '⚙️', isOpen: openWindows.settings, isMinimized: false, zIndex: getZIndex('settings') },
     { id: 'contributors', title: 'Join the Team', icon: '🤝', isOpen: openWindows.contributors, isMinimized: minimizedWindows.contributors, zIndex: getZIndex('contributors') },
     { id: 'legal', title: 'Legal & IP Protection', icon: '⚖️', isOpen: openWindows.legal, isMinimized: minimizedWindows.legal, zIndex: getZIndex('legal') },
+    { id: 'auth', title: 'Security Logon', icon: '🔑', isOpen: openWindows.auth, isMinimized: false, zIndex: getZIndex('auth') },
+    { id: 'admin', title: 'Admin Control Panel', icon: '👤', isOpen: openWindows.admin, isMinimized: false, zIndex: getZIndex('admin') },
   ];
 
   const activeWindowId = windowOrder[windowOrder.length - 1] || null;
@@ -259,6 +317,19 @@ export const Desktop: React.FC = () => {
 
       {/* Desktop Shortcut Icons */}
       <div className="win95-icon-grid" style={{ position: 'relative', zIndex: 2 }}>
+        {/* Admin / Account Icon */}
+        <div
+          className="win95-desktop-icon"
+          onDoubleClick={() => focusWindow(isLoggedIn ? 'admin' : 'auth')}
+          onClick={() => focusWindow(isLoggedIn ? 'admin' : 'auth')}
+          title={isLoggedIn ? `Logged in as ${currentUser?.displayName}` : 'Log in or Register'}
+        >
+          <div className="icon-symbol" style={{ opacity: isSecureContext ? 1 : 0.5 }}>
+            👤
+          </div>
+          <span>{isLoggedIn ? `👤 ${currentUser?.displayName}` : '👤 Guest'}</span>
+        </div>
+
         <div
           className="win95-desktop-icon"
           onDoubleClick={() => focusWindow('welcome')}
@@ -387,6 +458,46 @@ export const Desktop: React.FC = () => {
         onStartTour={() => setTourOpen(true)}
       />
 
+      {/* Auth Window (Log In & Create Account) */}
+      <AuthWindow
+        isOpen={openWindows.auth}
+        zIndex={getZIndex('auth')}
+        isSecureContext={isSecureContext}
+        onClose={() => closeWindow('auth')}
+        onFocus={() => focusWindow('auth')}
+        onSignUp={signUp}
+        onLogin={async (user, pass) => {
+          const res = await login(user, pass);
+          if (res.success) {
+            closeWindow('auth');
+            focusWindow('admin');
+          }
+          return res;
+        }}
+        currentUser={currentUser}
+      />
+
+      {/* Admin Dashboard Window */}
+      <AdminDashboard
+        isOpen={openWindows.admin}
+        zIndex={getZIndex('admin')}
+        currentUser={currentUser}
+        activeSession={activeSession}
+        sessionStats={sessionStats}
+        onClose={() => closeWindow('admin')}
+        onFocus={() => focusWindow('admin')}
+        onLogout={handleLogout}
+        onDeleteAccount={async () => {
+          const res = await deleteAccount();
+          if (res.success) {
+            handleLogout();
+          }
+          return res;
+        }}
+        onChangePassword={changePassword}
+        onClearHistory={() => setSessionStats((prev) => ({ ...prev, queryHistory: [] }))}
+      />
+
       {/* Help / Query Tutorial Window */}
       <HelpWindow
         isOpen={openWindows.help}
@@ -454,6 +565,8 @@ export const Desktop: React.FC = () => {
             shutdown: false,
             contributors: false,
             legal: false,
+            auth: false,
+            admin: false,
           });
         }}
       />
@@ -484,6 +597,51 @@ export const Desktop: React.FC = () => {
         onClose={() => setTourOpen(false)}
         onOpenHelp={() => focusWindow('help')}
       />
+
+      {/* Session Expired Win95 Notification Modal */}
+      {sessionExpiredNotice && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999999,
+          }}
+        >
+          <div className="win95-window" style={{ width: '340px' }}>
+            <div className="win95-titlebar" style={{ background: '#800000' }}>
+              <div className="win95-titlebar-text">
+                <span>⚠️</span>
+                <span>Session Expired</span>
+              </div>
+            </div>
+
+            <div style={{ padding: '16px', fontSize: '11px', lineHeight: '1.4' }}>
+              Your session has ended for security reasons (24h TTL). Please log in again.
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '12px' }}>
+              <button
+                className="win95-button"
+                style={{ minWidth: '80px', fontWeight: 'bold' }}
+                onClick={() => {
+                  dismissSessionNotice();
+                  closeWindow('admin');
+                  focusWindow('auth');
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Taskbar */}
       <Taskbar
