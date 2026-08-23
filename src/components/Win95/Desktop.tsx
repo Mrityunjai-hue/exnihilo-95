@@ -455,27 +455,29 @@ export const Desktop: React.FC = () => {
       />
 
       {/* SQL IDE Shell Window */}
-      <IDEShell
-        isOpen={openWindows.ide}
-        isMinimized={minimizedWindows.ide}
-        zIndex={getZIndex('ide')}
-        executor={executor}
-        dialect={dialect}
-        initialQueryText={queryText}
-        initialResult={result}
-        initialIsLoading={isLoading}
-        initialExecutionTimeMs={executionTimeMs}
-        onQueryChange={setQueryText}
-        onDialectChange={setDialect}
-        onRun={handleRunQuery}
-        onReset={handleResetSession}
-        onClose={() => closeWindow('ide')}
-        onMinimize={() => toggleMinimize('ide')}
-        onFocus={() => focusWindow('ide')}
-        onOpenHelp={() => focusWindow('help')}
-        onOpenSettings={() => focusWindow('settings')}
-        onStartTour={() => setTourOpen(true)}
-      />
+      {openWindows.ide && (
+        <IDEShell
+          isOpen={openWindows.ide}
+          isMinimized={minimizedWindows.ide}
+          zIndex={getZIndex('ide')}
+          executor={executor}
+          dialect={dialect}
+          initialQueryText={queryText}
+          initialResult={result}
+          initialIsLoading={isLoading}
+          initialExecutionTimeMs={executionTimeMs}
+          onQueryChange={setQueryText}
+          onDialectChange={setDialect}
+          onRun={handleRunQuery}
+          onReset={handleResetSession}
+          onClose={() => closeWindow('ide')}
+          onMinimize={() => toggleMinimize('ide')}
+          onFocus={() => focusWindow('ide')}
+          onOpenHelp={() => focusWindow('help')}
+          onOpenSettings={() => focusWindow('settings')}
+          onStartTour={() => setTourOpen(true)}
+        />
+      )}
 
       {/* Auth Window (Log In & Create Account) */}
       <AuthWindow

@@ -354,6 +354,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     setActiveMenu(null);
   };
 
+  if (!isOpen || isMinimized) return null;
+
   return (
     <div
       className="win95-window"
