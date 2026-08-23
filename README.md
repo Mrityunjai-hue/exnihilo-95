@@ -2,6 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-exnihilo--95.vercel.app-brightgreen.svg)](https://exnihilo-95.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Copyright & Anti-Theft](https://img.shields.io/badge/Copyright-Anti--Theft_Protected-red.svg)](COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md)
 [![Next.js](https://img.shields.io/badge/Next.js-16.3.2-black.svg)](https://nextjs.org/)
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-sql.js_3.49.1-purple.svg)](https://sql.js.org/)
 [![Windows 95 UI](https://img.shields.io/badge/Style-Windows_95-teal.svg)](https://github.com/Mrityunjai-hue)
@@ -25,6 +26,20 @@
 - **Node SQL Parser**: AST parser configured across 4 major SQL dialects (MySQL, PostgreSQL, SQLite, SSMS / Transact-SQL).
 - **Faker.js Synthetic Data Engine**: Heuristic-driven realistic mock data generation (names, emails, prices, timestamps, addresses).
 - **sql.js (WebAssembly SQLite 3.49.1)**: Full in-browser relational execution engine supporting `INNER`, `LEFT`, `RIGHT`, and `FULL OUTER` joins.
+
+---
+
+## ⚖️ Copyright, Intellectual Property & Anti-Theft Notice
+
+> **Protection of Original Authorship & Brand Integrity**
+
+ExNihilo 95 is an open-source project created by **Mrityunjai ([@Mrityunjai-hue](https://github.com/Mrityunjai-hue))**. While legitimate forks, contributions, and educational exploration are encouraged, **plagiarism, deceptive re-branding, and attribution removal are strictly prohibited**.
+
+- 🔴 **No Plagiarism or False Claims:** You may not claim the concept, architecture, or codebase as your own original creation.
+- 🔴 **Mandatory Credit & Link:** Any deployment, fork, or derivative work **MUST** retain visible attribution to Mrityunjai and link to the official repository ([https://github.com/Mrityunjai-hue/exnihilo-95](https://github.com/Mrityunjai-hue/exnihilo-95)).
+- 🔴 **Legal Enforcement & DMCA Takedowns:** Removing author notices, stripping credits, or re-publishing this application under a false author name will result in immediate **DMCA takedown demands**, repository reporting to GitHub Trust & Safety, and legal enforcement.
+
+👉 **Read the full legal notice:** **[COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md](COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md)**
 
 ---
 

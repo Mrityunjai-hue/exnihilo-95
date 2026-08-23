@@ -1,6 +1,6 @@
-MIT License
+MIT License with Mandatory Attribution & Intellectual Property Protection Addendum
 
-Copyright (c) 2026 Mrityunjai
+Copyright (c) 2026 Mrityunjai (https://github.com/Mrityunjai-hue)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,8 +9,14 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Mandatory Copyright Notice:
+   The above copyright notice, this permission notice, and explicit credit to the original author (Mrityunjai - https://github.com/Mrityunjai-hue) SHALL be included in all copies or substantial portions of the Software.
+
+2. Prohibition of Deceptive Re-Branding & Plagiarism:
+   Users and distributors are strictly prohibited from removing author attribution, stripping copyright notices, or re-publishing this software under a false author name or deceptive branding intended to obscure the original authorship of Mrityunjai.
+
+3. Intellectual Property Protection:
+   Any unauthorized attempt to pass off this Software, its architectural concept, or its custom implementation as an uncredited creation of another party is subject to immediate legal enforcement, DMCA takedown demands, and repository reporting.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
