@@ -92,14 +92,20 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   ]);
   const [activeTabId, setActiveTabId] = useState<string>('tab_1');
 
-  // Sync external props with active tab (including queryText from Help tutorial or wizard)
+  // Track previous initialQueryText to only update query text on explicit external load (e.g. Help tutorial)
+  const prevInitialQueryRef = useRef(initialQueryText);
+
+  // Sync execution results and external query load with active tab
   useEffect(() => {
+    const isExternalQueryLoad = prevInitialQueryRef.current !== initialQueryText;
+    prevInitialQueryRef.current = initialQueryText;
+
     setTabs((prev) =>
       prev.map((tab) =>
         tab.id === activeTabId
           ? {
               ...tab,
-              queryText: initialQueryText !== undefined && initialQueryText !== '' ? initialQueryText : tab.queryText,
+              queryText: isExternalQueryLoad && initialQueryText ? initialQueryText : tab.queryText,
               result: initialResult,
               isLoading: initialIsLoading,
               executionTimeMs: initialExecutionTimeMs,
@@ -127,14 +133,16 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
   // ── Tab Operations ─────────────────────────────────────────────────────────
 
-  // Add New Tab
+  // Add New Tab (Clean, non-preloaded query tab)
   const handleNewTab = (customTitle?: string, customSql?: string) => {
     const nextNum = tabs.length + 1;
     const newTabId = `tab_${Date.now()}`;
+    const initialSql = customSql !== undefined ? customSql : `-- Query ${nextNum}.sql\n\n`;
+
     const newTab: QueryTab = {
       id: newTabId,
       title: customTitle || `Query ${nextNum}.sql`,
-      queryText: customSql || `-- Query ${nextNum}\nSELECT o.id, c.name FROM orders o JOIN customers c ON o.customer_id = c.id;`,
+      queryText: initialSql,
       result: null,
       isLoading: false,
       executionTimeMs: null,
@@ -142,7 +150,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(newTabId);
-    onQueryChange(newTab.queryText);
+    onQueryChange(initialSql);
     setActiveMenu(null);
   };
 
