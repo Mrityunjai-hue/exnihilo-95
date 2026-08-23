@@ -6,6 +6,8 @@
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-sql.js_3.49.1-purple.svg)](https://sql.js.org/)
 [![Windows 95 UI](https://img.shields.io/badge/Style-Windows_95-teal.svg)](https://github.com/Mrityunjai-hue)
 [![N8N Community](https://img.shields.io/badge/Powered_by-N8N_Data_Science_Community-orange.svg)](https://n8n-ds-community.netlify.app/)
+[![Contributors Welcome](https://img.shields.io/badge/Contributors-Welcome!-ff69b4.svg)](#-calling-all-builders--contributors-wanted)
+[![Premium Roadmap](https://img.shields.io/badge/Premium_Roadmap-View_Plan-gold.svg)](PREMIUM_FEATURES.md)
 
 > **The SQL database environment with ZERO "Table not found" errors.**  
 > Built in the authentic nostalgic aesthetic of **Windows 95**, ExNihilo dynamically parses your SQL query's AST, automatically deduces column data types, maps foreign key relationships, synthesizes realistic test data on the fly, and executes queries entirely inside your browser via WebAssembly.
@@ -32,6 +34,47 @@ Join the community for AI tools, automation workflows, tutorials, and data scien
 
 ---
 
+## 📢 Calling All Builders — Contributors Wanted!
+
+> **ExNihilo 95 has proven its core concept. Now it's time to scale it into something massive — and we need YOU.**
+
+I've laid out a comprehensive **[Premium Features Roadmap](PREMIUM_FEATURES.md)** with 10 major feature categories that will transform ExNihilo from a playground into a professional-grade SQL platform. This is too big for one person — it needs a **team of passionate builders**.
+
+### 🏗️ What We're Building Next
+
+| Feature | Description | Skills Needed |
+|---------|-------------|:--------------|
+| 🤖 **AI SQL Copilot** | Natural language → SQL, query explanations, error fix suggestions | AI/ML, LLM APIs |
+| 💾 **Cloud Sync & Persistence** | Auto-save queries, cross-device sync, version history | Backend, Auth, DB |
+| 📊 **Chart Builder & Dashboards** | Bar/line/pie/scatter charts from query results | React, D3/Chart.js |
+| 🔗 **Live Database Connections** | Connect to real MySQL/PostgreSQL/SQLite databases | Backend, Security |
+| 🎨 **Theme Engine** | Win98, XP Luna, Dark Mode, custom skins | CSS, Design |
+| 👥 **Real-Time Collaboration** | Google Docs-style shared editing with team workspaces | WebSockets, CRDT |
+| 🧪 **SQL Challenge Mode** | Built-in puzzles & guided lessons for learning SQL | Content, Frontend |
+| 📤 **Advanced Exports** | DDL scripts, shareable links, embeddable widgets, PDF reports | Frontend, Backend |
+| 🎲 **Smart Data Generation** | Locale-aware data, custom profiles, seed data upload | Data Engineering |
+| 🎓 **Teaching & Classroom Mode** | Instructor broadcasts, student tracking, certificates | Full-Stack |
+
+### 🎯 Who We're Looking For
+
+- **Frontend Engineers** (React / Next.js / TypeScript) — UI components, visualization, theming
+- **Backend Engineers** — Authentication, cloud infrastructure, database proxies
+- **AI/ML Engineers** — NL-to-SQL, query optimization, intelligent autocomplete
+- **Designers** — Theme skins, UX flows, data visualization design
+- **Content Creators** — SQL tutorials, challenge puzzles, documentation
+- **Community Builders** — Developer relations, outreach, onboarding
+
+### 🚀 How to Contribute
+
+1. **Read the full roadmap:** **[PREMIUM_FEATURES.md](PREMIUM_FEATURES.md)**
+2. **Read the contributing guide:** **[CONTRIBUTING.md](CONTRIBUTING.md)**
+3. **Fork the repo**, pick a feature, and submit a PR
+4. **Star ⭐ the repo** to show your support and help others discover it
+
+> **Top contributors will be credited as co-creators and core team members.** Let's build the future of SQL tooling together. 🚀
+
+---
+
 ## ✨ Key Features
 
 - ⚡ **Zero Table Setup:** Type queries against tables that don't exist yet — ExNihilo infers schema and creates them on the fly.
@@ -40,6 +83,10 @@ Join the community for AI tools, automation workflows, tutorials, and data scien
 - 🌳 **Self-Joins & Hierarchies:** Handles recursive relationships (e.g. `employees.manager_id = employees.id`) with top-level `NULL` roots.
 - 💾 **Session Schema Catalog & Caching:** Inferred tables persist in memory so repeat queries run instantly without re-generation.
 - 🛡️ **Retry-Once Safety Net:** Intercepts unanticipated missing tables at runtime, materializes default starter schemas, and retries queries seamlessly.
+- 🗂️ **Multi-Tab Query Workspace:** Open unlimited query tabs (`Ctrl+T`), each with independent editor state, results, and execution metrics.
+- ✂️ **Selection-Aware Execution:** Highlight any SQL block to run only that selection; semicolon-delimited queries return multiple result tabs.
+- 📂 **Cascading Win95 Menus:** Authentic `File`, `Edit`, `Query`, `View`, `Tools`, `Help` dropdown menus with keyboard shortcuts and 1-click sample query insertion.
+- 🎨 **Color-Coded Syntax Highlighting:** Green strings, purple numbers, crimson operators, navy keywords for maximum readability.
 - 🖥️ **Authentic Windows 95 Desktop & Draggable Windows:**
   - Classic teal desktop (`#008080`) with 3D extruded centerpiece wallpaper.
   - Freely draggable and repositionable windows (SQL Studio, Setup Wizard, Help Guide, Settings).
@@ -140,3 +187,6 @@ No installation required — launch the full application in your browser:
 - **Creator:** [Mrityunjai](https://github.com/Mrityunjai-hue)
 - **Community:** [N8N Data Science Community](https://n8n-ds-community.netlify.app/)
 - **License:** MIT License
+- **Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md) — Read this to get started as a contributor
+- **Premium Roadmap:** [PREMIUM_FEATURES.md](PREMIUM_FEATURES.md) — Full feature plan for the next evolution of ExNihilo
+
