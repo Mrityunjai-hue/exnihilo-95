@@ -81,7 +81,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
           <div>
             <div style={{ fontSize: '32px', marginBottom: '8px' }}>💿</div>
             <strong style={{ fontSize: '14px', lineHeight: '1.2' }}>
-              ExNihio 95
+              ExNihilo 95
             </strong>
             <p style={{ fontSize: '10px', color: '#c0c0c0', marginTop: '8px' }}>
               Intelligent Zero-Config SQL IDE
@@ -100,13 +100,13 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
           {step === 1 && (
             <div>
               <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#000080' }}>
-                Welcome to ExNihio Setup
+                Welcome to ExNihilo Setup
               </h3>
               <p style={{ lineHeight: '1.5' }}>
-                ExNihio is a revolutionary SQL development environment that eliminates <strong>"Table not found"</strong> errors forever.
+                ExNihilo is a revolutionary SQL development environment that eliminates <strong>"Table not found"</strong> errors forever.
               </p>
               <p style={{ lineHeight: '1.5' }}>
-                Whenever you query a non-existent table, ExNihio parses your SQL AST, infers column data types, maps foreign key relationships, and generates realistic synthetic data on the fly.
+                Whenever you query a non-existent table, ExNihilo parses your SQL AST, infers column data types, maps foreign key relationships, and generates realistic synthetic data on the fly.
               </p>
               <p style={{ marginTop: '16px', color: '#555' }}>
                 Click <strong>Next</strong> to discover key features.
@@ -120,7 +120,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
                 Select Your SQL Dialect
               </h3>
               <p style={{ lineHeight: '1.5' }}>
-                ExNihio natively understands 4 major SQL dialects:
+                ExNihilo natively understands 4 major SQL dialects:
               </p>
               <ul style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
                 <li><strong>MySQL:</strong> Standard backticks, LIMIT clauses, GROUP BY aggregations.</li>
@@ -137,7 +137,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
                 Referential Integrity & Caching
               </h3>
               <p style={{ lineHeight: '1.5' }}>
-                ExNihio guarantees realistic join results:
+                ExNihilo guarantees realistic join results:
               </p>
               <ul style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
                 <li><strong>Topological Order:</strong> Parent tables are generated before child tables.</li>

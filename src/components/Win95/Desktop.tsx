@@ -17,6 +17,7 @@ import { ErrorDialog } from './ErrorDialog';
 import { WelcomeWindow } from './WelcomeWindow';
 import { Win95Tour } from '../Tour/Win95Tour';
 import { BootAnimation } from './BootAnimation';
+import { ShutDownDialog } from './ShutDownDialog';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -38,6 +39,7 @@ export const Desktop: React.FC = () => {
     help: false,
     wizard: false,
     settings: false,
+    shutdown: false,
   });
   const [minimizedWindows, setMinimizedWindows] = useState<Record<string, boolean>>({
     ide: false,
@@ -45,6 +47,7 @@ export const Desktop: React.FC = () => {
     help: false,
     wizard: false,
     settings: false,
+    shutdown: false,
   });
 
   // Boot Animation State
@@ -381,6 +384,29 @@ export const Desktop: React.FC = () => {
         zIndex={99999}
         onClose={() => setActiveError(null)}
         onFocus={() => {}}
+      />
+
+      {/* Authentic Shut Down Dialog */}
+      <ShutDownDialog
+        isOpen={openWindows.shutdown}
+        zIndex={getZIndex('shutdown')}
+        onClose={() => closeWindow('shutdown')}
+        onFocus={() => focusWindow('shutdown')}
+        onRestart={() => setShowBootAnimation(true)}
+        onClearAndRestart={() => {
+          handleResetSession();
+          setShowBootAnimation(true);
+        }}
+        onCloseAllWindows={() => {
+          setOpenWindows({
+            ide: false,
+            welcome: false,
+            help: false,
+            wizard: false,
+            settings: false,
+            shutdown: false,
+          });
+        }}
       />
 
       {/* Interactive Tour Balloon */}

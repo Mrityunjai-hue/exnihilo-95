@@ -118,6 +118,19 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               <span style={{ fontSize: '16px' }}>🗑️</span>
               <div>Reset Session / Clear DB</div>
             </div>
+
+            <div className="win95-start-divider" />
+
+            <div
+              className="win95-start-item"
+              onClick={() => { onOpenWindow('shutdown'); setStartMenuOpen(false); }}
+            >
+              <span style={{ fontSize: '16px' }}>🔌</span>
+              <div>
+                <strong>Shut Down...</strong>
+                <div style={{ fontSize: '10px', color: '#555' }}>Restart or reload ExNihilo 95</div>
+              </div>
+            </div>
           </div>
         </div>
       )}

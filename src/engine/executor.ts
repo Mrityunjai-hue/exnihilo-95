@@ -145,6 +145,24 @@ export class SQLExecutor {
       };
     }
 
+    // Strip SQL comments to check if executable statements exist
+    const codeWithoutComments = trimmedQuery
+      .replace(/--.*$/gm, '')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .trim();
+
+    if (!codeWithoutComments) {
+      return {
+        ok: true,
+        columns: ['info'],
+        rows: [['(Comment only — no SQL statements executed)']],
+        rowCount: 0,
+        executionTimeMs: performance.now() - startTime,
+        inferredTables: [],
+        reusedTables: [],
+      };
+    }
+
     // ── 1. Parse Query ────────────────────────────────────────────────────────
     const parseResult = parse(trimmedQuery, dialect);
     if (!parseResult.ok) {
@@ -205,17 +223,18 @@ export class SQLExecutor {
       }
     }
 
-    // ── 4. Execute Query with Retry-Once Safety Net ───────────────────────────
+    // ── 4. Execute Query in SQLite WASM ───────────────────────────────────────
     try {
       const results = this.db.exec(trimmedQuery);
       const executionTimeMs = performance.now() - startTime;
 
       if (results.length === 0) {
+        const rowsModified = (this.db as any).getRowsModified ? (this.db as any).getRowsModified() : 0;
         return {
           ok: true,
-          columns: [],
-          rows: [],
-          rowCount: 0,
+          columns: ['status', 'rows_affected'],
+          rows: [['Statement executed successfully.', rowsModified]],
+          rowCount: rowsModified,
           executionTimeMs,
           inferredTables,
           reusedTables,

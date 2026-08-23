@@ -530,6 +530,57 @@ html, body {
   margin: 3px 2px;
 }
 
+/* Windows 95 Menu Bar Dropdown Menus */
+.win95-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--w95-gray);
+  border-top: 2px solid var(--w95-white);
+  border-left: 2px solid var(--w95-white);
+  border-right: 2px solid var(--w95-black);
+  border-bottom: 2px solid var(--w95-black);
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+  padding: 2px 0;
+  min-width: 190px;
+  z-index: 999999;
+}
+
+.win95-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: var(--w95-black);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.win95-dropdown-item:hover {
+  background-color: #000080;
+  color: #ffffff;
+}
+
+.win95-dropdown-item.disabled {
+  color: #888888;
+  cursor: default;
+}
+
+.win95-dropdown-item.disabled:hover {
+  background-color: transparent;
+  color: #888888;
+}
+
+.win95-dropdown-divider {
+  height: 2px;
+  border-top: 1px solid var(--w95-dark-gray);
+  border-bottom: 1px solid var(--w95-white);
+  margin: 2px 1px;
+}
+
 /* ListView Data Grid */
 .win95-grid {
   width: 100%;

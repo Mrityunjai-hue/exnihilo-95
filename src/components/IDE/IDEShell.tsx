@@ -1,9 +1,15 @@
 /**
  * IDEShell.tsx — Main Windows 95 SQL IDE Application Window
- * Supports Multiple Query Tabs, Table-click New Tab opening, and independent tab result sets.
+ * Supports:
+ *  - Multiple Query Tabs
+ *  - Table-click opens in dedicated new tab
+ *  - Full authentic Windows 95 Menu Bar Dropdowns (File, Edit, Query, View, Tools, Help)
+ *  - Export / Download .sql queries
+ *  - Sample SQL templates insert
+ *  - Toggleable Left Explorer Pane
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialect } from '../../engine/parser';
 import { ExecutionSuccess, SQLExecutor } from '../../engine/executor';
 import { Toolbar } from './Toolbar';
@@ -65,10 +71,13 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   onStartTour,
 }) => {
   const [isMaximized, setIsMaximized] = useState(false);
+  const [showExplorer, setShowExplorer] = useState(true);
   const [hasSelection, setHasSelection] = useState(false);
   const [selectedText, setSelectedText] = useState('');
+  const [activeMenu, setActiveMenu] = useState<'file' | 'edit' | 'query' | 'view' | 'tools' | 'help' | null>(null);
   const [, setRefreshKey] = useState(0);
   const { position, handleMouseDown } = useDraggable({ x: 50, y: 30 });
+  const menuBarRef = useRef<HTMLDivElement>(null);
 
   // ── Multi-Tab State Management ─────────────────────────────────────────────
   const [tabs, setTabs] = useState<QueryTab[]>([
@@ -99,6 +108,17 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     );
   }, [initialResult, initialIsLoading, initialExecutionTimeMs]);
 
+  // Close menus on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (menuBarRef.current && !menuBarRef.current.contains(e.target as Node)) {
+        setActiveMenu(null);
+      }
+    };
+    window.addEventListener('mousedown', handleOutsideClick);
+    return () => window.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
   if (!isOpen || isMinimized) return null;
 
   const catalog = executor.getCatalog();
@@ -106,7 +126,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
   // ── Tab Operations ─────────────────────────────────────────────────────────
 
-  // Add New Clean Tab
+  // Add New Tab
   const handleNewTab = (customTitle?: string, customSql?: string) => {
     const nextNum = tabs.length + 1;
     const newTabId = `tab_${Date.now()}`;
@@ -122,13 +142,13 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(newTabId);
     onQueryChange(newTab.queryText);
+    setActiveMenu(null);
   };
 
   // Close Tab safely
-  const handleCloseTab = (e: React.MouseEvent, tabIdToClose: string) => {
-    e.stopPropagation();
+  const handleCloseTab = (e: React.MouseEvent | null, tabIdToClose: string) => {
+    if (e) e.stopPropagation();
     if (tabs.length <= 1) {
-      // If closing the only tab, reset to clean Query 1
       const resetTab: QueryTab = {
         id: 'tab_1',
         title: 'Query 1.sql',
@@ -140,6 +160,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       setTabs([resetTab]);
       setActiveTabId('tab_1');
       onQueryChange(resetTab.queryText);
+      setActiveMenu(null);
       return;
     }
 
@@ -151,6 +172,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       setActiveTabId(nextActive.id);
       onQueryChange(nextActive.queryText);
     }
+    setActiveMenu(null);
   };
 
   // Switch Active Tab
@@ -170,7 +192,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     onQueryChange(newText);
   };
 
-  // Open clicked table in a NEW tab (or switch to existing table tab)
+  // Open clicked table in a dedicated tab
   const handleSelectTable = (tableName: string) => {
     const tabTitle = `${tableName}.sql`;
     const existing = tabs.find(
@@ -187,11 +209,31 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
+    setActiveMenu(null);
   };
 
   const handleExecute = () => {
     const targetToRun = hasSelection && selectedText ? selectedText : activeTab.queryText;
     onRun(targetToRun);
+    setActiveMenu(null);
+  };
+
+  // Download SQL query as a file
+  const handleDownloadSql = () => {
+    const blob = new Blob([activeTab.queryText], { type: 'text/sql' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = activeTab.title.endsWith('.sql') ? activeTab.title : `${activeTab.title}.sql`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setActiveMenu(null);
+  };
+
+  // Insert template SQL
+  const handleInsertTemplate = (sqlTemplate: string) => {
+    handleActiveQueryChange(sqlTemplate);
+    setActiveMenu(null);
   };
 
   return (
@@ -231,14 +273,230 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         </div>
       </div>
 
-      {/* Menu Strip */}
-      <div style={{ display: 'flex', gap: '12px', padding: '2px 6px', borderBottom: '1px solid #808080', fontSize: '11px' }}>
-        <span style={{ cursor: 'pointer' }} onClick={handleExecute}><u>Q</u>uery</span>
-        <span style={{ cursor: 'pointer' }} onClick={() => handleNewTab()}><u>N</u>ew Tab</span>
-        <span style={{ cursor: 'pointer' }} onClick={onReset}><u>E</u>dit</span>
-        <span style={{ cursor: 'pointer' }} onClick={handleRefresh}><u>V</u>iew</span>
-        <span style={{ cursor: 'pointer' }} onClick={onOpenSettings}><u>T</u>ools</span>
-        <span style={{ cursor: 'pointer' }} onClick={onOpenHelp}><u>H</u>elp</span>
+      {/* Cascading Menu Strip */}
+      <div
+        ref={menuBarRef}
+        style={{
+          display: 'flex',
+          gap: '2px',
+          padding: '2px 4px',
+          borderBottom: '1px solid #808080',
+          fontSize: '11px',
+          position: 'relative',
+          background: '#c0c0c0',
+        }}
+      >
+        {/* FILE MENU */}
+        <div style={{ position: 'relative' }}>
+          <span
+            style={{
+              cursor: 'pointer',
+              padding: '2px 6px',
+              backgroundColor: activeMenu === 'file' ? '#000080' : 'transparent',
+              color: activeMenu === 'file' ? '#ffffff' : '#000000',
+            }}
+            onClick={() => setActiveMenu(activeMenu === 'file' ? null : 'file')}
+          >
+            <u>F</u>ile
+          </span>
+          {activeMenu === 'file' && (
+            <div className="win95-dropdown-menu">
+              <div className="win95-dropdown-item" onClick={() => handleNewTab()}>
+                <span>📄 New Query Tab</span>
+                <span style={{ color: '#666', fontSize: '10px' }}>Ctrl+T</span>
+              </div>
+              <div className="win95-dropdown-item" onClick={handleDownloadSql}>
+                <span>💾 Save / Export Query...</span>
+                <span style={{ color: '#666', fontSize: '10px' }}>Ctrl+S</span>
+              </div>
+              <div className="win95-dropdown-divider" />
+              <div className="win95-dropdown-item" onClick={(e) => handleCloseTab(e, activeTabId)}>
+                <span>✕ Close Active Tab</span>
+              </div>
+              <div className="win95-dropdown-item" onClick={onClose}>
+                <span>🚪 Exit Studio</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* EDIT MENU */}
+        <div style={{ position: 'relative' }}>
+          <span
+            style={{
+              cursor: 'pointer',
+              padding: '2px 6px',
+              backgroundColor: activeMenu === 'edit' ? '#000080' : 'transparent',
+              color: activeMenu === 'edit' ? '#ffffff' : '#000000',
+            }}
+            onClick={() => setActiveMenu(activeMenu === 'edit' ? null : 'edit')}
+          >
+            <u>E</u>dit
+          </span>
+          {activeMenu === 'edit' && (
+            <div className="win95-dropdown-menu">
+              <div className="win95-dropdown-item" onClick={() => handleActiveQueryChange('')}>
+                <span>✨ Clear Query Text</span>
+              </div>
+              <div className="win95-dropdown-divider" />
+              <div
+                className="win95-dropdown-item"
+                onClick={() =>
+                  handleInsertTemplate(
+                    `SELECT o.id, c.name, o.total, c.email\nFROM orders o\nINNER JOIN customers c ON o.customer_id = c.id\nWHERE c.age > 25;`
+                  )
+                }
+              >
+                <span>🔹 Insert Sample JOIN</span>
+              </div>
+              <div
+                className="win95-dropdown-item"
+                onClick={() =>
+                  handleInsertTemplate(
+                    `SELECT department, COUNT(*) as total_staff, AVG(salary) as avg_pay\nFROM employees\nGROUP BY department\nHAVING avg_pay > 50000;`
+                  )
+                }
+              >
+                <span>🔹 Insert Sample GROUP BY</span>
+              </div>
+              <div
+                className="win95-dropdown-item"
+                onClick={() =>
+                  handleInsertTemplate(
+                    `WITH high_spenders AS (\n  SELECT customer_id, SUM(amount) as total_spent\n  FROM payments\n  GROUP BY customer_id\n  HAVING total_spent > 500\n)\nSELECT c.name, hs.total_spent\nFROM high_spenders hs\nJOIN customers c ON hs.customer_id = c.id;`
+                  )
+                }
+              >
+                <span>🔹 Insert Sample CTE Query</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* QUERY MENU */}
+        <div style={{ position: 'relative' }}>
+          <span
+            style={{
+              cursor: 'pointer',
+              padding: '2px 6px',
+              backgroundColor: activeMenu === 'query' ? '#000080' : 'transparent',
+              color: activeMenu === 'query' ? '#ffffff' : '#000000',
+            }}
+            onClick={() => setActiveMenu(activeMenu === 'query' ? null : 'query')}
+          >
+            <u>Q</u>uery
+          </span>
+          {activeMenu === 'query' && (
+            <div className="win95-dropdown-menu">
+              <div className="win95-dropdown-item" onClick={handleExecute}>
+                <span>▶ Run All / Active (F5)</span>
+                <span style={{ color: '#666', fontSize: '10px' }}>F5</span>
+              </div>
+              <div
+                className={`win95-dropdown-item ${!hasSelection ? 'disabled' : ''}`}
+                onClick={() => hasSelection && handleExecute()}
+              >
+                <span>▶ Run Selected Query</span>
+              </div>
+              <div className="win95-dropdown-divider" />
+              <div
+                className="win95-dropdown-item"
+                onClick={() => {
+                  setTabs((prev) =>
+                    prev.map((t) => (t.id === activeTabId ? { ...t, result: null } : t))
+                  );
+                  setActiveMenu(null);
+                }}
+              >
+                <span>🔄 Clear Result Grid</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* VIEW MENU */}
+        <div style={{ position: 'relative' }}>
+          <span
+            style={{
+              cursor: 'pointer',
+              padding: '2px 6px',
+              backgroundColor: activeMenu === 'view' ? '#000080' : 'transparent',
+              color: activeMenu === 'view' ? '#ffffff' : '#000000',
+            }}
+            onClick={() => setActiveMenu(activeMenu === 'view' ? null : 'view')}
+          >
+            <u>V</u>iew
+          </span>
+          {activeMenu === 'view' && (
+            <div className="win95-dropdown-menu">
+              <div className="win95-dropdown-item" onClick={() => { setShowExplorer(!showExplorer); setActiveMenu(null); }}>
+                <span>{showExplorer ? '✓ Hide Explorer Pane' : '  Show Explorer Pane'}</span>
+              </div>
+              <div className="win95-dropdown-item" onClick={handleRefresh}>
+                <span>🔄 Refresh Schema Tree</span>
+              </div>
+              <div className="win95-dropdown-divider" />
+              <div className="win95-dropdown-item" onClick={() => { setIsMaximized(!isMaximized); setActiveMenu(null); }}>
+                <span>{isMaximized ? '❐ Restore Window' : '□ Maximize Studio'}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* TOOLS MENU */}
+        <div style={{ position: 'relative' }}>
+          <span
+            style={{
+              cursor: 'pointer',
+              padding: '2px 6px',
+              backgroundColor: activeMenu === 'tools' ? '#000080' : 'transparent',
+              color: activeMenu === 'tools' ? '#ffffff' : '#000000',
+            }}
+            onClick={() => setActiveMenu(activeMenu === 'tools' ? null : 'tools')}
+          >
+            <u>T</u>ools
+          </span>
+          {activeMenu === 'tools' && (
+            <div className="win95-dropdown-menu">
+              <div className="win95-dropdown-item" onClick={() => { onOpenSettings(); setActiveMenu(null); }}>
+                <span>⚙️ Options & Control Panel...</span>
+              </div>
+              <div className="win95-dropdown-divider" />
+              <div className="win95-dropdown-item" onClick={() => { onReset(); setActiveMenu(null); }}>
+                <span>🗑️ Reset Session & Database</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* HELP MENU */}
+        <div style={{ position: 'relative' }}>
+          <span
+            style={{
+              cursor: 'pointer',
+              padding: '2px 6px',
+              backgroundColor: activeMenu === 'help' ? '#000080' : 'transparent',
+              color: activeMenu === 'help' ? '#ffffff' : '#000000',
+            }}
+            onClick={() => setActiveMenu(activeMenu === 'help' ? null : 'help')}
+          >
+            <u>H</u>elp
+          </span>
+          {activeMenu === 'help' && (
+            <div className="win95-dropdown-menu">
+              <div className="win95-dropdown-item" onClick={() => { onOpenHelp(); setActiveMenu(null); }}>
+                <span>📖 SQL Query Tutorial...</span>
+              </div>
+              <div className="win95-dropdown-item" onClick={() => { onStartTour(); setActiveMenu(null); }}>
+                <span>💡 Guided Balloon Tour</span>
+              </div>
+              <div className="win95-dropdown-divider" />
+              <div className="win95-dropdown-item" onClick={() => { onOpenSettings(); setActiveMenu(null); }}>
+                <span>✨ About ExNihilo 95</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Action Toolbar */}
@@ -257,13 +515,15 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       {/* Main Studio Body Layout */}
       <div style={{ display: 'flex', flex: 1, padding: '4px', gap: '4px', overflow: 'hidden' }}>
         {/* Left Explorer Pane (Schema Tree) */}
-        <div id="tour-schema-tree" style={{ width: '240px', height: '100%' }}>
-          <SchemaTree
-            catalog={catalog}
-            onSelectTable={handleSelectTable}
-            onRefresh={handleRefresh}
-          />
-        </div>
+        {showExplorer && (
+          <div id="tour-schema-tree" style={{ width: '240px', height: '100%' }}>
+            <SchemaTree
+              catalog={catalog}
+              onSelectTable={handleSelectTable}
+              onRefresh={handleRefresh}
+            />
+          </div>
+        )}
 
         {/* Right Work Area (Multi-Tabs + Editor + Results Split) */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', height: '100%', overflow: 'hidden' }}>

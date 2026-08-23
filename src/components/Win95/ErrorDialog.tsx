@@ -1,8 +1,9 @@
 /**
  * ErrorDialog.tsx — Windows 95 Critical Error / Warning Dialog
+ * Supports Draggable window positioning and 1-click clipboard error diagnostic copying.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ClassifiedError } from '../../engine/errors';
 import { useDraggable } from '../../hooks/useDraggable';
 
@@ -20,6 +21,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
   onFocus,
 }) => {
   const { position, handleMouseDown } = useDraggable({ x: 260, y: 150 });
+  const [copied, setCopied] = useState(false);
 
   if (!error) return null;
 
@@ -33,6 +35,16 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
     ? 'Ambiguous Column Reference'
     : 'Execution Error';
 
+  const handleCopyError = () => {
+    const errorText = `[${error.type}] ${error.message}${error.suggestion ? `\n\nSuggestion: ${error.suggestion}` : ''}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(errorText).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
+  };
+
   return (
     <div
       className="win95-window"
@@ -40,7 +52,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
         position: 'absolute',
         top: `${position.y}px`,
         left: `${position.x}px`,
-        width: '440px',
+        width: '460px',
         zIndex,
         boxShadow: '4px 4px 16px rgba(0,0,0,0.6)',
       }}
@@ -71,7 +83,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
         </div>
 
         <div style={{ flex: 1 }}>
-          <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '12px', color: '#000000' }}>
+          <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '12px', color: '#000000', lineHeight: '1.4' }}>
             {error.message}
           </p>
 
@@ -85,6 +97,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
                 fontSize: '11px',
                 color: '#333300',
                 marginTop: '8px',
+                lineHeight: '1.4',
               }}
             >
               <strong>💡 Suggestion:</strong> {error.suggestion}
@@ -94,10 +107,20 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
       </div>
 
       {/* Footer Buttons */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', padding: '8px', borderTop: '1px solid #808080' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '8px', borderTop: '1px solid #808080' }}>
         <button
           className="win95-button"
-          style={{ minWidth: '80px', fontWeight: 'bold' }}
+          style={{ minWidth: '90px' }}
+          onClick={handleCopyError}
+          title="Copy error message to clipboard"
+        >
+          <span>📋</span>
+          <span>{copied ? 'Copied!' : 'Copy Error'}</span>
+        </button>
+
+        <button
+          className="win95-button"
+          style={{ minWidth: '70px', fontWeight: 'bold' }}
           onClick={onClose}
           autoFocus
         >
