@@ -136,6 +136,9 @@ export const Desktop: React.FC = () => {
 
   const closeWindow = (id: string) => {
     setOpenWindows((prev) => ({ ...prev, [id]: false }));
+    if (id === 'ide') {
+      setTourOpen(false);
+    }
   };
 
   const toggleMinimize = (id: string) => {
