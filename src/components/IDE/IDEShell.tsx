@@ -1,8 +1,9 @@
 /**
  * IDEShell.tsx — Main Windows 95 SQL IDE Application Window
+ * Supports Multiple Query Tabs, Table-click New Tab opening, and independent tab result sets.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialect } from '../../engine/parser';
 import { ExecutionSuccess, SQLExecutor } from '../../engine/executor';
 import { Toolbar } from './Toolbar';
@@ -10,6 +11,15 @@ import { SchemaTree } from './SchemaTree';
 import { QueryEditor } from './QueryEditor';
 import { ResultsGrid } from './ResultsGrid';
 import { useDraggable } from '../../hooks/useDraggable';
+
+export interface QueryTab {
+  id:              string;
+  title:           string;
+  queryText:       string;
+  result:          ExecutionSuccess | null;
+  isLoading:       boolean;
+  executionTimeMs: number | null;
+}
 
 interface IDEShellProps {
   isOpen:         boolean;
@@ -39,10 +49,10 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   zIndex,
   executor,
   dialect,
-  queryText,
-  result,
-  isLoading,
-  executionTimeMs,
+  queryText: initialQueryText,
+  result: initialResult,
+  isLoading: initialIsLoading,
+  executionTimeMs: initialExecutionTimeMs,
   onQueryChange,
   onDialectChange,
   onRun,
@@ -60,16 +70,128 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const [, setRefreshKey] = useState(0);
   const { position, handleMouseDown } = useDraggable({ x: 50, y: 30 });
 
+  // ── Multi-Tab State Management ─────────────────────────────────────────────
+  const [tabs, setTabs] = useState<QueryTab[]>([
+    {
+      id: 'tab_1',
+      title: 'Query 1.sql',
+      queryText: initialQueryText,
+      result: initialResult,
+      isLoading: initialIsLoading,
+      executionTimeMs: initialExecutionTimeMs,
+    },
+  ]);
+  const [activeTabId, setActiveTabId] = useState<string>('tab_1');
+
+  // Sync external props with active tab
+  useEffect(() => {
+    setTabs((prev) =>
+      prev.map((tab) =>
+        tab.id === activeTabId
+          ? {
+              ...tab,
+              result: initialResult,
+              isLoading: initialIsLoading,
+              executionTimeMs: initialExecutionTimeMs,
+            }
+          : tab
+      )
+    );
+  }, [initialResult, initialIsLoading, initialExecutionTimeMs]);
+
   if (!isOpen || isMinimized) return null;
 
   const catalog = executor.getCatalog();
+  const activeTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
 
+  // ── Tab Operations ─────────────────────────────────────────────────────────
+
+  // Add New Clean Tab
+  const handleNewTab = (customTitle?: string, customSql?: string) => {
+    const nextNum = tabs.length + 1;
+    const newTabId = `tab_${Date.now()}`;
+    const newTab: QueryTab = {
+      id: newTabId,
+      title: customTitle || `Query ${nextNum}.sql`,
+      queryText: customSql || `-- Query ${nextNum}\nSELECT o.id, c.name FROM orders o JOIN customers c ON o.customer_id = c.id;`,
+      result: null,
+      isLoading: false,
+      executionTimeMs: null,
+    };
+
+    setTabs((prev) => [...prev, newTab]);
+    setActiveTabId(newTabId);
+    onQueryChange(newTab.queryText);
+  };
+
+  // Close Tab safely
+  const handleCloseTab = (e: React.MouseEvent, tabIdToClose: string) => {
+    e.stopPropagation();
+    if (tabs.length <= 1) {
+      // If closing the only tab, reset to clean Query 1
+      const resetTab: QueryTab = {
+        id: 'tab_1',
+        title: 'Query 1.sql',
+        queryText: '-- New Query Tab\nSELECT * FROM customers;',
+        result: null,
+        isLoading: false,
+        executionTimeMs: null,
+      };
+      setTabs([resetTab]);
+      setActiveTabId('tab_1');
+      onQueryChange(resetTab.queryText);
+      return;
+    }
+
+    const remaining = tabs.filter((t) => t.id !== tabIdToClose);
+    setTabs(remaining);
+
+    if (activeTabId === tabIdToClose) {
+      const nextActive = remaining[remaining.length - 1];
+      setActiveTabId(nextActive.id);
+      onQueryChange(nextActive.queryText);
+    }
+  };
+
+  // Switch Active Tab
+  const handleSelectTab = (tabId: string) => {
+    setActiveTabId(tabId);
+    const targetTab = tabs.find((t) => t.id === tabId);
+    if (targetTab) {
+      onQueryChange(targetTab.queryText);
+    }
+  };
+
+  // Update query in active tab
+  const handleActiveQueryChange = (newText: string) => {
+    setTabs((prev) =>
+      prev.map((t) => (t.id === activeTabId ? { ...t, queryText: newText } : t))
+    );
+    onQueryChange(newText);
+  };
+
+  // Open clicked table in a NEW tab (or switch to existing table tab)
   const handleSelectTable = (tableName: string) => {
-    onQueryChange(`SELECT * FROM ${tableName};`);
+    const tabTitle = `${tableName}.sql`;
+    const existing = tabs.find(
+      (t) => t.title.toLowerCase() === tabTitle.toLowerCase() || t.id === `tbl_${tableName.toLowerCase()}`
+    );
+
+    if (existing) {
+      handleSelectTab(existing.id);
+      return;
+    }
+
+    handleNewTab(tabTitle, `SELECT * FROM ${tableName};`);
   };
 
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
+  };
+
+  const handleExecute = () => {
+    const targetToRun = hasSelection && selectedText ? selectedText : activeTab.queryText;
+    onRun(targetToRun);
   };
 
   return (
@@ -98,7 +220,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       >
         <div className="win95-titlebar-text">
           <span>🗄️</span>
-          <span>ExNihilo SQL Studio — [{dialect}]</span>
+          <span>ExNihilo SQL Studio — [{dialect}] — {activeTab.title}</span>
         </div>
         <div className="win95-titlebar-controls">
           <button className="win95-btn-titlebar" onClick={onMinimize} title="Minimize">_</button>
@@ -111,7 +233,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
       {/* Menu Strip */}
       <div style={{ display: 'flex', gap: '12px', padding: '2px 6px', borderBottom: '1px solid #808080', fontSize: '11px' }}>
-        <span style={{ cursor: 'pointer' }} onClick={() => onRun(hasSelection && selectedText ? selectedText : undefined)}><u>Q</u>uery</span>
+        <span style={{ cursor: 'pointer' }} onClick={handleExecute}><u>Q</u>uery</span>
+        <span style={{ cursor: 'pointer' }} onClick={() => handleNewTab()}><u>N</u>ew Tab</span>
         <span style={{ cursor: 'pointer' }} onClick={onReset}><u>E</u>dit</span>
         <span style={{ cursor: 'pointer' }} onClick={handleRefresh}><u>V</u>iew</span>
         <span style={{ cursor: 'pointer' }} onClick={onOpenSettings}><u>T</u>ools</span>
@@ -122,12 +245,12 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       <Toolbar
         dialect={dialect}
         onDialectChange={onDialectChange}
-        onRun={() => onRun(hasSelection && selectedText ? selectedText : undefined)}
+        onRun={handleExecute}
         onReset={onReset}
         onOpenHelp={onOpenHelp}
         onOpenSettings={onOpenSettings}
         onStartTour={onStartTour}
-        isLoading={isLoading}
+        isLoading={activeTab.isLoading}
         hasSelection={hasSelection}
       />
 
@@ -142,13 +265,47 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           />
         </div>
 
-        {/* Right Work Area (Editor + Results Split) */}
+        {/* Right Work Area (Multi-Tabs + Editor + Results Split) */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', height: '100%', overflow: 'hidden' }}>
+          {/* Query Editor Multi-Tab Bar */}
+          <div className="win95-editor-tabs">
+            {tabs.map((tab) => {
+              const isActive = tab.id === activeTabId;
+              return (
+                <div
+                  key={tab.id}
+                  className={`win95-editor-tab ${isActive ? 'active' : ''}`}
+                  onClick={() => handleSelectTab(tab.id)}
+                  title={tab.title}
+                >
+                  <span>📄</span>
+                  <span>{tab.title}</span>
+                  <button
+                    className="win95-editor-tab-close"
+                    onClick={(e) => handleCloseTab(e, tab.id)}
+                    title="Close Tab"
+                  >
+                    ✕
+                  </button>
+                </div>
+              );
+            })}
+
+            {/* + New Tab Button */}
+            <button
+              className="win95-new-tab-btn"
+              onClick={() => handleNewTab()}
+              title="Open New Query Tab (Ctrl+T)"
+            >
+              +
+            </button>
+          </div>
+
           {/* Query Editor Pane */}
-          <div id="tour-query-editor" style={{ height: '42%', minHeight: '140px' }}>
+          <div id="tour-query-editor" style={{ height: '40%', minHeight: '130px' }}>
             <QueryEditor
-              value={queryText}
-              onChange={onQueryChange}
+              value={activeTab.queryText}
+              onChange={handleActiveQueryChange}
               onRun={onRun}
               dialect={dialect}
               onSelectionChange={(hasSel, selText) => {
@@ -161,9 +318,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           {/* Results Grid Pane */}
           <div id="tour-results-grid" style={{ flex: 1, overflow: 'hidden' }}>
             <ResultsGrid
-              result={result}
-              isLoading={isLoading}
-              executionTimeMs={executionTimeMs}
+              result={activeTab.result}
+              isLoading={activeTab.isLoading}
+              executionTimeMs={activeTab.executionTimeMs}
             />
           </div>
         </div>
@@ -172,7 +329,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       {/* Global Window Status Bar */}
       <div className="win95-statusbar">
         <div className="win95-statusbar-pane" style={{ flex: 1 }}>
-          {isLoading ? 'Executing...' : 'Ready'}
+          {activeTab.isLoading ? 'Executing...' : 'Ready'} — Tab {tabs.findIndex((t) => t.id === activeTabId) + 1} of {tabs.length}
         </div>
         <div className="win95-statusbar-pane">
           Dialect: <strong>{dialect}</strong>

@@ -592,6 +592,89 @@ html, body {
   font-weight: bold;
 }
 
+/* Query Editor Multi-Tabs */
+.win95-editor-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  background-color: var(--w95-gray);
+  border-bottom: 2px solid var(--w95-dark-gray);
+  padding: 3px 4px 0 4px;
+  overflow-x: auto;
+}
+
+.win95-editor-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #b0b0b0;
+  border-top: 2px solid var(--w95-white);
+  border-left: 2px solid var(--w95-white);
+  border-right: 2px solid var(--w95-black);
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  color: #333;
+}
+
+.win95-editor-tab:hover {
+  background-color: #c4c4c4;
+}
+
+.win95-editor-tab.active {
+  background-color: #ffffff;
+  border-bottom: 2px solid #ffffff;
+  color: #000000;
+  font-weight: bold;
+  padding-bottom: 5px;
+  margin-bottom: -2px;
+  z-index: 3;
+}
+
+.win95-editor-tab-close {
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 0 3px;
+  cursor: pointer;
+  color: #666;
+  border-radius: 2px;
+}
+
+.win95-editor-tab-close:hover {
+  background: #c00000;
+  color: #ffffff;
+}
+
+.win95-new-tab-btn {
+  background-color: var(--w95-gray);
+  border-top: 2px solid var(--w95-white);
+  border-left: 2px solid var(--w95-white);
+  border-right: 2px solid var(--w95-black);
+  border-bottom: 2px solid var(--w95-black);
+  box-shadow: inset 1px 1px 0px var(--w95-light-gray);
+  padding: 1px 7px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 4px;
+  margin-bottom: 2px;
+}
+
+.win95-new-tab-btn:hover {
+  background-color: #dcdcdc;
+}
+
+.win95-new-tab-btn:active {
+  border-top: 2px solid var(--w95-black);
+  border-left: 2px solid var(--w95-black);
+  border-right: 2px solid var(--w95-white);
+  border-bottom: 2px solid var(--w95-white);
+}
+
 /* Status Bar */
 .win95-statusbar {
   display: flex;
