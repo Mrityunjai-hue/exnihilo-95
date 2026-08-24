@@ -24,6 +24,7 @@ import { LegalWindow } from './LegalWindow';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthWindow } from './AuthWindow';
 import { AdminDashboard, SessionStats } from './AdminDashboard';
+import { ErrorBoundary } from './ErrorBoundary';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -456,27 +457,29 @@ export const Desktop: React.FC = () => {
 
       {/* SQL IDE Shell Window */}
       {openWindows.ide && (
-        <IDEShell
-          isOpen={openWindows.ide}
-          isMinimized={minimizedWindows.ide}
-          zIndex={getZIndex('ide')}
-          executor={executor}
-          dialect={dialect}
-          initialQueryText={queryText}
-          initialResult={result}
-          initialIsLoading={isLoading}
-          initialExecutionTimeMs={executionTimeMs}
-          onQueryChange={setQueryText}
-          onDialectChange={setDialect}
-          onRun={handleRunQuery}
-          onReset={handleResetSession}
-          onClose={() => closeWindow('ide')}
-          onMinimize={() => toggleMinimize('ide')}
-          onFocus={() => focusWindow('ide')}
-          onOpenHelp={() => focusWindow('help')}
-          onOpenSettings={() => focusWindow('settings')}
-          onStartTour={() => setTourOpen(true)}
-        />
+        <ErrorBoundary>
+          <IDEShell
+            isOpen={openWindows.ide}
+            isMinimized={minimizedWindows.ide}
+            zIndex={getZIndex('ide')}
+            executor={executor}
+            dialect={dialect}
+            initialQueryText={queryText}
+            initialResult={result}
+            initialIsLoading={isLoading}
+            initialExecutionTimeMs={executionTimeMs}
+            onQueryChange={setQueryText}
+            onDialectChange={setDialect}
+            onRun={handleRunQuery}
+            onReset={handleResetSession}
+            onClose={() => closeWindow('ide')}
+            onMinimize={() => toggleMinimize('ide')}
+            onFocus={() => focusWindow('ide')}
+            onOpenHelp={() => focusWindow('help')}
+            onOpenSettings={() => focusWindow('settings')}
+            onStartTour={() => setTourOpen(true)}
+          />
+        </ErrorBoundary>
       )}
 
       {/* Auth Window (Log In & Create Account) */}

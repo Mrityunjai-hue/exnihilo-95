@@ -198,7 +198,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     return () => window.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  if (!isOpen || isMinimized) return null;
+  if (!isOpen) return null;
 
   const catalog = executor.getCatalog();
   const activeTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
