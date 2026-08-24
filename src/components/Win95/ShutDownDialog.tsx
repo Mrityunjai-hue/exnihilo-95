@@ -4,6 +4,7 @@
 
 import React, { useState } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
+import { WindowControls } from './WindowControls';
 
 interface ShutDownDialogProps {
   isOpen:       boolean;
@@ -66,9 +67,11 @@ export const ShutDownDialog: React.FC<ShutDownDialogProps> = ({
           <span>💻</span>
           <span>Shut Down ExNihilo 95</span>
         </div>
-        <div className="win95-titlebar-controls">
-          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }}>✕</button>
-        </div>
+        <WindowControls
+          showMinimize={false}
+          showMaximize={false}
+          onClose={onClose}
+        />
       </div>
 
       {/* Body */}

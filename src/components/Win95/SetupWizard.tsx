@@ -4,6 +4,7 @@
 
 import React, { useState } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
+import { WindowControls } from './WindowControls';
 
 interface SetupWizardProps {
   isOpen:      boolean;
@@ -28,7 +29,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
   const totalSteps = 4;
   const { position, handleMouseDown } = useDraggable({ x: 140, y: 70 });
 
-  if (!isOpen || isMinimized) return null;
+  if (!isOpen) return null;
 
   return (
     <div
@@ -40,6 +41,8 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
         width: '540px',
         height: '380px',
         zIndex,
+        display: isMinimized ? 'none' : 'flex',
+        flexDirection: 'column',
       }}
       onMouseDown={onFocus}
     >
@@ -56,10 +59,10 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
           <span>🧙‍♂️</span>
           <span>ExNihilo Setup Wizard</span>
         </div>
-        <div className="win95-titlebar-controls">
-          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onMinimize(); }}>_</button>
-          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }}>✕</button>
-        </div>
+        <WindowControls
+          onMinimize={onMinimize}
+          onClose={onClose}
+        />
       </div>
 
       {/* Wizard Body */}

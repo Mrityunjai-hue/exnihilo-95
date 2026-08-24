@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { ClassifiedError } from '../../engine/errors';
 import { useDraggable } from '../../hooks/useDraggable';
+import { WindowControls } from './WindowControls';
 
 interface ErrorDialogProps {
   error:   ClassifiedError | null;
@@ -71,9 +72,11 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
           <span>{icon}</span>
           <span>{title}</span>
         </div>
-        <div className="win95-titlebar-controls">
-          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }}>✕</button>
-        </div>
+        <WindowControls
+          showMinimize={false}
+          showMaximize={false}
+          onClose={onClose}
+        />
       </div>
 
       {/* Body */}

@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
 import { StoredUser } from '../../hooks/useAuth';
+import { WindowControls } from './WindowControls';
 
 interface AuthWindowProps {
   isOpen: boolean;
@@ -188,18 +189,11 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
             <span>🔑</span>
             <span>ExNihilo User Authentication</span>
           </div>
-          <div className="win95-titlebar-controls">
-            <button
-              className="win95-btn-titlebar"
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleClose();
-              }}
-            >
-              ✕
-            </button>
-          </div>
+          <WindowControls
+            showMinimize={false}
+            showMaximize={false}
+            onClose={handleClose}
+          />
         </div>
 
         {/* Dialog Body */}

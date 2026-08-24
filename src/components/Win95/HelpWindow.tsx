@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
+import { WindowControls } from './WindowControls';
 
 interface HelpWindowProps {
   isOpen:        boolean;
@@ -37,7 +38,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
   const [selectedTopicId, setSelectedTopicId] = useState<string>('intro');
   const { position, handleMouseDown } = useDraggable({ x: 80, y: 45 });
 
-  if (!isOpen || isMinimized) return null;
+  if (!isOpen) return null;
 
   const topics: HelpTopic[] = [
     {
@@ -378,6 +379,8 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
         width: '700px',
         height: '480px',
         zIndex,
+        display: isMinimized ? 'none' : 'flex',
+        flexDirection: 'column',
       }}
       onMouseDown={onFocus}
     >
@@ -394,10 +397,10 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
           <span>📖</span>
           <span>ExNihilo SQL Help & Query Guide</span>
         </div>
-        <div className="win95-titlebar-controls">
-          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onMinimize(); }}>_</button>
-          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }}>✕</button>
-        </div>
+        <WindowControls
+          onMinimize={onMinimize}
+          onClose={onClose}
+        />
       </div>
 
       {/* Menu Bar */}

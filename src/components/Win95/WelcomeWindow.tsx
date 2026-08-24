@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
+import { WindowControls } from './WindowControls';
 
 interface WelcomeWindowProps {
   isOpen:       boolean;
@@ -28,7 +29,7 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
   onOpenIDE,
   onFocus,
 }) => {
-  const { position, handleMouseDown } = useDraggable({ x: 120, y: 40 });
+  const { position, handleMouseDown } = useDraggable({ x: 100, y: 50 });
 
   if (!isOpen) return null;
 
@@ -59,9 +60,11 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
           <span>✨</span>
           <span>Welcome to ExNihilo 95 — Zero-Config SQL IDE</span>
         </div>
-        <div className="win95-titlebar-controls">
-          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }} title="Close">✕</button>
-        </div>
+        <WindowControls
+          showMinimize={false}
+          showMaximize={false}
+          onClose={onClose}
+        />
       </div>
 
       {/* Main Content Area */}

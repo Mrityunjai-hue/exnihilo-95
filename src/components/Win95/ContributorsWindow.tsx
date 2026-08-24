@@ -7,6 +7,7 @@
 
 import React, { useState } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
+import { WindowControls } from './WindowControls';
 
 interface ContributorsWindowProps {
   isOpen:       boolean;
@@ -53,11 +54,11 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [isMaximized, setIsMaximized] = useState(false);
 
-  if (!isOpen || isMinimized) return null;
+  if (!isOpen) return null;
 
   const windowStyle: React.CSSProperties = isMaximized
-    ? { position: 'fixed', top: 0, left: 0, width: '100vw', height: 'calc(100vh - 36px)', zIndex }
-    : { position: 'absolute', top: position.y, left: position.x, width: '680px', height: '520px', zIndex };
+    ? { position: 'fixed', top: 0, left: 0, width: '100vw', height: 'calc(100vh - 36px)', zIndex, display: isMinimized ? 'none' : 'flex', flexDirection: 'column' }
+    : { position: 'absolute', top: position.y, left: position.x, width: '680px', height: '520px', zIndex, display: isMinimized ? 'none' : 'flex', flexDirection: 'column' };
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'overview',    label: '🚀 Overview' },
@@ -80,11 +81,12 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
           <span>🤝</span>
           <span>ExNihilo 95 — Join the Team</span>
         </div>
-        <div className="win95-titlebar-controls">
-          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onMinimize(); }}>_</button>
-          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); setIsMaximized(!isMaximized); }}>□</button>
-          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }}>✕</button>
-        </div>
+        <WindowControls
+          onMinimize={onMinimize}
+          onMaximize={() => setIsMaximized((prev) => !prev)}
+          isMaximized={isMaximized}
+          onClose={onClose}
+        />
       </div>
 
       {/* Tab Strip */}

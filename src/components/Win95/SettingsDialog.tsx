@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { Dialect } from '../../engine/parser';
 import { useDraggable } from '../../hooks/useDraggable';
+import { WindowControls } from './WindowControls';
 
 interface SettingsDialogProps {
   isOpen:         boolean;
@@ -69,9 +70,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
           <span>⚙️</span>
           <span>ExNihilo Settings & Options</span>
         </div>
-        <div className="win95-titlebar-controls">
-          <button className="win95-btn-titlebar" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }}>✕</button>
-        </div>
+        <WindowControls
+          showMinimize={false}
+          showMaximize={false}
+          onClose={onClose}
+        />
       </div>
 
       {/* Dialog Body */}

@@ -8,6 +8,7 @@
 
 import React, { useState } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
+import { WindowControls } from './WindowControls';
 
 interface LegalWindowProps {
   isOpen:       boolean;
@@ -39,7 +40,7 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
   const [isMaximized, setIsMaximized] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  if (!isOpen || isMinimized) return null;
+  if (!isOpen) return null;
 
   const handleCopyNotice = () => {
     navigator.clipboard.writeText(ATTRIBUTION_TEXT);
@@ -63,14 +64,14 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
               width: '94vw',
               maxWidth: '540px',
               maxHeight: '88vh',
-              display: 'flex',
+              display: isMinimized ? 'none' : 'flex',
               flexDirection: 'column',
               boxShadow: '4px 4px 20px rgba(0,0,0,0.8)',
               boxSizing: 'border-box',
             }
           : isMaximized
-          ? { position: 'fixed', top: 0, left: 0, width: '100vw', height: 'calc(100vh - 36px)', zIndex, display: 'flex', flexDirection: 'column' }
-          : { position: 'absolute', top: position.y, left: position.x, width: '660px', height: '520px', zIndex, display: 'flex', flexDirection: 'column' }
+          ? { position: 'fixed', top: 0, left: 0, width: '100vw', height: 'calc(100vh - 36px)', zIndex, display: isMinimized ? 'none' : 'flex', flexDirection: 'column' }
+          : { position: 'absolute', top: position.y, left: position.x, width: '660px', height: '520px', zIndex, display: isMinimized ? 'none' : 'flex', flexDirection: 'column' }
       }
       onMouseDown={onFocus}
       onClick={(e) => e.stopPropagation()}
@@ -88,36 +89,12 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
           <span>⚖️</span>
           <span>ExNihilo 95 — Copyright & Intellectual Property Protection</span>
         </div>
-        <div className="win95-titlebar-controls" style={{ flexShrink: 0 }}>
-          {onMinimize && !isModal && (
-            <button
-              className="win95-btn-titlebar"
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => { e.stopPropagation(); onMinimize(); }}
-              title="Minimize"
-            >
-              _
-            </button>
-          )}
-          {!isModal && (
-            <button
-              className="win95-btn-titlebar"
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => { e.stopPropagation(); setIsMaximized(!isMaximized); }}
-              title="Maximize"
-            >
-              {isMaximized ? '❐' : '□'}
-            </button>
-          )}
-          <button
-            className="win95-btn-titlebar"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); onClose(); }}
-            title="Close"
-          >
-            ✕
-          </button>
-        </div>
+        <WindowControls
+          onMinimize={!isModal ? onMinimize : undefined}
+          onMaximize={!isModal ? () => setIsMaximized((prev) => !prev) : undefined}
+          isMaximized={isMaximized}
+          onClose={onClose}
+        />
       </div>
 
       {/* Tab Bar */}

@@ -8,6 +8,7 @@ import { useDraggable } from '../../hooks/useDraggable';
 import { StoredUser, ActiveSession } from '../../hooks/useAuth';
 import { useRegionalPricing } from '../../hooks/useRegionalPricing';
 import { PRO_PRICING } from '../../config/pricing';
+import { WindowControls } from './WindowControls';
 
 export interface SessionStats {
   queriesRun: number;
@@ -249,18 +250,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <span>{currentUser.avatar || '👤'}</span>
             <span>ExNihilo Control Panel — @{currentUser.usernameNorm}</span>
           </div>
-          <div className="win95-titlebar-controls">
-            <button
-              className="win95-btn-titlebar"
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                onClose();
-              }}
-            >
-              ✕
-            </button>
-          </div>
+          <WindowControls
+            showMinimize={false}
+            showMaximize={false}
+            onClose={onClose}
+          />
         </div>
 
         {/* Dialog Body */}

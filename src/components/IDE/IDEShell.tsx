@@ -16,6 +16,7 @@ import { QueryEditor } from './QueryEditor';
 import { ResultsGrid } from './ResultsGrid';
 import { SchemaTree } from './SchemaTree';
 import { Toolbar } from './Toolbar';
+import { WindowControls } from '../Win95/WindowControls';
 
 interface QueryTab {
   id:              string;
@@ -355,7 +356,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     setActiveMenu(null);
   };
 
-  if (!isOpen || isMinimized) return null;
+  if (!isOpen) return null;
 
   return (
     <div
@@ -371,7 +372,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               maxWidth: '100vw',
               maxHeight: 'calc(100vh - 28px)',
               zIndex,
-              display: 'flex',
+              display: isMinimized ? 'none' : 'flex',
               flexDirection: 'column',
               borderRadius: 0,
             }
@@ -384,7 +385,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               maxWidth: '1280px',
               maxHeight: '800px',
               zIndex,
-              display: 'flex',
+              display: isMinimized ? 'none' : 'flex',
               flexDirection: 'column',
             }
       }
@@ -404,41 +405,12 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           <span>🗄️</span>
           <span>ExNihilo SQL Studio — [{dialect}] — {activeTab.title}</span>
         </div>
-        <div className="win95-titlebar-controls">
-          <button
-            className="win95-btn-titlebar"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onMinimize();
-            }}
-            title="Minimize"
-          >
-            _
-          </button>
-          <button
-            className="win95-btn-titlebar"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMaximized((prev) => !prev);
-            }}
-            title={isMaximized ? 'Restore Window' : 'Maximize Window'}
-          >
-            {isMaximized ? '🗗' : '🗖'}
-          </button>
-          <button
-            className="win95-btn-titlebar"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
-            title="Close"
-          >
-            ✕
-          </button>
-        </div>
+        <WindowControls
+          onMinimize={onMinimize}
+          onMaximize={() => setIsMaximized((prev) => !prev)}
+          isMaximized={isMaximized}
+          onClose={onClose}
+        />
       </div>
 
       {/* Menu Strip */}
