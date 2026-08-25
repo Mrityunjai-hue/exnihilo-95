@@ -109,14 +109,26 @@ export const Taskbar: React.FC<TaskbarProps> = ({
 
             <div
               className="win95-start-item"
-              onClick={() => { onOpenWindow('help'); setStartMenuOpen(false); }}
+              onClick={() => { onOpenWindow('sqlDictionary'); setStartMenuOpen(false); }}
             >
               <span style={{ fontSize: '16px' }}>📖</span>
+              <div>
+                <strong>SQL Dictionary & Dialects</strong>
+                <div style={{ fontSize: '10px', color: '#555' }}>Syntax, Functions & Dialects</div>
+              </div>
+            </div>
+
+            <div
+              className="win95-start-item"
+              onClick={() => { onOpenWindow('help'); setStartMenuOpen(false); }}
+            >
+              <span style={{ fontSize: '16px' }}>❓</span>
               <div>
                 <strong>SQL Query Guide & Tutorial</strong>
                 <div style={{ fontSize: '10px', color: '#555' }}>How to write queries</div>
               </div>
             </div>
+
 
             <div
               className="win95-start-item"
