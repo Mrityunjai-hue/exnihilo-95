@@ -365,7 +365,74 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
         </div>
       ),
     },
+    {
+      id: 'shortcuts',
+      category: '6. Power User',
+      title: 'Keyboard Shortcuts & Tab Management',
+      summary: 'Boost productivity with safe Alt+ key combinations.',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #808080', paddingBottom: '4px' }}>
+            ⚡ Keyboard Shortcuts & Workspace Persistence
+          </h3>
+          <p>
+            ExNihilo 95 provides dedicated, non-intrusive keyboard shortcuts designed specifically for rapid multi-tab SQL authoring.
+          </p>
+
+          <div className="win95-inset" style={{ padding: '8px', background: '#f5f5f5', marginBottom: '12px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #c0c0c0', textAlign: 'left' }}>
+                  <th style={{ padding: '4px' }}>Shortcut</th>
+                  <th style={{ padding: '4px' }}>Action</th>
+                  <th style={{ padding: '4px' }}>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #e0e0e0' }}>
+                  <td style={{ padding: '4px' }}><code>Alt + T</code></td>
+                  <td style={{ padding: '4px' }}>New Query Tab</td>
+                  <td style={{ padding: '4px' }}>Opens a clean query tab with incremental numbering</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #e0e0e0' }}>
+                  <td style={{ padding: '4px' }}><code>Alt + W</code></td>
+                  <td style={{ padding: '4px' }}>Close Active Tab</td>
+                  <td style={{ padding: '4px' }}>Closes the currently focused query tab</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #e0e0e0' }}>
+                  <td style={{ padding: '4px' }}><code>Alt + ]</code></td>
+                  <td style={{ padding: '4px' }}>Next Tab</td>
+                  <td style={{ padding: '4px' }}>Cycles focus to the next open query tab</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #e0e0e0' }}>
+                  <td style={{ padding: '4px' }}><code>Alt + [</code></td>
+                  <td style={{ padding: '4px' }}>Previous Tab</td>
+                  <td style={{ padding: '4px' }}>Cycles focus to the previous open query tab</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #e0e0e0' }}>
+                  <td style={{ padding: '4px' }}><code>F5</code></td>
+                  <td style={{ padding: '4px' }}>Execute Query</td>
+                  <td style={{ padding: '4px' }}>Runs the active or selected SQL statement</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4 style={{ margin: '10px 0 4px 0' }}>💡 Why Alt Key Combinations?</h4>
+          <p style={{ margin: '0 0 10px 0' }}>
+            Standard browser-level hotkeys (such as <code>Ctrl+T</code> for browser tabs and <code>Ctrl+W</code> for closing windows) can lead to accidental loss of session data if hijacked. ExNihilo 95 uses the <strong>Alt</strong> modifier key to guarantee zero conflict with native browser navigation.
+          </p>
+
+          <h4 style={{ margin: '10px 0 4px 0' }}>🖱️ Tab Context Menu (Right-Click)</h4>
+          <ul style={{ paddingLeft: '20px', margin: '4px 0' }}>
+            <li><strong>Right-Click Tab &rarr; Duplicate Tab:</strong> Clones current query & dialect into a new tab.</li>
+            <li><strong>Right-Click Tab &rarr; Close Other Tabs:</strong> Clears all other tabs from memory while preserving the active tab.</li>
+          </ul>
+        </div>
+      ),
+    },
   ];
+
 
   const currentTopic = topics.find((t) => t.id === selectedTopicId) || topics[0];
 

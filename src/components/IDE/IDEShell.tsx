@@ -17,6 +17,8 @@ import { ResultsGrid } from './ResultsGrid';
 import { SchemaTree } from './SchemaTree';
 import { Toolbar } from './Toolbar';
 import { WindowControls } from '../Win95/WindowControls';
+import { useWorkspaceStorage, loadWorkspaceFromStorage, removeTabFromStorage } from '../../hooks/useWorkspaceStorage';
+
 
 interface QueryTab {
   id:              string;
@@ -102,18 +104,118 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const menuBarRef = useRef<HTMLDivElement>(null);
   const studioBodyRef = useRef<HTMLDivElement>(null);
 
-  // ── Multi-Tab State Management ─────────────────────────────────────────────
-  const [tabs, setTabs] = useState<QueryTab[]>([
-    {
-      id: 'tab_1',
-      title: 'Query 1.sql',
-      queryText: initialQueryText,
-      result: initialResult,
-      isLoading: initialIsLoading,
-      executionTimeMs: initialExecutionTimeMs,
-    },
-  ]);
-  const [activeTabId, setActiveTabId] = useState<string>('tab_1');
+  // ── Multi-Tab State Management with Debounced Persistence ─────────────────
+  const { saveWorkspaceDebounced } = useWorkspaceStorage(500);
+
+  const [tabs, setTabs] = useState<QueryTab[]>(() => {
+    const stored = loadWorkspaceFromStorage();
+    if (stored && stored.tabs.length > 0) {
+      return stored.tabs.map((t) => ({
+        id: t.id,
+        title: t.title,
+        queryText: t.queryText,
+        result: null,
+        isLoading: false,
+        executionTimeMs: null,
+      }));
+    }
+    return [
+      {
+        id: 'tab_1',
+        title: 'Query 1.sql',
+        queryText: initialQueryText,
+        result: initialResult,
+        isLoading: initialIsLoading,
+        executionTimeMs: initialExecutionTimeMs,
+      },
+    ];
+  });
+
+  const [activeTabId, setActiveTabId] = useState<string>(() => {
+    const stored = loadWorkspaceFromStorage();
+    if (stored && stored.activeTabId && stored.tabs.some((t) => t.id === stored.activeTabId)) {
+      return stored.activeTabId;
+    }
+    return 'tab_1';
+  });
+
+  const [tabContextMenu, setTabContextMenu] = useState<{ x: number; y: number; tabId: string } | null>(null);
+
+  // Sync workspace state to localStorage with 500ms debounce
+  useEffect(() => {
+    const meta = tabs.map((t) => ({
+      id: t.id,
+      title: t.title,
+      queryText: t.queryText,
+      dialect,
+    }));
+    saveWorkspaceDebounced(meta, activeTabId);
+  }, [tabs, activeTabId, dialect, saveWorkspaceDebounced]);
+
+  // Safe Alt Keyboard Shortcuts (Alt+T, Alt+W, Alt+], Alt+[)
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!e.altKey) return;
+
+      const keyLower = e.key.toLowerCase();
+      if (keyLower === 't') {
+        e.preventDefault();
+        const nextNum = tabs.length + 1;
+        const newTabId = `tab_${Date.now()}`;
+        const initialSql = `-- Query ${nextNum}.sql\n\n`;
+        const newTab: QueryTab = {
+          id: newTabId,
+          title: `Query ${nextNum}.sql`,
+          queryText: initialSql,
+          result: null,
+          isLoading: false,
+          executionTimeMs: null,
+        };
+        setTabs((prev) => [...prev, newTab]);
+        setActiveTabId(newTabId);
+        onQueryChange(initialSql);
+      } else if (keyLower === 'w') {
+        e.preventDefault();
+        if (tabs.length <= 1) {
+          const resetTab: QueryTab = {
+            id: 'tab_1',
+            title: 'Query 1.sql',
+            queryText: '-- New Query Tab\nSELECT * FROM customers;',
+            result: null,
+            isLoading: false,
+            executionTimeMs: null,
+          };
+          setTabs([resetTab]);
+          setActiveTabId('tab_1');
+          onQueryChange(resetTab.queryText);
+          return;
+        }
+        removeTabFromStorage(activeTabId);
+        const remaining = tabs.filter((t) => t.id !== activeTabId);
+        setTabs(remaining);
+        const nextActive = remaining[remaining.length - 1];
+        setActiveTabId(nextActive.id);
+        onQueryChange(nextActive.queryText);
+      } else if (e.key === ']' || e.key === '}') {
+        e.preventDefault();
+        const currIdx = tabs.findIndex((t) => t.id === activeTabId);
+        const nextIdx = (currIdx + 1) % tabs.length;
+        setActiveTabId(tabs[nextIdx].id);
+        onQueryChange(tabs[nextIdx].queryText);
+      } else if (e.key === '[' || e.key === '{') {
+        e.preventDefault();
+        const currIdx = tabs.findIndex((t) => t.id === activeTabId);
+        const prevIdx = (currIdx - 1 + tabs.length) % tabs.length;
+        setActiveTabId(tabs[prevIdx].id);
+        onQueryChange(tabs[prevIdx].queryText);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, activeTabId, tabs, onQueryChange]);
 
   // Track previous initialQueryText to only update query text on explicit external load
   const prevInitialQueryRef = useRef(initialQueryText);
@@ -193,6 +295,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       if (menuBarRef.current && !menuBarRef.current.contains(e.target as Node)) {
         setActiveMenu(null);
       }
+      setTabContextMenu(null);
     };
     window.addEventListener('mousedown', handleOutsideClick);
     return () => window.removeEventListener('mousedown', handleOutsideClick);
@@ -203,7 +306,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const catalog = executor.getCatalog();
   const activeTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
 
-  // ── Tab Operations ─────────────────────────────────────────────────────────
+  // ── Tab Operations & Context Menu ─────────────────────────────────────────
 
   const handleNewTab = (customTitle?: string, customSql?: string) => {
     const nextNum = tabs.length + 1;
@@ -223,10 +326,13 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     setActiveTabId(newTabId);
     onQueryChange(initialSql);
     setActiveMenu(null);
+    setTabContextMenu(null);
   };
 
   const handleCloseTab = (e: React.MouseEvent | null, tabIdToClose: string) => {
     if (e) e.stopPropagation();
+    removeTabFromStorage(tabIdToClose);
+
     if (tabs.length <= 1) {
       const resetTab: QueryTab = {
         id: 'tab_1',
@@ -240,6 +346,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       setActiveTabId('tab_1');
       onQueryChange(resetTab.queryText);
       setActiveMenu(null);
+      setTabContextMenu(null);
       return;
     }
 
@@ -252,7 +359,42 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       onQueryChange(nextActive.queryText);
     }
     setActiveMenu(null);
+    setTabContextMenu(null);
   };
+
+  const handleDuplicateTab = (tabIdToDuplicate: string) => {
+    const target = tabs.find((t) => t.id === tabIdToDuplicate);
+    if (!target) return;
+    const newTabId = `tab_${Date.now()}`;
+    const newTab: QueryTab = {
+      id: newTabId,
+      title: `${target.title.replace(/\.sql$/i, '')} (Copy).sql`,
+      queryText: target.queryText,
+      result: null,
+      isLoading: false,
+      executionTimeMs: null,
+    };
+    setTabs((prev) => [...prev, newTab]);
+    setActiveTabId(newTabId);
+    onQueryChange(target.queryText);
+    setTabContextMenu(null);
+  };
+
+  const handleCloseOtherTabs = (targetTabId: string) => {
+    tabs.filter((t) => t.id !== targetTabId).forEach((t) => removeTabFromStorage(t.id));
+    const kept = tabs.filter((t) => t.id === targetTabId);
+    setTabs(kept);
+    setActiveTabId(targetTabId);
+    if (kept[0]) onQueryChange(kept[0].queryText);
+    setTabContextMenu(null);
+  };
+
+  const handleTabContextMenu = (e: React.MouseEvent, tabId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setTabContextMenu({ x: e.clientX, y: e.clientY, tabId });
+  };
+
 
   const handleSelectTab = (tabId: string) => {
     setActiveTabId(tabId);
@@ -615,6 +757,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
                   key={tab.id}
                   className={`win95-editor-tab ${isActive ? 'active' : ''}`}
                   onClick={() => handleSelectTab(tab.id)}
+                  onContextMenu={(e) => handleTabContextMenu(e, tab.id)}
                   title={tab.title}
                 >
                   <span>📄</span>
@@ -629,6 +772,27 @@ export const IDEShell: React.FC<IDEShellProps> = ({
                 </div>
               );
             })}
+
+            {tabContextMenu && (
+              <div
+                className="win95-dropdown-menu"
+                style={{
+                  position: 'fixed',
+                  left: `${tabContextMenu.x}px`,
+                  top: `${tabContextMenu.y}px`,
+                  zIndex: 9999,
+                  boxShadow: '2px 2px 5px rgba(0,0,0,0.5)',
+                }}
+              >
+                <div className="win95-dropdown-item" onClick={() => handleDuplicateTab(tabContextMenu.tabId)}>
+                  <span>📋 Duplicate Tab</span>
+                </div>
+                <div className="win95-dropdown-item" onClick={() => handleCloseOtherTabs(tabContextMenu.tabId)}>
+                  <span>❌ Close Other Tabs</span>
+                </div>
+              </div>
+            )}
+
 
             <button
               className="win95-new-tab-btn"
