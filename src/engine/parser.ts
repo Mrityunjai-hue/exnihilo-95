@@ -151,20 +151,101 @@ export function extractFunctionNames(ast: AST | AST[]): string[] {
 
 // ── Window Functions Parsing & Specification Extraction ───────────────────────
 
+export type WindowFunctionName =
+  | 'ROW_NUMBER'
+  | 'RANK'
+  | 'DENSE_RANK'
+  | 'LEAD'
+  | 'LAG'
+  | 'SUM'
+  | 'AVG'
+  | 'MIN'
+  | 'MAX'
+  | 'COUNT';
+
+export type FrameBoundType =
+  | 'UNBOUNDED_PRECEDING'
+  | 'PRECEDING'
+  | 'CURRENT_ROW'
+  | 'FOLLOWING'
+  | 'UNBOUNDED_FOLLOWING';
+
+export interface FrameBound {
+  type: FrameBoundType;
+  offset?: number;
+}
+
+export interface WindowFrameSpec {
+  unit: 'ROWS';
+  start: FrameBound;
+  end: FrameBound;
+}
+
 export interface WindowOrderClause {
   column: string;
   direction: 'ASC' | 'DESC';
 }
 
 export interface WindowSpec {
-  functionName: 'ROW_NUMBER' | 'RANK' | 'DENSE_RANK';
+  functionName: WindowFunctionName;
   alias: string;
   partitionBy: string[];
   orderBy: WindowOrderClause[];
+  targetColumn?: string;
+  args?: any[];
+  frame: WindowFrameSpec;
 }
 
+function parseFrameBound(boundObj: any): FrameBound {
+  if (!boundObj) return { type: 'CURRENT_ROW' };
+  const raw = String(boundObj.value || boundObj.type || '').toUpperCase();
+
+  if (raw.includes('UNBOUNDED PRECEDING')) return { type: 'UNBOUNDED_PRECEDING' };
+  if (raw.includes('UNBOUNDED FOLLOWING')) return { type: 'UNBOUNDED_FOLLOWING' };
+  if (raw.includes('CURRENT ROW')) return { type: 'CURRENT_ROW' };
+
+  const precMatch = raw.match(/(\d+)\s+PRECEDING/i);
+  if (precMatch) return { type: 'PRECEDING', offset: parseInt(precMatch[1], 10) };
+
+  const follMatch = raw.match(/(\d+)\s+FOLLOWING/i);
+  if (follMatch) return { type: 'FOLLOWING', offset: parseInt(follMatch[1], 10) };
+
+  return { type: 'CURRENT_ROW' };
+}
+
+function extractColumnName(argsNode: any): string | undefined {
+  if (!argsNode) return undefined;
+  if (typeof argsNode === 'string') return argsNode;
+  if (typeof argsNode.column === 'string') return argsNode.column;
+  if (typeof argsNode.value === 'string') return argsNode.value;
+
+  if (argsNode.column) {
+    const colRes = extractColumnName(argsNode.column);
+    if (colRes) return colRes;
+  }
+
+  if (argsNode.expr) {
+    const exprRes = extractColumnName(argsNode.expr);
+    if (exprRes) return exprRes;
+  }
+
+  if (Array.isArray(argsNode.value)) {
+    const valRes = extractColumnName(argsNode.value[0]);
+    if (valRes) return valRes;
+  }
+
+  if (Array.isArray(argsNode)) {
+    const arrRes = extractColumnName(argsNode[0]);
+    if (arrRes) return arrRes;
+  }
+
+  return undefined;
+}
+
+
 /**
- * Extract ranking window function specifications (OVER clause with PARTITION BY & ORDER BY)
+ * Extract ranking, positional, and aggregate window function specifications
+ * (OVER clause with PARTITION BY, ORDER BY, and ROWS BETWEEN sliding frames)
  * from a parsed SQL AST.
  */
 export function extractWindowSpecs(ast: AST | AST[]): WindowSpec[] {
@@ -177,15 +258,30 @@ export function extractWindowSpecs(ast: AST | AST[]): WindowSpec[] {
       return;
     }
 
-    if (node.type === 'function' && node.over) {
+    if ((node.type === 'function' || node.type === 'aggr_func' || node.type === 'window_func') && node.over) {
       let funcName = '';
       if (typeof node.name === 'string') {
         funcName = node.name.toUpperCase();
       } else if (Array.isArray(node.name?.name)) {
         funcName = String(node.name.name[0]?.value || '').toUpperCase();
+      } else if (typeof node.name?.value === 'string') {
+        funcName = node.name.value.toUpperCase();
       }
 
-      if (['ROW_NUMBER', 'RANK', 'DENSE_RANK'].includes(funcName)) {
+      const supportedFuncs: WindowFunctionName[] = [
+        'ROW_NUMBER',
+        'RANK',
+        'DENSE_RANK',
+        'LEAD',
+        'LAG',
+        'SUM',
+        'AVG',
+        'MIN',
+        'MAX',
+        'COUNT',
+      ];
+
+      if (supportedFuncs.includes(funcName as WindowFunctionName)) {
         const specObj = node.over?.as_window_specification?.window_specification || {};
         const partitionBy: string[] = [];
         if (Array.isArray(specObj.partitionby)) {
@@ -204,11 +300,68 @@ export function extractWindowSpecs(ast: AST | AST[]): WindowSpec[] {
           });
         }
 
+        // Target column & positional args
+        let targetColumn: string | undefined = undefined;
+        let args: any[] | undefined = undefined;
+
+        if (['LEAD', 'LAG'].includes(funcName)) {
+          args = [];
+          if (Array.isArray(node.args?.value)) {
+            node.args.value.forEach((argNode: any, idx: number) => {
+              if (idx === 0) {
+                targetColumn = extractColumnName(argNode);
+                args!.push(targetColumn);
+              } else if (argNode?.type === 'number') {
+                args!.push(Number(argNode.value));
+              } else {
+                args!.push(argNode?.value ?? argNode);
+              }
+            });
+          }
+          if (args.length < 2) args.push(1); // default offset = 1
+          if (args.length < 3) args.push(null); // default fallback = null
+        } else if (['SUM', 'AVG', 'MIN', 'MAX', 'COUNT'].includes(funcName)) {
+          targetColumn = extractColumnName(node.args);
+        }
+
+        // Frame Clause Parsing & Default Rules
+        let frame: WindowFrameSpec;
+        const frameClause = specObj.window_frame_clause;
+
+        if (frameClause && frameClause.operator === 'BETWEEN' && Array.isArray(frameClause.right?.value)) {
+          const bounds = frameClause.right.value;
+          frame = {
+            unit: 'ROWS',
+            start: parseFrameBound(bounds[0]),
+            end: parseFrameBound(bounds[1]),
+          };
+        } else {
+          // Default Framing Rules
+          if (orderBy.length > 0) {
+            // Default with ORDER BY: ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+            frame = {
+              unit: 'ROWS',
+              start: { type: 'UNBOUNDED_PRECEDING' },
+              end: { type: 'CURRENT_ROW' },
+            };
+          } else {
+            // Default without ORDER BY: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+            frame = {
+              unit: 'ROWS',
+              start: { type: 'UNBOUNDED_PRECEDING' },
+              end: { type: 'UNBOUNDED_FOLLOWING' },
+            };
+          }
+        }
+
         specs.push({
-          functionName: funcName as 'ROW_NUMBER' | 'RANK' | 'DENSE_RANK',
+          functionName: funcName as WindowFunctionName,
           alias: node.as || funcName.toLowerCase(),
           partitionBy,
           orderBy,
+          targetColumn: targetColumn ? String(targetColumn) : undefined,
+          args,
+          frame,
         });
       }
     }
@@ -223,5 +376,7 @@ export function extractWindowSpecs(ast: AST | AST[]): WindowSpec[] {
   walk(ast);
   return specs;
 }
+
+
 
 

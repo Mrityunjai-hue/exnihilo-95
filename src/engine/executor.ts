@@ -17,8 +17,9 @@
  */
 
 import initSqlJs, { Database, SqlJsStatic } from 'sql.js';
-import { parse, Dialect, WindowSpec, WindowOrderClause, extractWindowSpecs } from './parser';
+import { parse, Dialect, WindowSpec, WindowOrderClause, WindowFrameSpec, extractWindowSpecs } from './parser';
 import { inferSchema, InferredSchemaMap, DEFAULT_COLUMNS, TableSchema, SQLITE_DDL } from './inference';
+
 import { buildTableGenerationPlan } from './relationships';
 import { generateSyntheticDataset, GeneratorOptions, generateCreateTableSql, generateInsertSql } from './generator';
 import { SessionCatalog, globalCatalog } from './catalog';
@@ -294,13 +295,67 @@ export function compareRows(
 }
 
 /**
- * Multi-Pass Execution Engine for Ranking Window Functions (ROW_NUMBER, RANK, DENSE_RANK):
+ * Computes absolute [startIndex, endIndex] frame boundaries for a given row index within a partition
+ * based on the WindowFrameSpec (ROWS BETWEEN ... AND ...). Clamped to valid indices [0, partitionLength - 1].
+ */
+export function getFrameBounds(
+  currentIndex: number,
+  partitionLength: number,
+  frame: WindowFrameSpec
+): [number, number] {
+  const N = partitionLength;
+
+  let start = 0;
+  switch (frame.start.type) {
+    case 'UNBOUNDED_PRECEDING':
+      start = 0;
+      break;
+    case 'PRECEDING':
+      start = Math.max(0, currentIndex - (frame.start.offset || 0));
+      break;
+    case 'CURRENT_ROW':
+      start = currentIndex;
+      break;
+    case 'FOLLOWING':
+      start = Math.min(N - 1, currentIndex + (frame.start.offset || 0));
+      break;
+    case 'UNBOUNDED_FOLLOWING':
+      start = N - 1;
+      break;
+  }
+
+  let end = N - 1;
+  switch (frame.end.type) {
+    case 'UNBOUNDED_PRECEDING':
+      end = 0;
+      break;
+    case 'PRECEDING':
+      end = Math.max(0, currentIndex - (frame.end.offset || 0));
+      break;
+    case 'CURRENT_ROW':
+      end = currentIndex;
+      break;
+    case 'FOLLOWING':
+      end = Math.min(N - 1, currentIndex + (frame.end.offset || 0));
+      break;
+    case 'UNBOUNDED_FOLLOWING':
+      end = N - 1;
+      break;
+  }
+
+  const clampedStart = Math.max(0, Math.min(N - 1, start));
+  const clampedEnd = Math.max(0, Math.min(N - 1, end));
+  return [Math.min(clampedStart, clampedEnd), Math.max(clampedStart, clampedEnd)];
+}
+
+/**
+ * Multi-Pass Execution Engine for All Window Functions (Ranking, Positional, and Aggregate):
  * Step A: Partition intermediate dataset by PARTITION BY columns.
- * Step B: Sort each partition using compareRows compound comparator.
- * Step C: Calculate ranks (ROW_NUMBER, RANK with gaps, DENSE_RANK without gaps).
+ * Step B: Sort each partition using compareRows compound cascading comparator.
+ * Step C: Calculate values (ROW_NUMBER, RANK, DENSE_RANK, LEAD, LAG, SUM, AVG, MIN, MAX, COUNT).
  * Step D: Stitch partitions together for projection.
  */
-export function evaluateRankingWindowFunction(
+export function evaluateWindowFunction(
   columns: string[],
   rows: any[][],
   spec: WindowSpec
@@ -311,6 +366,11 @@ export function evaluateRankingWindowFunction(
     resultColumns.push(spec.alias);
   }
   const outputColIdx = targetColIdx === -1 ? resultColumns.length - 1 : targetColIdx;
+
+  // Find column index of target column for LEAD/LAG/Aggregates
+  const valColIdx = spec.targetColumn
+    ? columns.findIndex(c => c.toLowerCase() === spec.targetColumn!.toLowerCase())
+    : -1;
 
   // Step A: Group dataset into memory buckets based on PARTITION BY columns
   const partitionMap = new Map<string, { originalIndex: number; row: any[] }[]>();
@@ -334,18 +394,19 @@ export function evaluateRankingWindowFunction(
 
   const outputRows = rows.map(r => [...r]);
 
-  // Step B & Step C: Sort each partition and calculate rank/row_number
+  // Step B & Step C: Sort each partition and calculate values
   for (const [, partitionEntries] of partitionMap.entries()) {
     // Step B: Sort partition using single compound cascading comparator
     if (spec.orderBy.length > 0) {
       partitionEntries.sort((a, b) => compareRows(a.row, b.row, columns, spec.orderBy));
     }
 
-    // Step C: Calculate rank/row_number for sorted partition
+    // Step C: Calculate window values for sorted partition
     let currentRank = 0;
     let currentDenseRank = 0;
     let rankCounter = 0;
     let prevRow: any[] | null = null;
+    const partitionLength = partitionEntries.length;
 
     partitionEntries.forEach((entry, idx) => {
       rankCounter++;
@@ -355,19 +416,67 @@ export function evaluateRankingWindowFunction(
         spec.orderBy.length > 0 &&
         compareRows(prevRow, entry.row, columns, spec.orderBy) === 0;
 
-      if (spec.functionName === 'ROW_NUMBER') {
-        const value = idx + 1;
-        outputRows[entry.originalIndex][outputColIdx] = value;
-      } else if (spec.functionName === 'RANK') {
-        if (!isTie) {
-          currentRank = rankCounter;
-        }
+      const func = spec.functionName;
+
+      if (func === 'ROW_NUMBER') {
+        outputRows[entry.originalIndex][outputColIdx] = idx + 1;
+      } else if (func === 'RANK') {
+        if (!isTie) currentRank = rankCounter;
         outputRows[entry.originalIndex][outputColIdx] = currentRank;
-      } else if (spec.functionName === 'DENSE_RANK') {
-        if (!isTie) {
-          currentDenseRank++;
-        }
+      } else if (func === 'DENSE_RANK') {
+        if (!isTie) currentDenseRank++;
         outputRows[entry.originalIndex][outputColIdx] = currentDenseRank;
+      } else if (func === 'LEAD' || func === 'LAG') {
+        const offset = Number(spec.args?.[1] ?? 1);
+        const fallback = spec.args?.[2] ?? null;
+        const targetIdx = func === 'LEAD' ? idx + offset : idx - offset;
+
+        if (targetIdx >= 0 && targetIdx < partitionLength) {
+          const targetRow = partitionEntries[targetIdx].row;
+          outputRows[entry.originalIndex][outputColIdx] = valColIdx !== -1 ? targetRow[valColIdx] : null;
+        } else {
+          outputRows[entry.originalIndex][outputColIdx] = fallback;
+        }
+      } else if (['SUM', 'AVG', 'MIN', 'MAX', 'COUNT'].includes(func)) {
+        const [startIdx, endIdx] = getFrameBounds(idx, partitionLength, spec.frame);
+        const frameSlice = partitionEntries.slice(startIdx, endIdx + 1);
+
+        if (func === 'COUNT') {
+          if (valColIdx === -1 || spec.targetColumn === '*') {
+            outputRows[entry.originalIndex][outputColIdx] = frameSlice.length;
+          } else {
+            const validCount = frameSlice.filter(e => e.row[valColIdx] !== null && e.row[valColIdx] !== undefined).length;
+            outputRows[entry.originalIndex][outputColIdx] = validCount;
+          }
+        } else {
+          const vals = frameSlice
+            .map(e => (valColIdx !== -1 ? e.row[valColIdx] : null))
+            .filter(v => v !== null && v !== undefined);
+
+          if (vals.length === 0) {
+            outputRows[entry.originalIndex][outputColIdx] = null;
+          } else if (func === 'SUM') {
+            const sum = vals.reduce((acc, v) => acc + Number(v), 0);
+            outputRows[entry.originalIndex][outputColIdx] = sum;
+          } else if (func === 'AVG') {
+            const sum = vals.reduce((acc, v) => acc + Number(v), 0);
+            outputRows[entry.originalIndex][outputColIdx] = sum / vals.length;
+          } else if (func === 'MIN') {
+            const numericVals = vals.map(v => Number(v));
+            if (numericVals.every(v => !isNaN(v))) {
+              outputRows[entry.originalIndex][outputColIdx] = Math.min(...numericVals);
+            } else {
+              outputRows[entry.originalIndex][outputColIdx] = vals.reduce((m, v) => (String(v) < String(m) ? v : m), vals[0]);
+            }
+          } else if (func === 'MAX') {
+            const numericVals = vals.map(v => Number(v));
+            if (numericVals.every(v => !isNaN(v))) {
+              outputRows[entry.originalIndex][outputColIdx] = Math.max(...numericVals);
+            } else {
+              outputRows[entry.originalIndex][outputColIdx] = vals.reduce((m, v) => (String(v) > String(m) ? v : m), vals[0]);
+            }
+          }
+        }
       }
 
       prevRow = entry.row;
@@ -376,6 +485,18 @@ export function evaluateRankingWindowFunction(
 
   return { columns: resultColumns, rows: outputRows };
 }
+
+/**
+ * Backward compatibility alias for evaluateWindowFunction
+ */
+export function evaluateRankingWindowFunction(
+  columns: string[],
+  rows: any[][],
+  spec: WindowSpec
+): { columns: string[]; rows: any[][] } {
+  return evaluateWindowFunction(columns, rows, spec);
+}
+
 
 // ── SQLExecutor Class ─────────────────────────────────────────────────────────
 

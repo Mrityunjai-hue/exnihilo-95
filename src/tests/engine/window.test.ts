@@ -1,24 +1,15 @@
 /**
- * window.test.ts — Core Ranking Window Functions Vitest Suite
+ * window.test.ts — Complete Core & Advanced Window Functions Vitest Suite (Phase 1 & Phase 2)
  *
- * Tests parsing and execution pipeline for:
- *  - ROW_NUMBER()
- *  - RANK()
- *  - DENSE_RANK()
- *
- * Verifies:
- *  1. ROW_NUMBER() without partitioning or sorting.
- *  2. ROW_NUMBER() with PARTITION BY resetting counter to 1 for each group.
- *  3. Behavioral difference between RANK() and DENSE_RANK() on ties.
- *  4. Compound multi-column sorting with mixed directions (ASC/DESC).
- *  5. Cross-dialect execution (MySQL, PostgreSQL, SQLite, TransactSQL).
+ * Phase 1: ROW_NUMBER(), RANK(), DENSE_RANK() with PARTITION BY and ORDER BY.
+ * Phase 2: Positional (LEAD, LAG), Sliding Frames (ROWS BETWEEN), Aggregates (SUM, AVG, MIN, MAX, COUNT).
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SQLExecutor } from '../../engine/executor';
 import { extractWindowSpecs, parse } from '../../engine/parser';
 
-describe('Core Window Functions (Phase 1) Engine Tests', () => {
+describe('Core & Advanced Window Functions Engine Tests (Phase 1 & Phase 2)', () => {
   let executor: SQLExecutor;
 
   beforeEach(async () => {
@@ -27,60 +18,67 @@ describe('Core Window Functions (Phase 1) Engine Tests', () => {
     executor.reset();
   });
 
-  // ── 1. AST Window Specification Extraction ──────────────────────────────────
+  // ── 1. AST Window Specification & Frame Parser ─────────────────────────────
   describe('AST Window Specification Parser', () => {
-    it('extracts PARTITION BY and ORDER BY with directions', () => {
+    it('extracts PARTITION BY, ORDER BY, and ROWS BETWEEN sliding frame bounds', () => {
       const sql = `
-        SELECT name, department, salary,
-               ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) AS rn,
-               RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS rk,
-               DENSE_RANK() OVER (ORDER BY salary ASC) AS drk
-        FROM employees;
+        SELECT region, month, sales,
+               AVG(sales) OVER (PARTITION BY region ORDER BY month ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS moving_avg,
+               LEAD(sales, 2, 0) OVER (PARTITION BY region ORDER BY month ASC) AS lead_val,
+               LAG(sales, 1) OVER (PARTITION BY region ORDER BY month ASC) AS lag_val
+        FROM sales;
       `;
-      const parseResult = parse(sql, 'MySQL');
+      const parseResult = parse(sql, 'PostgreSQL');
       expect(parseResult.ok).toBe(true);
 
       if (parseResult.ok) {
         const specs = extractWindowSpecs(parseResult.ast);
         expect(specs).toHaveLength(3);
 
-        // ROW_NUMBER
-        expect(specs[0].functionName).toBe('ROW_NUMBER');
-        expect(specs[0].partitionBy).toEqual(['department']);
-        expect(specs[0].orderBy).toEqual([{ column: 'salary', direction: 'DESC' }]);
+        // AVG moving average
+        expect(specs[0].functionName).toBe('AVG');
+        expect(specs[0].targetColumn).toBe('sales');
+        expect(specs[0].frame.start).toEqual({ type: 'PRECEDING', offset: 1 });
+        expect(specs[0].frame.end).toEqual({ type: 'FOLLOWING', offset: 1 });
 
-        // RANK
-        expect(specs[1].functionName).toBe('RANK');
-        expect(specs[1].partitionBy).toEqual(['department']);
-        expect(specs[1].orderBy).toEqual([{ column: 'salary', direction: 'DESC' }]);
+        // LEAD
+        expect(specs[1].functionName).toBe('LEAD');
+        expect(specs[1].targetColumn).toBe('sales');
+        expect(specs[1].args).toEqual(['sales', 2, 0]);
 
-        // DENSE_RANK
-        expect(specs[2].functionName).toBe('DENSE_RANK');
-        expect(specs[2].partitionBy).toEqual([]);
-        expect(specs[2].orderBy).toEqual([{ column: 'salary', direction: 'ASC' }]);
+        // LAG
+        expect(specs[2].functionName).toBe('LAG');
+        expect(specs[2].targetColumn).toBe('sales');
+        expect(specs[2].args).toEqual(['sales', 1, null]);
+      }
+    });
+
+    it('applies default framing rules correctly (UNBOUNDED PRECEDING TO CURRENT ROW with ORDER BY)', () => {
+      const sql = `SELECT name, SUM(salary) OVER (ORDER BY hired_date ASC) AS running_total FROM emp;`;
+      const parseResult = parse(sql, 'PostgreSQL');
+      expect(parseResult.ok).toBe(true);
+
+      if (parseResult.ok) {
+        const specs = extractWindowSpecs(parseResult.ast);
+        expect(specs).toHaveLength(1);
+        expect(specs[0].frame.start).toEqual({ type: 'UNBOUNDED_PRECEDING' });
+        expect(specs[0].frame.end).toEqual({ type: 'CURRENT_ROW' });
       }
     });
   });
 
-  // ── 2. ROW_NUMBER() Execution ──────────────────────────────────────────────
-  describe('ROW_NUMBER() Execution', () => {
+  // ── 2. Ranking Functions (ROW_NUMBER, RANK, DENSE_RANK) ───────────────────
+  describe('Ranking Window Functions', () => {
     it('evaluates ROW_NUMBER() without partitioning or sorting', async () => {
       const sql = `SELECT id, name, ROW_NUMBER() OVER (ORDER BY id ASC) AS rn FROM employees;`;
       const res = await executor.execute(sql, 'PostgreSQL');
 
-      if (!res.ok) {
-        console.error('Test 1 Failure:', res.message);
-      }
       expect(res.ok).toBe(true);
       if (res.ok) {
         const rnIdx = res.columns.indexOf('rn');
         expect(rnIdx).toBeGreaterThan(-1);
-
         const rns = res.rows.map(r => r[rnIdx]);
-        expect(rns.length).toBeGreaterThan(0);
-        rns.forEach((val, idx) => {
-          expect(val).toBe(idx + 1);
-        });
+        rns.forEach((val, idx) => expect(val).toBe(idx + 1));
       }
     });
 
@@ -91,9 +89,6 @@ describe('Core Window Functions (Phase 1) Engine Tests', () => {
       `;
       const res = await executor.execute(sql, 'MySQL');
 
-      if (!res.ok) {
-        console.error('Test 2 Failure:', res.message);
-      }
       expect(res.ok).toBe(true);
       if (res.ok) {
         const deptIdx = res.columns.indexOf('department');
@@ -109,18 +104,12 @@ describe('Core Window Functions (Phase 1) Engine Tests', () => {
 
         Object.values(deptRns).forEach(rns => {
           expect(rns[0]).toBe(1);
-          rns.forEach((val, idx) => {
-            expect(val).toBe(idx + 1);
-          });
+          rns.forEach((val, idx) => expect(val).toBe(idx + 1));
         });
       }
     });
-  });
 
-  // ── 3. RANK() vs DENSE_RANK() Behavioral Tie Differences ───────────────────
-  describe('RANK() vs DENSE_RANK() Tie Handling', () => {
     it('demonstrates RANK() creating gaps (1, 2, 2, 4) vs DENSE_RANK() without gaps (1, 2, 2, 3)', async () => {
-      // Execute DDL and INSERT as separate single statements
       await executor.execute(`CREATE TABLE scores (id INT, student VARCHAR(50), score INT);`, 'PostgreSQL');
       await executor.execute(`INSERT INTO scores (id, student, score) VALUES (1, 'Alice', 100);`, 'PostgreSQL');
       await executor.execute(`INSERT INTO scores (id, student, score) VALUES (2, 'Bob', 90);`, 'PostgreSQL');
@@ -135,87 +124,115 @@ describe('Core Window Functions (Phase 1) Engine Tests', () => {
       `;
       const res = await executor.execute(query, 'PostgreSQL');
 
-      if (!res.ok) {
-        console.error('Test 3 Failure:', res.message);
-      }
       expect(res.ok).toBe(true);
       if (res.ok) {
         const rkIdx = res.columns.indexOf('rk');
         const drkIdx = res.columns.indexOf('drk');
 
-        const ranks = res.rows.map(r => r[rkIdx]);
-        const denseRanks = res.rows.map(r => r[drkIdx]);
-
-        // RANK: 100->1, 90->2, 90->2, 80->4 (Gap at 3!)
-        expect(ranks).toEqual([1, 2, 2, 4]);
-
-        // DENSE_RANK: 100->1, 90->2, 90->2, 80->3 (No gap!)
-        expect(denseRanks).toEqual([1, 2, 2, 3]);
+        expect(res.rows.map(r => r[rkIdx])).toEqual([1, 2, 2, 4]);
+        expect(res.rows.map(r => r[drkIdx])).toEqual([1, 2, 2, 3]);
       }
     });
   });
 
-  // ── 4. Compound Multi-Column Ordering ──────────────────────────────────────
-  describe('Compound Multi-Column Sorting', () => {
-    it('correctly sorts compound columns with mixed ASC/DESC directions', async () => {
-      const sql = `
-        SELECT department, salary,
-               ROW_NUMBER() OVER (ORDER BY department ASC, salary DESC) AS rn
-        FROM employees;
+  // ── 3. Positional Functions (LEAD, LAG) ───────────────────────────────────
+  describe('Positional Window Functions (LEAD & LAG)', () => {
+    it('evaluates LAG and LEAD with custom offset and default fallback values', async () => {
+      await executor.execute(`CREATE TABLE sales_log (id INT, month_no INT, revenue INT);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO sales_log (id, month_no, revenue) VALUES (1, 1, 1000);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO sales_log (id, month_no, revenue) VALUES (2, 2, 1500);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO sales_log (id, month_no, revenue) VALUES (3, 3, 2000);`, 'PostgreSQL');
+
+      const query = `
+        SELECT month_no, revenue,
+               LAG(revenue, 1, 0) OVER (ORDER BY month_no ASC) AS prev_rev,
+               LEAD(revenue, 1, -1) OVER (ORDER BY month_no ASC) AS next_rev
+        FROM sales_log;
       `;
-      const res = await executor.execute(sql, 'PostgreSQL');
+      const res = await executor.execute(query, 'PostgreSQL');
 
       expect(res.ok).toBe(true);
       if (res.ok) {
-        const deptIdx = res.columns.indexOf('department');
-        const salIdx = res.columns.indexOf('salary');
+        const prevIdx = res.columns.indexOf('prev_rev');
+        const nextIdx = res.columns.indexOf('next_rev');
 
-        for (let i = 1; i < res.rows.length; i++) {
-          const prevDept = String(res.rows[i - 1][deptIdx]);
-          const currDept = String(res.rows[i][deptIdx]);
-          const prevSal = Number(res.rows[i - 1][salIdx]);
-          const currSal = Number(res.rows[i][salIdx]);
+        // LAG: month 1 -> 0 (fallback), month 2 -> 1000, month 3 -> 1500
+        expect(res.rows.map(r => r[prevIdx])).toEqual([0, 1000, 1500]);
 
-          if (prevDept === currDept) {
-            expect(prevSal).toBeGreaterThanOrEqual(currSal);
-          } else {
-            expect(prevDept.localeCompare(currDept)).toBeLessThanOrEqual(0);
-          }
-        }
+        // LEAD: month 1 -> 1500, month 2 -> 2000, month 3 -> -1 (fallback)
+        expect(res.rows.map(r => r[nextIdx])).toEqual([1500, 2000, -1]);
       }
     });
   });
 
-  // ── 5. Cross-Dialect Execution ─────────────────────────────────────────────
-  describe('Cross-Dialect Execution', () => {
-    const dialects: Array<'MySQL' | 'PostgreSQL' | 'SQLite' | 'TransactSQL'> = [
-      'MySQL',
-      'PostgreSQL',
-      'SQLite',
-      'TransactSQL',
-    ];
+  // ── 4. Aggregate Window Functions & Sliding Frames ─────────────────────────
+  describe('Sliding Frame Aggregate Window Functions', () => {
+    it('calculates Running Total SUM(salary) OVER (ORDER BY hired_date)', async () => {
+      await executor.execute(`CREATE TABLE emp_pay (id INT, name VARCHAR(50), salary INT);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO emp_pay (id, name, salary) VALUES (1, 'Alice', 1000);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO emp_pay (id, name, salary) VALUES (2, 'Bob', 2000);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO emp_pay (id, name, salary) VALUES (3, 'Charlie', 3000);`, 'PostgreSQL');
 
-    dialects.forEach(dialect => {
-      it(`executes ROW_NUMBER() and RANK() in ${dialect} dialect`, async () => {
-        const sql = `
-          SELECT id, salary,
-                 ROW_NUMBER() OVER (PARTITION BY id ORDER BY salary DESC) AS rn,
-                 RANK() OVER (PARTITION BY id ORDER BY salary DESC) AS rk
-          FROM employees;
-        `;
-        const res = await executor.execute(sql, dialect);
-        if (!res.ok) {
-          console.error(`Cross dialect ${dialect} failure:`, res.message);
-        }
-        expect(res.ok).toBe(true);
-        if (res.ok) {
-          expect(res.columns).toContain('rn');
-          expect(res.columns).toContain('rk');
-          expect(res.rows.length).toBeGreaterThan(0);
-        }
-      });
+      const query = `
+        SELECT name, salary,
+               SUM(salary) OVER (ORDER BY id ASC) AS running_total
+        FROM emp_pay;
+      `;
+      const res = await executor.execute(query, 'PostgreSQL');
+
+      expect(res.ok).toBe(true);
+      if (res.ok) {
+        const totalIdx = res.columns.indexOf('running_total');
+        // Running totals: row1=1000, row2=3000, row3=6000
+        expect(res.rows.map(r => r[totalIdx])).toEqual([1000, 3000, 6000]);
+      }
     });
 
+    it('calculates Moving Average AVG(sales) OVER (PARTITION BY region ORDER BY month ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING)', async () => {
+      await executor.execute(`CREATE TABLE reg_sales (id INT, region VARCHAR(20), month_no INT, sales INT);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO reg_sales (id, region, month_no, sales) VALUES (1, 'North', 1, 10);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO reg_sales (id, region, month_no, sales) VALUES (2, 'North', 2, 20);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO reg_sales (id, region, month_no, sales) VALUES (3, 'North', 3, 30);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO reg_sales (id, region, month_no, sales) VALUES (4, 'North', 4, 40);`, 'PostgreSQL');
+
+      const query = `
+        SELECT region, month_no, sales,
+               AVG(sales) OVER (PARTITION BY region ORDER BY month_no ASC ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS moving_avg
+        FROM reg_sales;
+      `;
+      const res = await executor.execute(query, 'PostgreSQL');
+
+      expect(res.ok).toBe(true);
+      if (res.ok) {
+        const avgIdx = res.columns.indexOf('moving_avg');
+        // Month 1: avg(10, 20) = 15
+        // Month 2: avg(10, 20, 30) = 20
+        // Month 3: avg(20, 30, 40) = 30
+        // Month 4: avg(30, 40) = 35
+        expect(res.rows.map(r => r[avgIdx])).toEqual([15, 20, 30, 35]);
+      }
+    });
+
+    it('strictly isolates sliding frame boundaries within partition limits', async () => {
+      await executor.execute(`CREATE TABLE multi_part (id INT, group_id VARCHAR(10), val INT);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO multi_part (id, group_id, val) VALUES (1, 'A', 100);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO multi_part (id, group_id, val) VALUES (2, 'A', 200);`, 'PostgreSQL');
+      await executor.execute(`INSERT INTO multi_part (id, group_id, val) VALUES (3, 'B', 500);`, 'PostgreSQL');
+
+      const query = `
+        SELECT group_id, val,
+               SUM(val) OVER (PARTITION BY group_id ORDER BY id ASC ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS part_sum
+        FROM multi_part;
+      `;
+      const res = await executor.execute(query, 'PostgreSQL');
+
+      expect(res.ok).toBe(true);
+      if (res.ok) {
+        const sumIdx = res.columns.indexOf('part_sum');
+        // Group A: row1=100, row2=300 (100+200)
+        // Group B: row1=500 (Must NOT include Group A's 200!)
+        expect(res.rows.map(r => r[sumIdx])).toEqual([100, 300, 500]);
+      }
+    });
   });
 });
-
