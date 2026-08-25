@@ -560,14 +560,13 @@ export const Desktop: React.FC = () => {
       <SQLDictionaryWindow
         isOpen={openWindows.sqlDictionary}
         isMinimized={minimizedWindows.sqlDictionary}
-        isMaximized={false}
         zIndex={getZIndex('sqlDictionary')}
         onClose={() => closeWindow('sqlDictionary')}
         onMinimize={() => toggleMinimize('sqlDictionary')}
-        onMaximize={() => {}}
         onFocus={() => focusWindow('sqlDictionary')}
         onTryInIde={handleTryInIde}
       />
+
 
       {/* Help / Query Tutorial Window */}
       <HelpWindow
