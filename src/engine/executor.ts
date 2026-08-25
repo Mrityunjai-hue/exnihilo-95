@@ -57,6 +57,198 @@ export interface ExecutorOptions extends GeneratorOptions {
   catalog?: SessionCatalog;
 }
 
+// ── Pure Dialect Function Evaluators (Static, Pure JS — No eval/new Function) ──
+
+export function evalCoalesce(...args: any[]): any {
+  for (const a of args) {
+    if (a !== null && a !== undefined) return a;
+  }
+  return null;
+}
+
+export function evalNullif(expr1: any, expr2: any): any {
+  if (expr1 === null || expr1 === undefined) return null;
+  if (expr1 == expr2) return null;
+  return expr1;
+}
+
+export function evalConcat(...args: any[]): string | null {
+  if (args.some(a => a === null || a === undefined)) return null;
+  return args.map(a => String(a)).join('');
+}
+
+export function evalSubstring(str: any, pos: any, len?: any): string | null {
+  if (str === null || str === undefined || pos === null || pos === undefined) return null;
+  const s = String(str);
+  const start = Number(pos);
+  const jsStart = start > 0 ? start - 1 : (start < 0 ? Math.max(0, s.length + start) : 0);
+  if (len !== undefined && len !== null) {
+    const length = Number(len);
+    if (length <= 0) return '';
+    return s.substring(jsStart, jsStart + length);
+  }
+  return s.substring(jsStart);
+}
+
+export function evalDateFormat(dateVal: any, formatStr: any): string | null {
+  if (!dateVal || !formatStr) return null;
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return String(dateVal);
+  const fmt = String(formatStr);
+  const pad = (n: number, w = 2) => String(n).padStart(w, '0');
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  return fmt
+    .replace(/%Y/g, String(d.getUTCFullYear()))
+    .replace(/%y/g, pad(d.getUTCFullYear() % 100))
+    .replace(/%m/g, pad(d.getUTCMonth() + 1))
+    .replace(/%c/g, String(d.getUTCMonth() + 1))
+    .replace(/%d/g, pad(d.getUTCDate()))
+    .replace(/%e/g, String(d.getUTCDate()))
+    .replace(/%H/g, pad(d.getUTCHours()))
+    .replace(/%h/g, pad(d.getUTCHours() % 12 || 12))
+    .replace(/%i/g, pad(d.getUTCMinutes()))
+    .replace(/%s/g, pad(d.getUTCSeconds()))
+    .replace(/%M/g, months[d.getUTCMonth()])
+    .replace(/%b/g, monthsShort[d.getUTCMonth()])
+    .replace(/%W/g, days[d.getUTCDay()]);
+}
+
+export function evalToChar(val: any, fmt: any): string | null {
+  if (val === null || val === undefined || fmt === null || fmt === undefined) return null;
+  const d = new Date(val);
+  if (!isNaN(d.getTime())) {
+    const formatStr = String(fmt);
+    const pad = (n: number, w = 2) => String(n).padStart(w, '0');
+    return formatStr
+      .replace(/YYYY/gi, String(d.getUTCFullYear()))
+      .replace(/YY/gi, pad(d.getUTCFullYear() % 100))
+      .replace(/MM/g, pad(d.getUTCMonth() + 1))
+      .replace(/DD/gi, pad(d.getUTCDate()))
+      .replace(/HH24/gi, pad(d.getUTCHours()))
+      .replace(/HH12/gi, pad(d.getUTCHours() % 12 || 12))
+      .replace(/MI/gi, pad(d.getUTCMinutes()))
+      .replace(/SS/gi, pad(d.getUTCSeconds()));
+  }
+  return String(val);
+}
+
+export function evalStrftime(fmt: any, dateVal: any): string | null {
+  if (!fmt || !dateVal) return null;
+  return evalDateFormat(dateVal, fmt);
+}
+
+export function evalFormatMssql(val: any, fmt: any): string | null {
+  if (val === null || val === undefined || fmt === null || fmt === undefined) return null;
+  const d = new Date(val);
+  if (!isNaN(d.getTime())) {
+    const formatStr = String(fmt);
+    const pad = (n: number, w = 2) => String(n).padStart(w, '0');
+    return formatStr
+      .replace(/yyyy/gi, String(d.getUTCFullYear()))
+      .replace(/yy/gi, pad(d.getUTCFullYear() % 100))
+      .replace(/MM/g, pad(d.getUTCMonth() + 1))
+      .replace(/dd/gi, pad(d.getUTCDate()))
+      .replace(/HH/g, pad(d.getUTCHours()))
+      .replace(/mm/g, pad(d.getUTCMinutes()))
+      .replace(/ss/g, pad(d.getUTCSeconds()));
+  }
+  return String(val);
+}
+
+
+export function evalJsonExtract(jsonVal: any, pathStr: any): any {
+  if (jsonVal === null || jsonVal === undefined || !pathStr) return null;
+  let obj: any;
+  if (typeof jsonVal === 'string') {
+    try { obj = JSON.parse(jsonVal); } catch { return null; }
+  } else {
+    obj = jsonVal;
+  }
+  const path = String(pathStr).trim();
+  let cleanPath = path.startsWith('$.') ? path.slice(2) : (path.startsWith('$') ? path.slice(1) : path);
+  if (!cleanPath) return typeof obj === 'object' ? JSON.stringify(obj) : obj;
+
+  const tokens = cleanPath.split('.').flatMap(t => {
+    const m = t.match(/^([^\[]+)(?:\[(\d+)\])?$/);
+    if (m) {
+      const p = [m[1]];
+      if (m[2] !== undefined) p.push(Number(m[2]) as any);
+      return p;
+    }
+    return [t];
+  });
+
+  let curr = obj;
+  for (const tok of tokens) {
+    if (curr === null || curr === undefined) return null;
+    curr = curr[tok];
+  }
+  if (curr === undefined) return null;
+  if (typeof curr === 'object' && curr !== null) return JSON.stringify(curr);
+  return curr;
+}
+
+export function evalJsonValue(jsonVal: any, pathStr: any): string | null {
+  if (jsonVal === null || jsonVal === undefined || !pathStr) return null;
+  let obj: any;
+  if (typeof jsonVal === 'string') {
+    try { obj = JSON.parse(jsonVal); } catch { return null; }
+  } else {
+    obj = jsonVal;
+  }
+  const path = String(pathStr).trim();
+  let cleanPath = path.startsWith('$.') ? path.slice(2) : (path.startsWith('$') ? path.slice(1) : path);
+  if (!cleanPath) return typeof obj === 'object' ? null : String(obj);
+
+  const tokens = cleanPath.split('.').flatMap(t => {
+    const m = t.match(/^([^\[]+)(?:\[(\d+)\])?$/);
+    if (m) {
+      const p = [m[1]];
+      if (m[2] !== undefined) p.push(Number(m[2]) as any);
+      return p;
+    }
+    return [t];
+  });
+
+  let curr = obj;
+  for (const tok of tokens) {
+    if (curr === null || curr === undefined) return null;
+    curr = curr[tok];
+  }
+  if (curr === undefined || curr === null) return null;
+  if (typeof curr === 'object') return null; // MSSQL JSON_VALUE returns NULL for objects/arrays
+  return String(curr);
+}
+
+
+export function evalJsonQuery(jsonVal: any, pathStr: any): string | null {
+  const res = evalJsonExtract(jsonVal, pathStr);
+  if (res === null || res === undefined) return null;
+  if (typeof res === 'object') return JSON.stringify(res);
+  if (typeof res === 'string' && (res.startsWith('{') || res.startsWith('['))) return res;
+  return null;
+}
+
+export function evalPgJsonExtract(jsonVal: any, key: any, asText = false): any {
+  if (jsonVal === null || jsonVal === undefined || key === null || key === undefined) return null;
+  let obj: any;
+  if (typeof jsonVal === 'string') {
+    try { obj = JSON.parse(jsonVal); } catch { return null; }
+  } else {
+    obj = jsonVal;
+  }
+  const cleanKey = String(key).replace(/^['"]|['"]$/g, '');
+  const res = obj[cleanKey];
+  if (res === undefined) return null;
+  if (asText) {
+    return typeof res === 'object' && res !== null ? JSON.stringify(res) : String(res);
+  }
+  return typeof res === 'object' && res !== null ? JSON.stringify(res) : (typeof res === 'string' ? `"${res}"` : String(res));
+}
+
 // ── SQLExecutor Class ─────────────────────────────────────────────────────────
 
 export class SQLExecutor {
@@ -67,6 +259,23 @@ export class SQLExecutor {
 
   constructor(catalog: SessionCatalog = globalCatalog) {
     this.catalog = catalog;
+  }
+
+  private registerCustomFunctions(db: Database): void {
+    db.create_function('COALESCE', evalCoalesce);
+    db.create_function('NULLIF', evalNullif);
+    db.create_function('CONCAT', evalConcat);
+    db.create_function('SUBSTRING', evalSubstring);
+    db.create_function('SUBSTR', evalSubstring);
+    db.create_function('DATE_FORMAT', evalDateFormat);
+    db.create_function('TO_CHAR', evalToChar);
+    db.create_function('strftime', evalStrftime);
+    db.create_function('FORMAT', evalFormatMssql);
+    db.create_function('JSON_EXTRACT', evalJsonExtract);
+    db.create_function('JSON_VALUE', evalJsonValue);
+    db.create_function('JSON_QUERY', evalJsonQuery);
+    db.create_function('PG_JSON_EXTRACT', (val: any, key: any) => evalPgJsonExtract(val, key, false));
+    db.create_function('PG_JSON_EXTRACT_TEXT', (val: any, key: any) => evalPgJsonExtract(val, key, true));
   }
 
   /**
@@ -85,6 +294,7 @@ export class SQLExecutor {
         );
       }
       this.db = new this.SQL.Database();
+      this.registerCustomFunctions(this.db);
     })();
 
     return this.initPromise;
@@ -98,11 +308,23 @@ export class SQLExecutor {
       this.db.close();
       if (this.SQL) {
         this.db = new this.SQL.Database();
+        this.registerCustomFunctions(this.db);
       } else {
         this.db = null;
       }
     }
     this.catalog.reset();
+  }
+
+  private hasTableInSqlite(tableName: string): boolean {
+    if (!this.db) return false;
+    try {
+      const safeName = tableName.replace(/'/g, "''");
+      const res = this.db.exec(`SELECT name FROM sqlite_master WHERE type='table' AND lower(name)=lower('${safeName}')`);
+      return res.length > 0 && res[0].values.length > 0;
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -111,6 +333,8 @@ export class SQLExecutor {
   getCatalog(): SessionCatalog {
     return this.catalog;
   }
+
+
 
   /**
    * Main pipeline entry point: parses, infers, materializes, and executes query.
@@ -186,12 +410,13 @@ export class SQLExecutor {
     const reusedTables:  string[] = [];
 
     for (const tbl of uniqueTables) {
-      if (this.catalog.has(tbl)) {
+      if (this.catalog.has(tbl) || this.hasTableInSqlite(tbl)) {
         reusedTables.push(tbl);
       } else {
         missingTables.push(tbl);
       }
     }
+
 
     const inferredTables: string[] = [];
 
@@ -225,8 +450,13 @@ export class SQLExecutor {
 
     // ── 4. Execute Query in SQLite WASM ───────────────────────────────────────
     try {
-      const results = this.db.exec(trimmedQuery);
+      const executableQuery = trimmedQuery
+        .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->>\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT_TEXT($1, $2)')
+        .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT($1, $2)');
+
+      const results = this.db.exec(executableQuery);
       const executionTimeMs = performance.now() - startTime;
+
 
       if (results.length === 0) {
         const rowsModified = (this.db as any).getRowsModified ? (this.db as any).getRowsModified() : 0;

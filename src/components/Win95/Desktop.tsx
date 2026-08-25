@@ -25,6 +25,10 @@ import { useAuth } from '../../hooks/useAuth';
 import { AuthWindow } from './AuthWindow';
 import { AdminDashboard, SessionStats } from './AdminDashboard';
 import { ErrorBoundary } from './ErrorBoundary';
+import { SQLDictionaryWindow } from './SQLDictionaryWindow';
+import { DialectName } from '../../data/dialectCommands';
+
+
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -67,6 +71,7 @@ export const Desktop: React.FC = () => {
     ide: true,
     welcome: true,
     help: false,
+    sqlDictionary: false,
     wizard: false,
     settings: false,
     shutdown: false,
@@ -79,6 +84,7 @@ export const Desktop: React.FC = () => {
     ide: false,
     welcome: false,
     help: false,
+    sqlDictionary: false,
     wizard: false,
     settings: false,
     shutdown: false,
@@ -105,6 +111,15 @@ export const Desktop: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [executionTimeMs, setExecutionTimeMs] = useState<number | null>(null);
   const [activeError, setActiveError] = useState<ClassifiedError | null>(null);
+
+  const handleTryInIde = (query: string, targetDialect: DialectName) => {
+    setDialect(targetDialect as Dialect);
+    setQueryText(query);
+    setMinimizedWindows((prev) => ({ ...prev, ide: false }));
+    setOpenWindows((prev) => ({ ...prev, ide: true }));
+    focusWindow('ide');
+  };
+
 
   // Mobile Viewport Detection & Force Desktop Override
   const [isMobileViewport, setIsMobileViewport] = useState<boolean>(false);
@@ -256,7 +271,8 @@ export const Desktop: React.FC = () => {
   const windowsMeta: WindowMeta[] = [
     { id: 'ide', title: 'ExNihilo SQL Studio', icon: '🗄️', isOpen: openWindows.ide, isMinimized: minimizedWindows.ide, zIndex: getZIndex('ide') },
     { id: 'welcome', title: 'Welcome to ExNihilo 95', icon: '✨', isOpen: openWindows.welcome, isMinimized: minimizedWindows.welcome, zIndex: getZIndex('welcome') },
-    { id: 'help', title: 'ExNihilo Query Guide', icon: '📖', isOpen: openWindows.help, isMinimized: minimizedWindows.help, zIndex: getZIndex('help') },
+    { id: 'sqlDictionary', title: '📖 SQL Dictionary', icon: '📖', isOpen: openWindows.sqlDictionary, isMinimized: minimizedWindows.sqlDictionary, zIndex: getZIndex('sqlDictionary') },
+    { id: 'help', title: 'ExNihilo Query Guide', icon: '❓', isOpen: openWindows.help, isMinimized: minimizedWindows.help, zIndex: getZIndex('help') },
     { id: 'wizard', title: 'Setup Wizard', icon: '🧙‍♂️', isOpen: openWindows.wizard, isMinimized: minimizedWindows.wizard, zIndex: getZIndex('wizard') },
     { id: 'settings', title: 'Options & Control Panel', icon: '⚙️', isOpen: openWindows.settings, isMinimized: false, zIndex: getZIndex('settings') },
     { id: 'contributors', title: 'Join the Team', icon: '🤝', isOpen: openWindows.contributors, isMinimized: minimizedWindows.contributors, zIndex: getZIndex('contributors') },
@@ -320,9 +336,16 @@ export const Desktop: React.FC = () => {
             <button
               className="win95-button"
               style={{ fontSize: '11px', padding: '2px 8px' }}
+              onClick={() => focusWindow('sqlDictionary')}
+            >
+              📖 SQL Dictionary
+            </button>
+            <button
+              className="win95-button"
+              style={{ fontSize: '11px', padding: '2px 8px' }}
               onClick={() => focusWindow('help')}
             >
-              📖 SQL Query Guide
+              ❓ Query Tutorial
             </button>
             <button
               className="win95-button"
@@ -370,12 +393,23 @@ export const Desktop: React.FC = () => {
 
         <div
           className="win95-desktop-icon"
+          onDoubleClick={() => focusWindow('sqlDictionary')}
+          onClick={() => focusWindow('sqlDictionary')}
+          title="SQL Dictionary & Dialect Reference"
+        >
+          <div className="icon-symbol">📖</div>
+          <span>SQL Dictionary</span>
+        </div>
+
+        <div
+          className="win95-desktop-icon"
           onDoubleClick={() => focusWindow('help')}
           onClick={() => focusWindow('help')}
         >
-          <div className="icon-symbol">📖</div>
+          <div className="icon-symbol">❓</div>
           <span>Query Tutorial</span>
         </div>
+
 
         <div
           className="win95-desktop-icon"
@@ -522,6 +556,19 @@ export const Desktop: React.FC = () => {
         onClearHistory={() => setSessionStats((prev) => ({ ...prev, queryHistory: [] }))}
       />
 
+      {/* SQL Dictionary & Dialect Reference Window */}
+      <SQLDictionaryWindow
+        isOpen={openWindows.sqlDictionary}
+        isMinimized={minimizedWindows.sqlDictionary}
+        isMaximized={false}
+        zIndex={getZIndex('sqlDictionary')}
+        onClose={() => closeWindow('sqlDictionary')}
+        onMinimize={() => toggleMinimize('sqlDictionary')}
+        onMaximize={() => {}}
+        onFocus={() => focusWindow('sqlDictionary')}
+        onTryInIde={handleTryInIde}
+      />
+
       {/* Help / Query Tutorial Window */}
       <HelpWindow
         isOpen={openWindows.help}
@@ -532,6 +579,7 @@ export const Desktop: React.FC = () => {
         onFocus={() => focusWindow('help')}
         onLoadQuery={handleLoadQuery}
       />
+
 
       {/* Setup Wizard Window */}
       <SetupWizard

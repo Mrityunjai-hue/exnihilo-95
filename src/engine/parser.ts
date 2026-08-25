@@ -118,3 +118,34 @@ export function astify(queryText: string, dialect: Dialect): AST | AST[] {
   if (!result.ok) throw result.raw;
   return result.ast;
 }
+
+/**
+ * Extract all function names called in an AST for verification & testing.
+ */
+export function extractFunctionNames(ast: AST | AST[]): string[] {
+  const names: string[] = [];
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (node.type === 'function' && node.name) {
+      if (typeof node.name === 'string') {
+        names.push(node.name.toUpperCase());
+      } else if (Array.isArray(node.name?.name)) {
+        node.name.name.forEach((n: any) => {
+          if (n?.value) names.push(String(n.value).toUpperCase());
+        });
+      }
+    }
+    for (const key of Object.keys(node)) {
+      if (key !== 'over' && typeof node[key] === 'object') {
+        walk(node[key]);
+      }
+    }
+  };
+  walk(ast);
+  return Array.from(new Set(names));
+}
+
