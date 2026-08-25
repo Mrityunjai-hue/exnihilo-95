@@ -484,7 +484,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
         {/* Topics Sidebar */}
         <div
           className="win95-inset"
-          style={{ width: '230px', height: '100%', overflowY: 'auto', padding: '4px' }}
+          style={{ width: '230px', height: '100%', overflowY: 'auto', padding: '4px 4px 48px 4px', boxSizing: 'border-box' }}
         >
           <div style={{ fontWeight: 'bold', marginBottom: '6px', fontSize: '11px', color: '#000080' }}>
             📂 Help Topics
@@ -514,11 +514,14 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
         {/* Topic Reader Pane */}
         <div
           className="win95-inset"
-          style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '12px', background: '#ffffff' }}
+          style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '12px 14px 48px 14px', background: '#ffffff', boxSizing: 'border-box' }}
         >
-          {currentTopic.content}
+          <div style={{ paddingBottom: '24px' }}>
+            {currentTopic.content}
+          </div>
         </div>
       </div>
+
 
       {/* Status Bar */}
       <div className="win95-statusbar">

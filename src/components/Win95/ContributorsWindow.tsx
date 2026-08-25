@@ -111,7 +111,8 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
       </div>
 
       {/* Content Area */}
-      <div style={{ flex: 1, overflow: 'auto', background: '#ffffff', padding: '14px', fontSize: '11px', lineHeight: '1.7' }}>
+      <div style={{ flex: 1, overflow: 'auto', background: '#ffffff', padding: '14px 14px 48px 14px', boxSizing: 'border-box', fontSize: '11px', lineHeight: '1.7' }}>
+
 
         {/* ─── OVERVIEW TAB ─── */}
         {activeTab === 'overview' && (

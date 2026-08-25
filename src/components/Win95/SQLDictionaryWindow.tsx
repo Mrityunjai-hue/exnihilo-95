@@ -285,7 +285,8 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
             height: '100%',
             overflowY: 'auto',
             background: '#ffffff',
-            padding: '2px',
+            padding: '2px 2px 48px 2px',
+            boxSizing: 'border-box',
           }}
         >
           <div style={{ padding: '4px 6px', background: '#000080', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', marginBottom: '2px' }}>
@@ -339,10 +340,11 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
             height: '100%',
             overflowY: 'auto',
             background: '#ffffff',
-            padding: '12px',
+            padding: '12px 14px 48px 14px',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
+            boxSizing: 'border-box',
           }}
         >
           {activeItem ? (
