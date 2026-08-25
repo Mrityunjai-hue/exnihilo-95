@@ -1,5 +1,6 @@
 /**
- * SQLDictionaryWindow.tsx — Authentic Windows 95 SQL Dictionary & Dialect Reference
+ * SQLDictionaryWindow.tsx — Clean Windows 95 Master-Detail SQL Dictionary & Reference
+ * Designed for maximum readability, zero clutter, and comprehensive dialect reference.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -10,6 +11,7 @@ import {
   DIALECT_METADATA,
   DialectName,
   CommandCategory,
+  SQLDictionaryItem,
 } from '../../data/dialectCommands';
 
 interface SQLDictionaryWindowProps {
@@ -31,22 +33,23 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
   onFocus,
   onTryInIde,
 }) => {
-  const { position, handleMouseDown } = useDraggable({ x: 90, y: 40 });
+  const { position, handleMouseDown } = useDraggable({ x: 70, y: 35 });
   const [isMaximized, setIsMaximized] = useState(false);
   const [selectedDialect, setSelectedDialect] = useState<DialectName | 'ALL'>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'supported' | 'coming_soon'>('ALL');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedItemId, setSelectedItemId] = useState<string>('dml-select');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const categories: CommandCategory[] = [
+    'DML & Querying',
+    'DDL & Schema',
     'Null Handling',
     'String Functions',
     'Date & Time',
     'JSON & Semi-Structured',
     'Aggregate & Math',
-    'DML & Querying',
-    'DDL & Schema',
     'Advanced & Windowing',
   ];
 
@@ -80,6 +83,15 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
     });
   }, [selectedDialect, statusFilter, categoryFilter, searchQuery]);
 
+  // Selected Item details
+  const activeItem: SQLDictionaryItem = useMemo(() => {
+    return (
+      filteredItems.find((i) => i.id === selectedItemId) ||
+      filteredItems[0] ||
+      SQL_DICTIONARY_ITEMS[0]
+    );
+  }, [filteredItems, selectedItemId]);
+
   const handleCopyCode = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
@@ -103,9 +115,9 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
         position: 'absolute',
         top: `${position.y}px`,
         left: `${position.x}px`,
-        width: '820px',
-        height: '560px',
-        maxHeight: '90vh',
+        width: '880px',
+        height: '590px',
+        maxHeight: '92vh',
         maxWidth: '96vw',
         zIndex,
         display: isMinimized ? 'none' : 'flex',
@@ -125,7 +137,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
       >
         <div className="win95-titlebar-text">
           <span>📖</span>
-          <span>SQL Dictionary & Dialect Reference (ExNihilo 95)</span>
+          <span>SQL Dictionary & Dialect Reference (Windows 95)</span>
         </div>
         <WindowControls
           onMinimize={onMinimize}
@@ -135,252 +147,369 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
         />
       </div>
 
-      {/* ── Top Header & Dialect Tabs ─────────────────────────────────────── */}
+      {/* ── Top Header Controls & Dialect Selector ────────────────────────── */}
       <div style={{ background: '#c0c0c0', padding: '6px 8px', borderBottom: '1px solid #808080' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '11px' }}>
-          <div>
-            <strong style={{ color: '#000080' }}>SQL Command Matrix:</strong> Select a dialect tab to explore commands, view support status (✅ Supported vs ⏳ Coming Soon), and test examples.
-          </div>
-          <div style={{ background: '#e0e0e0', padding: '2px 6px', border: '1px solid #808080', fontWeight: 'bold' }}>
-            {filteredItems.length} / {SQL_DICTIONARY_ITEMS.length} Commands
-          </div>
-        </div>
-
-        {/* Dialect Tabs */}
-        <div style={{ display: 'flex', gap: '2px', borderBottom: '2px solid #808080', paddingTop: '4px' }}>
-          <button
-            type="button"
-            onClick={() => setSelectedDialect('ALL')}
-            className={`win95-button ${selectedDialect === 'ALL' ? 'pressed' : ''}`}
-            style={{
-              fontSize: '11px',
-              padding: '2px 10px',
-              fontWeight: selectedDialect === 'ALL' ? 'bold' : 'normal',
-              color: selectedDialect === 'ALL' ? '#000080' : '#000000',
-            }}
-          >
-            🌐 All Dialects
-          </button>
-          {(Object.keys(DIALECT_METADATA) as DialectName[]).map((dialect) => {
-            const meta = DIALECT_METADATA[dialect];
-            const isSelected = selectedDialect === dialect;
-            return (
-              <button
-                key={dialect}
-                type="button"
-                onClick={() => setSelectedDialect(dialect)}
-                className={`win95-button ${isSelected ? 'pressed' : ''}`}
-                style={{
-                  fontSize: '11px',
-                  padding: '2px 10px',
-                  fontWeight: isSelected ? 'bold' : 'normal',
-                  color: isSelected ? '#000080' : '#000000',
-                }}
-              >
-                {meta.icon} {dialect}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── Filters Bar ────────────────────────────────────────────────────── */}
-      <div style={{ background: '#d4d0c8', padding: '6px 8px', borderBottom: '1px solid #ffffff', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', fontSize: '11px' }}>
-        {/* Status Filter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#c0c0c0', padding: '2px 4px', border: '1px solid #808080' }}>
-          <strong style={{ color: '#555' }}>Status:</strong>
-          <button
-            type="button"
-            onClick={() => setStatusFilter('ALL')}
-            className={`win95-button ${statusFilter === 'ALL' ? 'pressed' : ''}`}
-            style={{ fontSize: '10px', padding: '1px 6px' }}
-          >
-            All
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusFilter('supported')}
-            className={`win95-button ${statusFilter === 'supported' ? 'pressed' : ''}`}
-            style={{ fontSize: '10px', padding: '1px 6px', color: statusFilter === 'supported' ? '#008000' : '#000' }}
-          >
-            ✅ Supported
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusFilter('coming_soon')}
-            className={`win95-button ${statusFilter === 'coming_soon' ? 'pressed' : ''}`}
-            style={{ fontSize: '10px', padding: '1px 6px', color: statusFilter === 'coming_soon' ? '#808000' : '#000' }}
-          >
-            ⏳ Coming Soon
-          </button>
-        </div>
-
-        {/* Category Dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <strong>Category:</strong>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            style={{ background: '#fff', border: '1px solid #808080', padding: '2px 4px', fontSize: '11px' }}
-          >
-            <option value="ALL">All Categories ({categories.length})</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Search Input */}
-        <div style={{ flex: 1, minWidth: '180px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <strong>🔍 Search:</strong>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Type function or command name..."
-            style={{ flex: 1, background: '#fff', border: '1px solid #808080', padding: '2px 6px', fontSize: '11px', fontFamily: 'var(--w95-mono)' }}
-          />
-          {searchQuery && (
+        {/* Dialect Tabs Bar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '2px' }}>
             <button
               type="button"
-              onClick={() => setSearchQuery('')}
-              className="win95-button"
+              onClick={() => setSelectedDialect('ALL')}
+              className={`win95-button ${selectedDialect === 'ALL' ? 'pressed' : ''}`}
+              style={{
+                fontSize: '11px',
+                padding: '2px 10px',
+                fontWeight: selectedDialect === 'ALL' ? 'bold' : 'normal',
+                color: selectedDialect === 'ALL' ? '#000080' : '#000000',
+              }}
+            >
+              🌐 All Dialects
+            </button>
+            {(Object.keys(DIALECT_METADATA) as DialectName[]).map((dialect) => {
+              const meta = DIALECT_METADATA[dialect];
+              const isSelected = selectedDialect === dialect;
+              return (
+                <button
+                  key={dialect}
+                  type="button"
+                  onClick={() => setSelectedDialect(dialect)}
+                  className={`win95-button ${isSelected ? 'pressed' : ''}`}
+                  style={{
+                    fontSize: '11px',
+                    padding: '2px 10px',
+                    fontWeight: isSelected ? 'bold' : 'normal',
+                    color: isSelected ? '#000080' : '#000000',
+                  }}
+                >
+                  {meta.icon} {dialect}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Quick Counter */}
+          <div style={{ fontSize: '11px', background: '#ffffff', padding: '2px 8px', border: '1px solid #808080', fontWeight: 'bold' }}>
+            {filteredItems.length} Commands Available
+          </div>
+        </div>
+
+        {/* Filters Bar: Search & Category Dropdowns */}
+        <div style={{ marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', fontSize: '11px' }}>
+          {/* Search Box */}
+          <div style={{ flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <strong>🔍 Search:</strong>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search SQL keywords, syntax, functions..."
+              style={{
+                flex: 1,
+                background: '#ffffff',
+                border: '1px solid #808080',
+                padding: '2px 6px',
+                fontSize: '11px',
+                fontFamily: 'var(--w95-mono)',
+              }}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="win95-button"
+                style={{ fontSize: '10px', padding: '1px 5px' }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* Category Dropdown */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <strong>Category:</strong>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              style={{ background: '#fff', border: '1px solid #808080', padding: '2px 4px', fontSize: '11px' }}
+            >
+              <option value="ALL">All Categories ({categories.length})</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Status Filter Toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#d4d0c8', padding: '1px 3px', border: '1px solid #808080' }}>
+            <span style={{ fontSize: '10px', color: '#555', marginRight: '2px' }}>Status:</span>
+            <button
+              type="button"
+              onClick={() => setStatusFilter('ALL')}
+              className={`win95-button ${statusFilter === 'ALL' ? 'pressed' : ''}`}
               style={{ fontSize: '10px', padding: '1px 5px' }}
             >
-              ✕
+              All
             </button>
-          )}
+            <button
+              type="button"
+              onClick={() => setStatusFilter('supported')}
+              className={`win95-button ${statusFilter === 'supported' ? 'pressed' : ''}`}
+              style={{ fontSize: '10px', padding: '1px 5px', color: statusFilter === 'supported' ? '#008000' : '#000' }}
+            >
+              ✅ Executable
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter('coming_soon')}
+              className={`win95-button ${statusFilter === 'coming_soon' ? 'pressed' : ''}`}
+              style={{ fontSize: '10px', padding: '1px 5px', color: statusFilter === 'coming_soon' ? '#808000' : '#000' }}
+            >
+              ⏳ Soon
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ── Commands Content Grid ─────────────────────────────────────────── */}
-      <div
-        className="win95-inset"
-        style={{ flex: 1, overflowY: 'auto', padding: '8px', background: '#ffffff' }}
-      >
-        {filteredItems.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '32px', color: '#666' }}>
-            <div style={{ fontSize: '28px', marginBottom: '8px' }}>🔍</div>
-            <strong>No matching SQL commands found</strong>
-            <div style={{ fontSize: '11px', marginTop: '4px' }}>Try clearing your search query or selecting "All Dialects".</div>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedDialect('ALL');
-                setStatusFilter('ALL');
-                setCategoryFilter('ALL');
-                setSearchQuery('');
-              }}
-              className="win95-button"
-              style={{ marginTop: '12px', padding: '4px 12px', fontWeight: 'bold' }}
-            >
-              Reset All Filters
-            </button>
+      {/* ── 2-Pane Master Detail Layout ──────────────────────────────────── */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', padding: '4px', gap: '4px', background: '#c0c0c0' }}>
+        {/* Left Master Pane: Command Index List */}
+        <div
+          className="win95-inset"
+          style={{
+            width: '260px',
+            height: '100%',
+            overflowY: 'auto',
+            background: '#ffffff',
+            padding: '2px',
+          }}
+        >
+          <div style={{ padding: '4px 6px', background: '#000080', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', marginBottom: '2px' }}>
+            📋 Command Index ({filteredItems.length})
           </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '8px' }}>
-            {filteredItems.map((item) => {
-              const isSupported = item.status === 'supported';
-              const targetDialect = selectedDialect !== 'ALL' ? selectedDialect : item.dialects[0];
+
+          {filteredItems.length === 0 ? (
+            <div style={{ padding: '16px', textWrap: 'wrap', textAlign: 'center', color: '#777', fontSize: '11px' }}>
+              No commands match current filter criteria.
+            </div>
+          ) : (
+            filteredItems.map((item) => {
+              const isSelected = activeItem && activeItem.id === item.id;
+              const isExecutable = item.status === 'supported';
 
               return (
                 <div
                   key={item.id}
-                  className="win95-window"
+                  onClick={() => setSelectedItemId(item.id)}
                   style={{
-                    padding: '8px',
-                    background: '#f8f9fa',
+                    padding: '4px 6px',
+                    cursor: 'pointer',
+                    background: isSelected ? '#000080' : 'transparent',
+                    color: isSelected ? '#ffffff' : '#000000',
+                    fontSize: '11px',
                     display: 'flex',
-                    flexDirection: 'column',
+                    alignItems: 'center',
                     justifyContent: 'space-between',
+                    gap: '4px',
+                    borderBottom: '1px solid #f0f0f0',
                   }}
                 >
-                  <div>
-                    {/* Header: Command Name & Status */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px', marginBottom: '4px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#000080', fontFamily: 'var(--w95-mono)' }}>
-                        {item.command}
-                      </div>
-
-                      {isSupported ? (
-                        <span style={{ background: '#e6f4ea', color: '#137333', border: '1px solid #a8dab5', padding: '1px 6px', fontSize: '10px', fontWeight: 'bold' }}>
-                          ✅ Executable
-                        </span>
-                      ) : (
-                        <span style={{ background: '#fef7e0', color: '#b06000', border: '1px solid #fde293', padding: '1px 6px', fontSize: '10px', fontWeight: 'bold' }}>
-                          ⏳ Coming Soon
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Category & Dialect Badges */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '6px' }}>
-                      <span style={{ background: '#e8eaed', color: '#3c4043', padding: '1px 5px', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        {item.category}
-                      </span>
-                      {item.dialects.map((d) => (
-                        <span key={d} style={{ background: '#000080', color: '#ffffff', padding: '1px 5px', fontSize: '10px', fontWeight: 'bold' }}>
-                          {DIALECT_METADATA[d]?.icon} {d}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Syntax Code Block */}
-                    <div style={{ background: '#000000', color: '#00ff00', padding: '6px', fontFamily: 'var(--w95-mono)', fontSize: '11px', marginBottom: '6px', overflowX: 'auto' }}>
-                      <code>{item.syntax}</code>
-                    </div>
-
-                    {/* Description */}
-                    <div style={{ fontSize: '11px', color: '#222', lineHeight: '1.4', marginBottom: '6px' }}>
-                      {item.description}
-                    </div>
-
-                    {/* Notes if available */}
-                    {item.notes && (
-                      <div style={{ fontSize: '10px', background: '#fff8e1', borderLeft: '3px solid #ffb300', padding: '4px', color: '#444', marginBottom: '6px' }}>
-                        💡 <strong>Note:</strong> {item.notes}
-                      </div>
-                    )}
+                  <div style={{ fontFamily: 'var(--w95-mono)', fontWeight: isSelected ? 'bold' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {item.command}
                   </div>
 
-                  {/* Footer Actions */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '6px', borderTop: '1px solid #dfdfdf', marginTop: '4px' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleCopyCode(item.id, item.example)}
-                      className="win95-button"
-                      style={{ fontSize: '10px', padding: '2px 8px' }}
-                    >
-                      {copiedId === item.id ? '✓ Copied!' : '📋 Copy SQL'}
-                    </button>
-
-                    {isSupported && (
-                      <button
-                        type="button"
-                        onClick={() => onTryInIde(item.example, targetDialect)}
-                        className="win95-button"
-                        style={{ fontSize: '11px', padding: '2px 10px', fontWeight: 'bold', color: '#000080' }}
-                      >
-                        ▶ Try in IDE ({targetDialect})
-                      </button>
-                    )}
-                  </div>
+                  <span style={{ fontSize: '10px', opacity: isSelected ? 1 : 0.75, flexShrink: 0 }}>
+                    {isExecutable ? '✅' : '⏳'}
+                  </span>
                 </div>
               );
-            })}
-          </div>
-        )}
+            })
+          )}
+        </div>
+
+        {/* Right Detail Pane: Command Inspector & Student Guide */}
+        <div
+          className="win95-inset"
+          style={{
+            flex: 1,
+            height: '100%',
+            overflowY: 'auto',
+            background: '#ffffff',
+            padding: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
+          {activeItem ? (
+            <div>
+              {/* Header: Title & Status Badge */}
+              <div style={{ borderBottom: '2px solid #000080', paddingBottom: '6px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '16px', color: '#000080', fontFamily: 'var(--w95-mono)', fontWeight: 'bold' }}>
+                    {activeItem.command}
+                  </h2>
+                  <div style={{ fontSize: '10px', color: '#555', marginTop: '2px' }}>
+                    Category: <strong>{activeItem.category}</strong>
+                  </div>
+                </div>
+
+                {activeItem.status === 'supported' ? (
+                  <span style={{ background: '#e6f4ea', color: '#137333', border: '1px solid #a8dab5', padding: '2px 8px', fontSize: '11px', fontWeight: 'bold' }}>
+                    ✅ Executable in ExNihilo IDE
+                  </span>
+                ) : (
+                  <span style={{ background: '#fef7e0', color: '#b06000', border: '1px solid #fde293', padding: '2px 8px', fontSize: '11px', fontWeight: 'bold' }}>
+                    ⏳ Coming Soon / Advanced Dialect
+                  </span>
+                )}
+              </div>
+
+              {/* Dialect Badges */}
+              <div style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', marginRight: '4px' }}>Dialect Support:</span>
+                {activeItem.dialects.map((d) => (
+                  <span
+                    key={d}
+                    style={{
+                      background: '#000080',
+                      color: '#ffffff',
+                      padding: '2px 6px',
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                      borderRadius: '2px',
+                    }}
+                  >
+                    {DIALECT_METADATA[d]?.icon} {d}
+                  </span>
+                ))}
+              </div>
+
+              {/* 1. What It Does */}
+              <div style={{ marginBottom: '12px' }}>
+                <strong style={{ fontSize: '11px', color: '#000080' }}>📘 What It Does:</strong>
+                <p style={{ margin: '4px 0 0 0', fontSize: '12px', lineHeight: '1.5', color: '#222' }}>
+                  {activeItem.description}
+                </p>
+              </div>
+
+              {/* 2. Standard Syntax */}
+              <div style={{ marginBottom: '12px' }}>
+                <strong style={{ fontSize: '11px', color: '#000080' }}>📄 Standard Syntax:</strong>
+                <div style={{ background: '#000000', color: '#00ff00', padding: '8px', fontFamily: 'var(--w95-mono)', fontSize: '11px', marginTop: '4px', border: '1px solid #808080' }}>
+                  <code>{activeItem.syntax}</code>
+                </div>
+              </div>
+
+              {/* 3. Dialect Variations Comparison Table (If Available) */}
+              {activeItem.dialectVariations && activeItem.dialectVariations.length > 0 && (
+                <div style={{ marginBottom: '12px' }}>
+                  <strong style={{ fontSize: '11px', color: '#000080' }}>🔄 Dialect Variations Comparison:</strong>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '4px', fontSize: '11px' }}>
+                    <thead>
+                      <tr style={{ background: '#c0c0c0', borderBottom: '1px solid #808080' }}>
+                        <th style={{ padding: '4px', textAlign: 'left', border: '1px solid #808080' }}>Dialect</th>
+                        <th style={{ padding: '4px', textAlign: 'left', border: '1px solid #808080' }}>Dialect Syntax</th>
+                        <th style={{ padding: '4px', textAlign: 'left', border: '1px solid #808080' }}>Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activeItem.dialectVariations.map((v) => (
+                        <tr key={v.dialect} style={{ background: '#f8f9fa' }}>
+                          <td style={{ padding: '4px', border: '1px solid #dfdfdf', fontWeight: 'bold' }}>
+                            {DIALECT_METADATA[v.dialect]?.icon} {v.dialect}
+                          </td>
+                          <td style={{ padding: '4px', border: '1px solid #dfdfdf', fontFamily: 'var(--w95-mono)', color: '#000080' }}>
+                            <code>{v.syntax}</code>
+                          </td>
+                          <td style={{ padding: '4px', border: '1px solid #dfdfdf', color: '#555' }}>
+                            {v.note || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* 4. Executable Code Example */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <strong style={{ fontSize: '11px', color: '#000080' }}>💡 Code Example:</strong>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyCode(activeItem.id, activeItem.example)}
+                    className="win95-button"
+                    style={{ fontSize: '10px', padding: '1px 6px' }}
+                  >
+                    {copiedId === activeItem.id ? '✓ Copied!' : '📋 Copy SQL'}
+                  </button>
+                </div>
+                <div style={{ background: '#f0f4f8', border: '1px dashed #000080', padding: '8px', fontFamily: 'var(--w95-mono)', fontSize: '11px', color: '#111' }}>
+                  <code>{activeItem.example}</code>
+                </div>
+              </div>
+
+              {/* 5. Notes & Gotchas */}
+              {activeItem.notes && (
+                <div style={{ background: '#fff8e1', borderLeft: '4px solid #ffb300', padding: '6px 10px', fontSize: '11px', color: '#444' }}>
+                  <strong>🎓 Student Note:</strong> {activeItem.notes}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+              Select a command from the left index list to inspect its specification.
+            </div>
+          )}
+
+          {/* Bottom Action Footer */}
+          {activeItem && (
+            <div style={{ marginTop: '16px', paddingTop: '10px', borderTop: '1px solid #c0c0c0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: '11px', color: '#666' }}>
+                Selected Command: <strong>{activeItem.command}</strong>
+              </div>
+
+              {activeItem.status === 'supported' ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onTryInIde(
+                      activeItem.example,
+                      selectedDialect !== 'ALL' ? selectedDialect : activeItem.dialects[0]
+                    )
+                  }
+                  className="win95-button"
+                  style={{
+                    fontSize: '11px',
+                    padding: '4px 14px',
+                    fontWeight: 'bold',
+                    color: '#000080',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <span>▶</span> Try in IDE ({selectedDialect !== 'ALL' ? selectedDialect : activeItem.dialects[0]})
+                </button>
+              ) : (
+                <span style={{ fontSize: '11px', color: '#888', fontStyle: 'italic' }}>
+                  ⏳ Planned for future engine update
+                </span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── Status Bar ────────────────────────────────────────────────────── */}
       <div className="win95-statusbar">
         <div className="win95-statusbar-pane" style={{ flex: 1 }}>
-          Dialect Filter: <strong>{selectedDialect === 'ALL' ? 'All Supported Dialects' : selectedDialect}</strong>
+          Active Selection: <strong>{activeItem?.command || 'None'}</strong> ({activeItem?.category || ''})
         </div>
         <div className="win95-statusbar-pane">
-          ExNihilo SQL Dictionary v1.2
+          ExNihilo SQL Dictionary Matrix v1.3
         </div>
       </div>
     </div>

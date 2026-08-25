@@ -1,25 +1,31 @@
 /**
- * dialectCommands.ts — Comprehensive SQL Dictionary & Command Matrix
+ * dialectCommands.ts — Exhaustive SQL Dictionary & Command Reference Matrix
  *
- * Exhaustive database of SQL commands, functions, and operators across
- * MySQL, PostgreSQL, SQLite, and MSSQL (T-SQL).
+ * Comprehensive reference of SQL commands, functions, operators, clauses, and DDL/DML
+ * across MySQL, PostgreSQL, SQLite, and MSSQL (Transact-SQL).
  *
  * Statuses:
- *  - 'supported': Executable in ExNihilo 95 in-memory engine (✅)
- *  - 'coming_soon': Planned advanced feature (⏳)
+ *  - 'supported': Executable directly in ExNihilo 95 in-memory engine (✅)
+ *  - 'coming_soon': Advanced dialect features planned for future engine releases (⏳)
  */
 
 export type DialectName = 'MySQL' | 'PostgreSQL' | 'SQLite' | 'TransactSQL';
 
 export type CommandCategory =
+  | 'DML & Querying'
+  | 'DDL & Schema'
+  | 'Null Handling'
   | 'String Functions'
   | 'Date & Time'
   | 'JSON & Semi-Structured'
-  | 'Null Handling'
   | 'Aggregate & Math'
-  | 'DDL & Schema'
-  | 'DML & Querying'
   | 'Advanced & Windowing';
+
+export interface DialectVariation {
+  dialect: DialectName;
+  syntax: string;
+  note?: string;
+}
 
 export interface SQLDictionaryItem {
   id: string;
@@ -31,419 +37,641 @@ export interface SQLDictionaryItem {
   status: 'supported' | 'coming_soon';
   example: string;
   notes?: string;
+  dialectVariations?: DialectVariation[];
 }
 
+export const DIALECT_METADATA: Record<DialectName, { name: string; icon: string; tag: string }> = {
+  MySQL: { name: 'MySQL 8.0+', icon: '🐬', tag: 'MySQL' },
+  PostgreSQL: { name: 'PostgreSQL 16+', icon: '🐘', tag: 'PG' },
+  SQLite: { name: 'SQLite 3.45+', icon: '🪶', tag: 'SQLite' },
+  TransactSQL: { name: 'Microsoft T-SQL', icon: '🏢', tag: 'T-SQL' },
+};
+
 export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
-  // ── Null Handling ──────────────────────────────────────────────────────────
+  // ── 1. DML & Querying ──────────────────────────────────────────────────────
+  {
+    id: 'dml-select',
+    command: 'SELECT',
+    syntax: 'SELECT [DISTINCT] columns FROM table [WHERE conditions] [GROUP BY ...] [HAVING ...] [ORDER BY ...]',
+    description: 'Retrieves data rows from one or more database tables.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT id, name, salary FROM employees WHERE salary > 50000 ORDER BY salary DESC;',
+    notes: 'The foundation of data querying across all SQL databases.'
+  },
+  {
+    id: 'dml-insert',
+    command: 'INSERT INTO',
+    syntax: 'INSERT INTO table (col1, col2, ...) VALUES (val1, val2, ...);',
+    description: 'Inserts new data records into a specified table.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "INSERT INTO customers (name, email, age) VALUES ('Alice Smith', 'alice@example.com', 28);",
+    notes: 'Can also insert multiple rows in a single batch statement.'
+  },
+  {
+    id: 'dml-update',
+    command: 'UPDATE',
+    syntax: 'UPDATE table SET col1 = val1, col2 = val2 WHERE condition;',
+    description: 'Modifies existing row records in a table.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "UPDATE employees SET salary = salary * 1.10 WHERE department = 'Engineering';",
+    notes: 'ALWAYS use a WHERE clause unless you explicitly intend to update every row in the table!'
+  },
+  {
+    id: 'dml-delete',
+    command: 'DELETE FROM',
+    syntax: 'DELETE FROM table WHERE condition;',
+    description: 'Removes rows from a table matching a specified condition.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "DELETE FROM orders WHERE status = 'cancelled' AND created_at < '2024-01-01';",
+    notes: 'Unlike TRUNCATE, DELETE operates row-by-row and can be rolled back inside transactions.'
+  },
+  {
+    id: 'dml-where',
+    command: 'WHERE',
+    syntax: 'WHERE condition1 AND/OR condition2',
+    description: 'Filters records based on conditional evaluation BEFORE aggregation.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT * FROM products WHERE price >= 100 AND category = 'Electronics';",
+    notes: 'Evaluates row by row before GROUP BY and HAVING clauses.'
+  },
+  {
+    id: 'dml-group-by',
+    command: 'GROUP BY',
+    syntax: 'GROUP BY column1, column2, ...',
+    description: 'Groups rows sharing identical values into summary rows (e.g. for aggregate functions like SUM, COUNT).',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT department, COUNT(*) AS emp_count, AVG(salary) FROM employees GROUP BY department;',
+    notes: 'Every non-aggregated column in the SELECT list should be included in the GROUP BY clause.'
+  },
+  {
+    id: 'dml-having',
+    command: 'HAVING',
+    syntax: 'HAVING aggregate_condition',
+    description: 'Filters aggregated group results AFTER the GROUP BY step has been performed.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT department, COUNT(*) FROM employees GROUP BY department HAVING COUNT(*) > 5;',
+    notes: 'Use WHERE for filtering raw rows, use HAVING for filtering grouped aggregates.'
+  },
+  {
+    id: 'dml-order-by',
+    command: 'ORDER BY',
+    syntax: 'ORDER BY column1 [ASC|DESC], column2 [ASC|DESC]',
+    description: 'Sorts the query result set in ascending (ASC) or descending (DESC) order.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT name, age, created_at FROM users ORDER BY age DESC, name ASC;',
+    notes: 'Default sorting direction is ASC (ascending) if omitted.'
+  },
+  {
+    id: 'dml-limit-offset',
+    command: 'LIMIT / OFFSET / TOP / FETCH',
+    syntax: 'LIMIT count OFFSET start (MySQL/PG/SQLite) OR SELECT TOP n (T-SQL)',
+    description: 'Restricts the maximum number of rows returned by a query for pagination.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT id, title FROM posts ORDER BY created_at DESC LIMIT 10 OFFSET 20;',
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: 'LIMIT 10 OFFSET 20', note: 'Standard limit offset' },
+      { dialect: 'PostgreSQL', syntax: 'LIMIT 10 OFFSET 20 OR FETCH FIRST 10 ROWS ONLY', note: 'Supports standard ANSI FETCH' },
+      { dialect: 'SQLite', syntax: 'LIMIT 10 OFFSET 20', note: 'Standard SQLite syntax' },
+      { dialect: 'TransactSQL', syntax: 'SELECT TOP 10 ... OR OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY', note: 'Uses TOP or OFFSET/FETCH NEXT' },
+    ]
+  },
+  {
+    id: 'dml-inner-join',
+    command: 'INNER JOIN',
+    syntax: 'SELECT ... FROM tableA INNER JOIN tableB ON tableA.key = tableB.key',
+    description: 'Returns rows when there is a matching key in BOTH tables.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT o.id, c.name, o.total FROM orders o INNER JOIN customers c ON o.customer_id = c.id;',
+    notes: 'Excludes unmatched rows from either side.'
+  },
+  {
+    id: 'dml-left-join',
+    command: 'LEFT JOIN (LEFT OUTER JOIN)',
+    syntax: 'SELECT ... FROM tableA LEFT JOIN tableB ON tableA.key = tableB.key',
+    description: 'Returns ALL rows from the left table, and matched rows from the right table (NULL if no match).',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT c.name, o.id AS order_id FROM customers c LEFT JOIN orders o ON c.id = o.customer_id;',
+    notes: 'Preserves left table records even if right table has 0 matching records.'
+  },
+  {
+    id: 'dml-right-join',
+    command: 'RIGHT JOIN',
+    syntax: 'SELECT ... FROM tableA RIGHT JOIN tableB ON tableA.key = tableB.key',
+    description: 'Returns ALL rows from the right table, and matched rows from the left table.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT e.name, d.dept_name FROM employees e RIGHT JOIN departments d ON e.dept_id = d.id;',
+    notes: 'Supported in MySQL, PG, and T-SQL. (SQLite does not support RIGHT JOIN natively; rewrite as LEFT JOIN).'
+  },
+  {
+    id: 'dml-full-join',
+    command: 'FULL OUTER JOIN',
+    syntax: 'SELECT ... FROM tableA FULL JOIN tableB ON tableA.key = tableB.key',
+    description: 'Returns all records when there is a match in EITHER left or right table records.',
+    category: 'DML & Querying',
+    dialects: ['PostgreSQL', 'TransactSQL'],
+    status: 'coming_soon',
+    example: 'SELECT a.col, b.col FROM tableA a FULL JOIN tableB b ON a.id = b.id;',
+    notes: 'Supported in PG & T-SQL. (Emulated via LEFT JOIN UNION RIGHT JOIN in MySQL/SQLite).'
+  },
+  {
+    id: 'dml-cross-join',
+    command: 'CROSS JOIN',
+    syntax: 'SELECT ... FROM tableA CROSS JOIN tableB',
+    description: 'Produces a Cartesian product combining every row of tableA with every row of tableB.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT s.size, c.color FROM sizes s CROSS JOIN colors c;',
+    notes: 'Result row count equals (rows in A) × (rows in B).'
+  },
+  {
+    id: 'dml-union',
+    command: 'UNION / UNION ALL',
+    syntax: 'SELECT col FROM tableA UNION [ALL] SELECT col FROM tableB',
+    description: 'Combines the result sets of two or more SELECT statements into a single result set.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT email FROM customers UNION ALL SELECT email FROM leads;",
+    notes: 'UNION removes duplicate rows; UNION ALL keeps all duplicates and is faster.'
+  },
+  {
+    id: 'dml-case-when',
+    command: 'CASE WHEN',
+    syntax: 'CASE WHEN cond1 THEN res1 WHEN cond2 THEN res2 ELSE default_res END',
+    description: 'Evaluates conditional logic expressions inside SELECT or UPDATE statements.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT name, salary, CASE WHEN salary > 80000 THEN 'Senior' WHEN salary > 50000 THEN 'Mid' ELSE 'Junior' END AS tier FROM employees;",
+    notes: 'Standard ANSI SQL conditional control flow.'
+  },
+  {
+    id: 'dml-in',
+    command: 'IN / NOT IN',
+    syntax: 'WHERE column IN (val1, val2, ...) OR WHERE column IN (SELECT ...)',
+    description: 'Checks whether a column value matches any value in a list or subquery.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT * FROM orders WHERE status IN ('pending', 'processing', 'shipped');",
+    notes: 'Efficient alternative to multiple OR conditions.'
+  },
+  {
+    id: 'dml-between',
+    command: 'BETWEEN',
+    syntax: 'WHERE column BETWEEN low AND high',
+    description: 'Filters values within an inclusive range (low <= val <= high).',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT * FROM sales WHERE sale_date BETWEEN '2024-01-01' AND '2024-03-31';",
+    notes: 'Includes both boundary values.'
+  },
+  {
+    id: 'dml-like',
+    command: 'LIKE / ILIKE',
+    syntax: "WHERE column LIKE 'pattern%' (% wildcard, _ single char)",
+    description: 'Performs pattern matching string comparison with wildcard characters.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT * FROM users WHERE email LIKE '%@gmail.com';",
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: "email LIKE '%@gmail.com'", note: 'Case-insensitive by default depending on collation' },
+      { dialect: 'PostgreSQL', syntax: "email ILIKE '%@gmail.com'", note: 'ILIKE provides explicit case-insensitive matching' },
+      { dialect: 'SQLite', syntax: "email LIKE '%@gmail.com'", note: 'Case-insensitive for ASCII characters' },
+      { dialect: 'TransactSQL', syntax: "email LIKE '%@gmail.com'", note: 'Supports character set brackets e.g. [a-z]' },
+    ]
+  },
+  {
+    id: 'dml-exists',
+    command: 'EXISTS / NOT EXISTS',
+    syntax: 'WHERE EXISTS (SELECT 1 FROM subtable WHERE subtable.id = maintable.id)',
+    description: 'Tests for the existence of any records in a subquery.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT c.name FROM customers c WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);',
+    notes: 'Returns TRUE as soon as the first matching row is found in the subquery.'
+  },
+
+  // ── 2. DDL & Schema ────────────────────────────────────────────────────────
+  {
+    id: 'ddl-create-table',
+    command: 'CREATE TABLE',
+    syntax: 'CREATE TABLE table_name (col1 datatype constraints, col2 datatype, ...);',
+    description: 'Creates a new table structure in the database schema.',
+    category: 'DDL & Schema',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255) UNIQUE);',
+    notes: 'Supported with data types like INT, VARCHAR, TEXT, DATETIME, DECIMAL, BOOLEAN.'
+  },
+  {
+    id: 'ddl-alter-table',
+    command: 'ALTER TABLE',
+    syntax: 'ALTER TABLE table_name ADD/DROP/MODIFY column_name datatype;',
+    description: 'Modifies an existing table structure (adding, renaming, or dropping columns).',
+    category: 'DDL & Schema',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'ALTER TABLE users ADD COLUMN phone_number VARCHAR(20);',
+    notes: 'SQLite supports ADD COLUMN and RENAME COLUMN.'
+  },
+  {
+    id: 'ddl-drop-table',
+    command: 'DROP TABLE',
+    syntax: 'DROP TABLE [IF EXISTS] table_name;',
+    description: 'Permanently removes a table schema and all contained data from the database.',
+    category: 'DDL & Schema',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'DROP TABLE IF EXISTS old_logs;',
+    notes: 'Irreversible DDL operation.'
+  },
+  {
+    id: 'ddl-truncate-table',
+    command: 'TRUNCATE TABLE',
+    syntax: 'TRUNCATE TABLE table_name;',
+    description: 'Deletes all records from a table quickly by deallocating pages (resets auto-increment IDs).',
+    category: 'DDL & Schema',
+    dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
+    status: 'coming_soon',
+    example: 'TRUNCATE TABLE staging_events;',
+    notes: 'Faster than DELETE FROM table. (SQLite uses DELETE FROM table; DELETE FROM sqlite_sequence WHERE name=table).'
+  },
+  {
+    id: 'ddl-create-index',
+    command: 'CREATE INDEX',
+    syntax: 'CREATE [UNIQUE] INDEX index_name ON table_name (col1, col2);',
+    description: 'Creates a B-Tree index on specified table columns to accelerate query lookups.',
+    category: 'DDL & Schema',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'CREATE INDEX idx_users_email ON users (email);',
+    notes: 'Speed up SELECT queries; slightly slows down INSERT/UPDATE writes.'
+  },
+  {
+    id: 'ddl-create-view',
+    command: 'CREATE VIEW',
+    syntax: 'CREATE VIEW view_name AS SELECT query;',
+    description: 'Creates a virtual table based on the result-set of a SELECT query.',
+    category: 'DDL & Schema',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'coming_soon',
+    example: 'CREATE VIEW active_customers AS SELECT id, name, email FROM customers WHERE active = 1;',
+    notes: 'Views do not store physical data unless materialized.'
+  },
+
+  // ── 3. Null Handling ───────────────────────────────────────────────────────
   {
     id: 'null-coalesce',
     command: 'COALESCE()',
     syntax: 'COALESCE(val1, val2, ...)',
-    description: 'Evaluates the arguments in order and returns the first non-NULL value.',
+    description: 'Returns the first non-NULL value from a list of expressions.',
     category: 'Null Handling',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: "SELECT COALESCE(email, phone, 'No Contact Info') AS contact FROM users;",
-    notes: 'Standard ANSI SQL supported natively across all 4 database engines.'
+    notes: 'Standard ANSI SQL supported across all 4 database engines.'
   },
   {
     id: 'null-nullif',
     command: 'NULLIF()',
     syntax: 'NULLIF(expr1, expr2)',
-    description: 'Returns NULL if expr1 equals expr2; otherwise returns expr1.',
+    description: 'Returns NULL if expr1 equals expr2; otherwise returns expr1. Useful for preventing division by zero.',
     category: 'Null Handling',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
-    example: "SELECT name, NULLIF(age, 0) AS age_or_null FROM customers;",
-    notes: 'Useful for preventing division-by-zero errors in calculations.'
+    example: 'SELECT total / NULLIF(item_count, 0) AS avg_item_price FROM orders;',
+    notes: 'Prevents Division by Zero errors gracefully.'
   },
   {
-    id: 'null-ifnull',
-    command: 'IFNULL() / ISNULL()',
-    syntax: 'IFNULL(val, default) [MySQL/SQLite] | ISNULL(val, default) [MSSQL]',
-    description: 'Replaces NULL with a specified fallback value (dialect shortcut for 2-arg COALESCE).',
+    id: 'null-ifnull-isnull',
+    command: 'IFNULL() / ISNULL() / NVL()',
+    syntax: 'IFNULL(val, fallback) (MySQL/SQLite) OR ISNULL(val, fallback) (T-SQL)',
+    description: 'Replaces NULL values with a specified fallback value.',
     category: 'Null Handling',
-    dialects: ['MySQL', 'SQLite', 'TransactSQL'],
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
-    example: "SELECT name, IFNULL(discount, 0) AS final_discount FROM orders;",
-    notes: 'MySQL and SQLite use IFNULL(); MSSQL uses ISNULL(). Use COALESCE() for cross-dialect compatibility.'
-  },
-  {
-    id: 'null-nvl',
-    command: 'NVL()',
-    syntax: 'NVL(expr1, replace_with)',
-    description: 'Oracle / PL-SQL null replacement function.',
-    category: 'Null Handling',
-    dialects: ['PostgreSQL'],
-    status: 'coming_soon',
-    example: "SELECT NVL(commission, 0) FROM employees;",
-    notes: 'Available in Oracle and PostgreSQL via compatibility extensions.'
+    example: "SELECT IFNULL(discount, 0.00) AS applied_discount FROM products;",
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: 'IFNULL(val, fallback)', note: 'MySQL 2-argument null fallback' },
+      { dialect: 'PostgreSQL', syntax: 'COALESCE(val, fallback)', note: 'Use standard COALESCE() in PG' },
+      { dialect: 'SQLite', syntax: 'IFNULL(val, fallback)', note: 'SQLite alias for COALESCE' },
+      { dialect: 'TransactSQL', syntax: 'ISNULL(val, fallback)', note: 'T-SQL 2-argument null fallback' },
+    ]
   },
 
-  // ── String Functions ───────────────────────────────────────────────────────
+  // ── 4. String Functions ────────────────────────────────────────────────────
   {
-    id: 'str-concat-func',
-    command: 'CONCAT()',
-    syntax: 'CONCAT(str1, str2, ...)',
-    description: 'Concatenates two or more string values into a single string.',
+    id: 'str-concat',
+    command: 'CONCAT() / CONCAT_WS() / || / +',
+    syntax: 'CONCAT(str1, str2, ...) OR str1 || str2 (PG/SQLite) OR str1 + str2 (T-SQL)',
+    description: 'Concatenates two or more strings together into a single string.',
     category: 'String Functions',
-    dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: "SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM employees;",
-    notes: 'In MySQL, if any argument is NULL, CONCAT returns NULL.'
-  },
-  {
-    id: 'str-concat-op-pipe',
-    command: 'String Concatenation (||)',
-    syntax: 'str1 || str2',
-    description: 'Binary operator for concatenating strings.',
-    category: 'String Functions',
-    dialects: ['PostgreSQL', 'SQLite'],
-    status: 'supported',
-    example: "SELECT name || ' (' || email || ')' AS user_label FROM users;",
-    notes: 'Standard ANSI SQL concatenation operator used in PostgreSQL and SQLite.'
-  },
-  {
-    id: 'str-concat-op-plus',
-    command: 'String Concatenation (+)',
-    syntax: 'str1 + str2',
-    description: 'T-SQL binary operator for concatenating strings.',
-    category: 'String Functions',
-    dialects: ['TransactSQL'],
-    status: 'supported',
-    example: "SELECT 'Order #' + CAST(id AS VARCHAR) AS order_ref FROM orders;",
-    notes: 'In MSSQL/T-SQL, + concatenates strings if either operand is string.'
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: "CONCAT(first_name, ' ', last_name)", note: 'CONCAT function' },
+      { dialect: 'PostgreSQL', syntax: "first_name || ' ' || last_name OR CONCAT(...)", note: '|| string operator' },
+      { dialect: 'SQLite', syntax: "first_name || ' ' || last_name", note: '|| string operator' },
+      { dialect: 'TransactSQL', syntax: "first_name + ' ' + last_name OR CONCAT(...)", note: '+ operator or CONCAT()' },
+    ]
   },
   {
     id: 'str-substring',
     command: 'SUBSTRING() / SUBSTR()',
-    syntax: 'SUBSTRING(str, pos, len) [MySQL/PG/MSSQL] | SUBSTR(str, pos, len) [SQLite]',
-    description: 'Extracts a substring starting at a 1-based index position for a specified length.',
+    syntax: 'SUBSTRING(string, start_pos, length) OR SUBSTR(string, start_pos, length)',
+    description: 'Extracts a portion of text starting at a specific position for a specified length.',
     category: 'String Functions',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
-    example: "SELECT SUBSTRING(email, 1, 5) AS prefix FROM users;",
-    notes: 'SQL string indexes start at 1 (not 0).'
-  },
-  {
-    id: 'str-upper-lower',
-    command: 'UPPER() / LOWER()',
-    syntax: 'UPPER(str) | LOWER(str)',
-    description: 'Converts a string to all uppercase or all lowercase characters.',
-    category: 'String Functions',
-    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'supported',
-    example: "SELECT UPPER(name) AS upper_name, LOWER(email) AS lower_email FROM customers;",
-    notes: 'Universally supported across all SQL dialects.'
+    example: "SELECT SUBSTRING(email, 1, 5) AS email_prefix FROM users;",
+    notes: 'Note: SQL string indexes are 1-based (not 0-based).'
   },
   {
     id: 'str-length',
     command: 'LENGTH() / LEN()',
-    syntax: 'LENGTH(str) [MySQL/PG/SQLite] | LEN(str) [MSSQL]',
-    description: 'Returns the character length of a string.',
+    syntax: 'LENGTH(str) (MySQL/PG/SQLite) OR LEN(str) (T-SQL)',
+    description: 'Returns the character length of a text string.',
     category: 'String Functions',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
-    example: "SELECT name, LENGTH(name) AS name_len FROM users WHERE LENGTH(name) > 5;",
-    notes: 'MSSQL uses LEN() while MySQL, PostgreSQL, and SQLite use LENGTH().'
+    example: 'SELECT name, LENGTH(name) AS name_len FROM users ORDER BY name_len DESC;',
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: 'LENGTH(str) / CHAR_LENGTH(str)' },
+      { dialect: 'PostgreSQL', syntax: 'LENGTH(str)' },
+      { dialect: 'SQLite', syntax: 'LENGTH(str)' },
+      { dialect: 'TransactSQL', syntax: 'LEN(str)' },
+    ]
+  },
+  {
+    id: 'str-casing',
+    command: 'UPPER() / LOWER()',
+    syntax: 'UPPER(str) / LOWER(str)',
+    description: 'Converts a text string to uppercase or lowercase letters.',
+    category: 'String Functions',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT UPPER(code) AS code_upper, LOWER(email) AS email_clean FROM users;',
+    notes: 'Essential for case-neutral comparisons.'
+  },
+  {
+    id: 'str-trim',
+    command: 'TRIM() / LTRIM() / RTRIM()',
+    syntax: 'TRIM(str) / LTRIM(str) / RTRIM(str)',
+    description: 'Removes leading and trailing whitespace characters from string data.',
+    category: 'String Functions',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT TRIM('   hello world   ') AS clean_text;",
+    notes: 'LTRIM strips left spaces, RTRIM strips right spaces.'
   },
   {
     id: 'str-replace',
     command: 'REPLACE()',
-    syntax: "REPLACE(str, find_str, replace_with)",
+    syntax: 'REPLACE(string, search_str, replacement_str)',
     description: 'Replaces all occurrences of a specified substring with a new substring.',
     category: 'String Functions',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: "SELECT REPLACE(phone, '-', '') AS clean_phone FROM contacts;",
-    notes: 'Case-sensitive replacement in most dialects.'
+    notes: 'Replaces all occurrences found in the input text.'
+  },
+  {
+    id: 'str-group-concat',
+    command: 'GROUP_CONCAT() / STRING_AGG()',
+    syntax: 'GROUP_CONCAT(col SEPARATOR ",") (MySQL/SQLite) OR STRING_AGG(col, ",") (PG/T-SQL)',
+    description: 'Concatenates string values from multiple grouped rows into a single delimited string.',
+    category: 'String Functions',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'coming_soon',
+    example: 'SELECT dept_id, GROUP_CONCAT(name SEPARATOR ", ") AS members FROM employees GROUP BY dept_id;',
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: "GROUP_CONCAT(name SEPARATOR ', ')" },
+      { dialect: 'PostgreSQL', syntax: "STRING_AGG(name, ', ')" },
+      { dialect: 'SQLite', syntax: "GROUP_CONCAT(name, ', ')" },
+      { dialect: 'TransactSQL', syntax: "STRING_AGG(name, ', ')" },
+    ]
   },
 
-  // ── Date & Time Functions ──────────────────────────────────────────────────
-  {
-    id: 'date-format-mysql',
-    command: 'DATE_FORMAT()',
-    syntax: "DATE_FORMAT(date, '%Y-%m-%d %H:%i:%s')",
-    description: 'Formats a date value according to a specified MySQL format string.',
-    category: 'Date & Time',
-    dialects: ['MySQL'],
-    status: 'supported',
-    example: "SELECT name, DATE_FORMAT(created_at, '%Y-%m-%d') AS join_date FROM users;",
-    notes: 'MySQL specifiers: %Y (4-digit year), %m (2-digit month), %d (2-digit day).'
-  },
-  {
-    id: 'date-to-char-pg',
-    command: 'TO_CHAR()',
-    syntax: "TO_CHAR(date, 'YYYY-MM-DD')",
-    description: 'Converts a timestamp or date to a formatted string representation in PostgreSQL.',
-    category: 'Date & Time',
-    dialects: ['PostgreSQL'],
-    status: 'supported',
-    example: "SELECT name, TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS formatted FROM users;",
-    notes: 'PostgreSQL specifiers: YYYY, MM, DD, HH24, MI, SS.'
-  },
-  {
-    id: 'date-strftime-sqlite',
-    command: 'strftime()',
-    syntax: "strftime('%Y-%m-%d', date_str)",
-    description: 'Formats date/time strings in SQLite using format specifiers.',
-    category: 'Date & Time',
-    dialects: ['SQLite'],
-    status: 'supported',
-    example: "SELECT name, strftime('%Y-%m-%d', created_at) AS created_day FROM users;",
-    notes: 'Notice format string comes FIRST in SQLite strftime(fmt, timestring).'
-  },
-  {
-    id: 'date-format-mssql',
-    command: 'FORMAT()',
-    syntax: "FORMAT(date, 'yyyy-MM-dd')",
-    description: 'Formats a date or number according to a specified locale and format in T-SQL.',
-    category: 'Date & Time',
-    dialects: ['TransactSQL'],
-    status: 'supported',
-    example: "SELECT name, FORMAT(created_at, 'yyyy-MM-dd') AS formatted_date FROM users;",
-    notes: 'T-SQL uses .NET style format strings (yyyy, MM, dd).'
-  },
+  // ── 5. Date & Time ─────────────────────────────────────────────────────────
   {
     id: 'date-now',
-    command: 'NOW() / CURRENT_TIMESTAMP / GETDATE()',
-    syntax: 'NOW() [MySQL] | CURRENT_TIMESTAMP [PG/SQLite] | GETDATE() [MSSQL]',
-    description: 'Returns the current date and time at the start of query execution.',
+    command: 'NOW() / CURRENT_TIMESTAMP',
+    syntax: 'NOW() OR CURRENT_TIMESTAMP OR GETDATE() (T-SQL)',
+    description: 'Returns the current date and time timestamp from the database clock.',
     category: 'Date & Time',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
-    example: "SELECT name, CURRENT_TIMESTAMP AS query_time FROM users;",
-    notes: 'CURRENT_TIMESTAMP is the ANSI standard syntax.'
+    example: 'SELECT NOW() AS current_time_stamp;',
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: 'NOW() / CURRENT_TIMESTAMP()' },
+      { dialect: 'PostgreSQL', syntax: 'NOW() / CURRENT_TIMESTAMP' },
+      { dialect: 'SQLite', syntax: "DATETIME('now') / CURRENT_TIMESTAMP" },
+      { dialect: 'TransactSQL', syntax: 'GETDATE() / CURRENT_TIMESTAMP' },
+    ]
+  },
+  {
+    id: 'date-formatting',
+    command: 'DATE_FORMAT() / TO_CHAR() / STRFTIME() / FORMAT()',
+    syntax: 'DATE_FORMAT(date, fmt) (MySQL) | TO_CHAR(date, fmt) (PG) | STRFTIME(fmt, date) (SQLite) | FORMAT(date, fmt) (T-SQL)',
+    description: 'Formats a date or timestamp value according to a custom specified format pattern.',
+    category: 'Date & Time',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT DATE_FORMAT(created_at, '%Y-%m-%d') AS date_formatted FROM orders;",
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: "DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s')" },
+      { dialect: 'PostgreSQL', syntax: "TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS')" },
+      { dialect: 'SQLite', syntax: "STRFTIME('%Y-%m-%d %H:%M:%S', created_at)" },
+      { dialect: 'TransactSQL', syntax: "FORMAT(created_at, 'yyyy-MM-dd HH:mm:ss')" },
+    ]
+  },
+  {
+    id: 'date-extract',
+    command: 'EXTRACT() / DATEPART() / YEAR() / MONTH()',
+    syntax: 'EXTRACT(part FROM date) OR DATEPART(part, date) OR YEAR(date)',
+    description: 'Extracts a specific sub-component (year, month, day, hour) from a date value.',
+    category: 'Date & Time',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT EXTRACT(YEAR FROM created_at) AS order_year, COUNT(*) FROM orders GROUP BY order_year;',
+    notes: 'Standard ANSI EXTRACT supported in MySQL and PostgreSQL.'
+  },
+  {
+    id: 'date-math',
+    command: 'DATEADD() / DATEDIFF() / INTERVAL',
+    syntax: 'DATE_ADD(date, INTERVAL n unit) OR DATEADD(part, n, date) OR DATEDIFF(date1, date2)',
+    description: 'Performs date arithmetic (adding time intervals or calculating differences between dates).',
+    category: 'Date & Time',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'coming_soon',
+    example: "SELECT DATE_ADD(NOW(), INTERVAL 30 DAY) AS in_30_days;",
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: 'DATE_ADD(created_at, INTERVAL 7 DAY)' },
+      { dialect: 'PostgreSQL', syntax: "created_at + INTERVAL '7 days'" },
+      { dialect: 'SQLite', syntax: "DATE(created_at, '+7 days')" },
+      { dialect: 'TransactSQL', syntax: 'DATEADD(day, 7, created_at)' },
+    ]
   },
 
-  // ── JSON & Semi-Structured ─────────────────────────────────────────────────
+  // ── 6. JSON & Semi-Structured ──────────────────────────────────────────────
   {
-    id: 'json-extract-func',
-    command: 'JSON_EXTRACT()',
-    syntax: "JSON_EXTRACT(json_doc, '$.path')",
-    description: 'Extracts data from a JSON document matching the given path.',
+    id: 'json-extract',
+    command: 'JSON_EXTRACT() / JSON_VALUE() / -> / ->>',
+    syntax: "JSON_EXTRACT(json_doc, '$.path') OR json_col->'key' (PG) OR JSON_VALUE(json_doc, '$.path') (T-SQL)",
+    description: 'Extracts a value, array element, or scalar property from a JSON string column.',
     category: 'JSON & Semi-Structured',
-    dialects: ['MySQL', 'SQLite'],
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
-    example: "SELECT JSON_EXTRACT('{\"user\": {\"name\": \"Alice\"}}', '$.user.name') AS user_name;",
-    notes: 'Path syntax uses $.key or $.array[index].'
+    example: "SELECT id, JSON_EXTRACT(attributes, '$.color') AS item_color FROM products;",
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: "JSON_EXTRACT(metadata, '$.user.role')" },
+      { dialect: 'PostgreSQL', syntax: "metadata->'user'->>'role'" },
+      { dialect: 'SQLite', syntax: "JSON_EXTRACT(metadata, '$.user.role')" },
+      { dialect: 'TransactSQL', syntax: "JSON_VALUE(metadata, '$.user.role')" },
+    ]
   },
   {
-    id: 'json-pg-op-arrow',
-    command: 'JSON Extract Operator (->)',
-    syntax: "json_col -> 'key' or json_col -> index",
-    description: 'PostgreSQL operator to extract a JSON object/field as JSON.',
-    category: 'JSON & Semi-Structured',
-    dialects: ['PostgreSQL'],
-    status: 'supported',
-    example: "SELECT data->'details' AS json_details FROM logs;",
-    notes: 'Returns JSON type (quotes preserved for strings).'
-  },
-  {
-    id: 'json-pg-op-arrow-text',
-    command: 'JSON Text Extract Operator (->>)',
-    syntax: "json_col ->> 'key' or json_col ->> index",
-    description: 'PostgreSQL operator to extract a JSON field as unquoted text.',
-    category: 'JSON & Semi-Structured',
-    dialects: ['PostgreSQL'],
-    status: 'supported',
-    example: "SELECT data->>'role' AS role_text FROM users;",
-    notes: 'Returns scalar text value without surrounding quotes.'
-  },
-  {
-    id: 'json-value-mssql',
-    command: 'JSON_VALUE()',
-    syntax: "JSON_VALUE(json_doc, '$.path')",
-    description: 'Extracts a scalar value (string/number/boolean) from a JSON string in T-SQL.',
-    category: 'JSON & Semi-Structured',
-    dialects: ['TransactSQL'],
-    status: 'supported',
-    example: "SELECT JSON_VALUE('{\"server\": \"prod-1\"}', '$.server') AS env;",
-    notes: 'Returns NULL if path points to an object or array.'
-  },
-  {
-    id: 'json-query-mssql',
+    id: 'json-query',
     command: 'JSON_QUERY()',
     syntax: "JSON_QUERY(json_doc, '$.path')",
-    description: 'Extracts a JSON object or array string from a JSON document in T-SQL.',
+    description: 'Extracts a JSON object or array (fragment) from a JSON document rather than a scalar value.',
     category: 'JSON & Semi-Structured',
-    dialects: ['TransactSQL'],
+    dialects: ['MySQL', 'TransactSQL'],
     status: 'supported',
-    example: "SELECT JSON_QUERY('{\"config\": {\"max_conn\": 100}}', '$.config') AS cfg_obj;",
-    notes: 'Returns NULL if path points to a scalar value.'
+    example: "SELECT JSON_QUERY(payload, '$.items') AS items_array FROM webhooks;",
+    notes: 'Returns JSON object/array intact.'
   },
 
-  // ── Aggregates & Math ──────────────────────────────────────────────────────
+  // ── 7. Aggregate & Math ────────────────────────────────────────────────────
   {
     id: 'agg-count',
     command: 'COUNT()',
-    syntax: 'COUNT(*) | COUNT(column)',
-    description: 'Returns the total number of rows matching query criteria.',
+    syntax: 'COUNT(*) OR COUNT(column) OR COUNT(DISTINCT column)',
+    description: 'Counts the total number of rows matching the query condition.',
     category: 'Aggregate & Math',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
-    example: "SELECT department, COUNT(*) AS total_emps FROM employees GROUP BY department;",
-    notes: 'COUNT(*) counts all rows including NULLs; COUNT(col) ignores NULLs.'
+    example: 'SELECT COUNT(*) AS total_users, COUNT(DISTINCT country) AS unique_countries FROM users;',
+    notes: 'COUNT(*) counts all rows including NULLs; COUNT(column) ignores NULLs.'
   },
   {
-    id: 'agg-avg-sum',
-    command: 'AVG() / SUM()',
-    syntax: 'AVG(numeric_col) | SUM(numeric_col)',
-    description: 'Calculates the average or total sum of a numeric column across rows.',
+    id: 'agg-sum-avg',
+    command: 'SUM() / AVG()',
+    syntax: 'SUM(numeric_col) / AVG(numeric_col)',
+    description: 'Calculates the total sum or arithmetic mean average of a numeric column.',
     category: 'Aggregate & Math',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
-    example: "SELECT department, AVG(salary) AS avg_sal, SUM(salary) AS total_payroll FROM employees GROUP BY department;",
-    notes: 'Ignores NULL values in computation.'
+    example: 'SELECT department, SUM(salary) AS total_payroll, AVG(salary) AS avg_salary FROM employees GROUP BY department;',
+    notes: 'Ignores NULL values during calculation.'
   },
   {
     id: 'agg-min-max',
     command: 'MIN() / MAX()',
-    syntax: 'MIN(col) | MAX(col)',
-    description: 'Returns the minimum or maximum value of a column across grouped rows.',
+    syntax: 'MIN(column) / MAX(column)',
+    description: 'Finds the minimum or maximum value in a set of values.',
     category: 'Aggregate & Math',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
-    example: "SELECT MIN(age) AS youngest, MAX(age) AS oldest FROM users;",
-    notes: 'Works on numbers, dates, and text columns.'
+    example: 'SELECT MIN(price) AS lowest_price, MAX(price) AS highest_price FROM products;',
+    notes: 'Works on numbers, dates, and text columns (alphabetical min/max).'
   },
   {
     id: 'math-round-abs',
-    command: 'ROUND() / ABS()',
-    syntax: 'ROUND(number, decimals) | ABS(number)',
-    description: 'Rounds a number to specified decimals, or computes absolute value.',
+    command: 'ROUND() / ABS() / CEIL() / FLOOR()',
+    syntax: 'ROUND(val, decimals) / ABS(val) / CEIL(val) / FLOOR(val)',
+    description: 'Performs standard mathematical rounding, absolute value, ceiling, or floor calculations.',
     category: 'Aggregate & Math',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
-    example: "SELECT price, ROUND(price * 1.08, 2) AS price_with_tax FROM products;",
-    notes: 'Universally supported in standard SQL.'
+    example: 'SELECT price, ROUND(price, 1) AS rounded_price, ABS(balance) FROM accounts;',
+    notes: 'Standard mathematical scalar functions.'
   },
 
-  // ── DML & Querying ────────────────────────────────────────────────────────
+  // ── 8. Advanced & Windowing ────────────────────────────────────────────────
   {
-    id: 'dml-select',
-    command: 'SELECT ... FROM',
-    syntax: 'SELECT col1, col2 FROM table_name WHERE condition;',
-    description: 'Retrieves data rows from one or more tables in the database.',
-    category: 'DML & Querying',
-    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'supported',
-    example: "SELECT id, name, age, email FROM customers WHERE age > 25 ORDER BY age DESC;",
-    notes: 'Core fundamental DML query construct.'
-  },
-  {
-    id: 'dml-joins',
-    command: 'INNER JOIN / LEFT JOIN',
-    syntax: 'SELECT * FROM t1 JOIN t2 ON t1.id = t2.t1_id;',
-    description: 'Combines columns from two tables based on matching foreign key conditions.',
-    category: 'DML & Querying',
-    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'supported',
-    example: "SELECT o.id, c.name, o.total FROM orders o INNER JOIN customers c ON o.customer_id = c.id;",
-    notes: 'In ExNihilo 95, multi-table joins automatically trigger topological relationship inference!'
-  },
-  {
-    id: 'dml-group-by',
-    command: 'GROUP BY & HAVING',
-    syntax: 'SELECT dept, AVG(salary) FROM emp GROUP BY dept HAVING AVG(salary) > 50000;',
-    description: 'Groups rows sharing property values to calculate summary aggregates.',
-    category: 'DML & Querying',
-    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'supported',
-    example: "SELECT department, COUNT(*) AS cnt FROM employees GROUP BY department HAVING cnt > 1;",
-    notes: 'HAVING filters aggregated summary rows after grouping occurs.'
-  },
-
-  // ── DDL & Schema ──────────────────────────────────────────────────────────
-  {
-    id: 'ddl-create-table',
-    command: 'CREATE TABLE',
-    syntax: 'CREATE TABLE name (col1 TYPE, col2 TYPE);',
-    description: 'Defines a new relational database table with explicit column types.',
-    category: 'DDL & Schema',
-    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'supported',
-    example: "CREATE TABLE products (id INT PRIMARY KEY, title VARCHAR(100), price NUMERIC);",
-    notes: 'ExNihilo 95 supports both explicit CREATE TABLE and automatic zero-config schema inference!'
-  },
-  {
-    id: 'ddl-insert-into',
-    command: 'INSERT INTO',
-    syntax: 'INSERT INTO table (col1, col2) VALUES (val1, val2);',
-    description: 'Inserts new data records into an existing database table.',
-    category: 'DDL & Schema',
-    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'supported',
-    example: "INSERT INTO products (id, title, price) VALUES (1, 'Retro CRT Monitor', 199.99);",
-    notes: 'Multiple row inserts `VALUES (1, ...), (2, ...)` supported.'
-  },
-
-  // ── Advanced & Windowing (Planned ⏳) ──────────────────────────────────────
-  {
-    id: 'adv-window-over',
-    command: 'OVER (PARTITION BY ... ORDER BY ...)',
-    syntax: 'ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC)',
-    description: 'Calculates aggregate or ranking values across a subset of table rows without grouping.',
+    id: 'win-row-number',
+    command: 'ROW_NUMBER() OVER()',
+    syntax: 'ROW_NUMBER() OVER (PARTITION BY group_col ORDER BY sort_col)',
+    description: 'Assigns a sequential integer rank number to each row within a partition.',
     category: 'Advanced & Windowing',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'coming_soon',
-    example: "SELECT name, dept, salary, DENSE_RANK() OVER (PARTITION BY dept ORDER BY salary DESC) FROM emp;",
-    notes: 'Planned for ExNihilo 95 v1.3 Engine Upgrade Phase.'
+    example: 'SELECT name, department, salary, ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) AS rank FROM employees;',
+    notes: 'Essential for Top-N per group queries.'
   },
   {
-    id: 'adv-cte-recursive',
-    command: 'WITH RECURSIVE (Recursive CTE)',
-    syntax: 'WITH RECURSIVE cte_name AS (...) SELECT * FROM cte_name;',
-    description: 'Executes recursive hierarchical graph queries (e.g. org charts, bill of materials).',
-    category: 'Advanced & Windowing',
-    dialects: ['PostgreSQL', 'SQLite', 'MySQL', 'TransactSQL'],
-    status: 'coming_soon',
-    example: "WITH RECURSIVE org AS (SELECT id, manager_id FROM emp UNION ALL SELECT e.id, e.manager_id FROM emp e JOIN org o ON e.manager_id = o.id) SELECT * FROM org;",
-    notes: 'Basic non-recursive CTEs (`WITH cte AS (...) SELECT * FROM cte`) are ALREADY supported in v1.2!'
-  },
-  {
-    id: 'adv-stored-proc',
-    command: 'CREATE PROCEDURE / FUNCTION',
-    syntax: 'CREATE PROCEDURE proc_name () BEGIN ... END;',
-    description: 'Defines reusable procedural code logic executed on the database server.',
-    category: 'Advanced & Windowing',
-    dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
-    status: 'coming_soon',
-    example: "CREATE PROCEDURE UpdateSalaries() BEGIN UPDATE employees SET salary = salary * 1.05; END;",
-    notes: 'In-memory engine currently focuses on instant query execution and synthetic data inference.'
-  },
-  {
-    id: 'adv-triggers',
-    command: 'CREATE TRIGGER',
-    syntax: 'CREATE TRIGGER trg_name AFTER INSERT ON tbl BEGIN ... END;',
-    description: 'Executes custom SQL logic automatically when INSERT/UPDATE/DELETE events occur.',
+    id: 'win-rank-dense',
+    command: 'RANK() / DENSE_RANK() OVER()',
+    syntax: 'RANK() OVER (...) OR DENSE_RANK() OVER (...)',
+    description: 'Ranks rows with tied values (RANK skips rank numbers after ties; DENSE_RANK does not skip numbers).',
     category: 'Advanced & Windowing',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'coming_soon',
-    example: "CREATE TRIGGER log_user_update AFTER UPDATE ON users BEGIN INSERT INTO audit_log VALUES ('updated'); END;",
-    notes: 'Planned for advanced relational trigger simulation phase.'
+    example: 'SELECT name, score, DENSE_RANK() OVER (ORDER BY score DESC) AS position FROM leaderboard;',
+    notes: 'DENSE_RANK produces 1, 2, 2, 3 while RANK produces 1, 2, 2, 4.'
+  },
+  {
+    id: 'win-lead-lag',
+    command: 'LEAD() / LAG() OVER()',
+    syntax: 'LEAD(col, offset) OVER (...) OR LAG(col, offset) OVER (...)',
+    description: 'Accesses data from a subsequent (LEAD) or previous (LAG) row without using self-joins.',
+    category: 'Advanced & Windowing',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'coming_soon',
+    example: 'SELECT sale_date, revenue, LAG(revenue, 1) OVER (ORDER BY sale_date) AS prev_revenue FROM daily_sales;',
+    notes: 'Invaluable for period-over-period growth calculations.'
+  },
+  {
+    id: 'cte-with',
+    command: 'WITH (Common Table Expressions / CTE)',
+    syntax: 'WITH cte_name AS (SELECT ...) SELECT * FROM cte_name',
+    description: 'Defines a temporary named result set that can be referenced within a SELECT, INSERT, UPDATE, or DELETE statement.',
+    category: 'Advanced & Windowing',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'WITH dept_avg AS (SELECT department, AVG(salary) AS avg_sal FROM employees GROUP BY department) SELECT e.name, e.salary, d.avg_sal FROM employees e JOIN dept_avg d ON e.department = d.department WHERE e.salary > d.avg_sal;',
+    notes: 'Improves readability compared to nested subqueries.'
+  },
+  {
+    id: 'cte-recursive',
+    command: 'WITH RECURSIVE',
+    syntax: 'WITH RECURSIVE cte_name AS (base_query UNION ALL recursive_query) SELECT * FROM cte_name',
+    description: 'Performs recursive queries to traverse hierarchical data structures (org charts, tree trees, graph graphs).',
+    category: 'Advanced & Windowing',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'coming_soon',
+    example: 'WITH RECURSIVE org AS (SELECT id, name, manager_id, 1 AS depth FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.name, e.manager_id, o.depth + 1 FROM employees e JOIN org o ON e.manager_id = o.id) SELECT * FROM org;',
+    notes: 'Standard ANSI SQL syntax for tree traversal.'
   }
 ];
-
-export const DIALECT_METADATA: Record<DialectName, { label: string; icon: string; desc: string }> = {
-  MySQL: {
-    label: 'MySQL 8.0+',
-    icon: '🐬',
-    desc: 'World\'s most popular open-source relational database. Uses DATE_FORMAT(), CONCAT(), and JSON_EXTRACT().'
-  },
-  PostgreSQL: {
-    label: 'PostgreSQL 16+',
-    icon: '🐘',
-    desc: 'Advanced enterprise open-source database. Uses TO_CHAR(), || string pipe concat, and -> / ->> JSON operators.'
-  },
-  SQLite: {
-    label: 'SQLite 3.45+',
-    icon: '🪶',
-    desc: 'Self-contained zero-config SQL engine. Uses strftime(), SUBSTR(), and native WASM execution.'
-  },
-  TransactSQL: {
-    label: 'Microsoft T-SQL / MSSQL',
-    icon: '🏢',
-    desc: 'Microsoft SQL Server dialect. Uses FORMAT(), + string concatenation, JSON_VALUE(), and JSON_QUERY().'
-  }
-};
