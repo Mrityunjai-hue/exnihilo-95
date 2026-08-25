@@ -45,6 +45,8 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
   const categories: CommandCategory[] = [
     'DML & Querying',
     'DDL & Schema',
+    'Triggers & Stored Logic',
+    'Transactions & Locks',
     'Null Handling',
     'String Functions',
     'Date & Time',
@@ -52,6 +54,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
     'Aggregate & Math',
     'Advanced & Windowing',
   ];
+
 
   // Filter dictionary items
   const filteredItems = useMemo(() => {

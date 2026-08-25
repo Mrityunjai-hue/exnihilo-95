@@ -1,8 +1,9 @@
 /**
- * dialectCommands.ts — Exhaustive SQL Dictionary & Command Reference Matrix
+ * dialectCommands.ts — Ultimate Exhaustive SQL Dictionary & Command Reference Matrix
  *
- * Comprehensive reference of SQL commands, functions, operators, clauses, and DDL/DML
- * across MySQL, PostgreSQL, SQLite, and MSSQL (Transact-SQL).
+ * Comprehensive reference of ALL SQL commands, functions, operators, clauses, DDL, DML,
+ * Triggers, Procedures, Views, Transactions, and Window Functions across MySQL, PostgreSQL,
+ * SQLite, and MSSQL (Transact-SQL).
  *
  * Statuses:
  *  - 'supported': Executable directly in ExNihilo 95 in-memory engine (✅)
@@ -14,6 +15,8 @@ export type DialectName = 'MySQL' | 'PostgreSQL' | 'SQLite' | 'TransactSQL';
 export type CommandCategory =
   | 'DML & Querying'
   | 'DDL & Schema'
+  | 'Triggers & Stored Logic'
+  | 'Transactions & Locks'
   | 'Null Handling'
   | 'String Functions'
   | 'Date & Time'
@@ -69,7 +72,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: "INSERT INTO customers (name, email, age) VALUES ('Alice Smith', 'alice@example.com', 28);",
-    notes: 'Can also insert multiple rows in a single batch statement.'
+    notes: 'Can insert single rows or multiple batch value rows in one query.'
   },
   {
     id: 'dml-update',
@@ -80,7 +83,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: "UPDATE employees SET salary = salary * 1.10 WHERE department = 'Engineering';",
-    notes: 'ALWAYS use a WHERE clause unless you explicitly intend to update every row in the table!'
+    notes: 'Always use a WHERE clause unless you intend to update every row in the table!'
   },
   {
     id: 'dml-delete',
@@ -91,7 +94,23 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: "DELETE FROM orders WHERE status = 'cancelled' AND created_at < '2024-01-01';",
-    notes: 'Unlike TRUNCATE, DELETE operates row-by-row and can be rolled back inside transactions.'
+    notes: 'Deletes matching rows row-by-row and can be rolled back inside transactions.'
+  },
+  {
+    id: 'dml-upsert',
+    command: 'MERGE / UPSERT / ON CONFLICT / REPLACE INTO',
+    syntax: 'INSERT INTO ... ON CONFLICT (col) DO UPDATE (PG/SQLite) OR REPLACE INTO (MySQL/SQLite) OR MERGE INTO (T-SQL)',
+    description: 'Inserts a new record or updates the existing record if a key constraint collision occurs.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "INSERT INTO users (id, name, visits) VALUES (1, 'Alice', 1) ON CONFLICT(id) DO UPDATE SET visits = visits + 1;",
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: 'INSERT INTO ... ON DUPLICATE KEY UPDATE visits = visits + 1 OR REPLACE INTO ...' },
+      { dialect: 'PostgreSQL', syntax: 'INSERT INTO ... ON CONFLICT (id) DO UPDATE SET visits = users.visits + 1' },
+      { dialect: 'SQLite', syntax: 'INSERT INTO ... ON CONFLICT(id) DO UPDATE SET visits = visits + 1 OR REPLACE INTO ...' },
+      { dialect: 'TransactSQL', syntax: 'MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE ... WHEN NOT MATCHED THEN INSERT ...' },
+    ]
   },
   {
     id: 'dml-where',
@@ -102,18 +121,18 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: "SELECT * FROM products WHERE price >= 100 AND category = 'Electronics';",
-    notes: 'Evaluates row by row before GROUP BY and HAVING clauses.'
+    notes: 'Evaluates row-by-row before GROUP BY and HAVING clauses.'
   },
   {
     id: 'dml-group-by',
     command: 'GROUP BY',
     syntax: 'GROUP BY column1, column2, ...',
-    description: 'Groups rows sharing identical values into summary rows (e.g. for aggregate functions like SUM, COUNT).',
+    description: 'Groups rows sharing identical values into summary rows for aggregate calculations.',
     category: 'DML & Querying',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: 'SELECT department, COUNT(*) AS emp_count, AVG(salary) FROM employees GROUP BY department;',
-    notes: 'Every non-aggregated column in the SELECT list should be included in the GROUP BY clause.'
+    notes: 'Every non-aggregated column in the SELECT list must be in the GROUP BY clause.'
   },
   {
     id: 'dml-having',
@@ -124,7 +143,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: 'SELECT department, COUNT(*) FROM employees GROUP BY department HAVING COUNT(*) > 5;',
-    notes: 'Use WHERE for filtering raw rows, use HAVING for filtering grouped aggregates.'
+    notes: 'Use WHERE for raw rows; use HAVING for grouped aggregate calculations.'
   },
   {
     id: 'dml-order-by',
@@ -139,18 +158,18 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
   },
   {
     id: 'dml-limit-offset',
-    command: 'LIMIT / OFFSET / TOP / FETCH',
-    syntax: 'LIMIT count OFFSET start (MySQL/PG/SQLite) OR SELECT TOP n (T-SQL)',
+    command: 'LIMIT / OFFSET / TOP / FETCH FIRST',
+    syntax: 'LIMIT n OFFSET start (MySQL/PG/SQLite) OR SELECT TOP n (T-SQL) OR FETCH FIRST n ROWS ONLY',
     description: 'Restricts the maximum number of rows returned by a query for pagination.',
     category: 'DML & Querying',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: 'SELECT id, title FROM posts ORDER BY created_at DESC LIMIT 10 OFFSET 20;',
     dialectVariations: [
-      { dialect: 'MySQL', syntax: 'LIMIT 10 OFFSET 20', note: 'Standard limit offset' },
-      { dialect: 'PostgreSQL', syntax: 'LIMIT 10 OFFSET 20 OR FETCH FIRST 10 ROWS ONLY', note: 'Supports standard ANSI FETCH' },
-      { dialect: 'SQLite', syntax: 'LIMIT 10 OFFSET 20', note: 'Standard SQLite syntax' },
-      { dialect: 'TransactSQL', syntax: 'SELECT TOP 10 ... OR OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY', note: 'Uses TOP or OFFSET/FETCH NEXT' },
+      { dialect: 'MySQL', syntax: 'LIMIT 10 OFFSET 20' },
+      { dialect: 'PostgreSQL', syntax: 'LIMIT 10 OFFSET 20 OR FETCH FIRST 10 ROWS ONLY' },
+      { dialect: 'SQLite', syntax: 'LIMIT 10 OFFSET 20' },
+      { dialect: 'TransactSQL', syntax: 'SELECT TOP 10 ... OR OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY' },
     ]
   },
   {
@@ -177,14 +196,14 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
   },
   {
     id: 'dml-right-join',
-    command: 'RIGHT JOIN',
+    command: 'RIGHT JOIN (RIGHT OUTER JOIN)',
     syntax: 'SELECT ... FROM tableA RIGHT JOIN tableB ON tableA.key = tableB.key',
     description: 'Returns ALL rows from the right table, and matched rows from the left table.',
     category: 'DML & Querying',
     dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
     status: 'supported',
     example: 'SELECT e.name, d.dept_name FROM employees e RIGHT JOIN departments d ON e.dept_id = d.id;',
-    notes: 'Supported in MySQL, PG, and T-SQL. (SQLite does not support RIGHT JOIN natively; rewrite as LEFT JOIN).'
+    notes: 'Supported in MySQL, PG, and T-SQL. (In SQLite, rewrite as a LEFT JOIN).'
   },
   {
     id: 'dml-full-join',
@@ -195,7 +214,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['PostgreSQL', 'TransactSQL'],
     status: 'coming_soon',
     example: 'SELECT a.col, b.col FROM tableA a FULL JOIN tableB b ON a.id = b.id;',
-    notes: 'Supported in PG & T-SQL. (Emulated via LEFT JOIN UNION RIGHT JOIN in MySQL/SQLite).'
+    notes: 'Supported natively in PG & T-SQL.'
   },
   {
     id: 'dml-cross-join',
@@ -206,18 +225,34 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: 'SELECT s.size, c.color FROM sizes s CROSS JOIN colors c;',
-    notes: 'Result row count equals (rows in A) × (rows in B).'
+    notes: 'Result count equals (rows in A) × (rows in B).'
   },
   {
     id: 'dml-union',
     command: 'UNION / UNION ALL',
     syntax: 'SELECT col FROM tableA UNION [ALL] SELECT col FROM tableB',
-    description: 'Combines the result sets of two or more SELECT statements into a single result set.',
+    description: 'Combines the result sets of two or more SELECT queries into a single result set.',
     category: 'DML & Querying',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: "SELECT email FROM customers UNION ALL SELECT email FROM leads;",
-    notes: 'UNION removes duplicate rows; UNION ALL keeps all duplicates and is faster.'
+    notes: 'UNION removes duplicate rows; UNION ALL keeps all duplicates and runs faster.'
+  },
+  {
+    id: 'dml-intersect-except',
+    command: 'INTERSECT / EXCEPT (MINUS)',
+    syntax: 'SELECT col FROM tableA INTERSECT | EXCEPT SELECT col FROM tableB',
+    description: 'INTERSECT returns rows present in BOTH queries; EXCEPT returns rows in query 1 but NOT query 2.',
+    category: 'DML & Querying',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT user_id FROM active_2023 INTERSECT SELECT user_id FROM active_2024;',
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: 'INTERSECT / EXCEPT (MySQL 8.0+)' },
+      { dialect: 'PostgreSQL', syntax: 'INTERSECT / EXCEPT' },
+      { dialect: 'SQLite', syntax: 'INTERSECT / EXCEPT' },
+      { dialect: 'TransactSQL', syntax: 'INTERSECT / EXCEPT' },
+    ]
   },
   {
     id: 'dml-case-when',
@@ -262,10 +297,10 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     status: 'supported',
     example: "SELECT * FROM users WHERE email LIKE '%@gmail.com';",
     dialectVariations: [
-      { dialect: 'MySQL', syntax: "email LIKE '%@gmail.com'", note: 'Case-insensitive by default depending on collation' },
+      { dialect: 'MySQL', syntax: "email LIKE '%@gmail.com'" },
       { dialect: 'PostgreSQL', syntax: "email ILIKE '%@gmail.com'", note: 'ILIKE provides explicit case-insensitive matching' },
-      { dialect: 'SQLite', syntax: "email LIKE '%@gmail.com'", note: 'Case-insensitive for ASCII characters' },
-      { dialect: 'TransactSQL', syntax: "email LIKE '%@gmail.com'", note: 'Supports character set brackets e.g. [a-z]' },
+      { dialect: 'SQLite', syntax: "email LIKE '%@gmail.com'" },
+      { dialect: 'TransactSQL', syntax: "email LIKE '%@gmail.com'" },
     ]
   },
   {
@@ -290,7 +325,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: 'CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255) UNIQUE);',
-    notes: 'Supported with data types like INT, VARCHAR, TEXT, DATETIME, DECIMAL, BOOLEAN.'
+    notes: 'Supports INT, VARCHAR, TEXT, DATETIME, DECIMAL, BOOLEAN data types.'
   },
   {
     id: 'ddl-alter-table',
@@ -323,7 +358,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
     status: 'coming_soon',
     example: 'TRUNCATE TABLE staging_events;',
-    notes: 'Faster than DELETE FROM table. (SQLite uses DELETE FROM table; DELETE FROM sqlite_sequence WHERE name=table).'
+    notes: 'Faster than DELETE FROM table.'
   },
   {
     id: 'ddl-create-index',
@@ -347,8 +382,73 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     example: 'CREATE VIEW active_customers AS SELECT id, name, email FROM customers WHERE active = 1;',
     notes: 'Views do not store physical data unless materialized.'
   },
+  {
+    id: 'ddl-constraints',
+    command: 'PRIMARY KEY / FOREIGN KEY / CHECK / UNIQUE',
+    syntax: 'CONSTRAINT fk_name FOREIGN KEY (col) REFERENCES parent_table(id) ON DELETE CASCADE',
+    description: 'Enforces data integrity, foreign key references, and validation rules on table columns.',
+    category: 'DDL & Schema',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'CREATE TABLE orders (id INT PRIMARY KEY, customer_id INT, CONSTRAINT fk_cust FOREIGN KEY (customer_id) REFERENCES customers(id));',
+    notes: 'FOREIGN KEY constraints trigger parent-child table validation.'
+  },
+  {
+    id: 'ddl-create-schema-db',
+    command: 'CREATE DATABASE / CREATE SCHEMA',
+    syntax: 'CREATE DATABASE db_name; OR CREATE SCHEMA schema_name;',
+    description: 'Creates a new database namespace or schema container.',
+    category: 'DDL & Schema',
+    dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
+    status: 'coming_soon',
+    example: 'CREATE SCHEMA analytics_mart;',
+    notes: 'Organizes tables into logical namespaces.'
+  },
 
-  // ── 3. Null Handling ───────────────────────────────────────────────────────
+  // ── 3. Triggers & Stored Logic ──────────────────────────────────────────────
+  {
+    id: 'logic-create-trigger',
+    command: 'CREATE TRIGGER',
+    syntax: 'CREATE TRIGGER trigger_name BEFORE/AFTER INSERT/UPDATE/DELETE ON table FOR EACH ROW BEGIN ... END;',
+    description: 'Executes automatic procedural SQL code when an INSERT, UPDATE, or DELETE operation occurs on a table.',
+    category: 'Triggers & Stored Logic',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'coming_soon',
+    example: 'CREATE TRIGGER audit_log AFTER UPDATE ON accounts FOR EACH ROW INSERT INTO logs (account_id, old_bal, new_bal) VALUES (OLD.id, OLD.balance, NEW.balance);',
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: 'CREATE TRIGGER ... BEFORE/AFTER ... FOR EACH ROW BEGIN ... END' },
+      { dialect: 'PostgreSQL', syntax: 'CREATE TRIGGER ... BEFORE/AFTER ... EXECUTE FUNCTION func_name()' },
+      { dialect: 'SQLite', syntax: 'CREATE TRIGGER ... BEFORE/AFTER ... BEGIN ... END;' },
+      { dialect: 'TransactSQL', syntax: 'CREATE TRIGGER ... ON table AFTER/INSTEAD OF ... AS BEGIN ... END' },
+    ],
+    notes: 'Invaluable for automated audit logging, data validation, and cascading changes.'
+  },
+  {
+    id: 'logic-create-procedure',
+    command: 'CREATE PROCEDURE / CREATE FUNCTION',
+    syntax: 'CREATE PROCEDURE proc_name(IN param1 INT) BEGIN ... END; OR CREATE FUNCTION func_name(...) RETURNS type AS ...',
+    description: 'Stores reusable parameterized SQL business logic on the database server.',
+    category: 'Triggers & Stored Logic',
+    dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
+    status: 'coming_soon',
+    example: 'CREATE PROCEDURE TransferFunds(IN src INT, IN dest INT, IN amt DECIMAL) BEGIN ... END;',
+    notes: 'Encapsulates complex multi-statement transaction logic.'
+  },
+
+  // ── 4. Transactions & Locks ────────────────────────────────────────────────
+  {
+    id: 'tx-transactions',
+    command: 'BEGIN / COMMIT / ROLLBACK / SAVEPOINT',
+    syntax: 'BEGIN TRANSACTION; ... COMMIT; OR ROLLBACK;',
+    description: 'Manages ACID-compliant transaction boundaries to guarantee atomic database operations.',
+    category: 'Transactions & Locks',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'coming_soon',
+    example: 'BEGIN TRANSACTION; UPDATE accounts SET balance = balance - 100 WHERE id = 1; UPDATE accounts SET balance = balance + 100 WHERE id = 2; COMMIT;',
+    notes: 'Ensures that all statements succeed together or none are applied.'
+  },
+
+  // ── 5. Null Handling ───────────────────────────────────────────────────────
   {
     id: 'null-coalesce',
     command: 'COALESCE()',
@@ -381,14 +481,25 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     status: 'supported',
     example: "SELECT IFNULL(discount, 0.00) AS applied_discount FROM products;",
     dialectVariations: [
-      { dialect: 'MySQL', syntax: 'IFNULL(val, fallback)', note: 'MySQL 2-argument null fallback' },
-      { dialect: 'PostgreSQL', syntax: 'COALESCE(val, fallback)', note: 'Use standard COALESCE() in PG' },
-      { dialect: 'SQLite', syntax: 'IFNULL(val, fallback)', note: 'SQLite alias for COALESCE' },
-      { dialect: 'TransactSQL', syntax: 'ISNULL(val, fallback)', note: 'T-SQL 2-argument null fallback' },
+      { dialect: 'MySQL', syntax: 'IFNULL(val, fallback)' },
+      { dialect: 'PostgreSQL', syntax: 'COALESCE(val, fallback)' },
+      { dialect: 'SQLite', syntax: 'IFNULL(val, fallback)' },
+      { dialect: 'TransactSQL', syntax: 'ISNULL(val, fallback)' },
     ]
   },
+  {
+    id: 'null-greatest-least',
+    command: 'GREATEST() / LEAST()',
+    syntax: 'GREATEST(val1, val2, ...) / LEAST(val1, val2, ...)',
+    description: 'Returns the maximum or minimum value from a list of scalar expressions.',
+    category: 'Null Handling',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite'],
+    status: 'supported',
+    example: 'SELECT GREATEST(score1, score2, score3) AS highest_score FROM evaluations;',
+    notes: 'Evaluates across columns for a single row.'
+  },
 
-  // ── 4. String Functions ────────────────────────────────────────────────────
+  // ── 6. String Functions ────────────────────────────────────────────────────
   {
     id: 'str-concat',
     command: 'CONCAT() / CONCAT_WS() / || / +',
@@ -399,10 +510,10 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     status: 'supported',
     example: "SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM employees;",
     dialectVariations: [
-      { dialect: 'MySQL', syntax: "CONCAT(first_name, ' ', last_name)", note: 'CONCAT function' },
-      { dialect: 'PostgreSQL', syntax: "first_name || ' ' || last_name OR CONCAT(...)", note: '|| string operator' },
-      { dialect: 'SQLite', syntax: "first_name || ' ' || last_name", note: '|| string operator' },
-      { dialect: 'TransactSQL', syntax: "first_name + ' ' + last_name OR CONCAT(...)", note: '+ operator or CONCAT()' },
+      { dialect: 'MySQL', syntax: "CONCAT(first_name, ' ', last_name)" },
+      { dialect: 'PostgreSQL', syntax: "first_name || ' ' || last_name OR CONCAT(...)" },
+      { dialect: 'SQLite', syntax: "first_name || ' ' || last_name" },
+      { dialect: 'TransactSQL', syntax: "first_name + ' ' + last_name OR CONCAT(...)" },
     ]
   },
   {
@@ -414,7 +525,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: "SELECT SUBSTRING(email, 1, 5) AS email_prefix FROM users;",
-    notes: 'Note: SQL string indexes are 1-based (not 0-based).'
+    notes: 'SQL string indexes are 1-based (not 0-based).'
   },
   {
     id: 'str-length',
@@ -452,7 +563,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: "SELECT TRIM('   hello world   ') AS clean_text;",
-    notes: 'LTRIM strips left spaces, RTRIM strips right spaces.'
+    notes: 'LTRIM strips left spaces; RTRIM strips right spaces.'
   },
   {
     id: 'str-replace',
@@ -463,7 +574,34 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: "SELECT REPLACE(phone, '-', '') AS clean_phone FROM contacts;",
-    notes: 'Replaces all occurrences found in the input text.'
+    notes: 'Replaces all matching substring instances.'
+  },
+  {
+    id: 'str-instr-position',
+    command: 'INSTR() / POSITION() / CHARINDEX()',
+    syntax: 'INSTR(string, search) OR POSITION(search IN string) OR CHARINDEX(search, string)',
+    description: 'Finds the 1-based character position index of a substring within a text string.',
+    category: 'String Functions',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT INSTR(email, '@') AS domain_start FROM users;",
+    dialectVariations: [
+      { dialect: 'MySQL', syntax: "INSTR(email, '@')" },
+      { dialect: 'PostgreSQL', syntax: "POSITION('@' IN email)" },
+      { dialect: 'SQLite', syntax: "INSTR(email, '@')" },
+      { dialect: 'TransactSQL', syntax: "CHARINDEX('@', email)" },
+    ]
+  },
+  {
+    id: 'str-pad',
+    command: 'LPAD() / RPAD()',
+    syntax: 'LPAD(string, total_length, pad_char) / RPAD(...)',
+    description: 'Pads a string on the left or right with specified characters to reach a target length.',
+    category: 'String Functions',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite'],
+    status: 'supported',
+    example: "SELECT LPAD(account_id, 8, '0') AS formatted_account FROM accounts;",
+    notes: 'Common for formatting fixed-width invoice numbers and codes.'
   },
   {
     id: 'str-group-concat',
@@ -482,7 +620,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     ]
   },
 
-  // ── 5. Date & Time ─────────────────────────────────────────────────────────
+  // ── 7. Date & Time ─────────────────────────────────────────────────────────
   {
     id: 'date-now',
     command: 'NOW() / CURRENT_TIMESTAMP',
@@ -543,7 +681,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     ]
   },
 
-  // ── 6. JSON & Semi-Structured ──────────────────────────────────────────────
+  // ── 8. JSON & Semi-Structured ──────────────────────────────────────────────
   {
     id: 'json-extract',
     command: 'JSON_EXTRACT() / JSON_VALUE() / -> / ->>',
@@ -562,17 +700,17 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
   },
   {
     id: 'json-query',
-    command: 'JSON_QUERY()',
-    syntax: "JSON_QUERY(json_doc, '$.path')",
-    description: 'Extracts a JSON object or array (fragment) from a JSON document rather than a scalar value.',
+    command: 'JSON_QUERY() / JSON_ARRAY() / JSON_OBJECT()',
+    syntax: "JSON_QUERY(json_doc, '$.path') OR JSON_ARRAY(val1, val2) OR JSON_OBJECT(key, val)",
+    description: 'Constructs or queries complex JSON objects and array fragments.',
     category: 'JSON & Semi-Structured',
-    dialects: ['MySQL', 'TransactSQL'],
+    dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
     status: 'supported',
     example: "SELECT JSON_QUERY(payload, '$.items') AS items_array FROM webhooks;",
-    notes: 'Returns JSON object/array intact.'
+    notes: 'Preserves JSON formatting without unquoting.'
   },
 
-  // ── 7. Aggregate & Math ────────────────────────────────────────────────────
+  // ── 9. Aggregate & Math ────────────────────────────────────────────────────
   {
     id: 'agg-count',
     command: 'COUNT()',
@@ -604,7 +742,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: 'SELECT MIN(price) AS lowest_price, MAX(price) AS highest_price FROM products;',
-    notes: 'Works on numbers, dates, and text columns (alphabetical min/max).'
+    notes: 'Works on numbers, dates, and text columns.'
   },
   {
     id: 'math-round-abs',
@@ -618,7 +756,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     notes: 'Standard mathematical scalar functions.'
   },
 
-  // ── 8. Advanced & Windowing ────────────────────────────────────────────────
+  // ── 10. Advanced & Windowing ───────────────────────────────────────────────
   {
     id: 'win-row-number',
     command: 'ROW_NUMBER() OVER()',
@@ -634,7 +772,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     id: 'win-rank-dense',
     command: 'RANK() / DENSE_RANK() OVER()',
     syntax: 'RANK() OVER (...) OR DENSE_RANK() OVER (...)',
-    description: 'Ranks rows with tied values (RANK skips rank numbers after ties; DENSE_RANK does not skip numbers).',
+    description: 'Ranks rows with tied values (RANK skips numbers after ties; DENSE_RANK does not skip).',
     category: 'Advanced & Windowing',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'coming_soon',
@@ -645,7 +783,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     id: 'win-lead-lag',
     command: 'LEAD() / LAG() OVER()',
     syntax: 'LEAD(col, offset) OVER (...) OR LAG(col, offset) OVER (...)',
-    description: 'Accesses data from a subsequent (LEAD) or previous (LAG) row without using self-joins.',
+    description: 'Accesses data from a subsequent (LEAD) or previous (LAG) row without self-joins.',
     category: 'Advanced & Windowing',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'coming_soon',
@@ -661,17 +799,17 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'supported',
     example: 'WITH dept_avg AS (SELECT department, AVG(salary) AS avg_sal FROM employees GROUP BY department) SELECT e.name, e.salary, d.avg_sal FROM employees e JOIN dept_avg d ON e.department = d.department WHERE e.salary > d.avg_sal;',
-    notes: 'Improves readability compared to nested subqueries.'
+    notes: 'Improves query readability over nested subqueries.'
   },
   {
     id: 'cte-recursive',
     command: 'WITH RECURSIVE',
     syntax: 'WITH RECURSIVE cte_name AS (base_query UNION ALL recursive_query) SELECT * FROM cte_name',
-    description: 'Performs recursive queries to traverse hierarchical data structures (org charts, tree trees, graph graphs).',
+    description: 'Performs recursive queries to traverse hierarchical data structures (org charts, tree structures, graph networks).',
     category: 'Advanced & Windowing',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
     status: 'coming_soon',
     example: 'WITH RECURSIVE org AS (SELECT id, name, manager_id, 1 AS depth FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.name, e.manager_id, o.depth + 1 FROM employees e JOIN org o ON e.manager_id = o.id) SELECT * FROM org;',
-    notes: 'Standard ANSI SQL syntax for tree traversal.'
+    notes: 'Standard ANSI SQL syntax for hierarchical tree traversal.'
   }
 ];
