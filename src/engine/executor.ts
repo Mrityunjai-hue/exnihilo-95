@@ -17,11 +17,12 @@
  */
 
 import initSqlJs, { Database, SqlJsStatic } from 'sql.js';
-import { parse, Dialect } from './parser';
+import { parse, Dialect, WindowSpec, WindowOrderClause, extractWindowSpecs } from './parser';
 import { inferSchema, InferredSchemaMap, DEFAULT_COLUMNS, TableSchema, SQLITE_DDL } from './inference';
 import { buildTableGenerationPlan } from './relationships';
 import { generateSyntheticDataset, GeneratorOptions, generateCreateTableSql, generateInsertSql } from './generator';
 import { SessionCatalog, globalCatalog } from './catalog';
+
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -249,7 +250,135 @@ export function evalPgJsonExtract(jsonVal: any, key: any, asText = false): any {
   return typeof res === 'object' && res !== null ? JSON.stringify(res) : (typeof res === 'string' ? `"${res}"` : String(res));
 }
 
+// ── Multi-Pass Window Function Execution Pipeline ─────────────────────────────
+
+/**
+ * Step B Compound Cascading Comparator Function:
+ * Compares two row tuples across multiple ORDER BY columns and directions (ASC / DESC).
+ * Returns -1, 0, or 1 immediately upon encountering the first non-zero comparison score.
+ * Correctly handles mixed directions (e.g. ORDER BY dept ASC, salary DESC) and NULL values.
+ */
+export function compareRows(
+  rowA: any[],
+  rowB: any[],
+  columns: string[],
+  orderBy: WindowOrderClause[]
+): number {
+  for (const clause of orderBy) {
+    const colIdx = columns.findIndex(c => c.toLowerCase() === clause.column.toLowerCase());
+    if (colIdx === -1) continue;
+
+    const valA = rowA[colIdx];
+    const valB = rowB[colIdx];
+
+    if (valA === valB) continue;
+
+    // NULL handling: NULLs sort last in ASC, first in DESC
+    if (valA === null || valA === undefined) return clause.direction === 'ASC' ? 1 : -1;
+    if (valB === null || valB === undefined) return clause.direction === 'ASC' ? -1 : 1;
+
+    let comp = 0;
+    if (typeof valA === 'number' && typeof valB === 'number') {
+      comp = valA - valB;
+    } else if (valA instanceof Date && valB instanceof Date) {
+      comp = valA.getTime() - valB.getTime();
+    } else {
+      comp = String(valA).localeCompare(String(valB));
+    }
+
+    if (comp !== 0) {
+      return clause.direction === 'DESC' ? -comp : comp;
+    }
+  }
+  return 0;
+}
+
+/**
+ * Multi-Pass Execution Engine for Ranking Window Functions (ROW_NUMBER, RANK, DENSE_RANK):
+ * Step A: Partition intermediate dataset by PARTITION BY columns.
+ * Step B: Sort each partition using compareRows compound comparator.
+ * Step C: Calculate ranks (ROW_NUMBER, RANK with gaps, DENSE_RANK without gaps).
+ * Step D: Stitch partitions together for projection.
+ */
+export function evaluateRankingWindowFunction(
+  columns: string[],
+  rows: any[][],
+  spec: WindowSpec
+): { columns: string[]; rows: any[][] } {
+  const resultColumns = [...columns];
+  const targetColIdx = columns.findIndex(c => c.toLowerCase() === spec.alias.toLowerCase());
+  if (targetColIdx === -1) {
+    resultColumns.push(spec.alias);
+  }
+  const outputColIdx = targetColIdx === -1 ? resultColumns.length - 1 : targetColIdx;
+
+  // Step A: Group dataset into memory buckets based on PARTITION BY columns
+  const partitionMap = new Map<string, { originalIndex: number; row: any[] }[]>();
+
+  rows.forEach((row, originalIndex) => {
+    let key = '__ALL__';
+    if (spec.partitionBy.length > 0) {
+      key = spec.partitionBy
+        .map(colName => {
+          const idx = columns.findIndex(c => c.toLowerCase() === colName.toLowerCase());
+          return idx !== -1 ? String(row[idx]) : 'null';
+        })
+        .join('::');
+    }
+
+    if (!partitionMap.has(key)) {
+      partitionMap.set(key, []);
+    }
+    partitionMap.get(key)!.push({ originalIndex, row: [...row] });
+  });
+
+  const outputRows = rows.map(r => [...r]);
+
+  // Step B & Step C: Sort each partition and calculate rank/row_number
+  for (const [, partitionEntries] of partitionMap.entries()) {
+    // Step B: Sort partition using single compound cascading comparator
+    if (spec.orderBy.length > 0) {
+      partitionEntries.sort((a, b) => compareRows(a.row, b.row, columns, spec.orderBy));
+    }
+
+    // Step C: Calculate rank/row_number for sorted partition
+    let currentRank = 0;
+    let currentDenseRank = 0;
+    let rankCounter = 0;
+    let prevRow: any[] | null = null;
+
+    partitionEntries.forEach((entry, idx) => {
+      rankCounter++;
+
+      const isTie =
+        prevRow !== null &&
+        spec.orderBy.length > 0 &&
+        compareRows(prevRow, entry.row, columns, spec.orderBy) === 0;
+
+      if (spec.functionName === 'ROW_NUMBER') {
+        const value = idx + 1;
+        outputRows[entry.originalIndex][outputColIdx] = value;
+      } else if (spec.functionName === 'RANK') {
+        if (!isTie) {
+          currentRank = rankCounter;
+        }
+        outputRows[entry.originalIndex][outputColIdx] = currentRank;
+      } else if (spec.functionName === 'DENSE_RANK') {
+        if (!isTie) {
+          currentDenseRank++;
+        }
+        outputRows[entry.originalIndex][outputColIdx] = currentDenseRank;
+      }
+
+      prevRow = entry.row;
+    });
+  }
+
+  return { columns: resultColumns, rows: outputRows };
+}
+
 // ── SQLExecutor Class ─────────────────────────────────────────────────────────
+
 
 export class SQLExecutor {
   private SQL:      SqlJsStatic | null = null;

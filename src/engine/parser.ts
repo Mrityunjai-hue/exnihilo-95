@@ -149,3 +149,79 @@ export function extractFunctionNames(ast: AST | AST[]): string[] {
   return Array.from(new Set(names));
 }
 
+// ── Window Functions Parsing & Specification Extraction ───────────────────────
+
+export interface WindowOrderClause {
+  column: string;
+  direction: 'ASC' | 'DESC';
+}
+
+export interface WindowSpec {
+  functionName: 'ROW_NUMBER' | 'RANK' | 'DENSE_RANK';
+  alias: string;
+  partitionBy: string[];
+  orderBy: WindowOrderClause[];
+}
+
+/**
+ * Extract ranking window function specifications (OVER clause with PARTITION BY & ORDER BY)
+ * from a parsed SQL AST.
+ */
+export function extractWindowSpecs(ast: AST | AST[]): WindowSpec[] {
+  const specs: WindowSpec[] = [];
+
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+
+    if (node.type === 'function' && node.over) {
+      let funcName = '';
+      if (typeof node.name === 'string') {
+        funcName = node.name.toUpperCase();
+      } else if (Array.isArray(node.name?.name)) {
+        funcName = String(node.name.name[0]?.value || '').toUpperCase();
+      }
+
+      if (['ROW_NUMBER', 'RANK', 'DENSE_RANK'].includes(funcName)) {
+        const specObj = node.over?.as_window_specification?.window_specification || {};
+        const partitionBy: string[] = [];
+        if (Array.isArray(specObj.partitionby)) {
+          specObj.partitionby.forEach((p: any) => {
+            const col = p?.expr?.column || p?.column || p?.expr?.value;
+            if (col) partitionBy.push(String(col));
+          });
+        }
+
+        const orderBy: WindowOrderClause[] = [];
+        if (Array.isArray(specObj.orderby)) {
+          specObj.orderby.forEach((o: any) => {
+            const col = o?.expr?.column || o?.column || o?.expr?.value;
+            const dir = String(o?.type || 'ASC').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+            if (col) orderBy.push({ column: String(col), direction: dir });
+          });
+        }
+
+        specs.push({
+          functionName: funcName as 'ROW_NUMBER' | 'RANK' | 'DENSE_RANK',
+          alias: node.as || funcName.toLowerCase(),
+          partitionBy,
+          orderBy,
+        });
+      }
+    }
+
+    for (const key of Object.keys(node)) {
+      if (typeof node[key] === 'object') {
+        walk(node[key]);
+      }
+    }
+  };
+
+  walk(ast);
+  return specs;
+}
+
+
