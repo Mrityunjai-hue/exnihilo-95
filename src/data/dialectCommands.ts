@@ -671,8 +671,8 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     description: 'Performs date arithmetic (adding time intervals or calculating differences between dates).',
     category: 'Date & Time',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'coming_soon',
-    example: "SELECT DATE_ADD(NOW(), INTERVAL 30 DAY) AS in_30_days;",
+    status: 'supported',
+    example: "SELECT DATEADD('day', 30, NOW()) AS in_30_days, DATEDIFF('day', '2024-01-01', NOW()) AS days_elapsed;",
     dialectVariations: [
       { dialect: 'MySQL', syntax: 'DATE_ADD(created_at, INTERVAL 7 DAY)' },
       { dialect: 'PostgreSQL', syntax: "created_at + INTERVAL '7 days'" },
@@ -680,6 +680,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
       { dialect: 'TransactSQL', syntax: 'DATEADD(day, 7, created_at)' },
     ]
   },
+
 
   // ── 8. JSON & Semi-Structured ──────────────────────────────────────────────
   {
@@ -764,9 +765,9 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     description: 'Assigns a sequential integer rank number to each row within a partition.',
     category: 'Advanced & Windowing',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'coming_soon',
+    status: 'supported',
     example: 'SELECT name, department, salary, ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) AS rank FROM employees;',
-    notes: 'Essential for Top-N per group queries.'
+    notes: 'Essential for Top-N per group queries. Executable live in ExNihilo 95.'
   },
   {
     id: 'win-rank-dense',
@@ -775,20 +776,31 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     description: 'Ranks rows with tied values (RANK skips numbers after ties; DENSE_RANK does not skip).',
     category: 'Advanced & Windowing',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'coming_soon',
+    status: 'supported',
     example: 'SELECT name, score, DENSE_RANK() OVER (ORDER BY score DESC) AS position FROM leaderboard;',
-    notes: 'DENSE_RANK produces 1, 2, 2, 3 while RANK produces 1, 2, 2, 4.'
+    notes: 'DENSE_RANK produces 1, 2, 2, 3 while RANK produces 1, 2, 2, 4. Executable live in ExNihilo 95.'
   },
   {
     id: 'win-lead-lag',
     command: 'LEAD() / LAG() OVER()',
-    syntax: 'LEAD(col, offset) OVER (...) OR LAG(col, offset) OVER (...)',
-    description: 'Accesses data from a subsequent (LEAD) or previous (LAG) row without self-joins.',
+    syntax: 'LEAD(col, offset, fallback) OVER (...) OR LAG(col, offset, fallback) OVER (...)',
+    description: 'Accesses data from a subsequent (LEAD) or previous (LAG) row within a partition without self-joins.',
     category: 'Advanced & Windowing',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'coming_soon',
-    example: 'SELECT sale_date, revenue, LAG(revenue, 1) OVER (ORDER BY sale_date) AS prev_revenue FROM daily_sales;',
-    notes: 'Invaluable for period-over-period growth calculations.'
+    status: 'supported',
+    example: 'SELECT sale_date, revenue, LAG(revenue, 1, 0) OVER (ORDER BY sale_date) AS prev_revenue FROM daily_sales;',
+    notes: 'Invaluable for period-over-period growth calculations. Executable live in ExNihilo 95.'
+  },
+  {
+    id: 'win-aggregate-frames',
+    command: 'SUM() / AVG() / MIN() / MAX() OVER(ROWS BETWEEN)',
+    syntax: 'SUM(col) OVER (PARTITION BY dept ORDER BY hired_date ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING)',
+    description: 'Calculates moving averages, running totals, and sliding window aggregates using ROWS BETWEEN boundaries.',
+    category: 'Advanced & Windowing',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT region, month, sales, AVG(sales) OVER (PARTITION BY region ORDER BY month ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS moving_avg FROM sales;',
+    notes: 'Supports running totals, sliding window averages, and partition boundary isolation. Executable live in ExNihilo 95.'
   },
   {
     id: 'cte-with',
@@ -813,3 +825,4 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     notes: 'Standard ANSI SQL syntax for hierarchical tree traversal.'
   }
 ];
+

@@ -205,9 +205,13 @@ html, body {
   flex-direction: column;
   flex-wrap: wrap;
   align-content: flex-start;
-  gap: 16px;
-  padding: 16px;
-  height: 100%;
+  gap: 12px;
+  padding: 16px 16px 48px 16px;
+  height: calc(100vh - 44px);
+  max-height: calc(100vh - 44px);
+  box-sizing: border-box;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 .win95-desktop-icon {
@@ -221,7 +225,24 @@ html, body {
   color: #ffffff;
   text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
   border: 1px solid transparent;
+  pointer-events: auto;
 }
+
+.win95-3d-badge-link {
+  color: #ffde59 !important;
+  text-decoration: underline;
+  font-weight: bold;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 100;
+}
+
+.win95-3d-badge-link:hover {
+  color: #ffffff !important;
+  text-shadow: 0 0 4px #ffde59;
+}
+
 
 .win95-desktop-icon:hover {
   background-color: rgba(0, 0, 128, 0.3);

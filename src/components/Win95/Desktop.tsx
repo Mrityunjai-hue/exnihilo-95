@@ -304,13 +304,17 @@ export const Desktop: React.FC = () => {
         </div>
 
         <div className="win95-3d-badge">
-          <div className="win95-3d-badge-text">
+          <div className="win95-3d-badge-text" style={{ position: 'relative', zIndex: 10 }}>
             👨‍💻 <strong>Built by:</strong>{' '}
             <a
               href="https://github.com/Mrityunjai-hue"
               target="_blank"
               rel="noopener noreferrer"
               className="win95-3d-badge-link"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open('https://github.com/Mrityunjai-hue', '_blank');
+              }}
             >
               Mrityunjai
             </a>
@@ -320,11 +324,16 @@ export const Desktop: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="win95-3d-badge-link"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open('https://n8n-ds-community.netlify.app/', '_blank');
+              }}
             >
               N8N Data Science Community
             </a>{' '}
             using AI
           </div>
+
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '6px' }}>
             <button
               className="win95-button"
