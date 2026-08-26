@@ -72,10 +72,25 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "lastName",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "firstName",
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Wang",
+            "Allen"
+          ],
+          [
+            2,
+            "Alice",
+            "Bob"
+          ]
+        ]
       },
       {
         "tableName": "Address",
@@ -90,10 +105,27 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "city",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "state",
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            2,
+            "New York City",
+            "New York"
+          ],
+          [
+            2,
+            3,
+            "Leetcode",
+            "California"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Person (personId INT PRIMARY KEY, lastName VARCHAR(255), firstName VARCHAR(255));\nCREATE TABLE Address (addressId INT PRIMARY KEY, personId INT, city VARCHAR(255), state VARCHAR(255));",
@@ -150,7 +182,20 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            100
+          ],
+          [
+            2,
+            200
+          ],
+          [
+            3,
+            300
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employee (id INT PRIMARY KEY, salary INT);",
@@ -194,7 +239,20 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            100
+          ],
+          [
+            2,
+            200
+          ],
+          [
+            3,
+            300
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employee (id INT PRIMARY KEY, salary INT);",
@@ -236,10 +294,35 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "score",
-            "type": "DECIMAL"
+            "type": "DECIMAL(3,2)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            3.5
+          ],
+          [
+            2,
+            3.65
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            3.85
+          ],
+          [
+            5,
+            4
+          ],
+          [
+            6,
+            3.65
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Scores (id INT PRIMARY KEY, score DECIMAL(3,2));",
@@ -306,7 +389,36 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            7,
+            2
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Logs (id INT PRIMARY KEY, num INT);",
@@ -348,10 +460,43 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "salary",
+            "type": "INT"
+          },
+          {
+            "name": "managerId",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Joe",
+            70000,
+            3
+          ],
+          [
+            2,
+            "Henry",
+            80000,
+            4
+          ],
+          [
+            3,
+            "Sam",
+            60000,
+            null
+          ],
+          [
+            4,
+            "Max",
+            90000,
+            null
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employee (id INT PRIMARY KEY, name VARCHAR(255), salary INT, managerId INT);",
@@ -393,10 +538,23 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "email",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "a@b.com"
+          ],
+          [
+            2,
+            "c@d.com"
+          ],
+          [
+            3,
+            "a@b.com"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Person (id INT PRIMARY KEY, email VARCHAR(255));",
@@ -438,10 +596,27 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Joe"
+          ],
+          [
+            2,
+            "Henry"
+          ],
+          [
+            3,
+            "Sam"
+          ],
+          [
+            4,
+            "Max"
+          ]
+        ]
       },
       {
         "tableName": "Orders",
@@ -455,7 +630,16 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            1
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Customers (id INT PRIMARY KEY, name VARCHAR(255));\nCREATE TABLE Orders (id INT PRIMARY KEY, customerId INT);",
@@ -500,10 +684,49 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "salary",
+            "type": "INT"
+          },
+          {
+            "name": "departmentId",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Joe",
+            70000,
+            1
+          ],
+          [
+            2,
+            "Jim",
+            90000,
+            1
+          ],
+          [
+            3,
+            "Henry",
+            80000,
+            2
+          ],
+          [
+            4,
+            "Sam",
+            60000,
+            2
+          ],
+          [
+            5,
+            "Max",
+            90000,
+            1
+          ]
+        ]
       },
       {
         "tableName": "Department",
@@ -514,10 +737,19 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "IT"
+          ],
+          [
+            2,
+            "Sales"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employee (id INT PRIMARY KEY, name VARCHAR(255), salary INT, departmentId INT);\nCREATE TABLE Department (id INT PRIMARY KEY, name VARCHAR(255));",
@@ -573,10 +805,61 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "salary",
+            "type": "INT"
+          },
+          {
+            "name": "departmentId",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Joe",
+            85000,
+            1
+          ],
+          [
+            2,
+            "Henry",
+            80000,
+            2
+          ],
+          [
+            3,
+            "Sam",
+            60000,
+            2
+          ],
+          [
+            4,
+            "Max",
+            90000,
+            1
+          ],
+          [
+            5,
+            "Janet",
+            69000,
+            1
+          ],
+          [
+            6,
+            "Randy",
+            85000,
+            1
+          ],
+          [
+            7,
+            "Will",
+            70000,
+            1
+          ]
+        ]
       },
       {
         "tableName": "Department",
@@ -587,10 +870,19 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "IT"
+          ],
+          [
+            2,
+            "Sales"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employee (id INT PRIMARY KEY, name VARCHAR(255), salary INT, departmentId INT);\nCREATE TABLE Department (id INT PRIMARY KEY, name VARCHAR(255));",
@@ -661,10 +953,23 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "email",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "john@example.com"
+          ],
+          [
+            2,
+            "bob@example.com"
+          ],
+          [
+            3,
+            "john@example.com"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Person (id INT PRIMARY KEY, email VARCHAR(255));",
@@ -719,7 +1024,28 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "2015-01-01",
+            10
+          ],
+          [
+            2,
+            "2015-01-02",
+            25
+          ],
+          [
+            3,
+            "2015-01-03",
+            20
+          ],
+          [
+            4,
+            "2015-01-04",
+            30
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Weather (id INT PRIMARY KEY, recordDate DATE, temperature INT);",
@@ -776,10 +1102,71 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "status",
-            "type": "VARCHAR"
+            "type": "VARCHAR(50)"
+          },
+          {
+            "name": "request_at",
+            "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            1,
+            10,
+            1,
+            "completed",
+            "2013-10-01"
+          ],
+          [
+            2,
+            2,
+            11,
+            1,
+            "cancelled_by_driver",
+            "2013-10-01"
+          ],
+          [
+            3,
+            3,
+            12,
+            1,
+            "completed",
+            "2013-10-01"
+          ],
+          [
+            4,
+            4,
+            10,
+            12,
+            "cancelled_by_client",
+            "2013-10-01"
+          ],
+          [
+            5,
+            1,
+            11,
+            1,
+            "completed",
+            "2013-10-02"
+          ],
+          [
+            6,
+            3,
+            11,
+            6,
+            "completed",
+            "2013-10-02"
+          ],
+          [
+            7,
+            3,
+            12,
+            6,
+            "completed",
+            "2013-10-03"
+          ]
+        ]
       },
       {
         "tableName": "Users",
@@ -790,10 +1177,50 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "banned",
-            "type": "VARCHAR"
+            "type": "VARCHAR(10)"
+          },
+          {
+            "name": "role",
+            "type": "VARCHAR(20)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "No",
+            "client"
+          ],
+          [
+            2,
+            "Yes",
+            "client"
+          ],
+          [
+            3,
+            "No",
+            "client"
+          ],
+          [
+            4,
+            "No",
+            "client"
+          ],
+          [
+            10,
+            "No",
+            "driver"
+          ],
+          [
+            11,
+            "No",
+            "driver"
+          ],
+          [
+            12,
+            "No",
+            "driver"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Trips (id INT PRIMARY KEY, client_id INT, driver_id INT, city_id INT, status VARCHAR(50), request_at DATE);\nCREATE TABLE Users (users_id INT PRIMARY KEY, banned VARCHAR(10), role VARCHAR(20));",
@@ -855,7 +1282,38 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            2,
+            "2016-03-01",
+            5
+          ],
+          [
+            1,
+            2,
+            "2016-05-02",
+            6
+          ],
+          [
+            2,
+            3,
+            "2017-06-25",
+            1
+          ],
+          [
+            3,
+            1,
+            "2016-03-02",
+            0
+          ],
+          [
+            3,
+            4,
+            "2018-07-03",
+            5
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Activity (player_id INT, device_id INT, event_date DATE, games_played INT);",
@@ -917,7 +1375,32 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            2,
+            "2016-03-01",
+            5
+          ],
+          [
+            1,
+            3,
+            "2016-05-02",
+            6
+          ],
+          [
+            2,
+            3,
+            "2017-06-25",
+            1
+          ],
+          [
+            3,
+            1,
+            "2016-03-02",
+            0
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Activity (player_id INT, device_id INT, event_date DATE, games_played INT);",
@@ -979,7 +1462,38 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            2,
+            "2016-03-01",
+            5
+          ],
+          [
+            1,
+            2,
+            "2016-05-02",
+            6
+          ],
+          [
+            1,
+            3,
+            "2017-06-25",
+            1
+          ],
+          [
+            3,
+            1,
+            "2016-03-02",
+            0
+          ],
+          [
+            3,
+            4,
+            "2018-07-03",
+            5
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Activity (player_id INT, device_id INT, event_date DATE, games_played INT);",
@@ -1055,7 +1569,38 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            2,
+            "2016-03-01",
+            5
+          ],
+          [
+            1,
+            2,
+            "2016-03-02",
+            6
+          ],
+          [
+            2,
+            3,
+            "2017-06-25",
+            1
+          ],
+          [
+            3,
+            1,
+            "2016-03-02",
+            0
+          ],
+          [
+            3,
+            4,
+            "2018-07-03",
+            5
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Activity (player_id INT, device_id INT, event_date DATE, games_played INT);",
@@ -1096,10 +1641,55 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "department",
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "managerId",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            101,
+            "John",
+            "A",
+            null
+          ],
+          [
+            102,
+            "Dan",
+            "A",
+            101
+          ],
+          [
+            103,
+            "James",
+            "A",
+            101
+          ],
+          [
+            104,
+            "Amy",
+            "A",
+            101
+          ],
+          [
+            105,
+            "Anne",
+            "A",
+            101
+          ],
+          [
+            106,
+            "Ron",
+            "B",
+            101
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employee (id INT PRIMARY KEY, name VARCHAR(255), department VARCHAR(255), managerId INT);",
@@ -1140,10 +1730,43 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "supervisor",
+            "type": "INT"
+          },
+          {
+            "name": "salary",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            3,
+            "Brad",
+            null,
+            4000
+          ],
+          [
+            1,
+            "John",
+            3,
+            1000
+          ],
+          [
+            2,
+            "Dan",
+            3,
+            2000
+          ],
+          [
+            4,
+            "Thomas",
+            3,
+            4000
+          ]
+        ]
       },
       {
         "tableName": "Bonus",
@@ -1157,7 +1780,16 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            2,
+            500
+          ],
+          [
+            4,
+            2000
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employee (empId INT PRIMARY KEY, name VARCHAR(255), supervisor INT, salary INT);\nCREATE TABLE Bonus (empId INT PRIMARY KEY, bonus INT);",
@@ -1208,10 +1840,45 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "referee_id",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Will",
+            null
+          ],
+          [
+            2,
+            "Jane",
+            null
+          ],
+          [
+            3,
+            "Alex",
+            2
+          ],
+          [
+            4,
+            "Bill",
+            null
+          ],
+          [
+            5,
+            "Zack",
+            1
+          ],
+          [
+            6,
+            "Mark",
+            2
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Customer (id INT PRIMARY KEY, name VARCHAR(255), referee_id INT);",
@@ -1276,7 +1943,36 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "FLOAT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            10.0,
+            5.0,
+            10.0,
+            10.0
+          ],
+          [
+            2,
+            20.0,
+            20.0,
+            20.0,
+            20.0
+          ],
+          [
+            3,
+            10.0,
+            30.0,
+            20.0,
+            20.0
+          ],
+          [
+            4,
+            10.0,
+            40.0,
+            40.0,
+            40.0
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Insurance (pid INT PRIMARY KEY, tiv_2015 FLOAT, tiv_2016 FLOAT, lat FLOAT, lon FLOAT);",
@@ -1321,7 +2017,24 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            3
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Orders (order_number INT PRIMARY KEY, customer_number INT);",
@@ -1359,10 +2072,62 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
         "columns": [
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "continent",
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "area",
+            "type": "INT"
+          },
+          {
+            "name": "population",
+            "type": "INT"
+          },
+          {
+            "name": "gdp",
+            "type": "BIGINT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            "Afghanistan",
+            "Asia",
+            652230,
+            25500100,
+            20364000000
+          ],
+          [
+            "Albania",
+            "Europe",
+            28748,
+            2873757,
+            12800000000
+          ],
+          [
+            "Algeria",
+            "Africa",
+            2381741,
+            37100000,
+            188600000000
+          ],
+          [
+            "Andorra",
+            "Europe",
+            468,
+            78115,
+            3712000000
+          ],
+          [
+            "Angola",
+            "Africa",
+            1246700,
+            20609294,
+            100990000000
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE World (name VARCHAR(255), continent VARCHAR(255), area INT, population INT, gdp BIGINT);",
@@ -1408,10 +2173,51 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
         "columns": [
           {
             "name": "student",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "class",
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            "A",
+            "Math"
+          ],
+          [
+            "B",
+            "English"
+          ],
+          [
+            "C",
+            "Math"
+          ],
+          [
+            "D",
+            "Biology"
+          ],
+          [
+            "E",
+            "Math"
+          ],
+          [
+            "F",
+            "Computer"
+          ],
+          [
+            "G",
+            "Math"
+          ],
+          [
+            "H",
+            "Math"
+          ],
+          [
+            "I",
+            "Math"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Courses (student VARCHAR(255), class VARCHAR(255));",
@@ -1459,7 +2265,48 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "2017-01-01",
+            10
+          ],
+          [
+            2,
+            "2017-01-02",
+            109
+          ],
+          [
+            3,
+            "2017-01-03",
+            150
+          ],
+          [
+            4,
+            "2017-01-04",
+            99
+          ],
+          [
+            5,
+            "2017-01-05",
+            145
+          ],
+          [
+            6,
+            "2017-01-06",
+            1455
+          ],
+          [
+            7,
+            "2017-01-07",
+            199
+          ],
+          [
+            8,
+            "2017-01-09",
+            188
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Stadium (id INT PRIMARY KEY, visit_date DATE, people INT);",
@@ -1526,7 +2373,28 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            2,
+            "2016-06-03"
+          ],
+          [
+            1,
+            3,
+            "2016-06-08"
+          ],
+          [
+            2,
+            3,
+            "2016-06-08"
+          ],
+          [
+            3,
+            4,
+            "2016-06-09"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE RequestAccepted (requester_id INT, accepter_id INT, accept_date DATE);",
@@ -1569,10 +2437,44 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "salary",
+            "type": "INT"
+          },
+          {
+            "name": "commission_rate",
+            "type": "INT"
+          },
+          {
+            "name": "hire_date",
+            "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Alice",
+            61000,
+            6,
+            "2014-03-01"
+          ],
+          [
+            2,
+            "Amy",
+            48000,
+            5,
+            "2010-05-01"
+          ],
+          [
+            3,
+            "Mark",
+            11000,
+            10,
+            "2017-03-01"
+          ]
+        ]
       },
       {
         "tableName": "Company",
@@ -1583,10 +2485,25 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "city",
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "RED",
+            "Boston"
+          ],
+          [
+            2,
+            "BLUE",
+            "New York"
+          ]
+        ]
       },
       {
         "tableName": "Orders",
@@ -1612,7 +2529,22 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "2014-01-01",
+            1,
+            1,
+            10000
+          ],
+          [
+            2,
+            "2014-02-01",
+            2,
+            2,
+            5000
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE SalesPerson (sales_id INT PRIMARY KEY, name VARCHAR(255), salary INT, commission_rate INT, hire_date DATE);\nCREATE TABLE Company (com_id INT PRIMARY KEY, name VARCHAR(255), city VARCHAR(255));\nCREATE TABLE Orders (order_id INT PRIMARY KEY, order_date DATE, com_id INT, sales_id INT, amount INT);",
@@ -1659,7 +2591,28 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            5,
+            2
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Tree (id INT PRIMARY KEY, p_id INT);",
@@ -1725,7 +2678,18 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            13,
+            15,
+            30
+          ],
+          [
+            10,
+            20,
+            15
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Triangle (x INT, y INT, z INT);",
@@ -1777,7 +2741,32 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            8
+          ],
+          [
+            8
+          ],
+          [
+            3
+          ],
+          [
+            3
+          ],
+          [
+            1
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ],
+          [
+            6
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE MyNumbers (num INT);",
@@ -1818,10 +2807,49 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "movie",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "description",
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "rating",
+            "type": "FLOAT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "War",
+            "great 3D",
+            8.9
+          ],
+          [
+            2,
+            "Science",
+            "fiction",
+            8.5
+          ],
+          [
+            3,
+            "irish",
+            "boring",
+            6.2
+          ],
+          [
+            4,
+            "Ice song",
+            "Fantacy",
+            8.6
+          ],
+          [
+            5,
+            "House card",
+            "Interesting",
+            9.1
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Cinema (id INT PRIMARY KEY, movie VARCHAR(255), description VARCHAR(255), rating FLOAT);",
@@ -1874,10 +2902,31 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "student",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Abbot"
+          ],
+          [
+            2,
+            "Doris"
+          ],
+          [
+            3,
+            "Emerson"
+          ],
+          [
+            4,
+            "Green"
+          ],
+          [
+            5,
+            "Jeames"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Seat (id INT PRIMARY KEY, student VARCHAR(255));",
@@ -1936,10 +2985,43 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "sex",
+            "type": "CHAR(1)"
+          },
+          {
+            "name": "salary",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "A",
+            "m",
+            2500
+          ],
+          [
+            2,
+            "B",
+            "f",
+            1500
+          ],
+          [
+            3,
+            "C",
+            "m",
+            5500
+          ],
+          [
+            4,
+            "D",
+            "f",
+            500
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Salary (id INT PRIMARY KEY, name VARCHAR(255), sex CHAR(1), salary INT);",
@@ -2007,7 +3089,28 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            1,
+            6
+          ]
+        ]
       },
       {
         "tableName": "Product",
@@ -2017,7 +3120,14 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            5
+          ],
+          [
+            6
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Customer (customer_id INT, product_key INT);\nCREATE TABLE Product (product_key INT PRIMARY KEY);",
@@ -2068,7 +3178,33 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            1,
+            0
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            2
+          ],
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            2,
+            1,
+            4
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE ActorDirector (actor_id INT, director_id INT, timestamp INT);",
@@ -2125,7 +3261,29 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            100,
+            2008,
+            10,
+            5000
+          ],
+          [
+            2,
+            100,
+            2009,
+            12,
+            5000
+          ],
+          [
+            7,
+            200,
+            2011,
+            15,
+            9000
+          ]
+        ]
       },
       {
         "tableName": "Product",
@@ -2136,10 +3294,19 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "product_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            100,
+            "Nokia"
+          ],
+          [
+            200,
+            "Apple"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Sales (sale_id INT, product_id INT, year INT, quantity INT, price INT);\nCREATE TABLE Product (product_id INT PRIMARY KEY, product_name VARCHAR(255));",
@@ -2209,7 +3376,29 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            100,
+            2008,
+            10,
+            5000
+          ],
+          [
+            2,
+            100,
+            2009,
+            12,
+            5000
+          ],
+          [
+            7,
+            200,
+            2011,
+            15,
+            9000
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Sales (sale_id INT, product_id INT, year INT, quantity INT, price INT);",
@@ -2265,7 +3454,28 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            4
+          ]
+        ]
       },
       {
         "tableName": "Employee",
@@ -2276,10 +3486,35 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "experience_years",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Khaled",
+            3
+          ],
+          [
+            2,
+            "Ali",
+            2
+          ],
+          [
+            3,
+            "John",
+            1
+          ],
+          [
+            4,
+            "Doe",
+            2
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Project (project_id INT, employee_id INT);\nCREATE TABLE Employee (employee_id INT PRIMARY KEY, name VARCHAR(255), experience_years INT);",
@@ -2325,10 +3560,30 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "product_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "unit_price",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "S8",
+            1000
+          ],
+          [
+            2,
+            "G4",
+            800
+          ],
+          [
+            3,
+            "iPhone",
+            1400
+          ]
+        ]
       },
       {
         "tableName": "Sales",
@@ -2358,7 +3613,32 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            1,
+            1,
+            "2019-01-21",
+            2,
+            2000
+          ],
+          [
+            1,
+            2,
+            2,
+            "2019-02-17",
+            1,
+            800
+          ],
+          [
+            2,
+            2,
+            3,
+            "2019-06-02",
+            1,
+            800
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Product (product_id INT PRIMARY KEY, product_name VARCHAR(255), unit_price INT);\nCREATE TABLE Sales (seller_id INT, product_id INT, buyer_id INT, sale_date DATE, quantity INT, price INT);",
@@ -2409,10 +3689,35 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "activity_type",
-            "type": "VARCHAR"
+            "type": "VARCHAR(50)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            1,
+            "2019-07-20",
+            "open_session"
+          ],
+          [
+            1,
+            1,
+            "2019-07-20",
+            "scroll_page"
+          ],
+          [
+            2,
+            2,
+            "2019-07-20",
+            "open_session"
+          ],
+          [
+            3,
+            3,
+            "2019-06-25",
+            "open_session"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Activity (user_id INT, session_id INT, activity_date DATE, activity_type VARCHAR(50));",
@@ -2466,7 +3771,32 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            3,
+            5,
+            "2019-08-01"
+          ],
+          [
+            2,
+            7,
+            7,
+            "2019-08-01"
+          ],
+          [
+            4,
+            7,
+            1,
+            "2019-07-22"
+          ],
+          [
+            3,
+            4,
+            4,
+            "2019-07-21"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Views (article_id INT, author_id INT, viewer_id INT, view_date DATE);",
@@ -2514,10 +3844,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "favorite_brand",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "2018-01-01",
+            "Lenovo"
+          ],
+          [
+            2,
+            "2018-02-09",
+            "Samsung"
+          ],
+          [
+            3,
+            "2018-01-19",
+            "LG"
+          ]
+        ]
       },
       {
         "tableName": "Orders",
@@ -2543,7 +3889,29 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "2019-08-01",
+            4,
+            1,
+            2
+          ],
+          [
+            2,
+            "2018-08-02",
+            2,
+            1,
+            3
+          ],
+          [
+            3,
+            "2019-08-03",
+            3,
+            2,
+            3
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Users (user_id INT PRIMARY KEY, join_date DATE, favorite_brand VARCHAR(255));\nCREATE TABLE Orders (order_id INT PRIMARY KEY, order_date DATE, item_id INT, buyer_id INT, seller_id INT);",
@@ -2604,7 +3972,33 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            20,
+            "2019-08-14"
+          ],
+          [
+            2,
+            50,
+            "2019-08-14"
+          ],
+          [
+            1,
+            30,
+            "2019-08-15"
+          ],
+          [
+            1,
+            35,
+            "2019-08-17"
+          ],
+          [
+            3,
+            20,
+            "2019-08-18"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Products (product_id INT, new_price INT, change_date DATE);",
@@ -2666,7 +4060,32 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            1,
+            "2019-08-01",
+            "2019-08-01"
+          ],
+          [
+            2,
+            5,
+            "2019-08-02",
+            "2019-08-02"
+          ],
+          [
+            3,
+            1,
+            "2019-08-11",
+            "2019-08-12"
+          ],
+          [
+            4,
+            3,
+            "2019-08-24",
+            "2019-08-24"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Delivery (delivery_id INT PRIMARY KEY, customer_id INT, order_date DATE, customer_pref_delivery_date DATE);",
@@ -2711,10 +4130,31 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "month",
-            "type": "VARCHAR"
+            "type": "VARCHAR(10)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            8000,
+            "Jan"
+          ],
+          [
+            2,
+            9000,
+            "Jan"
+          ],
+          [
+            3,
+            10000,
+            "Feb"
+          ],
+          [
+            1,
+            7000,
+            "Feb"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Department (id INT, revenue INT, month VARCHAR(10));",
@@ -2773,10 +4213,44 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "country",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "state",
+            "type": "VARCHAR(50)"
+          },
+          {
+            "name": "amount",
+            "type": "INT"
+          },
+          {
+            "name": "trans_date",
+            "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            121,
+            "US",
+            "approved",
+            1000,
+            "2018-12-18"
+          ],
+          [
+            122,
+            "US",
+            "declined",
+            2000,
+            "2018-12-19"
+          ],
+          [
+            123,
+            "US",
+            "approved",
+            2000,
+            "2019-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Transactions (id INT PRIMARY KEY, country VARCHAR(255), state VARCHAR(50), amount INT, trans_date DATE);",
@@ -2835,10 +4309,49 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "person_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "weight",
+            "type": "INT"
+          },
+          {
+            "name": "turn",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            5,
+            "Alice",
+            250,
+            1
+          ],
+          [
+            4,
+            "Bob",
+            175,
+            5
+          ],
+          [
+            3,
+            "Alex",
+            350,
+            2
+          ],
+          [
+            6,
+            "John",
+            400,
+            3
+          ],
+          [
+            2,
+            "Marie",
+            200,
+            4
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Queue (person_id INT PRIMARY KEY, person_name VARCHAR(255), weight INT, turn INT);",
@@ -2875,10 +4388,53 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
         "columns": [
           {
             "name": "query_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "result",
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "position",
+            "type": "INT"
+          },
+          {
+            "name": "rating",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            "Dog",
+            "Golden Retriever",
+            1,
+            5
+          ],
+          [
+            "Dog",
+            "German Shepherd",
+            2,
+            5
+          ],
+          [
+            "Dog",
+            "Mule",
+            200,
+            1
+          ],
+          [
+            "Cat",
+            "Shirazi",
+            5,
+            2
+          ],
+          [
+            "Cat",
+            "Siamese",
+            3,
+            3
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Queries (query_name VARCHAR(255), result VARCHAR(255), position INT, rating INT);",
@@ -2938,7 +4494,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "2019-02-17",
+            "2019-02-28",
+            5
+          ],
+          [
+            1,
+            "2019-03-01",
+            "2019-03-22",
+            20
+          ],
+          [
+            2,
+            "2019-02-01",
+            "2019-02-20",
+            15
+          ]
+        ]
       },
       {
         "tableName": "UnitsSold",
@@ -2956,7 +4531,23 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "2019-02-25",
+            100
+          ],
+          [
+            1,
+            "2019-03-01",
+            15
+          ],
+          [
+            2,
+            "2019-02-10",
+            200
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Prices (product_id INT, start_date DATE, end_date DATE, price INT);\nCREATE TABLE UnitsSold (product_id INT, purchase_date DATE, units INT);",
@@ -3003,20 +4594,36 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "student_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Alice"
+          ],
+          [
+            2,
+            "Bob"
+          ]
+        ]
       },
       {
         "tableName": "Subjects",
         "columns": [
           {
             "name": "subject_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            "Math"
+          ],
+          [
+            "Physics"
+          ]
+        ]
       },
       {
         "tableName": "Examinations",
@@ -3027,10 +4634,23 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "subject_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Math"
+          ],
+          [
+            1,
+            "Physics"
+          ],
+          [
+            1,
+            "Math"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Students (student_id INT PRIMARY KEY, student_name VARCHAR(255));\nCREATE TABLE Subjects (subject_name VARCHAR(255) PRIMARY KEY);\nCREATE TABLE Examinations (student_id INT, subject_name VARCHAR(255));",
@@ -3095,10 +4715,67 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "visited_on",
+            "type": "DATE"
+          },
+          {
+            "name": "amount",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "J",
+            "2019-01-01",
+            100
+          ],
+          [
+            2,
+            "D",
+            "2019-01-02",
+            110
+          ],
+          [
+            3,
+            "G",
+            "2019-01-03",
+            120
+          ],
+          [
+            4,
+            "C",
+            "2019-01-04",
+            130
+          ],
+          [
+            5,
+            "W",
+            "2019-01-05",
+            110
+          ],
+          [
+            6,
+            "A",
+            "2019-01-06",
+            140
+          ],
+          [
+            7,
+            "L",
+            "2019-01-07",
+            150
+          ],
+          [
+            8,
+            "K",
+            "2019-01-08",
+            80
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Customer (customer_id INT, name VARCHAR(255), visited_on DATE, amount INT);",
@@ -3147,10 +4824,25 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "product_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "product_category",
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Leetcode Solutions",
+            "Book"
+          ],
+          [
+            2,
+            "Jewel of SQL",
+            "Book"
+          ]
+        ]
       },
       {
         "tableName": "Orders",
@@ -3168,7 +4860,23 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "2020-02-05",
+            60
+          ],
+          [
+            1,
+            "2020-02-10",
+            70
+          ],
+          [
+            2,
+            "2020-02-01",
+            30
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Products (product_id INT PRIMARY KEY, product_name VARCHAR(255), product_category VARCHAR(255));\nCREATE TABLE Orders (product_id INT, order_date DATE, unit INT);",
@@ -3211,10 +4919,19 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "title",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Avengers"
+          ],
+          [
+            2,
+            "Frozen"
+          ]
+        ]
       },
       {
         "tableName": "Users",
@@ -3225,10 +4942,19 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Daniel"
+          ],
+          [
+            2,
+            "Monica"
+          ]
+        ]
       },
       {
         "tableName": "MovieRating",
@@ -3250,7 +4976,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            1,
+            3,
+            "2020-02-12"
+          ],
+          [
+            1,
+            2,
+            4,
+            "2020-02-11"
+          ],
+          [
+            2,
+            1,
+            5,
+            "2020-02-17"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Movies (movie_id INT PRIMARY KEY, title VARCHAR(255));\nCREATE TABLE Users (user_id INT PRIMARY KEY, name VARCHAR(255));\nCREATE TABLE MovieRating (movie_id INT, user_id INT, rating INT, created_at DATE);",
@@ -3294,10 +5039,23 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Alice"
+          ],
+          [
+            7,
+            "Bob"
+          ],
+          [
+            11,
+            "Meir"
+          ]
+        ]
       },
       {
         "tableName": "EmployeeUNI",
@@ -3311,7 +5069,16 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            3,
+            1
+          ],
+          [
+            11,
+            2
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employees (id INT PRIMARY KEY, name VARCHAR(255));\nCREATE TABLE EmployeeUNI (id INT, unique_id INT);",
@@ -3358,10 +5125,47 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
         "columns": [
           {
             "name": "stock_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "operation",
+            "type": "VARCHAR(10)"
+          },
+          {
+            "name": "operation_day",
+            "type": "INT"
+          },
+          {
+            "name": "price",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            "Leetcode",
+            "Buy",
+            1,
+            1000
+          ],
+          [
+            "Corona Masks",
+            "Buy",
+            2,
+            10
+          ],
+          [
+            "Leetcode",
+            "Sell",
+            5,
+            9000
+          ],
+          [
+            "Hand Sanitizer",
+            "Buy",
+            1,
+            500
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Stocks (stock_name VARCHAR(255), operation VARCHAR(10), operation_day INT, price INT);",
@@ -3412,10 +5216,23 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Alice"
+          ],
+          [
+            2,
+            "Bob"
+          ],
+          [
+            3,
+            "Alex"
+          ]
+        ]
       },
       {
         "tableName": "Rides",
@@ -3433,7 +5250,23 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            1,
+            120
+          ],
+          [
+            2,
+            2,
+            317
+          ],
+          [
+            3,
+            3,
+            222
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Users (id INT PRIMARY KEY, name VARCHAR(255));\nCREATE TABLE Rides (id INT PRIMARY KEY, user_id INT, distance INT);",
@@ -3484,10 +5317,27 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "product",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            "2020-05-30",
+            "Headphone"
+          ],
+          [
+            "2020-05-30",
+            "Basketball"
+          ],
+          [
+            "2020-06-01",
+            "Pencil"
+          ],
+          [
+            "2020-05-30",
+            "Medicine"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Activities (sell_date DATE, product VARCHAR(255));",
@@ -3537,10 +5387,30 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "mail",
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Winston",
+            "winston@leetcode.com"
+          ],
+          [
+            2,
+            "Jonathan",
+            "jonathanathan"
+          ],
+          [
+            3,
+            "Annabelle",
+            "bella-@leetcode.com"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Users (user_id INT PRIMARY KEY, name VARCHAR(255), mail VARCHAR(255));",
@@ -3590,10 +5460,35 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "patient_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "conditions",
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Daniel",
+            "YFEV COUGH"
+          ],
+          [
+            2,
+            "Alice",
+            ""
+          ],
+          [
+            3,
+            "Bob",
+            "DIAB100 MYOP"
+          ],
+          [
+            4,
+            "George",
+            "ACNE DIAB100"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Patients (patient_id INT PRIMARY KEY, patient_name VARCHAR(255), conditions VARCHAR(255));",
@@ -3646,7 +5541,20 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            23
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            4,
+            30
+          ]
+        ]
       },
       {
         "tableName": "Transactions",
@@ -3664,7 +5572,13 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            2,
+            5,
+            310
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Visits (visit_id INT PRIMARY KEY, customer_id INT);\nCREATE TABLE Transactions (transaction_id INT PRIMARY KEY, visit_id INT, amount INT);",
@@ -3715,10 +5629,19 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            900001,
+            "Alice"
+          ],
+          [
+            900002,
+            "Bob"
+          ]
+        ]
       },
       {
         "tableName": "Transactions",
@@ -3740,7 +5663,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            900001,
+            7000,
+            "2020-08-01"
+          ],
+          [
+            2,
+            900001,
+            7000,
+            "2020-08-01"
+          ],
+          [
+            3,
+            900002,
+            1000,
+            "2020-08-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Users (account INT PRIMARY KEY, name VARCHAR(255));\nCREATE TABLE Transactions (trans_id INT PRIMARY KEY, account INT, amount INT, trans_dated DATE);",
@@ -3783,10 +5725,23 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "user_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            6,
+            "Alice"
+          ],
+          [
+            2,
+            "Bob"
+          ],
+          [
+            7,
+            "Alex"
+          ]
+        ]
       },
       {
         "tableName": "Register",
@@ -3800,7 +5755,20 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            215,
+            6
+          ],
+          [
+            215,
+            2
+          ],
+          [
+            208,
+            6
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Users (user_id INT PRIMARY KEY, user_name VARCHAR(255));\nCREATE TABLE Register (contest_id INT, user_id INT);",
@@ -3851,10 +5819,39 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "activity_type",
-            "type": "VARCHAR"
+            "type": "VARCHAR(10)"
+          },
+          {
+            "name": "timestamp",
+            "type": "FLOAT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            0,
+            0,
+            "start",
+            0.712
+          ],
+          [
+            0,
+            0,
+            "end",
+            1.52
+          ],
+          [
+            0,
+            1,
+            "start",
+            3.14
+          ],
+          [
+            0,
+            1,
+            "end",
+            4.12
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Activity (machine_id INT, process_id INT, activity_type VARCHAR(10), timestamp FLOAT);",
@@ -3897,10 +5894,19 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "aLice"
+          ],
+          [
+            2,
+            "bOB"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Users (user_id INT PRIMARY KEY, name VARCHAR(255));",
@@ -3947,10 +5953,19 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "content",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "Vote for me"
+          ],
+          [
+            2,
+            "Let us make America great again"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Tweets (tweet_id INT PRIMARY KEY, content VARCHAR(255));",
@@ -3991,10 +6006,37 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "make_name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "lead_id",
+            "type": "INT"
+          },
+          {
+            "name": "partner_id",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            "2020-12-08",
+            "toyota",
+            0,
+            1
+          ],
+          [
+            "2020-12-08",
+            "toyota",
+            1,
+            1
+          ],
+          [
+            "2020-12-08",
+            "honda",
+            1,
+            2
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE DailySales (date_id DATE, make_name VARCHAR(255), lead_id INT, partner_id INT);",
@@ -4050,7 +6092,24 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Followers (user_id INT, follower_id INT);",
@@ -4101,10 +6160,37 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "reports_to",
+            "type": "INT"
+          },
+          {
+            "name": "age",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            9,
+            "Hercy",
+            null,
+            43
+          ],
+          [
+            6,
+            "Alice",
+            9,
+            41
+          ],
+          [
+            4,
+            "Bob",
+            9,
+            36
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employees (employee_id INT PRIMARY KEY, name VARCHAR(255), reports_to INT, age INT);",
@@ -4162,7 +6248,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "2020-11-28",
+            4,
+            32
+          ],
+          [
+            1,
+            "2020-11-28",
+            55,
+            200
+          ],
+          [
+            2,
+            "2020-11-28",
+            3,
+            33
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employees (emp_id INT, event_day DATE, in_time INT, out_time INT);",
@@ -4213,10 +6318,40 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "low_fats",
-            "type": "CHAR"
+            "type": "CHAR(1)"
+          },
+          {
+            "name": "recyclable",
+            "type": "CHAR(1)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            0,
+            "Y",
+            "N"
+          ],
+          [
+            1,
+            "Y",
+            "Y"
+          ],
+          [
+            2,
+            "N",
+            "Y"
+          ],
+          [
+            3,
+            "Y",
+            "Y"
+          ],
+          [
+            4,
+            "N",
+            "N"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Products (product_id INT PRIMARY KEY, low_fats CHAR(1), recyclable CHAR(1));",
@@ -4264,10 +6399,31 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "primary_flag",
-            "type": "CHAR"
+            "type": "CHAR(1)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            1,
+            "N"
+          ],
+          [
+            2,
+            1,
+            "Y"
+          ],
+          [
+            2,
+            2,
+            "N"
+          ],
+          [
+            3,
+            3,
+            "N"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employee (employee_id INT, department_id INT, primary_flag CHAR(1));",
@@ -4318,10 +6474,35 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "salary",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            2,
+            "Meir",
+            3000
+          ],
+          [
+            3,
+            "Michael",
+            3800
+          ],
+          [
+            7,
+            "Addison",
+            7400
+          ],
+          [
+            8,
+            "Juan",
+            6100
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employees (employee_id INT PRIMARY KEY, name VARCHAR(255), salary INT);",
@@ -4379,7 +6560,24 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            3,
+            108939
+          ],
+          [
+            2,
+            12747
+          ],
+          [
+            8,
+            87709
+          ],
+          [
+            6,
+            91796
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Accounts (account_id INT PRIMARY KEY, income INT);",
@@ -4433,7 +6631,16 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATETIME"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            3,
+            "2020-03-21 10:16:13"
+          ],
+          [
+            7,
+            "2020-01-04 13:57:59"
+          ]
+        ]
       },
       {
         "tableName": "Confirmations",
@@ -4448,10 +6655,21 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "action",
-            "type": "VARCHAR"
+            "type": "VARCHAR(20)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            3,
+            "2021-01-06 03:30:46",
+            "timeout"
+          ],
+          [
+            7,
+            "2021-06-12 11:57:29",
+            "confirmed"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Signups (user_id INT PRIMARY KEY, time_stamp DATETIME);\nCREATE TABLE Confirmations (user_id INT, time_stamp DATETIME, action VARCHAR(20));",
@@ -4498,10 +6716,43 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "manager_id",
+            "type": "INT"
+          },
+          {
+            "name": "salary",
+            "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            3,
+            "Mila",
+            9,
+            60301
+          ],
+          [
+            12,
+            "Anton",
+            null,
+            31000
+          ],
+          [
+            13,
+            "Emery",
+            null,
+            67084
+          ],
+          [
+            1,
+            "Kalel",
+            11,
+            21241
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Employees (employee_id INT PRIMARY KEY, name VARCHAR(255), manager_id INT, salary INT);",
@@ -4548,7 +6799,23 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            6,
+            1,
+            549
+          ],
+          [
+            8,
+            1,
+            834
+          ],
+          [
+            4,
+            2,
+            394
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Store (bill_id INT PRIMARY KEY, customer_id INT, amount INT);",
@@ -4596,7 +6863,28 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            2,
+            4
+          ],
+          [
+            1,
+            3,
+            3
+          ],
+          [
+            2,
+            1,
+            1
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Teacher (teacher_id INT, subject_id INT, dept_id INT);",
@@ -4639,10 +6927,35 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
         "columns": [
           {
             "name": "Name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "Occupation",
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            "Samantha",
+            "Doctor"
+          ],
+          [
+            "Julia",
+            "Actor"
+          ],
+          [
+            "Maria",
+            "Actor"
+          ],
+          [
+            "Meera",
+            "Singer"
+          ],
+          [
+            "Ashely",
+            "Professor"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE OCCUPATIONS (Name VARCHAR(255), Occupation VARCHAR(255));",
@@ -4691,10 +7004,35 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
         "columns": [
           {
             "name": "Name",
-            "type": "VARCHAR"
+            "type": "VARCHAR(255)"
+          },
+          {
+            "name": "Occupation",
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            "Samantha",
+            "Doctor"
+          ],
+          [
+            "Julia",
+            "Actor"
+          ],
+          [
+            "Maria",
+            "Actor"
+          ],
+          [
+            "Meera",
+            "Singer"
+          ],
+          [
+            "Ashely",
+            "Professor"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE OCCUPATIONS (Name VARCHAR(255), Occupation VARCHAR(255));",
@@ -4750,7 +7088,36 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "INT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            9,
+            8
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            8,
+            5
+          ],
+          [
+            5,
+            null
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE BST (N INT PRIMARY KEY, P INT);",
@@ -4813,20 +7180,71 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
         "columns": [
           {
             "name": "company_code",
-            "type": "VARCHAR"
+            "type": "VARCHAR(50)"
+          },
+          {
+            "name": "founder",
+            "type": "VARCHAR(255)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            "C1",
+            "Monika"
+          ],
+          [
+            "C2",
+            "Samantha"
+          ]
+        ]
       },
       {
         "tableName": "Employee",
         "columns": [
           {
             "name": "employee_code",
-            "type": "VARCHAR"
+            "type": "VARCHAR(50)"
+          },
+          {
+            "name": "company_code",
+            "type": "VARCHAR(50)"
+          },
+          {
+            "name": "lead_manager_code",
+            "type": "VARCHAR(50)"
+          },
+          {
+            "name": "senior_manager_code",
+            "type": "VARCHAR(50)"
+          },
+          {
+            "name": "manager_code",
+            "type": "VARCHAR(50)"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            "E1",
+            "C1",
+            "LM1",
+            "SM1",
+            "M1"
+          ],
+          [
+            "E2",
+            "C1",
+            "LM1",
+            "SM1",
+            "M1"
+          ],
+          [
+            "E3",
+            "C2",
+            "LM2",
+            "SM2",
+            "M2"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE Company (company_code VARCHAR(50), founder VARCHAR(255));\nCREATE TABLE Employee (employee_code VARCHAR(50), company_code VARCHAR(50), lead_manager_code VARCHAR(50), senior_manager_code VARCHAR(50), manager_code VARCHAR(50));",
@@ -4885,10 +7303,44 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
           },
           {
             "name": "CITY",
-            "type": "VARCHAR"
+            "type": "VARCHAR(21)"
+          },
+          {
+            "name": "STATE",
+            "type": "VARCHAR(2)"
+          },
+          {
+            "name": "LAT_N",
+            "type": "FLOAT"
+          },
+          {
+            "name": "LONG_W",
+            "type": "FLOAT"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            "DEF",
+            "CA",
+            10.0,
+            20.0
+          ],
+          [
+            2,
+            "ABCDE",
+            "CA",
+            15.0,
+            25.0
+          ],
+          [
+            3,
+            "PQRS",
+            "CA",
+            12.0,
+            22.0
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE STATION (ID INT PRIMARY KEY, CITY VARCHAR(21), STATE VARCHAR(2), LAT_N FLOAT, LONG_W FLOAT);",
@@ -4946,7 +7398,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_1 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5000,7 +7471,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_2 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5054,7 +7544,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_3 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5108,7 +7617,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_4 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5162,7 +7690,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_5 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5216,7 +7763,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_6 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5269,7 +7835,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_7 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5323,7 +7908,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_8 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5377,7 +7981,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_9 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5431,7 +8054,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_10 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5485,7 +8127,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_11 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5539,7 +8200,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_12 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5593,7 +8273,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_13 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5647,7 +8346,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_14 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5700,7 +8418,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_15 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5754,7 +8491,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_16 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5808,7 +8564,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_17 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5862,7 +8637,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_18 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5916,7 +8710,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_19 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -5970,7 +8783,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_20 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6024,7 +8856,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_21 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6078,7 +8929,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_22 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6131,7 +9001,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_23 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6185,7 +9074,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_24 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6239,7 +9147,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_25 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6293,7 +9220,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_26 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6347,7 +9293,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_27 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6401,7 +9366,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_28 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6455,7 +9439,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_29 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6509,7 +9512,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_30 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6562,7 +9584,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_31 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6616,7 +9657,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_32 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6670,7 +9730,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_33 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6724,7 +9803,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_34 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6778,7 +9876,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_35 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6832,7 +9949,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_36 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6886,7 +10022,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_37 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6940,7 +10095,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_38 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -6993,7 +10167,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_39 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -7047,7 +10240,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_40 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -7101,7 +10313,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_41 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -7155,7 +10386,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_42 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -7209,7 +10459,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_43 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -7263,7 +10532,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_44 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -7317,7 +10605,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_45 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -7371,7 +10678,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_46 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -7424,7 +10750,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_47 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
@@ -7478,7 +10823,26 @@ export const SQL_CHALLENGES: SQLChallenge[] = [
             "type": "DATE"
           }
         ],
-        "rows": []
+        "rows": [
+          [
+            1,
+            101,
+            85,
+            "2026-01-01"
+          ],
+          [
+            2,
+            101,
+            95,
+            "2026-01-02"
+          ],
+          [
+            3,
+            102,
+            70,
+            "2026-01-01"
+          ]
+        ]
       }
     ],
     "inputSchemaSql": "CREATE TABLE UserLogs_48 (log_id INT PRIMARY KEY, user_id INT, score INT, log_date DATE);",
