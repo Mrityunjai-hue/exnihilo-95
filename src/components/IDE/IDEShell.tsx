@@ -714,9 +714,6 @@ export const IDEShell: React.FC<IDEShellProps> = ({
                 <span>🔄 Refresh Schema Tree</span>
               </div>
               <div className="win95-dropdown-divider" />
-              <div className="win95-dropdown-item" onClick={() => { setIsERDOpen(true); setActiveMenu(null); }}>
-                <span>🌐 Entity Relationship Diagram (ERD)</span>
-              </div>
               <div className="win95-dropdown-item" onClick={() => { onOpenSettings(); setActiveMenu(null); }}>
                 <span>🎨 Vintage Themes & Dark Mode...</span>
               </div>
@@ -727,7 +724,36 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           )}
         </div>
 
-        {/* TOOLS & HELP MENU */}
+        {/* TOOLS MENU */}
+        <div style={{ position: 'relative' }}>
+          <span
+            style={{
+              cursor: 'pointer',
+              padding: '2px 6px',
+              backgroundColor: activeMenu === 'tools' ? 'var(--w95-title-active-bg, #000080)' : 'transparent',
+              color: activeMenu === 'tools' ? '#ffffff' : 'var(--w95-text-color, #000000)',
+            }}
+            onClick={() => setActiveMenu(activeMenu === 'tools' ? null : 'tools')}
+          >
+            <u>T</u>ools
+          </span>
+          {activeMenu === 'tools' && (
+            <div className="win95-dropdown-menu">
+              <div className="win95-dropdown-item" onClick={() => { setIsERDOpen(true); setActiveMenu(null); }}>
+                <span>🌐 Entity Relationship Diagram (ERD)</span>
+              </div>
+              <div className="win95-dropdown-item" onClick={() => { onReset(); setActiveMenu(null); }}>
+                <span>🔄 Reset Schema & Database</span>
+              </div>
+              <div className="win95-dropdown-divider" />
+              <div className="win95-dropdown-item" onClick={() => { onOpenSettings(); setActiveMenu(null); }}>
+                <span>⚙️ Control Panel Options...</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* HELP MENU */}
         <div style={{ position: 'relative' }}>
           <span
             style={{
@@ -880,7 +906,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               className="win95-button"
               style={{ fontSize: '9px', padding: '1px 6px', marginLeft: 'auto' }}
               onClick={() => setShowExplorer(!showExplorer)}
-              title="Toggle Schema Sidebar"
+              title="Toggle Schema Explorer Sidebar"
             >
               {showExplorer ? '◀ Hide Sidebar' : '▶ Show Sidebar'}
             </button>
@@ -900,18 +926,56 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             />
           </div>
 
-          {/* Vertical Drag Resizer Handle */}
+          {/* Vertical Drag Resizer Handle with Grip & Split Ratio Controls */}
           <div
             onMouseDown={() => setIsResizingVertical(true)}
             style={{
-              height: '6px',
+              height: '14px',
               cursor: 'row-resize',
-              background: '#c0c0c0',
-              borderTop: '1px solid #ffffff',
-              borderBottom: '1px solid #808080',
+              background: 'var(--w95-gray, #c0c0c0)',
+              borderTop: '1px solid var(--w95-white, #ffffff)',
+              borderBottom: '1px solid var(--w95-dark-gray, #808080)',
               userSelect: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0 6px',
+              fontSize: '9px',
             }}
-          />
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.75 }}>
+              <span>⋯</span>
+              <span>DRAG TO RESIZE</span>
+            </div>
+
+            {/* Split View Quick Controls */}
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <button
+                className="win95-button"
+                style={{ fontSize: '8px', padding: '0 4px', height: '14px', lineHeight: '12px' }}
+                onClick={(e) => { e.stopPropagation(); setEditorHeightPercent(75); }}
+                title="Expand Query Editor Pane (75% Editor / 25% Results)"
+              >
+                ▲ Max Editor
+              </button>
+              <button
+                className="win95-button"
+                style={{ fontSize: '8px', padding: '0 4px', height: '14px', lineHeight: '12px' }}
+                onClick={(e) => { e.stopPropagation(); setEditorHeightPercent(50); }}
+                title="Balance Editor & Results (50% / 50%)"
+              >
+                ⚖️ 50/50
+              </button>
+              <button
+                className="win95-button"
+                style={{ fontSize: '8px', padding: '0 4px', height: '14px', lineHeight: '12px' }}
+                onClick={(e) => { e.stopPropagation(); setEditorHeightPercent(25); }}
+                title="Expand Results Grid Pane (25% Editor / 75% Results)"
+              >
+                ▼ Max Results
+              </button>
+            </div>
+          </div>
 
           {/* Results Grid Pane */}
           <div id="tour-results-grid" style={{ flex: 1, overflow: 'hidden' }}>

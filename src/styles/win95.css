@@ -842,3 +842,40 @@ html, body {
   background-color: #c0c0c0 !important;
   font-weight: bold;
 }
+
+/* Win95 Data Grid ListView Styling */
+.win95-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-family: 'Windows 95', 'MS Sans Serif', Tahoma, sans-serif;
+}
+
+.win95-grid th {
+  background: var(--w95-gray, #c0c0c0);
+  color: var(--w95-text-color, #000000);
+  border-top: 1px solid var(--w95-white, #ffffff);
+  border-left: 1px solid var(--w95-white, #ffffff);
+  border-right: 1px solid var(--w95-black, #000000);
+  border-bottom: 1px solid var(--w95-black, #000000);
+  padding: 4px 8px;
+  text-align: left;
+  font-weight: bold;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.win95-grid td {
+  border-right: 1px solid var(--w95-gray, #e0e0e0);
+  border-bottom: 1px solid var(--w95-gray, #e0e0e0);
+  padding: 3px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+.win95-grid tr:hover td {
+  background-color: var(--w95-title-active-bg, #000080);
+  color: var(--w95-title-active-text, #ffffff);
+}

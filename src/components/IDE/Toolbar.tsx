@@ -84,221 +84,130 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '3px 6px',
+        padding: '2px 6px',
+        height: '28px',
         background: 'var(--w95-gray, #c0c0c0)',
         color: 'var(--w95-text-color, #000000)',
         borderBottom: '1px solid var(--w95-dark-gray, #808080)',
-        gap: '4px',
-        flexWrap: 'wrap',
+        gap: '6px',
+        boxSizing: 'border-box',
         position: 'relative',
         zIndex: 10,
       }}
     >
-      {/* Left Action Groups */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-        {/* Group 1: Execution & Formatter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-          <button
-            id="btn-run"
-            className="win95-button"
-            style={{
-              fontWeight: 'bold',
-              color: hasSelection ? '#800080' : '#006600',
-              background: hasSelection ? '#f0e6f6' : undefined,
-              padding: '2px 8px',
-            }}
-            onClick={onRun}
-            disabled={isLoading}
-            title={hasSelection ? 'Execute Selected Query (F5 or Ctrl+Enter)' : 'Execute All Queries (F5 or Ctrl+Enter)'}
-          >
-            <span>▶</span>
-            <span>{hasSelection ? 'Run Selection (F5)' : 'Run (F5)'}</span>
-          </button>
+      {/* Left Core Execution Group */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        {/* Primary Run Button */}
+        <button
+          id="btn-run"
+          className="win95-button"
+          style={{
+            fontWeight: 'bold',
+            color: hasSelection ? '#800080' : '#006600',
+            background: hasSelection ? '#f0e6f6' : undefined,
+            padding: '2px 10px',
+            fontSize: '11px',
+          }}
+          onClick={onRun}
+          disabled={isLoading}
+          title={hasSelection ? 'Execute Selected Query (F5 or Ctrl+Enter)' : 'Execute All Queries (F5 or Ctrl+Enter)'}
+        >
+          <span>▶</span>
+          <span>{hasSelection ? 'Run Selection (F5)' : 'Run (F5)'}</span>
+        </button>
 
-          <button
-            id="btn-format"
-            className="win95-button"
-            onClick={onFormatSql}
-            disabled={isLoading}
-            title="Format & Beautify SQL Query (Ctrl+Shift+F)"
-            style={{ padding: '2px 6px' }}
-          >
-            <span>🧹</span>
-            <span>Format</span>
-          </button>
-        </div>
+        {/* Format SQL Button */}
+        <button
+          id="btn-format"
+          className="win95-button"
+          onClick={onFormatSql}
+          disabled={isLoading}
+          title="Format & Beautify SQL Query (Ctrl+Shift+F)"
+          style={{ padding: '2px 8px', fontSize: '11px' }}
+        >
+          <span>⚡</span>
+          <span>Format</span>
+        </button>
 
         <div className="win95-divider-v" />
 
-        {/* Group 2: Templates & History */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-          <div style={{ position: 'relative' }}>
-            <button
-              id="btn-templates"
-              className="win95-button"
-              onClick={() => setTemplateMenuOpen((prev) => !prev)}
-              title="Insert Prebuilt SQL Query Templates"
-              style={{ padding: '2px 6px' }}
-            >
-              <span>📜</span>
-              <span>Templates ▾</span>
-            </button>
-
-            {templateMenuOpen && (
-              <div
-                className="win95-window"
-                style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  marginTop: '2px',
-                  width: '240px',
-                  background: '#c0c0c0',
-                  boxShadow: '2px 2px 8px rgba(0,0,0,0.3)',
-                  padding: '2px',
-                  zIndex: 99999,
-                }}
-              >
-                {templates.map((tpl, i) => (
-                  <div
-                    key={i}
-                    className="win95-menu-item"
-                    onClick={() => handleSelectTemplate(tpl.sql)}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      borderRadius: '0',
-                    }}
-                  >
-                    {tpl.label}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
+        {/* Templates Dropdown */}
+        <div style={{ position: 'relative' }}>
           <button
-            id="btn-history"
+            id="btn-templates"
             className="win95-button"
-            onClick={onToggleHistory}
-            title="View Query History Log (Ctrl+H)"
-            style={{ padding: '2px 6px' }}
+            onClick={() => setTemplateMenuOpen((prev) => !prev)}
+            title="Insert Prebuilt SQL Query Templates"
+            style={{ padding: '2px 8px', fontSize: '11px' }}
           >
-            <span>🕒</span>
-            <span>History ({historyCount})</span>
+            <span>📋</span>
+            <span>Templates ▾</span>
           </button>
 
-          {onOpenERD && (
-            <button
-              id="btn-erd"
-              className="win95-button"
-              onClick={onOpenERD}
-              title="Interactive ERD Diagram & Visual Schema Relationship Map"
-              style={{ padding: '2px 6px' }}
+          {templateMenuOpen && (
+            <div
+              className="win95-window"
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                marginTop: '2px',
+                width: '240px',
+                background: 'var(--w95-gray, #c0c0c0)',
+                boxShadow: '2px 2px 8px rgba(0,0,0,0.3)',
+                padding: '2px',
+                zIndex: 99999,
+              }}
             >
-              <span>🌐</span>
-              <span>ERD</span>
-            </button>
+              {templates.map((tpl, i) => (
+                <div
+                  key={i}
+                  className="win95-menu-item"
+                  onClick={() => handleSelectTemplate(tpl.sql)}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '11px',
+                    cursor: 'pointer',
+                    borderRadius: '0',
+                  }}
+                >
+                  {tpl.label}
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
-        <div className="win95-divider-v" />
-
-        {/* Group 3: Database & Dialect Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <label htmlFor="dialect-select" style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--w95-text-color, #000000)' }}>
-              Dialect:
-            </label>
-            <select
-              id="dialect-select"
-              className="win95-sunken"
-              value={dialect}
-              onChange={(e) => onDialectChange(e.target.value as Dialect)}
-              style={{ padding: '2px 4px', fontSize: '11px', height: '22px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
-            >
-              <option value="MySQL" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>MySQL</option>
-              <option value="PostgreSQL" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>PostgreSQL</option>
-              <option value="SQLite" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>SQLite</option>
-              <option value="SSMS" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>SSMS (Transact-SQL)</option>
-            </select>
-          </div>
-
-          <button
-            id="btn-reset"
-            className="win95-button"
-            onClick={onReset}
-            disabled={isLoading}
-            title="Clear database and reset catalog"
-            style={{ padding: '2px 6px' }}
-          >
-            <span>🔄</span>
-            <span>Reset Schema</span>
-          </button>
-        </div>
+        {/* Query History Drawer Button */}
+        <button
+          id="btn-history"
+          className="win95-button"
+          onClick={onToggleHistory}
+          title="View Query Execution History Log (Ctrl+H)"
+          style={{ padding: '2px 8px', fontSize: '11px' }}
+        >
+          <span>🕒</span>
+          <span>History ({historyCount})</span>
+        </button>
       </div>
 
-      {/* Right Action Group: System & Help Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-        <div className="win95-divider-v" />
-
-        <button
-          id="btn-help"
-          className="win95-button"
-          onClick={onOpenHelp}
-          title="Open SQL Query Tutorial & Guide"
-          style={{ padding: '2px 6px' }}
+      {/* Right Dialect & Engine Selector Group */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <label htmlFor="dialect-select" style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--w95-text-color, #000000)' }}>
+          Dialect:
+        </label>
+        <select
+          id="dialect-select"
+          className="win95-sunken"
+          value={dialect}
+          onChange={(e) => onDialectChange(e.target.value as Dialect)}
+          style={{ padding: '1px 6px', fontSize: '11px', height: '20px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
         >
-          <span>📖</span>
-          <span>Help</span>
-        </button>
-
-        <button
-          id="btn-tour"
-          className="win95-button"
-          onClick={onStartTour}
-          title="Start Guided Tour"
-          style={{ padding: '2px 6px' }}
-        >
-          <span>💡</span>
-          <span>Tour</span>
-        </button>
-
-        <button
-          id="btn-themes"
-          className="win95-button"
-          onClick={onOpenSettings}
-          title="Change Vintage Themes & Dark Mode (Win95, Noir, XP, Win2000)"
-          style={{ padding: '2px 6px', fontWeight: 'bold' }}
-        >
-          <span>🎨</span>
-          <span>Themes</span>
-        </button>
-
-        {onToggleCrt && (
-          <button
-            id="btn-crt"
-            className={`win95-button ${crtEnabled ? 'pressed' : ''}`}
-            onClick={onToggleCrt}
-            title="Toggle Retro CRT Monitor Scanline & Glow Overlay Effect"
-            style={{ padding: '2px 6px', fontWeight: crtEnabled ? 'bold' : 'normal' }}
-          >
-            <span>📺</span>
-            <span>CRT {crtEnabled ? 'ON' : 'OFF'}</span>
-          </button>
-        )}
-
-        <button
-          id="btn-options"
-          className="win95-button"
-          onClick={onOpenSettings}
-          title="Options & Preferences"
-          style={{ padding: '2px 6px' }}
-        >
-          <span>⚙️</span>
-          <span>Options</span>
-        </button>
+          <option value="MySQL" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>MySQL</option>
+          <option value="PostgreSQL" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>PostgreSQL</option>
+          <option value="SQLite" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>SQLite</option>
+          <option value="SSMS" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>SSMS (Transact-SQL)</option>
+        </select>
       </div>
     </div>
   );

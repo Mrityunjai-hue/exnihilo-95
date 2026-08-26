@@ -90,12 +90,12 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
           alignItems: 'center',
         }}
       >
-        <span>📂 Tables ({tables.length})</span>
+        <span>📂 DATABASE NAVIGATOR</span>
         <button
           className="win95-button"
           style={{ padding: '0 4px', fontSize: '9px', minHeight: '18px' }}
           onClick={onRefresh}
-          title="Refresh Schema"
+          title="Refresh Schema Catalog"
         >
           🔄
         </button>
@@ -106,7 +106,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
         <input
           type="text"
           className="win95-sunken"
-          placeholder="🔍 Search tables..."
+          placeholder="🔍 Filter tables / columns..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           style={{ width: '100%', padding: '1px 4px', fontSize: '10px', boxSizing: 'border-box', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
@@ -117,7 +117,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
       <div style={{ flex: 1, overflow: 'auto', padding: '4px' }}>
         {filteredTables.length === 0 ? (
           <div style={{ padding: '12px 6px', color: 'var(--w95-dark-gray, #888888)', fontSize: '11px', textAlign: 'center' }}>
-            {searchQuery ? 'No tables match search query.' : 'No tables materialized yet. Execute a query to auto-generate tables!'}
+            {searchQuery ? 'No tables match search query.' : 'No tables materialized yet.'}
           </div>
         ) : (
           filteredTables.map((entry) => {
@@ -129,7 +129,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                   className="win95-tree-item"
                   onClick={() => onSelectTable(entry.tableName, `SELECT * FROM ${entry.tableName};`)}
                   title="Click to query this table"
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '2px 4px' }}
                 >
                   <span
                     onClick={(e) => toggleTable(entry.tableName, e)}
@@ -147,61 +147,61 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                   </span>
                   <span>🗃️</span>
                   <strong style={{ flex: 1, color: 'var(--w95-sunken-text, #000080)' }}>{entry.tableName}</strong>
-                  <span style={{ fontSize: '9px', color: 'var(--w95-dark-gray, #666)' }}>({entry.rowCount}r)</span>
-
-                  {/* Quick Action Badges */}
-                  <button
-                    className="win95-button"
-                    style={{ fontSize: '8px', padding: '0 3px', minHeight: '16px' }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTable(entry.tableName, `SELECT COUNT(*) AS total FROM ${entry.tableName};`);
+                  <span
+                    style={{
+                      fontSize: '9px',
+                      background: 'var(--w95-gray, #e0e0e0)',
+                      color: 'var(--w95-text-color, #333333)',
+                      padding: '1px 4px',
+                      borderRadius: '2px',
+                      border: '1px solid var(--w95-dark-gray, #808080)',
                     }}
-                    title="Run COUNT(*) query"
                   >
-                    COUNT
-                  </button>
+                    {entry.rowCount} rows
+                  </span>
                   <button
                     className="win95-button"
-                    style={{ fontSize: '8px', padding: '0 3px', minHeight: '16px' }}
                     onClick={(e) => handleGenerateDDL(entry, e)}
-                    title="View DDL statement"
+                    title="View Table DDL Schema"
+                    style={{ fontSize: '9px', padding: '0 4px', minHeight: '16px', marginLeft: '2px' }}
                   >
                     DDL
                   </button>
                 </div>
 
-                {/* Expanded Columns */}
+                {/* Expanded Columns Sub-Tree */}
                 {isExpanded && (
-                  <div style={{ paddingLeft: '22px', borderLeft: '1px dotted #a0a0a0', marginLeft: '6px', marginTop: '2px' }}>
+                  <div style={{ marginLeft: '16px', borderLeft: '1px dotted var(--w95-dark-gray, #808080)', paddingLeft: '6px', marginTop: '2px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--w95-dark-gray, #555555)', margin: '2px 0' }}>
+                      📂 Columns ({entry.schema.columns.length})
+                    </div>
                     {entry.schema.columns.map((col) => {
                       const isPk = col.name.toLowerCase() === 'id';
-                      const isFk = col.name.toLowerCase().endsWith('_id') && col.name.toLowerCase() !== 'id';
-
+                      const isFk = col.name.toLowerCase().endsWith('_id') && !isPk;
                       return (
                         <div
                           key={col.name}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectTable(entry.tableName, `SELECT ${col.name} FROM ${entry.tableName};`);
+                          }}
                           style={{
-                            fontSize: '10px',
-                            padding: '1px 0',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '4px',
-                            color: '#333333',
+                            justifyContent: 'space-between',
+                            padding: '1px 4px',
+                            fontSize: '10px',
+                            cursor: 'pointer',
                           }}
+                          title={`Click to SELECT ${col.name}`}
                         >
-                          <span>{isPk ? '🔑' : isFk ? '🔗' : '🔹'}</span>
-                          <span style={{ fontWeight: isPk || isFk ? 'bold' : 'normal', color: isPk ? '#800080' : isFk ? '#006600' : '#333' }}>
-                            {col.name}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>{isPk ? '🔑' : isFk ? '🔗' : '📄'}</span>
+                            <span style={{ fontWeight: isPk || isFk ? 'bold' : 'normal', color: 'var(--w95-sunken-text, #000000)' }}>{col.name}</span>
+                          </div>
+                          <span style={{ fontSize: '9px', color: 'var(--w95-dark-gray, #666666)', fontStyle: 'italic' }}>
+                            {col.logicalType.toLowerCase()}
                           </span>
-                          <span style={{ color: '#888888', fontSize: '9px' }}>
-                            [{col.logicalType}]
-                          </span>
-                          {isFk && (
-                            <span style={{ color: '#006600', fontSize: '8px', fontStyle: 'italic' }}>
-                              FK
-                            </span>
-                          )}
                         </div>
                       );
                     })}

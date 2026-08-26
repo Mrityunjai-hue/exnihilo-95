@@ -23,7 +23,7 @@ interface ResultsGridProps {
   dialect?:        string;
 }
 
-const ROW_HEIGHT = 24;
+const ROW_HEIGHT = 26;
 const OVERSCAN = 5;
 
 export const ResultsGrid: React.FC<ResultsGridProps> = ({
@@ -38,6 +38,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(300);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -347,57 +348,85 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '3px 6px',
+          padding: '2px 6px',
+          height: '28px',
+          boxSizing: 'border-box',
           background: 'var(--w95-gray, #c0c0c0)',
           color: 'var(--w95-text-color, #000000)',
           borderBottom: '1px solid var(--w95-dark-gray, #808080)',
           fontSize: '11px',
           gap: '6px',
-          flexWrap: 'wrap',
         }}
       >
-        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-          <button
-            className="win95-button"
-            style={{ fontSize: '10px', padding: '1px 6px' }}
-            onClick={handleExportCSV}
-            title="Export active result grid to CSV file"
-          >
-            💾 CSV
-          </button>
-          <button
-            className="win95-button"
-            style={{ fontSize: '10px', padding: '1px 6px' }}
-            onClick={handleExportJSON}
-            title="Export results to JSON file"
-          >
-            📋 JSON
-          </button>
-          <button
-            className="win95-button"
-            style={{ fontSize: '10px', padding: '1px 6px' }}
-            onClick={handleExportSQL}
-            title={`Generate SQL INSERT statements file (${dialect})`}
-          >
-            📄 INSERTs
-          </button>
-          <button
-            className="win95-button"
-            style={{ fontSize: '10px', padding: '1px 6px' }}
-            onClick={handleExportDDL}
-            title={`Generate CREATE TABLE DDL schema file (${dialect})`}
-          >
-            📜 DDL
-          </button>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          {/* Consolidated Export Dropdown */}
+          <div style={{ position: 'relative' }}>
+            <button
+              className="win95-button"
+              style={{ fontSize: '11px', padding: '1px 8px' }}
+              onClick={() => setExportMenuOpen((prev) => !prev)}
+              title="Export result set to file format"
+            >
+              💾 Export ▾
+            </button>
+
+            {exportMenuOpen && (
+              <div
+                className="win95-window"
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  marginTop: '2px',
+                  width: '180px',
+                  background: 'var(--w95-gray, #c0c0c0)',
+                  boxShadow: '2px 2px 8px rgba(0,0,0,0.3)',
+                  padding: '2px',
+                  zIndex: 99999,
+                }}
+              >
+                <div
+                  className="win95-menu-item"
+                  onClick={() => { handleExportCSV(); setExportMenuOpen(false); }}
+                  style={{ padding: '4px 8px', fontSize: '11px', cursor: 'pointer' }}
+                >
+                  📄 Export as CSV File
+                </div>
+                <div
+                  className="win95-menu-item"
+                  onClick={() => { handleExportJSON(); setExportMenuOpen(false); }}
+                  style={{ padding: '4px 8px', fontSize: '11px', cursor: 'pointer' }}
+                >
+                  📋 Export as JSON File
+                </div>
+                <div
+                  className="win95-menu-item"
+                  onClick={() => { handleExportSQL(); setExportMenuOpen(false); }}
+                  style={{ padding: '4px 8px', fontSize: '11px', cursor: 'pointer' }}
+                >
+                  📝 Export as SQL INSERTs
+                </div>
+                <div
+                  className="win95-menu-item"
+                  onClick={() => { handleExportDDL(); setExportMenuOpen(false); }}
+                  style={{ padding: '4px 8px', fontSize: '11px', cursor: 'pointer' }}
+                >
+                  📜 Export as DDL Schema
+                </div>
+              </div>
+            )}
+          </div>
 
           {toastNotice && (
-            <span style={{ color: '#006600', fontWeight: 'bold', fontSize: '10px', marginLeft: '6px' }}>
+            <span style={{ color: '#006600', fontWeight: 'bold', fontSize: '10px' }}>
               {toastNotice}
             </span>
           )}
-          {/* Quick Search Input (ReDoS Immunity: .includes()) */}
+        </div>
+
+        {/* Quick Row Search Input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <label style={{ fontSize: '10px', fontWeight: 'bold' }}>Filter:</label>
+          <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--w95-text-color, #000000)' }}>Filter:</label>
           <input
             type="text"
             className="win95-sunken"
@@ -415,7 +444,6 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
               ✕
             </button>
           )}
-        </div>
         </div>
       </div>
 
