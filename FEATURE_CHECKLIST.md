@@ -85,8 +85,8 @@ Progress: [███████████████████████
 - [x] **CSV Grid Export**: 1-click export of SQL query results to CSV.
 - [x] **JSON Log Export**: Download session query history logs as `.json` (`exnihilo_session_logs_<username>.json`).
 - [x] **Session Text Report Export**: Generate and download session summary report in `.txt` format.
-- [ ] **SQL `INSERT` Script Export**: Export synthesized mock data as executable `INSERT INTO table VALUES (...)` files.
-- [ ] **Schema DDL Export**: Export inferred schemas as `.sql` `CREATE TABLE` files formatted for any dialect.
+- [x] **SQL `INSERT` Script Export**: Export synthesized mock data as executable `INSERT INTO table VALUES (...)` files.
+- [x] **Schema DDL Export**: Export inferred schemas as `.sql` `CREATE TABLE` files formatted for any dialect.
 - [ ] **Shareable Query Links**: Generate unique URLs containing query text, dialect, and schema state.
 - [ ] **Embeddable `<iframe>` Widget**: Embed ExNihilo IDE sandbox inside blogs and documentation.
 - [ ] **Formatted PDF Report**: Export query, results, and charts as a PDF document.
