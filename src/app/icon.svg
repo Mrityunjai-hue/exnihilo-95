@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Bevel Gradients -->
+    <linearGradient id="winBevelLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#dfdfdf" />
+    </linearGradient>
+    <linearGradient id="winBevelDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#808080" />
+      <stop offset="100%" stop-color="#000000" />
+    </linearGradient>
+    <linearGradient id="dbCylinder" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2b5895" />
+      <stop offset="35%" stop-color="#4d88d6" />
+      <stop offset="70%" stop-color="#73a9f0" />
+      <stop offset="100%" stop-color="#1c3e6e" />
+    </linearGradient>
+    <linearGradient id="dbTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8bbcf7" />
+      <stop offset="100%" stop-color="#3b72bd" />
+    </linearGradient>
+    <linearGradient id="goldBadge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe680" />
+      <stop offset="50%" stop-color="#ffb800" />
+      <stop offset="100%" stop-color="#b37700" />
+    </linearGradient>
+    <filter id="retroShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="8" dy="8" stdDeviation="0" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Desktop Teal Background Container -->
+  <rect width="512" height="512" rx="64" fill="#008080" />
+  <rect x="12" y="12" width="488" height="488" rx="56" fill="none" stroke="#004d4d" stroke-width="8" />
+
+  <!-- Win95 Outer Bevel Box -->
+  <g filter="url(#retroShadow)">
+    <rect x="48" y="48" width="416" height="416" fill="#c0c0c0" stroke="#ffffff" stroke-width="6" />
+    <line x1="48" y1="464" x2="464" y2="464" stroke="#808080" stroke-width="8" />
+    <line x1="464" y1="48" x2="464" y2="464" stroke="#808080" stroke-width="8" />
+    <line x1="48" y1="460" x2="460" y2="460" stroke="#000000" stroke-width="4" />
+    <line x1="460" y1="48" x2="460" y2="460" stroke="#000000" stroke-width="4" />
+  </g>
+
+  <!-- Titlebar -->
+  <rect x="60" y="60" width="392" height="52" fill="navy" />
+  <text x="80" y="96" font-family="'Courier New', monospace, sans-serif" font-size="26" font-weight="bold" fill="#ffffff" letter-spacing="1">ExNihilo 95</text>
+  
+  <!-- Window Close Button -->
+  <rect x="408" y="68" width="36" height="36" fill="#c0c0c0" stroke="#ffffff" stroke-width="2" />
+  <line x1="408" y1="104" x2="444" y2="104" stroke="#000000" stroke-width="3" />
+  <line x1="444" y1="68" x2="444" y2="104" stroke="#000000" stroke-width="3" />
+  <text x="419" y="93" font-family="sans-serif" font-size="24" font-weight="bold" fill="#000000">✕</text>
+
+  <!-- Database Cylinder Stack (3 Disks) -->
+  <g transform="translate(136, 130)">
+    <!-- Bottom Cylinder Layer -->
+    <path d="M 40,160 L 40,210 C 40,240 200,240 200,210 L 200,160 Z" fill="url(#dbCylinder)" stroke="#0d2442" stroke-width="4" />
+    <ellipse cx="120" cy="160" rx="80" ry="30" fill="url(#dbTop)" stroke="#0d2442" stroke-width="4" />
+
+    <!-- Middle Cylinder Layer -->
+    <path d="M 40,90 L 40,140 C 40,170 200,170 200,140 L 200,90 Z" fill="url(#dbCylinder)" stroke="#0d2442" stroke-width="4" />
+    <ellipse cx="120" cy="90" rx="80" ry="30" fill="url(#dbTop)" stroke="#0d2442" stroke-width="4" />
+
+    <!-- Top Cylinder Layer -->
+    <path d="M 40,20 L 40,70 C 40,100 200,100 200,70 L 200,20 Z" fill="url(#dbCylinder)" stroke="#0d2442" stroke-width="4" />
+    <ellipse cx="120" cy="20" rx="80" ry="30" fill="url(#dbTop)" stroke="#0d2442" stroke-width="4" />
+
+    <!-- SQL Gold Lightning Bolt Emblem -->
+    <polygon points="135,-10 95,80 125,80 105,150 165,55 135,55" fill="url(#goldBadge)" stroke="#4d3300" stroke-width="3" />
+  </g>
+
+  <!-- Retro '95' Badge -->
+  <g transform="translate(300, 320)" filter="url(#retroShadow)">
+    <rect width="110" height="65" rx="8" fill="url(#goldBadge)" stroke="#ffffff" stroke-width="3" />
+    <text x="55" y="46" font-family="'Impact', 'Arial Black', sans-serif" font-size="42" font-weight="900" fill="#000000" text-anchor="middle" font-style="italic">95</text>
+  </g>
+</svg>
