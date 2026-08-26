@@ -36,7 +36,8 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
         onEnsureIDEOpen();
       }
     }
-  }, [isOpen, onEnsureIDEOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
   const [targetRect, setTargetRect] = useState<{
     top: number;
     left: number;
@@ -167,7 +168,7 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
       onClose();
       onOpenHelp();
     } else {
-      setCurrentStepIdx(currentStepIdx + 1);
+      setCurrentStepIdx((prev) => prev + 1);
     }
   };
 
@@ -290,7 +291,7 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
               <button
                 className="win95-button"
                 disabled={currentStepIdx === 0}
-                onClick={() => setCurrentStepIdx(currentStepIdx - 1)}
+                onClick={() => setCurrentStepIdx((prev) => Math.max(0, prev - 1))}
                 style={{ fontSize: '10px' }}
               >
                 &lt; Back

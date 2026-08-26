@@ -181,10 +181,10 @@ export const Desktop: React.FC = () => {
   };
 
   // Handle Start Guided Tour (Ensures ExNihilo SQL IDE is open, un-minimized, and focused)
-  const handleStartGuidedTour = () => {
+  const handleStartGuidedTour = React.useCallback(() => {
     focusWindow('ide');
     setTourOpen(true);
-  };
+  }, []);
 
   // Handle Logout (Resets session usage stats cleanly)
   const handleLogout = () => {
