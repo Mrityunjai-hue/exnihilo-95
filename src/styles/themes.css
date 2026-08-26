@@ -1,0 +1,105 @@
+/**
+ * themes.css — Multi-Theme Engine & Nostalgia Skins System
+ *
+ * Supported Skins:
+ * 1. win95-classic  — Windows 95 Classic Teal & Gray (Default)
+ * 2. win95-noir     — Win95 Noir Dark Mode (Midnight Dark Slate & Cyan/Indigo Accent)
+ * 3. winxp-luna     — Windows XP Luna (Bliss Green & Royal Blue Gradient)
+ * 4. win2000        — Windows 2000 Professional (Corporate Steel Blue & Crisp Gray)
+ */
+
+:root,
+[data-theme="win95-classic"] {
+  --w95-desktop-bg: #008080;
+  --w95-gray: #c0c0c0;
+  --w95-light-gray: #dfdfdf;
+  --w95-white: #ffffff;
+  --w95-dark-gray: #808080;
+  --w95-black: #000000;
+  --w95-text-color: #000000;
+  --w95-sunken-bg: #ffffff;
+  --w95-sunken-text: #000000;
+  --w95-title-active-bg: #000080;
+  --w95-title-active-text: #ffffff;
+  --w95-title-active-gradient: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  --w95-title-inactive-bg: #808080;
+  --w95-border-light: #ffffff;
+  --w95-border-dark: #808080;
+  --w95-border-darkest: #000000;
+  --w95-grid-even-bg: #ffffff;
+  --w95-grid-odd-bg: #f8f9fa;
+  --w95-editor-bg: #ffffff;
+  --w95-editor-text: #000000;
+}
+
+/* Win95 Noir — Dark Mode */
+[data-theme="win95-noir"] {
+  --w95-desktop-bg: #0a0e17;
+  --w95-gray: #1e2430;
+  --w95-light-gray: #2d3545;
+  --w95-white: #161b26;
+  --w95-dark-gray: #475569;
+  --w95-black: #f8fafc;
+  --w95-text-color: #f1f5f9;
+  --w95-sunken-bg: #0f172a;
+  --w95-sunken-text: #e2e8f0;
+  --w95-title-active-bg: #1e1b4b;
+  --w95-title-active-text: #38bdf8;
+  --w95-title-active-gradient: linear-gradient(90deg, #0f172a 0%, #1e293b 50%, #0369a1 100%);
+  --w95-title-inactive-bg: #334155;
+  --w95-border-light: #475569;
+  --w95-border-dark: #0f172a;
+  --w95-border-darkest: #020617;
+  --w95-grid-even-bg: #0f172a;
+  --w95-grid-odd-bg: #1e293b;
+  --w95-editor-bg: #0f172a;
+  --w95-editor-text: #f8fafc;
+}
+
+/* Windows XP Luna — Bliss Green & Royal Blue */
+[data-theme="winxp-luna"] {
+  --w95-desktop-bg: #2d5a27;
+  --w95-gray: #ece9d8;
+  --w95-light-gray: #ffffff;
+  --w95-white: #ffffff;
+  --w95-dark-gray: #aca899;
+  --w95-black: #000000;
+  --w95-text-color: #000000;
+  --w95-sunken-bg: #ffffff;
+  --w95-sunken-text: #000000;
+  --w95-title-active-bg: #0055ea;
+  --w95-title-active-text: #ffffff;
+  --w95-title-active-gradient: linear-gradient(90deg, #0055ea 0%, #3f8cff 100%);
+  --w95-title-inactive-bg: #7ba7e1;
+  --w95-border-light: #ffffff;
+  --w95-border-dark: #aca899;
+  --w95-border-darkest: #716f64;
+  --w95-grid-even-bg: #ffffff;
+  --w95-grid-odd-bg: #f5f4ef;
+  --w95-editor-bg: #ffffff;
+  --w95-editor-text: #000000;
+}
+
+/* Windows 2000 Corporate — Steel Blue & Slate Gray */
+[data-theme="win2000"] {
+  --w95-desktop-bg: #3a6ea5;
+  --w95-gray: #d4d0c8;
+  --w95-light-gray: #ffffff;
+  --w95-white: #ffffff;
+  --w95-dark-gray: #808080;
+  --w95-black: #000000;
+  --w95-text-color: #000000;
+  --w95-sunken-bg: #ffffff;
+  --w95-sunken-text: #000000;
+  --w95-title-active-bg: #0a246a;
+  --w95-title-active-text: #ffffff;
+  --w95-title-active-gradient: linear-gradient(90deg, #0a246a 0%, #a6caf0 100%);
+  --w95-title-inactive-bg: #808080;
+  --w95-border-light: #ffffff;
+  --w95-border-dark: #808080;
+  --w95-border-darkest: #404040;
+  --w95-grid-even-bg: #ffffff;
+  --w95-grid-odd-bg: #f0eee9;
+  --w95-editor-bg: #ffffff;
+  --w95-editor-text: #000000;
+}

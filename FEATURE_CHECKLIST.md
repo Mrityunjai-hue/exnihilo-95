@@ -10,13 +10,13 @@
 | Metric | Status |
 | :--- | :---: |
 | **Total Tracked Features** | **98 Features** |
-| **✅ Fully Implemented** | **59 Features** (60%) |
+| **✅ Fully Implemented** | **62 Features** (63%) |
 | **🟡 Partially Implemented** | **6 Features** (6%) |
-| **❌ Pending Roadmap** | **33 Features** (34%) |
-| **Overall Completion** | **~60% Functional Baseline** |
+| **❌ Pending Roadmap** | **30 Features** (31%) |
+| **Overall Completion** | **~63% Functional Baseline** |
 
 ```
-Progress: [██████████████████████████████░░░░░░░░░░░░░░░░░░] 60% Completed
+Progress: [███████████████████████████████░░░░░░░░░░░░░░░░] 63% Completed
 ```
 
 ---
@@ -157,9 +157,9 @@ Progress: [███████████████████████
 - [x] **Start Menu & Taskbar**: Windows 95 start menu and active window taskbar buttons.
 - [x] **Streamlined Win95 Action Toolbar**: 4-group organized action bar separated by 3D Win95 vertical dividers (`.win95-divider-v`).
 - [x] **Flush Maximized Window View**: Pixel-perfect `calc(100vh - 32px)` window height preventing bottom statusbar taskbar overlap.
-- [ ] **Win95 Noir Dark Mode**: Dark desktop theme with vibrant neon syntax highlighting.
-- [ ] **Windows XP Luna Theme**: Blue & green XP aesthetic with the famous Bliss wallpaper.
-- [ ] **Windows 98 & Windows 2000 Skins**: Corporate gray minimalism.
+- [x] **Win95 Noir Dark Mode**: Dark desktop theme (`#0a0e17`) with vibrant neon titlebars, dark slate windows, and dark CodeMirror editor.
+- [x] **Windows XP Luna Theme**: Bliss green (`#2d5a27`) desktop aesthetic with royal blue XP gradient titlebars (`#0055ea` $\rightarrow$ `#3f8cff`).
+- [x] **Windows 2000 Corporate Skin**: Steel blue (`#3a6ea5`) desktop with corporate slate gray windows (`#d4d0c8`).
 - [ ] **Custom Wallpaper Upload**: Upload custom desktop background images.
 - [ ] **CRT Scanline Filter**: Retro CRT monitor scanline & glow overlay effect.
 

@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { Dialect } from '../../engine/parser';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from './WindowControls';
+import { useTheme, ThemeId, THEME_PRESETS } from '../../hooks/useTheme';
 
 interface SettingsDialogProps {
   isOpen:         boolean;
@@ -28,11 +29,12 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   onClose,
   onFocus,
 }) => {
-  const [activeTab, setActiveTab] = useState<'general' | 'engine' | 'about'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'themes' | 'engine' | 'about'>('general');
   const [localRows, setLocalRows] = useState<number>(rowsPerTable);
   const [localCap, setLocalCap] = useState<number>(tableCap);
   const [localDialect, setLocalDialect] = useState<Dialect>(currentDialect);
   const { position, handleMouseDown } = useDraggable({ x: 220, y: 110 });
+  const { activeTheme, setTheme } = useTheme();
 
   if (!isOpen) return null;
 
@@ -52,7 +54,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
         position: 'absolute',
         top: `${position.y}px`,
         left: `${position.x}px`,
-        width: '420px',
+        width: '460px',
         zIndex,
       }}
       onMouseDown={onFocus}
@@ -86,6 +88,12 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
             onClick={() => setActiveTab('general')}
           >
             General
+          </div>
+          <div
+            className={`win95-tab ${activeTab === 'themes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('themes')}
+          >
+            🎨 Display & Themes
           </div>
           <div
             className={`win95-tab ${activeTab === 'engine' ? 'active' : ''}`}
@@ -155,6 +163,63 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                   <option value="SQLite">SQLite</option>
                   <option value="SSMS">SSMS (Transact-SQL)</option>
                 </select>
+              </fieldset>
+            </div>
+          )}
+
+          {activeTab === 'themes' && (
+            <div>
+              <fieldset style={{ border: '1px solid #808080', padding: '10px' }}>
+                <legend style={{ padding: '0 4px', fontSize: '11px', fontWeight: 'bold' }}>
+                  🎨 Vintage Theme & Nostalgia Skins
+                </legend>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
+                  {THEME_PRESETS.map((t) => {
+                    const isSelected = activeTheme === t.id;
+                    return (
+                      <div
+                        key={t.id}
+                        onClick={() => setTheme(t.id)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '6px 8px',
+                          border: isSelected ? '2px solid #000080' : '1px solid #808080',
+                          background: isSelected ? '#e0e0ff' : '#ffffff',
+                          cursor: 'pointer',
+                          borderRadius: '2px',
+                        }}
+                      >
+                        <div>
+                          <strong style={{ fontSize: '11px', color: '#000' }}>{t.name}</strong>
+                          <div style={{ fontSize: '10px', color: '#555' }}>{t.badge}</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                          <div
+                            title="Desktop Background"
+                            style={{
+                              width: '16px',
+                              height: '16px',
+                              background: t.desktopBg,
+                              border: '1px solid #000',
+                            }}
+                          />
+                          <div
+                            title="Window Titlebar"
+                            style={{
+                              width: '24px',
+                              height: '16px',
+                              background: t.titleGradient,
+                              border: '1px solid #000',
+                            }}
+                          />
+                          {isSelected && <span style={{ color: '#006600', fontWeight: 'bold', fontSize: '12px' }}>✓</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </fieldset>
             </div>
           )}

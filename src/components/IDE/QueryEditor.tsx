@@ -165,12 +165,12 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
         customKeymap,
         updateListener,
         EditorView.theme({
-          '&': { height: '100%' },
+          '&': { height: '100%', backgroundColor: 'var(--w95-editor-bg, #ffffff)', color: 'var(--w95-editor-text, #000000)' },
           '.cm-scroller': { overflow: 'auto', fontFamily: 'var(--w95-mono)', fontSize: '13px' },
-          '.cm-content': { caretColor: '#000000' },
-          '.cm-activeLine': { backgroundColor: 'rgba(0, 0, 128, 0.06)' },
-          '.cm-activeLineGutter': { backgroundColor: '#d4d0c8', fontWeight: 'bold' },
-          '.cm-gutters': { backgroundColor: '#ece9d8', borderRight: '1px solid #999', color: '#555' },
+          '.cm-content': { caretColor: 'var(--w95-editor-text, #000000)' },
+          '.cm-activeLine': { backgroundColor: 'rgba(0, 0, 128, 0.12)' },
+          '.cm-activeLineGutter': { backgroundColor: 'var(--w95-gray, #d4d0c8)', fontWeight: 'bold' },
+          '.cm-gutters': { backgroundColor: 'var(--w95-gray, #ece9d8)', borderRight: '1px solid var(--w95-dark-gray, #999)', color: 'var(--w95-dark-gray, #555)' },
         }),
       ],
     });
