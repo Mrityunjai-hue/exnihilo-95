@@ -148,6 +148,7 @@ No installation required — launch the full application in your browser:
 - `npm run build` — Creates an optimized production static bundle.
 - `npm run test` / `npx vitest run` — Runs 73 unit tests.
 - `npx playwright test` — Runs Playwright E2E browser automation tests.
+- `node scripts/harnesses/phase6_full_suite.cjs` — Executes the full 14-query headless verification harness.
 
 ---
 
