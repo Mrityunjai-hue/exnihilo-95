@@ -8,6 +8,13 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ExecutionSuccess } from '../../engine/executor';
+import { Dialect } from '../../engine/parser';
+import {
+  generateInsertStatements,
+  generateDDLStatement,
+  ExportColumnDef,
+  ColumnType,
+} from '../../engine/sql_exporter';
 
 interface ResultsGridProps {
   result:          ExecutionSuccess | null;
@@ -263,27 +270,61 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     const rowsToExport = rawRows;
     if (rowsToExport.length === 0) return;
     const tableName = inferredTables[0] || 'result_data';
-    const insertStatements = rowsToExport
-      .map((r) => {
-        const vals = r
-          .map((v) => {
-            if (v === null || v === undefined) return 'NULL';
-            if (typeof v === 'number') return String(v);
-            return `'${String(v).replace(/'/g, "''")}'`;
-          })
-          .join(', ');
-        return `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${vals});`;
-      })
-      .join('\n');
+    const targetDialect = (dialect as Dialect) || 'MySQL';
+
+    const insertStatements = generateInsertStatements(
+      tableName,
+      columns,
+      rowsToExport,
+      targetDialect
+    );
 
     const blob = new Blob([insertStatements], { type: 'text/plain;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${tableName}_inserts.sql`;
+    a.download = `${tableName}_inserts_${targetDialect.toLowerCase()}.sql`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('✓ SQL INSERT statements exported.');
+    showToast(`✓ Exported ${rowsToExport.length} INSERTs (${targetDialect}).`);
+  };
+
+  const handleExportDDL = () => {
+    const tableName = inferredTables[0] || 'result_data';
+    const targetDialect = (dialect as Dialect) || 'MySQL';
+
+    // Infer basic types for columns from first non-null row
+    const exportCols: ExportColumnDef[] = columns.map((colName, colIdx) => {
+      let inferredType: ColumnType = 'VARCHAR';
+      for (const row of rawRows) {
+        const val = row[colIdx];
+        if (val !== null && val !== undefined) {
+          if (typeof val === 'number') {
+            inferredType = Number.isInteger(val) ? 'INTEGER' : 'NUMERIC';
+          } else if (typeof val === 'boolean') {
+            inferredType = 'BOOLEAN';
+          } else if (val instanceof Date || (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val))) {
+            inferredType = 'TIMESTAMP';
+          }
+          break;
+        }
+      }
+      return {
+        name: colName,
+        inferredType,
+        isPrimaryKey: colName.toLowerCase() === 'id',
+      };
+    });
+
+    const ddlStatement = generateDDLStatement(tableName, exportCols, targetDialect);
+    const blob = new Blob([ddlStatement], { type: 'text/plain;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${tableName}_schema_${targetDialect.toLowerCase()}.sql`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`✓ Exported Schema DDL (${targetDialect}).`);
   };
 
   return (
@@ -333,9 +374,17 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
             className="win95-button"
             style={{ fontSize: '10px', padding: '1px 6px' }}
             onClick={handleExportSQL}
-            title="Generate SQL INSERT statements file"
+            title={`Generate SQL INSERT statements file (${dialect})`}
           >
-            📄 SQL
+            📄 INSERTs
+          </button>
+          <button
+            className="win95-button"
+            style={{ fontSize: '10px', padding: '1px 6px' }}
+            onClick={handleExportDDL}
+            title={`Generate CREATE TABLE DDL schema file (${dialect})`}
+          >
+            📜 DDL
           </button>
 
           {toastNotice && (
