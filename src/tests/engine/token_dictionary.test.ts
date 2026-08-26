@@ -60,6 +60,29 @@ describe('Impenetrable Tokenizer & Substring Collision Prevention', () => {
     expect(res2?.logicalType).toBe('NUMERIC');
   });
 
+  it('correctly types transcript as VARCHAR and NEVER matches ip address pattern', () => {
+    const res = matchColumnToken('transcript');
+    expect(res).not.toBeNull();
+    expect(res?.logicalType).toBe('VARCHAR');
+    const val = res?.fakerGenerator ? res.fakerGenerator() : '';
+    expect(val).not.toMatch(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/); // MUST NOT BE AN IP ADDRESS!
+    expect(['Available', 'Pending', 'In Review', 'Completed', 'Not Required']).toContain(val);
+  });
+
+  it('correctly types author, title, cover_type, and pages for Books domain', () => {
+    const authorRes = matchColumnToken('author');
+    expect(authorRes?.logicalType).toBe('VARCHAR');
+
+    const titleRes = matchColumnToken('title');
+    expect(titleRes?.logicalType).toBe('VARCHAR');
+
+    const coverRes = matchColumnToken('cover_type');
+    expect(coverRes?.logicalType).toBe('VARCHAR');
+
+    const pagesRes = matchColumnToken('pages');
+    expect(pagesRes?.logicalType).toBe('INTEGER');
+  });
+
   it('extracts WHERE comparison literals for literal-aware dynamic seeding', () => {
     const schemaMap = inferSchema("SELECT * FROM employees WHERE country = 'india';", 'MySQL');
     const schema = schemaMap.get('employees');

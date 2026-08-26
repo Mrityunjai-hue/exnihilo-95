@@ -16,7 +16,10 @@ const EXACT_VARCHAR_COLS = new Set([
   'type', 'category', 'role', 'company', 'organization', 'department', 'domain', 'url',
   'website', 'ip_address', 'ip', 'uuid', 'guid', 'stage', 'deal_stage', 'message',
   'chat_message', 'manager', 'manager_name', 'account_code', 'account_name', 'blood_type',
-  'doctor_name', 'patient_name', 'event_type', 'currency', 'plan_tier'
+  'doctor_name', 'patient_name', 'event_type', 'currency', 'plan_tier',
+  // Books & Publishing attributes
+  'author', 'author_name', 'writer', 'book_title', 'cover_type', 'cover', 'binding',
+  'translated', 'transcript', 'publisher', 'isbn', 'genre', 'edition'
 ]);
 
 const EXACT_NUMERIC_COLS = new Set([
@@ -26,18 +29,19 @@ const EXACT_NUMERIC_COLS = new Set([
 ]);
 
 const EXACT_INTEGER_COLS = new Set([
-  'id', 'user_id', 'order_id', 'customer_id', 'product_id', 'employee_id',
+  'id', 'user_id', 'order_id', 'customer_id', 'product_id', 'employee_id', 'book_id',
   'age', 'qty', 'quantity', 'count', 'item_count', 'total_pages', 'page_count', 'stock_quantity',
-  'stock', 'year', 'year_born', 'dob_year'
+  'stock', 'year', 'year_born', 'dob_year', 'pages', 'num_pages', 'publication_year'
 ]);
 
 const EXACT_DATE_COLS = new Set([
   'date', 'created_at', 'updated_at', 'deleted_at', 'hire_date', 'dob', 'birth_date',
-  'timestamp', 'sale_date', 'event_time', 'start_date', 'end_date'
+  'timestamp', 'sale_date', 'event_time', 'start_date', 'end_date', 'published_date'
 ]);
 
 const EXACT_BOOLEAN_COLS = new Set([
-  'is_active', 'is_verified', 'is_admin', 'has_discount', 'can_edit', 'was_deleted', 'active'
+  'is_active', 'is_verified', 'is_admin', 'has_discount', 'can_edit', 'was_deleted', 'active',
+  'is_translated', 'has_transcript'
 ]);
 
 // ── Impenetrable Token Matcher ───────────────────────────────────────────────
@@ -97,7 +101,7 @@ export function matchColumnToken(colName: string): ColumnMatchResult | null {
   }
 
   // Tier 3: Strict Suffix Rules
-  if (n.endsWith('_country') || n.endsWith('_city') || n.endsWith('_state') || n.endsWith('_name') || n.endsWith('_email') || n.endsWith('_phone') || n.endsWith('_code')) {
+  if (n.endsWith('_country') || n.endsWith('_city') || n.endsWith('_state') || n.endsWith('_name') || n.endsWith('_email') || n.endsWith('_phone') || n.endsWith('_code') || n.endsWith('_author') || n.endsWith('_title')) {
     return { logicalType: 'VARCHAR', fakerGenerator: getFakerGeneratorForToken(n), source: `token dictionary: suffix rule → VARCHAR` };
   }
   if (n.endsWith('_price') || n.endsWith('_amount') || n.endsWith('_cost') || n.endsWith('_score') || n.endsWith('_rate') || n.endsWith('_balance') || n.endsWith('_salary')) {
@@ -118,15 +122,30 @@ export function matchColumnToken(colName: string): ColumnMatchResult | null {
     return { logicalType: 'INTEGER', fakerGenerator: getFakerGeneratorForToken(n), source: `token dictionary: prefix rule → INTEGER` };
   }
 
-  // Tier 5: Word Boundary Token Regexes (\b) & Specific Patterns
-  if (n.includes('ip_address') || n.includes('ip')) {
+  // Tier 5: Word Boundary Token Regexes & Specific Patterns (Strict matching to prevent transcript matching ip!)
+  if (n === 'ip' || n.includes('ip_address') || n.endsWith('_ip') || n.startsWith('ip_') || n.includes('_ip_') || n === 'ipv4' || n === 'ipv6') {
     return { logicalType: 'VARCHAR', fakerGenerator: () => faker.internet.ipv4(), source: `token dictionary: ip address pattern → VARCHAR` };
   }
-  if (n.includes('url') || n.includes('website')) {
+  if (n === 'url' || n.includes('website') || n.endsWith('_url') || n.startsWith('url_') || n.includes('_url_')) {
     return { logicalType: 'VARCHAR', fakerGenerator: () => faker.internet.url(), source: `token dictionary: url pattern → VARCHAR` };
   }
-  if (n.includes('uuid') || n.includes('guid')) {
+  if (n === 'uuid' || n === 'guid' || n.endsWith('_uuid') || n.endsWith('_guid')) {
     return { logicalType: 'VARCHAR', fakerGenerator: () => faker.string.uuid(), source: `token dictionary: uuid pattern → VARCHAR` };
+  }
+  if (/\b(author|writer)\b/.test(n)) {
+    return { logicalType: 'VARCHAR', fakerGenerator: getFakerGeneratorForToken('author'), source: `token dictionary: word boundary → author VARCHAR` };
+  }
+  if (/\b(title|book_title)\b/.test(n)) {
+    return { logicalType: 'VARCHAR', fakerGenerator: getFakerGeneratorForToken('title'), source: `token dictionary: word boundary → title VARCHAR` };
+  }
+  if (/\b(cover|cover_type|binding)\b/.test(n)) {
+    return { logicalType: 'VARCHAR', fakerGenerator: getFakerGeneratorForToken('cover_type'), source: `token dictionary: word boundary → cover_type VARCHAR` };
+  }
+  if (/\b(transcript)\b/.test(n)) {
+    return { logicalType: 'VARCHAR', fakerGenerator: getFakerGeneratorForToken('transcript'), source: `token dictionary: word boundary → transcript VARCHAR` };
+  }
+  if (/\b(translated)\b/.test(n)) {
+    return { logicalType: 'VARCHAR', fakerGenerator: getFakerGeneratorForToken('translated'), source: `token dictionary: word boundary → translated VARCHAR` };
   }
   if (/\b(country|nation|territory)\b/.test(n)) {
     return { logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['India', 'United States', 'United Kingdom', 'Canada', 'Germany', 'Australia', 'Japan', 'France']), source: `token dictionary: word boundary → country VARCHAR` };
@@ -143,7 +162,7 @@ export function matchColumnToken(colName: string): ColumnMatchResult | null {
   if (/\b(age)\b/.test(n)) {
     return { logicalType: 'INTEGER', fakerGenerator: () => faker.number.int({ min: 18, max: 75 }), source: `token dictionary: word boundary → age INTEGER` };
   }
-  if (/\b(count|qty|quantity)\b/.test(n)) {
+  if (/\b(count|qty|quantity|pages)\b/.test(n)) {
     return { logicalType: 'INTEGER', fakerGenerator: () => faker.number.int({ min: 1, max: 50 }), source: `token dictionary: word boundary → count INTEGER` };
   }
 
@@ -153,14 +172,42 @@ export function matchColumnToken(colName: string): ColumnMatchResult | null {
 export function getFakerGeneratorForToken(colName: string): () => any {
   const n = colName.toLowerCase().trim();
 
+  // Books & Literature Generators
+  if (n === 'author' || n.includes('author') || n === 'writer') {
+    return () => faker.helpers.arrayElement([
+      'J.K. Rowling', 'George R.R. Martin', 'Stephen King', 'Agatha Christie',
+      'Ernest Hemingway', 'Mark Twain', 'Charles Dickens', 'Leo Tolstoy',
+      'Jane Austen', 'F. Scott Fitzgerald', 'J.R.R. Tolkien', 'Arthur Conan Doyle'
+    ]);
+  }
+  if (n === 'title' || n.includes('book_title') || n === 'book_name') {
+    return () => faker.helpers.arrayElement([
+      'The Silent Patient', 'To Kill a Mockingbird', '1984', 'The Great Gatsby',
+      'Pride and Prejudice', 'The Hobbit', 'Fahrenheit 451', 'Brave New World',
+      'The Catcher in the Rye', 'Crime and Punishment', 'The Alchemist', 'Dune'
+    ]);
+  }
+  if (n === 'cover' || n === 'cover_type' || n === 'binding') {
+    return () => faker.helpers.arrayElement(['Hardcover', 'Paperback', 'Audiobook', 'E-Book']);
+  }
+  if (n === 'transcript' || n === 'has_transcript') {
+    return () => faker.helpers.arrayElement(['Available', 'Pending', 'In Review', 'Completed', 'Not Required']);
+  }
+  if (n === 'translated' || n === 'is_translated') {
+    return () => faker.helpers.arrayElement(['English', 'Spanish', 'French', 'German', 'Japanese', 'Original']);
+  }
+  if (n === 'pages' || n.includes('pages') || n.includes('page_count')) {
+    return () => faker.number.int({ min: 140, max: 880 });
+  }
+
   if (n.includes('country')) return () => faker.helpers.arrayElement(['India', 'United States', 'United Kingdom', 'Canada', 'Germany', 'Australia', 'Japan', 'France']);
   if (n.includes('city')) return () => faker.location.city();
   if (n.includes('state') || n.includes('province')) return () => faker.location.state();
   if (n.includes('email')) return () => faker.internet.email().toLowerCase();
   if (n.includes('phone') || n.includes('mobile')) return () => faker.phone.number();
-  if (n.includes('url') || n.includes('website')) return () => faker.internet.url();
-  if (n.includes('ip_address') || n.includes('ip')) return () => faker.internet.ipv4();
-  if (n.includes('uuid') || n.includes('guid')) return () => faker.string.uuid();
+  if (n === 'url' || n.includes('website') || n.endsWith('_url') || n.startsWith('url_') || n.includes('_url_')) return () => faker.internet.url();
+  if (n === 'ip' || n.includes('ip_address') || n.endsWith('_ip') || n.startsWith('ip_') || n.includes('_ip_')) return () => faker.internet.ipv4();
+  if (n === 'uuid' || n === 'guid' || n.endsWith('_uuid') || n.endsWith('_guid')) return () => faker.string.uuid();
   if (n.includes('discount')) return () => parseFloat(faker.number.float({ min: 0.05, max: 0.50, fractionDigits: 2 }).toFixed(2));
   if (n.includes('price') || n.includes('amount') || n.includes('cost') || n === 'total') return () => parseFloat(faker.commerce.price({ min: 10, max: 1000, dec: 2 }));
   if (n.includes('salary')) return () => faker.number.int({ min: 45000, max: 185000 });
@@ -171,5 +218,5 @@ export function getFakerGeneratorForToken(colName: string): () => any {
   if (n.includes('date') || n.includes('time') || n.includes('_at')) return () => faker.date.recent().toISOString();
   if (n.startsWith('is_') || n.startsWith('has_') || n === 'active') return () => faker.datatype.boolean();
 
-  return () => faker.word.sample();
+  return () => faker.person.fullName();
 }

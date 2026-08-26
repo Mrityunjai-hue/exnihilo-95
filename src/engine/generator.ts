@@ -97,9 +97,8 @@ function generateVarchar(colName: string, tableName: string): string {
   if (n === 'status') return faker.helpers.arrayElement(['active', 'pending', 'completed', 'shipped', 'cancelled', 'processing']);
   if (n === 'role') return faker.helpers.arrayElement(['admin', 'user', 'manager', 'editor', 'viewer']);
   if (n === 'type' || n === 'category') return faker.helpers.arrayElement(['standard', 'premium', 'basic', 'enterprise']);
-  if (n === 'description' || n === 'notes' || n === 'body' || n === 'comment') return faker.lorem.sentence();
-
-  return faker.word.sample();
+  const words = faker.lorem.words(2);
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 function generateNumeric(colName: string, rowIndex: number): number {

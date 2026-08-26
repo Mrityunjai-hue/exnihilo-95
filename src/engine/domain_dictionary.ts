@@ -102,6 +102,18 @@ export const DOMAIN_CATALOG: Record<string, DomainTableSpec> = {
       { name: 'ip_address', logicalType: 'VARCHAR', fakerGenerator: () => faker.internet.ipv4() },
       { name: 'timestamp', logicalType: 'TIMESTAMP', fakerGenerator: () => faker.date.recent().toISOString() }
     ]
+  },
+  books: {
+    aliases: ['book', 'books', 'library', 'publications', 'catalog', 'authors', 'novels'],
+    columns: [
+      { name: 'id', logicalType: 'INTEGER', isPrimaryKey: true, fakerGenerator: () => 1 },
+      { name: 'title', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['The Silent Patient', 'To Kill a Mockingbird', '1984', 'The Great Gatsby', 'Pride and Prejudice', 'The Hobbit', 'Fahrenheit 451', 'Brave New World']) },
+      { name: 'author', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['J.K. Rowling', 'George R.R. Martin', 'Stephen King', 'Agatha Christie', 'Ernest Hemingway', 'Mark Twain', 'Charles Dickens', 'Leo Tolstoy']) },
+      { name: 'cover_type', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Hardcover', 'Paperback', 'Audiobook', 'E-Book']) },
+      { name: 'pages', logicalType: 'INTEGER', fakerGenerator: () => faker.number.int({ min: 140, max: 880 }) },
+      { name: 'translated', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['English', 'Spanish', 'French', 'German', 'Original']) },
+      { name: 'transcript', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Available', 'Pending', 'In Review', 'Completed']) }
+    ]
   }
 };
 

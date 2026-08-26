@@ -33,6 +33,8 @@ const FUZZ_TEST_CASES = [
   { name: "JOIN staff & departments", query: "SELECT s.name, d.department FROM staff s JOIN departments d ON s.dept_id = d.id;", targetTable: 'staff', targetCol: 'department', expectedType: 'VARCHAR' },
   { name: "JOIN users & orders", query: "SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id;", targetTable: 'orders', targetCol: 'total', expectedType: 'NUMERIC' },
   { name: "GROUP BY department", query: "SELECT department, AVG(salary) FROM workers GROUP BY department;", targetTable: 'workers', targetCol: 'department', expectedType: 'VARCHAR' },
+  { name: "SELECT * FROM books", query: "SELECT * FROM books;", targetTable: 'books', targetCol: 'transcript', expectedType: 'VARCHAR', checkVal: 'Available' },
+  { name: "SELECT author FROM books WHERE transcript LIKE 'available'", query: "SELECT author FROM books WHERE transcript LIKE 'available';", targetTable: 'books', targetCol: 'author', expectedType: 'VARCHAR' },
 ];
 
 function runFuzzer() {
