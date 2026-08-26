@@ -599,10 +599,11 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           display: 'flex',
           gap: '2px',
           padding: '2px 4px',
-          borderBottom: '1px solid #808080',
+          borderBottom: '1px solid var(--w95-dark-gray, #808080)',
           fontSize: '11px',
           position: 'relative',
-          background: '#c0c0c0',
+          background: 'var(--w95-gray, #c0c0c0)',
+          color: 'var(--w95-text-color, #000000)',
         }}
       >
         {/* FILE MENU */}
@@ -611,8 +612,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             style={{
               cursor: 'pointer',
               padding: '2px 6px',
-              backgroundColor: activeMenu === 'file' ? '#000080' : 'transparent',
-              color: activeMenu === 'file' ? '#ffffff' : '#000000',
+              backgroundColor: activeMenu === 'file' ? 'var(--w95-title-active-bg, #000080)' : 'transparent',
+              color: activeMenu === 'file' ? '#ffffff' : 'var(--w95-text-color, #000000)',
             }}
             onClick={() => setActiveMenu(activeMenu === 'file' ? null : 'file')}
           >
@@ -643,8 +644,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             style={{
               cursor: 'pointer',
               padding: '2px 6px',
-              backgroundColor: activeMenu === 'edit' ? '#000080' : 'transparent',
-              color: activeMenu === 'edit' ? '#ffffff' : '#000000',
+              backgroundColor: activeMenu === 'edit' ? 'var(--w95-title-active-bg, #000080)' : 'transparent',
+              color: activeMenu === 'edit' ? '#ffffff' : 'var(--w95-text-color, #000000)',
             }}
             onClick={() => setActiveMenu(activeMenu === 'edit' ? null : 'edit')}
           >
@@ -668,8 +669,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             style={{
               cursor: 'pointer',
               padding: '2px 6px',
-              backgroundColor: activeMenu === 'query' ? '#000080' : 'transparent',
-              color: activeMenu === 'query' ? '#ffffff' : '#000000',
+              backgroundColor: activeMenu === 'query' ? 'var(--w95-title-active-bg, #000080)' : 'transparent',
+              color: activeMenu === 'query' ? '#ffffff' : 'var(--w95-text-color, #000000)',
             }}
             onClick={() => setActiveMenu(activeMenu === 'query' ? null : 'query')}
           >
@@ -693,8 +694,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             style={{
               cursor: 'pointer',
               padding: '2px 6px',
-              backgroundColor: activeMenu === 'view' ? '#000080' : 'transparent',
-              color: activeMenu === 'view' ? '#ffffff' : '#000000',
+              backgroundColor: activeMenu === 'view' ? 'var(--w95-title-active-bg, #000080)' : 'transparent',
+              color: activeMenu === 'view' ? '#ffffff' : 'var(--w95-text-color, #000000)',
             }}
             onClick={() => setActiveMenu(activeMenu === 'view' ? null : 'view')}
           >
@@ -726,8 +727,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             style={{
               cursor: 'pointer',
               padding: '2px 6px',
-              backgroundColor: activeMenu === 'help' ? '#000080' : 'transparent',
-              color: activeMenu === 'help' ? '#ffffff' : '#000000',
+              backgroundColor: activeMenu === 'help' ? 'var(--w95-title-active-bg, #000080)' : 'transparent',
+              color: activeMenu === 'help' ? '#ffffff' : 'var(--w95-text-color, #000000)',
             }}
             onClick={() => setActiveMenu(activeMenu === 'help' ? null : 'help')}
           >

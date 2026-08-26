@@ -283,7 +283,7 @@ html, body {
 
 .win95-titlebar {
   background: var(--w95-title-active-gradient);
-  color: var(--w95-white);
+  color: #ffffff !important;
   padding: 3px 4px;
   display: flex;
   align-items: center;
@@ -296,7 +296,7 @@ html, body {
 
 .win95-titlebar.inactive {
   background: var(--w95-title-inactive);
-  color: var(--w95-gray);
+  color: #ffffff !important;
 }
 
 .win95-titlebar-text {
@@ -306,6 +306,7 @@ html, body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #ffffff !important;
 }
 
 .win95-titlebar-controls {

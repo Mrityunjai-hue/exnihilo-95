@@ -90,7 +90,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
       </div>
 
       {/* Tab Strip */}
-      <div style={{ display: 'flex', background: '#c0c0c0', borderBottom: '1px solid #808080', padding: '2px 4px 0' }}>
+      <div style={{ display: 'flex', background: 'var(--w95-gray, #c0c0c0)', borderBottom: '1px solid var(--w95-dark-gray, #808080)', padding: '2px 4px 0' }}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -100,9 +100,10 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
               fontSize: '11px',
               padding: '3px 10px',
               marginRight: '2px',
-              borderBottom: activeTab === tab.id ? '2px solid #000080' : '2px solid transparent',
+              borderBottom: activeTab === tab.id ? '2px solid var(--w95-title-active-bg, #000080)' : '2px solid transparent',
               fontWeight: activeTab === tab.id ? 'bold' : 'normal',
-              background: activeTab === tab.id ? '#ffffff' : '#c0c0c0',
+              background: activeTab === tab.id ? 'var(--w95-sunken-bg, #ffffff)' : 'var(--w95-gray, #c0c0c0)',
+              color: activeTab === tab.id ? 'var(--w95-sunken-text, #000000)' : 'var(--w95-text-color, #000000)',
             }}
           >
             {tab.label}
@@ -111,24 +112,23 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
       </div>
 
       {/* Content Area */}
-      <div style={{ flex: 1, overflow: 'auto', background: '#ffffff', padding: '14px 14px 48px 14px', boxSizing: 'border-box', fontSize: '11px', lineHeight: '1.7' }}>
-
+      <div style={{ flex: 1, overflow: 'auto', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', padding: '14px 14px 48px 14px', boxSizing: 'border-box', fontSize: '11px', lineHeight: '1.7' }}>
 
         {/* ─── OVERVIEW TAB ─── */}
         {activeTab === 'overview' && (
           <div>
             <div style={{ textAlign: 'center', marginBottom: '16px' }}>
               <div style={{ fontSize: '32px', marginBottom: '6px' }}>🤝</div>
-              <h2 style={{ margin: '0 0 4px', fontSize: '16px', color: '#000080' }}>
+              <h2 style={{ margin: '0 0 4px', fontSize: '16px', color: 'var(--w95-title-active-bg, #000080)' }}>
                 Calling All Builders — Contributors Wanted!
               </h2>
-              <p style={{ margin: 0, color: '#444', fontSize: '11px' }}>
+              <p style={{ margin: 0, fontSize: '11px' }}>
                 ExNihilo 95 has proven its core concept. Now it&apos;s time to scale it into something massive.
               </p>
             </div>
 
-            <div className="win95-inset" style={{ padding: '12px', marginBottom: '12px', background: '#ffffe0', border: '1px solid #808000' }}>
-              <p style={{ margin: '0 0 8px', fontWeight: 'bold', color: '#000080' }}>
+            <div className="win95-inset" style={{ padding: '12px', marginBottom: '12px', background: 'var(--w95-callout-yellow-bg, #ffffe0)', color: 'var(--w95-callout-yellow-text, #000000)', border: '1px solid var(--w95-dark-gray, #808000)' }}>
+              <p style={{ margin: '0 0 8px', fontWeight: 'bold', color: 'var(--w95-title-active-bg, #000080)' }}>
                 💡 What is ExNihilo 95?
               </p>
               <p style={{ margin: 0 }}>
@@ -138,8 +138,8 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
               </p>
             </div>
 
-            <div className="win95-inset" style={{ padding: '12px', marginBottom: '12px', background: '#f0f8ff' }}>
-              <p style={{ margin: '0 0 8px', fontWeight: 'bold', color: '#000080' }}>
+            <div className="win95-inset" style={{ padding: '12px', marginBottom: '12px', background: 'var(--w95-callout-blue-bg, #f0f8ff)', color: 'var(--w95-callout-blue-text, #000000)' }}>
+              <p style={{ margin: '0 0 8px', fontWeight: 'bold', color: 'var(--w95-title-active-bg, #000080)' }}>
                 🏗️ What&apos;s Next? 10 Major Feature Categories
               </p>
               <p style={{ margin: '0 0 8px' }}>
@@ -154,8 +154,8 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
               </div>
             </div>
 
-            <div className="win95-inset" style={{ padding: '12px', background: '#f0fff0', border: '1px solid #228B22' }}>
-              <p style={{ margin: '0 0 6px', fontWeight: 'bold', color: '#006400' }}>
+            <div className="win95-inset" style={{ padding: '12px', background: 'var(--w95-callout-blue-bg, #f0fff0)', color: 'var(--w95-callout-blue-text, #000000)', border: '1px solid var(--w95-dark-gray, #228B22)' }}>
+              <p style={{ margin: '0 0 6px', fontWeight: 'bold', color: 'var(--w95-title-active-bg, #006400)' }}>
                 ⭐ Top contributors will be credited as co-creators and core team members.
               </p>
               <p style={{ margin: 0 }}>
@@ -169,12 +169,12 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
         {/* ─── FEATURES TAB ─── */}
         {activeTab === 'features' && (
           <div>
-            <h3 style={{ margin: '0 0 10px', fontSize: '13px', color: '#000080' }}>
+            <h3 style={{ margin: '0 0 10px', fontSize: '13px', color: 'var(--w95-title-active-bg, #000080)' }}>
               💎 Premium Features Roadmap
             </h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
               <thead>
-                <tr style={{ background: '#000080', color: '#fff' }}>
+                <tr style={{ background: 'var(--w95-title-active-bg, #000080)', color: '#ffffff' }}>
                   <th style={{ padding: '4px 6px', textAlign: 'left' }}>Feature</th>
                   <th style={{ padding: '4px 6px', textAlign: 'left' }}>Description</th>
                   <th style={{ padding: '4px 6px', textAlign: 'left' }}>Skills</th>
@@ -182,12 +182,12 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
               </thead>
               <tbody>
                 {PREMIUM_FEATURES.map((f, i) => (
-                  <tr key={f.name} style={{ background: i % 2 === 0 ? '#f8f8ff' : '#ffffff' }}>
+                  <tr key={f.name} style={{ background: i % 2 === 0 ? 'var(--w95-grid-even-bg, #f8f8ff)' : 'var(--w95-grid-odd-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>
                     <td style={{ padding: '5px 6px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                       {f.icon} {f.name}
                     </td>
                     <td style={{ padding: '5px 6px' }}>{f.desc}</td>
-                    <td style={{ padding: '5px 6px', color: '#800080', fontStyle: 'italic', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '5px 6px', color: 'var(--w95-title-active-bg, #800080)', fontStyle: 'italic', whiteSpace: 'nowrap' }}>
                       {f.skills}
                     </td>
                   </tr>

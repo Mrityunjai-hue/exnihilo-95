@@ -200,7 +200,8 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({ catalog, onClose }) => {
             flex: 1,
             position: 'relative',
             overflow: 'auto',
-            background: '#ece9d8',
+            background: 'var(--w95-sunken-bg, #ece9d8)',
+            color: 'var(--w95-sunken-text, #000000)',
             userSelect: 'none',
           }}
         >

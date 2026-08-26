@@ -3,9 +3,9 @@
  *
  * Supported Skins:
  * 1. win95-classic  — Windows 95 Classic Teal & Gray (Default)
- * 2. win95-noir     — Win95 Noir Dark Mode (Midnight Dark Slate & Cyan/Indigo Accent)
+ * 2. win95-noir     — Win95 Noir Dark Mode (Midnight Slate & High-Contrast Cyan Accent)
  * 3. winxp-luna     — Windows XP Luna (Bliss Green & Royal Blue Gradient)
- * 4. win2000        — Windows 2000 Professional (Corporate Steel Blue & Crisp Gray)
+ * 4. win2000        — Windows 2000 Professional (Corporate Steel Blue & Slate Gray)
  */
 
 :root,
@@ -30,33 +30,142 @@
   --w95-grid-odd-bg: #f8f9fa;
   --w95-editor-bg: #ffffff;
   --w95-editor-text: #000000;
+  --w95-callout-yellow-bg: #ffffcc;
+  --w95-callout-yellow-text: #000000;
+  --w95-callout-blue-bg: #e6f0fa;
+  --w95-callout-blue-text: #000000;
 }
 
-/* Win95 Noir — Dark Mode */
+/* ─────────────────────────────────────────────────────────────────────────────
+ * WIN95 NOIR — DARK MODE OVERRIDES
+ * ───────────────────────────────────────────────────────────────────────────── */
 [data-theme="win95-noir"] {
   --w95-desktop-bg: #0a0e17;
-  --w95-gray: #1e2430;
-  --w95-light-gray: #2d3545;
-  --w95-white: #161b26;
+  --w95-gray: #1b2230;
+  --w95-light-gray: #2d3748;
+  --w95-white: #111827;
   --w95-dark-gray: #475569;
   --w95-black: #f8fafc;
   --w95-text-color: #f1f5f9;
   --w95-sunken-bg: #0f172a;
-  --w95-sunken-text: #e2e8f0;
-  --w95-title-active-bg: #1e1b4b;
-  --w95-title-active-text: #38bdf8;
-  --w95-title-active-gradient: linear-gradient(90deg, #0f172a 0%, #1e293b 50%, #0369a1 100%);
+  --w95-sunken-text: #f8fafc;
+  --w95-title-active-bg: #0f172a;
+  --w95-title-active-text: #ffffff;
+  --w95-title-active-gradient: linear-gradient(90deg, #0369a1 0%, #1e293b 100%);
   --w95-title-inactive-bg: #334155;
-  --w95-border-light: #475569;
+  --w95-border-light: #334155;
   --w95-border-dark: #0f172a;
   --w95-border-darkest: #020617;
   --w95-grid-even-bg: #0f172a;
   --w95-grid-odd-bg: #1e293b;
   --w95-editor-bg: #0f172a;
   --w95-editor-text: #f8fafc;
+  --w95-callout-yellow-bg: #1e293b;
+  --w95-callout-yellow-text: #fef08a;
+  --w95-callout-blue-bg: #1e293b;
+  --w95-callout-blue-text: #38bdf8;
 }
 
-/* Windows XP Luna — Bliss Green & Royal Blue */
+/* Scoped Overrides for Win95 Noir Dark Mode */
+[data-theme="win95-noir"] .win95-window,
+[data-theme="win95-noir"] .win95-dialog,
+[data-theme="win95-noir"] .win95-menu-bar,
+[data-theme="win95-noir"] .win95-dropdown-menu,
+[data-theme="win95-noir"] .win95-taskbar {
+  background-color: var(--w95-gray) !important;
+  color: var(--w95-text-color) !important;
+}
+
+[data-theme="win95-noir"] .win95-titlebar,
+[data-theme="win95-noir"] .win95-titlebar-text {
+  color: #ffffff !important;
+}
+
+[data-theme="win95-noir"] .win95-inset,
+[data-theme="win95-noir"] .win95-sunken,
+[data-theme="win95-noir"] .win95-sunken-container {
+  background-color: var(--w95-sunken-bg) !important;
+  color: var(--w95-sunken-text) !important;
+}
+
+[data-theme="win95-noir"] .win95-button {
+  background-color: #242c3d !important;
+  color: #f8fafc !important;
+  border-top-color: #475569 !important;
+  border-left-color: #475569 !important;
+  border-right-color: #0f172a !important;
+  border-bottom-color: #0f172a !important;
+}
+
+[data-theme="win95-noir"] .win95-button:hover:not(:disabled) {
+  background-color: #334155 !important;
+}
+
+/* Callout and Informational Cards Dark Override */
+[data-theme="win95-noir"] [style*="background: rgb(255, 255, 204)"],
+[data-theme="win95-noir"] [style*="background: #ffffcc"],
+[data-theme="win95-noir"] [style*="backgroundColor: #ffffcc"],
+[data-theme="win95-noir"] [style*="background: #ffffe0"],
+[data-theme="win95-noir"] [style*="background: #f5f5f5"],
+[data-theme="win95-noir"] [style*="background: #f0f8ff"],
+[data-theme="win95-noir"] [style*="background: #f0fff0"],
+[data-theme="win95-noir"] [style*="background: #f8f8ff"],
+[data-theme="win95-noir"] [style*="background: rgb(230, 240, 250)"],
+[data-theme="win95-noir"] [style*="background: #e6f0fa"],
+[data-theme="win95-noir"] [style*="background: #ffffff"],
+[data-theme="win95-noir"] [style*="background: rgb(255, 255, 255)"],
+[data-theme="win95-noir"] [style*="backgroundColor: #ffffff"],
+[data-theme="win95-noir"] [style*="background: #f8f9fa"] {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+/* Hardcoded Light Gray/White/Black Text Colors Fix for Dark Mode */
+[data-theme="win95-noir"] div,
+[data-theme="win95-noir"] p,
+[data-theme="win95-noir"] span,
+[data-theme="win95-noir"] h1,
+[data-theme="win95-noir"] h2,
+[data-theme="win95-noir"] h3,
+[data-theme="win95-noir"] h4,
+[data-theme="win95-noir"] strong,
+[data-theme="win95-noir"] td,
+[data-theme="win95-noir"] th,
+[data-theme="win95-noir"] legend,
+[data-theme="win95-noir"] label {
+  color: inherit;
+}
+
+/* Ensure text inside cards and dialogs in Noir is bright and readable */
+[data-theme="win95-noir"] [style*="color: #666"],
+[data-theme="win95-noir"] [style*="color: #555"],
+[data-theme="win95-noir"] [style*="color: #444"],
+[data-theme="win95-noir"] [style*="color: #333"],
+[data-theme="win95-noir"] [style*="color: #000"],
+[data-theme="win95-noir"] [style*="color: rgb(0, 0, 0)"],
+[data-theme="win95-noir"] [style*="color: rgb(51, 51, 51)"],
+[data-theme="win95-noir"] [style*="color: rgb(102, 102, 102)"] {
+  color: #cbd5e1 !important;
+}
+
+/* CodeMirror Dark Mode Tweaks */
+[data-theme="win95-noir"] .cm-editor {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+[data-theme="win95-noir"] .cm-gutters {
+  background-color: #1e293b !important;
+  border-right-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+[data-theme="win95-noir"] .cm-activeLine {
+  background-color: rgba(56, 189, 248, 0.1) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * WINDOWS XP LUNA & WIN2000 OVERRIDES
+ * ───────────────────────────────────────────────────────────────────────────── */
 [data-theme="winxp-luna"] {
   --w95-desktop-bg: #2d5a27;
   --w95-gray: #ece9d8;
@@ -80,7 +189,6 @@
   --w95-editor-text: #000000;
 }
 
-/* Windows 2000 Corporate — Steel Blue & Slate Gray */
 [data-theme="win2000"] {
   --w95-desktop-bg: #3a6ea5;
   --w95-gray: #d4d0c8;

@@ -69,7 +69,8 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
       style={{
         width: '100%',
         height: '100%',
-        background: '#ffffff',
+        background: 'var(--w95-sunken-bg, #ffffff)',
+        color: 'var(--w95-sunken-text, #000000)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -78,9 +79,10 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
       {/* Tree Header */}
       <div
         style={{
-          background: '#c0c0c0',
+          background: 'var(--w95-gray, #c0c0c0)',
+          color: 'var(--w95-text-color, #000000)',
           padding: '4px 6px',
-          borderBottom: '1px solid #808080',
+          borderBottom: '1px solid var(--w95-dark-gray, #808080)',
           fontWeight: 'bold',
           fontSize: '11px',
           display: 'flex',
@@ -100,21 +102,21 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
       </div>
 
       {/* Table Search Bar */}
-      <div style={{ padding: '3px 4px', background: '#e0e0e0', borderBottom: '1px solid #c0c0c0' }}>
+      <div style={{ padding: '3px 4px', background: 'var(--w95-light-gray, #e0e0e0)', borderBottom: '1px solid var(--w95-gray, #c0c0c0)' }}>
         <input
           type="text"
           className="win95-sunken"
           placeholder="🔍 Search tables..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ width: '100%', padding: '1px 4px', fontSize: '10px', boxSizing: 'border-box' }}
+          style={{ width: '100%', padding: '1px 4px', fontSize: '10px', boxSizing: 'border-box', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
         />
       </div>
 
       {/* Tree Content */}
       <div style={{ flex: 1, overflow: 'auto', padding: '4px' }}>
         {filteredTables.length === 0 ? (
-          <div style={{ padding: '12px 6px', color: '#888888', fontSize: '11px', textAlign: 'center' }}>
+          <div style={{ padding: '12px 6px', color: 'var(--w95-dark-gray, #888888)', fontSize: '11px', textAlign: 'center' }}>
             {searchQuery ? 'No tables match search query.' : 'No tables materialized yet. Execute a query to auto-generate tables!'}
           </div>
         ) : (
