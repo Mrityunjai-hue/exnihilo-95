@@ -180,6 +180,12 @@ export const Desktop: React.FC = () => {
     return idx === -1 ? 10 : 10 + idx * 5;
   };
 
+  // Handle Start Guided Tour (Ensures ExNihilo SQL IDE is open, un-minimized, and focused)
+  const handleStartGuidedTour = () => {
+    focusWindow('ide');
+    setTourOpen(true);
+  };
+
   // Handle Logout (Resets session usage stats cleanly)
   const handleLogout = () => {
     logout();
@@ -456,7 +462,7 @@ export const Desktop: React.FC = () => {
 
         <div
           className="win95-desktop-icon"
-          onClick={() => setTourOpen(true)}
+          onClick={handleStartGuidedTour}
         >
           <img src="/icons/guided_tour.png" alt="Guided Tour" />
           <span>Guided Tour</span>
@@ -506,9 +512,7 @@ export const Desktop: React.FC = () => {
         isOpen={openWindows.welcome}
         zIndex={getZIndex('welcome')}
         onClose={() => closeWindow('welcome')}
-        onStartTour={() => {
-          setTourOpen(true);
-        }}
+        onStartTour={handleStartGuidedTour}
         onOpenHelp={() => focusWindow('help')}
         onOpenIDE={() => focusWindow('ide')}
         onFocus={() => focusWindow('welcome')}
@@ -536,7 +540,7 @@ export const Desktop: React.FC = () => {
             onFocus={() => focusWindow('ide')}
             onOpenHelp={() => focusWindow('help')}
             onOpenSettings={() => focusWindow('settings')}
-            onStartTour={() => setTourOpen(true)}
+            onStartTour={handleStartGuidedTour}
           />
         </ErrorBoundary>
       )}
@@ -692,6 +696,7 @@ export const Desktop: React.FC = () => {
         isOpen={tourOpen}
         onClose={() => setTourOpen(false)}
         onOpenHelp={() => focusWindow('help')}
+        onEnsureIDEOpen={() => focusWindow('ide')}
       />
 
       {/* Session Expired Win95 Notification Modal */}

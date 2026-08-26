@@ -7,9 +7,10 @@
 import React, { useState, useEffect } from 'react';
 
 interface Win95TourProps {
-  isOpen:     boolean;
-  onClose:    () => void;
-  onOpenHelp: () => void;
+  isOpen:          boolean;
+  onClose:         () => void;
+  onOpenHelp:      () => void;
+  onEnsureIDEOpen?: () => void;
 }
 
 interface TourStep {
@@ -23,8 +24,19 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
   isOpen,
   onClose,
   onOpenHelp,
+  onEnsureIDEOpen,
 }) => {
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
+
+  // Reset to step 0 when tour opens & ensure IDE window is open and focused
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentStepIdx(0);
+      if (onEnsureIDEOpen) {
+        onEnsureIDEOpen();
+      }
+    }
+  }, [isOpen, onEnsureIDEOpen]);
   const [targetRect, setTargetRect] = useState<{
     top: number;
     left: number;
