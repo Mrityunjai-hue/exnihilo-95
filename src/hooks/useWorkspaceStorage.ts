@@ -434,9 +434,19 @@ export function useWorkspaceStorage(debounceMs = 500) {
     [debounceMs]
   );
 
-  // Clean up timer on unmount
+  // Clean up timer and flush state on window unload/visibility change
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleBeforeUnload = () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
   }, []);

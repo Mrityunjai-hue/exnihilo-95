@@ -29,7 +29,7 @@ describe('SQL Exporter Module', () => {
 
     it('formats booleans per dialect', () => {
       expect(formatSqlValue(true, 'PostgreSQL')).toBe('TRUE');
-      expect(formatSqlValue(false, 'SQLite')).toBe('FALSE');
+      expect(formatSqlValue(false, 'SQLite')).toBe('0');
       expect(formatSqlValue(true, 'MySQL')).toBe('1');
       expect(formatSqlValue(false, 'TransactSQL')).toBe('0');
     });

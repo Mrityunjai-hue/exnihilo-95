@@ -40,10 +40,10 @@ export function formatSqlValue(val: any, dialect: Dialect): string {
   }
 
   if (typeof val === 'boolean') {
-    if (dialect === 'PostgreSQL' || dialect === 'SQLite') {
+    if (dialect === 'PostgreSQL') {
       return val ? 'TRUE' : 'FALSE';
     }
-    // MySQL & T-SQL BIT/TINYINT(1)
+    // MySQL, SQLite & T-SQL BIT/INTEGER storage affinity (1 / 0)
     return val ? '1' : '0';
   }
 
