@@ -199,6 +199,17 @@ html, body {
 .win95-flag-blue   { background: linear-gradient(135deg, #3898ec 0%, #0d4b96 100%); }
 .win95-flag-yellow { background: linear-gradient(135deg, #ffde59 0%, #c49b04 100%); }
 
+/* Vertical 3D Toolbar Divider */
+.win95-divider-v {
+  width: 0;
+  height: 20px;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #ffffff;
+  margin: 0 4px;
+  display: inline-block;
+  align-self: center;
+}
+
 /* Desktop Icons */
 .win95-icon-grid {
   display: flex;

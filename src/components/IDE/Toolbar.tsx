@@ -76,141 +76,160 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '3px 4px',
+        padding: '3px 6px',
         background: '#c0c0c0',
         borderBottom: '1px solid #808080',
-        gap: '6px',
+        gap: '4px',
         flexWrap: 'wrap',
         position: 'relative',
         zIndex: 10,
       }}
     >
-      {/* Left Action Buttons */}
+      {/* Left Action Groups */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-        <button
-          id="btn-run"
-          className="win95-button"
-          style={{
-            fontWeight: 'bold',
-            color: hasSelection ? '#800080' : '#006600',
-            background: hasSelection ? '#f0e6f6' : undefined,
-          }}
-          onClick={onRun}
-          disabled={isLoading}
-          title={hasSelection ? 'Execute Selected Query (F5 or Ctrl+Enter)' : 'Execute All Queries (F5 or Ctrl+Enter)'}
-        >
-          <span>▶</span>
-          <span>{hasSelection ? 'Run Selection (F5)' : 'Run (F5)'}</span>
-        </button>
-
-        <button
-          id="btn-format"
-          className="win95-button"
-          onClick={onFormatSql}
-          disabled={isLoading}
-          title="Format & Beautify SQL Query"
-        >
-          <span>🧹</span>
-          <span>Format SQL</span>
-        </button>
-
-        {/* Template Snippets Menu */}
-        <div style={{ position: 'relative' }}>
+        {/* Group 1: Execution & Formatter */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
           <button
-            id="btn-templates"
+            id="btn-run"
             className="win95-button"
-            onClick={() => setTemplateMenuOpen((prev) => !prev)}
-            title="Insert Prebuilt SQL Query Templates"
+            style={{
+              fontWeight: 'bold',
+              color: hasSelection ? '#800080' : '#006600',
+              background: hasSelection ? '#f0e6f6' : undefined,
+              padding: '2px 8px',
+            }}
+            onClick={onRun}
+            disabled={isLoading}
+            title={hasSelection ? 'Execute Selected Query (F5 or Ctrl+Enter)' : 'Execute All Queries (F5 or Ctrl+Enter)'}
           >
-            <span>📜</span>
-            <span>Templates ▾</span>
+            <span>▶</span>
+            <span>{hasSelection ? 'Run Selection (F5)' : 'Run (F5)'}</span>
           </button>
 
-          {templateMenuOpen && (
-            <div
-              className="win95-window"
-              style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                marginTop: '2px',
-                width: '240px',
-                background: '#c0c0c0',
-                boxShadow: '2px 2px 8px rgba(0,0,0,0.3)',
-                padding: '2px',
-                zIndex: 99999,
-              }}
-            >
-              {templates.map((tpl, i) => (
-                <div
-                  key={i}
-                  className="win95-menu-item"
-                  onClick={() => handleSelectTemplate(tpl.sql)}
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '11px',
-                    cursor: 'pointer',
-                    borderRadius: '0',
-                  }}
-                >
-                  {tpl.label}
-                </div>
-              ))}
-            </div>
-          )}
+          <button
+            id="btn-format"
+            className="win95-button"
+            onClick={onFormatSql}
+            disabled={isLoading}
+            title="Format & Beautify SQL Query (Ctrl+Shift+F)"
+            style={{ padding: '2px 6px' }}
+          >
+            <span>🧹</span>
+            <span>Format</span>
+          </button>
         </div>
 
-        <button
-          id="btn-history"
-          className="win95-button"
-          onClick={onToggleHistory}
-          title="View Query History Log"
-        >
-          <span>🕒</span>
-          <span>History ({historyCount})</span>
-        </button>
+        <div className="win95-divider-v" />
 
-        <button
-          id="btn-reset"
-          className="win95-button"
-          onClick={onReset}
-          disabled={isLoading}
-          title="Clear database and reset catalog"
-        >
-          <span>🔄</span>
-          <span>Reset Schema</span>
-        </button>
+        {/* Group 2: Templates & History */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+          <div style={{ position: 'relative' }}>
+            <button
+              id="btn-templates"
+              className="win95-button"
+              onClick={() => setTemplateMenuOpen((prev) => !prev)}
+              title="Insert Prebuilt SQL Query Templates"
+              style={{ padding: '2px 6px' }}
+            >
+              <span>📜</span>
+              <span>Templates ▾</span>
+            </button>
 
-        {/* Dialect Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '4px' }}>
-          <label htmlFor="dialect-select" style={{ fontSize: '11px', fontWeight: 'bold' }}>
-            Dialect:
-          </label>
-          <select
-            id="dialect-select"
-            className="win95-sunken"
-            value={dialect}
-            onChange={(e) => onDialectChange(e.target.value as Dialect)}
-            style={{ padding: '2px 4px', fontSize: '11px', height: '22px' }}
+            {templateMenuOpen && (
+              <div
+                className="win95-window"
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  marginTop: '2px',
+                  width: '240px',
+                  background: '#c0c0c0',
+                  boxShadow: '2px 2px 8px rgba(0,0,0,0.3)',
+                  padding: '2px',
+                  zIndex: 99999,
+                }}
+              >
+                {templates.map((tpl, i) => (
+                  <div
+                    key={i}
+                    className="win95-menu-item"
+                    onClick={() => handleSelectTemplate(tpl.sql)}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      borderRadius: '0',
+                    }}
+                  >
+                    {tpl.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button
+            id="btn-history"
+            className="win95-button"
+            onClick={onToggleHistory}
+            title="View Query History Log (Ctrl+H)"
+            style={{ padding: '2px 6px' }}
           >
-            <option value="MySQL">MySQL</option>
-            <option value="PostgreSQL">PostgreSQL</option>
-            <option value="SQLite">SQLite</option>
-            <option value="SSMS">SSMS (Transact-SQL)</option>
-          </select>
+            <span>🕒</span>
+            <span>History ({historyCount})</span>
+          </button>
+        </div>
+
+        <div className="win95-divider-v" />
+
+        {/* Group 3: Database & Dialect Selector */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <label htmlFor="dialect-select" style={{ fontSize: '11px', fontWeight: 'bold' }}>
+              Dialect:
+            </label>
+            <select
+              id="dialect-select"
+              className="win95-sunken"
+              value={dialect}
+              onChange={(e) => onDialectChange(e.target.value as Dialect)}
+              style={{ padding: '2px 4px', fontSize: '11px', height: '22px' }}
+            >
+              <option value="MySQL">MySQL</option>
+              <option value="PostgreSQL">PostgreSQL</option>
+              <option value="SQLite">SQLite</option>
+              <option value="SSMS">SSMS (Transact-SQL)</option>
+            </select>
+          </div>
+
+          <button
+            id="btn-reset"
+            className="win95-button"
+            onClick={onReset}
+            disabled={isLoading}
+            title="Clear database and reset catalog"
+            style={{ padding: '2px 6px' }}
+          >
+            <span>🔄</span>
+            <span>Reset Schema</span>
+          </button>
         </div>
       </div>
 
-      {/* Right Helper Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+      {/* Right Action Group: System & Help Controls */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+        <div className="win95-divider-v" />
+
         <button
           id="btn-help"
           className="win95-button"
           onClick={onOpenHelp}
           title="Open SQL Query Tutorial & Guide"
+          style={{ padding: '2px 6px' }}
         >
           <span>📖</span>
-          <span>Help / Tutorial</span>
+          <span>Help</span>
         </button>
 
         <button
@@ -218,6 +237,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           className="win95-button"
           onClick={onStartTour}
           title="Start Guided Tour"
+          style={{ padding: '2px 6px' }}
         >
           <span>💡</span>
           <span>Tour</span>
@@ -228,6 +248,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           className="win95-button"
           onClick={onOpenSettings}
           title="Options & Preferences"
+          style={{ padding: '2px 6px' }}
         >
           <span>⚙️</span>
           <span>Options</span>
