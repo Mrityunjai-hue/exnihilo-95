@@ -172,10 +172,19 @@ Progress: [███████████████████████
 - [x] **Query Templates Dropdown**: 1-click template insertion in IDE toolbar.
 - [x] **Target-Tracking Guided Tour**: Interactive 11-step spotlight balloon tour.
 - [x] **Interactive SQL Dictionary**: Searchable SQL syntax reference window.
-- [ ] **SQL Challenge Mode**: Interactive SQL puzzles with progressive difficulty (Easy → Expert).
+- [x] **SQL Challenge Mode**: Interactive SQL puzzles with progressive difficulty (Easy → Expert).
 - [ ] **Real-Time Collaboration**: Google Docs-style simultaneous SQL editing with team cursors.
 - [ ] **Team Query Library**: Shared repository of organization queries.
 - [ ] **Classroom Mode**: Instructor live-broadcast screen with student sandbox instances.
+
+---
+
+### 4. Advanced Schema & Developer Tools
+
+- [x] **Catalog Tree Inspection**: Flat and database-qualified table/view tree.
+- [x] **1-Click DDL Generator**: Instant DDL modal generation for any catalog table.
+- [x] **Interactive ERD & Visual Schema Diagram**: Draggable table cards, PK/FK links (`🔑 PK`, `🔗 FK`), SVG bezier connectors, search filter, and SVG image export (`🖼️`).
+- [ ] **AI Query Performance Profiler**: Live execution query plan inspection and bottleneck detection.
 
 ---
 
