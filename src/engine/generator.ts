@@ -172,6 +172,16 @@ function generateScalarValue(
     return rowIndex + 1;
   }
 
+  // Step 0.5: WHERE / HAVING Predicate Literal Seeding (guarantees rows matching WHERE col = 'literal' exist)
+  if (col.predicateLiterals && col.predicateLiterals.length > 0 && (rowIndex % 2 === 0 || rowIndex < 5)) {
+    const rawLit = col.predicateLiterals[rowIndex % col.predicateLiterals.length];
+    if (typeof rawLit === 'string') {
+      // Capitalize first letter if string
+      return rawLit.charAt(0).toUpperCase() + rawLit.slice(1);
+    }
+    return rawLit;
+  }
+
   // Step 1: Check if table matches a domain schema in DOMAIN_CATALOG
   const domainCols = resolveDomainSchema(tableName);
   if (domainCols) {

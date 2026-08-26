@@ -23,6 +23,7 @@
 
 import { parse, Dialect } from './parser';
 import { resolveDomainSchema, UNIVERSAL_FALLBACK_SCHEMA } from './domain_dictionary';
+import { matchColumnToken } from './token_dictionary';
 
 // ── Logical types (dialect-agnostic layer) ────────────────────────────────────
 
@@ -63,10 +64,11 @@ export const DEFAULT_COLUMNS: Array<{ name: string; logicalType: LogicalType }> 
 // ── Public output types ───────────────────────────────────────────────────────
 
 export interface ColumnDef {
-  name:        string;
-  logicalType: LogicalType;
-  sqliteType:  string;   // translated via SQLITE_DDL
-  source:      string;   // which rule row determined this type (for traceability)
+  name:              string;
+  logicalType:       LogicalType;
+  sqliteType:        string;   // translated via SQLITE_DDL
+  source:            string;   // which rule row determined this type (for traceability)
+  predicateLiterals?: any[];   // literal values captured from WHERE/HAVING comparison clauses
 }
 
 export interface TableSchema {
@@ -86,9 +88,21 @@ interface TypeSignal {
 }
 
 /** Keyed by "tableName\0columnName" (both lowercased) */
-type SignalMap  = Map<string, TypeSignal>;
+type SignalMap   = Map<string, TypeSignal>;
 /** Tracks every column that was referenced anywhere in the query */
-type ColRefMap  = Map<string, true>;
+type ColRefMap   = Map<string, true>;
+/** Keyed by "tableName\0columnName", tracks literal comparison values */
+type LiteralsMap = Map<string, any[]>;
+
+function addLiteral(literalsMap: LiteralsMap, table: string | null, col: string | null, value: any): void {
+  if (!table || !col || value === undefined || value === null) return;
+  const key = signalKey(table, col);
+  const list = literalsMap.get(key) ?? [];
+  if (!list.includes(value)) {
+    list.push(value);
+    literalsMap.set(key, list);
+  }
+}
 
 // ── AST Identifier Extraction Helpers ─────────────────────────────────────────
 
@@ -128,39 +142,10 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}/;
 
 // ── Column-name heuristic (spec 3.2 row 9 and "cosmetic generation hint") ─────
 export function nameHeuristicType(colName: string): { type: LogicalType; source: string } | null {
-  const n = colName.toLowerCase();
-
-  // Rule 3.2 row 9: id / _id pattern → INTEGER key
-  if (n === 'id' || n.endsWith('_id')) {
-    return { type: 'INTEGER', source: `spec 3.2 row 9: name is 'id' or ends in '_id' → INTEGER` };
+  const tokenMatch = matchColumnToken(colName);
+  if (tokenMatch) {
+    return { type: tokenMatch.logicalType, source: tokenMatch.source };
   }
-
-  // Location & Text-sounding names → VARCHAR (Checked first so 'country' never matches 'count')
-  if (/^(country|city|state|province|address|street|zip|postal|phone|email|name|title|description|notes|comment|sku|status|type|category|role)/.test(n)
-    || n.endsWith('_name') || n.endsWith('_email') || n.endsWith('_phone') || n.endsWith('_country') || n.endsWith('_city')) {
-    return { type: 'VARCHAR', source: `spec 3.2 generation hint: ${n} matches string pattern → VARCHAR` };
-  }
-
-  // Price / numeric-sounding names → NUMERIC
-  if (/^(price|amount|total|cost|qty|quantity|score|rating|balance|salary|age|weight|height)$/.test(n)
-    || n.startsWith('num_') || n.startsWith('count_') || n.startsWith('cnt_') || n.startsWith('sum_') || n.startsWith('avg_')
-    || n.endsWith('_price') || n.endsWith('_amount') || n.endsWith('_cost')
-    || n.endsWith('_score') || n.endsWith('_count') || n.endsWith('_qty') || n.endsWith('_age')) {
-    return { type: 'NUMERIC', source: `spec 3.2 generation hint: ${n} matches numeric pattern → NUMERIC` };
-  }
-
-  // Date-sounding names → DATE
-  if (n.endsWith('_at') || n.endsWith('_date') || n.endsWith('_time')
-    || n === 'date' || n === 'timestamp' || n.startsWith('date_')
-    || n === 'born' || n.endsWith('_born')) {
-    return { type: 'DATE', source: `spec 3.2 generation hint: ${n} matches date pattern → DATE` };
-  }
-
-  // Boolean-sounding names → BOOLEAN
-  if (n.startsWith('is_') || n.startsWith('has_') || n.startsWith('can_') || n.startsWith('was_')) {
-    return { type: 'BOOLEAN', source: `spec 3.2 generation hint: ${n} starts with is_/has_/can_/was_ → BOOLEAN` };
-  }
-
   return null;
 }
 
@@ -219,6 +204,7 @@ function walkExpr(
   colRefs:     ColRefMap,
   tableSet:    Set<string> = new Set(),
   cteNames:    Set<string> = new Set(),
+  literalsMap: LiteralsMap = new Map(),
 ): void {
   if (!expr || typeof expr !== 'object') return;
 
@@ -289,12 +275,18 @@ function walkExpr(
         addColRef(colRefs, t, c);
         const sig = literalSignal(rhs);
         if (sig) addSignal(signals, t, c, sig.type, sig.priority, sig.source);
+        if (t && c && (rhs?.type === 'single_quote_string' || rhs?.type === 'double_quote_string' || rhs?.type === 'number')) {
+          addLiteral(literalsMap, t, c, rhs.value);
+        }
       }
       if (rhsIsCol && !lhsIsCol) {
         const [t, c] = resolveCol(rhs);
         addColRef(colRefs, t, c);
         const sig = literalSignal(lhs);
         if (sig) addSignal(signals, t, c, sig.type, sig.priority, sig.source);
+        if (t && c && (lhs?.type === 'single_quote_string' || lhs?.type === 'double_quote_string' || lhs?.type === 'number')) {
+          addLiteral(literalsMap, t, c, lhs.value);
+        }
       }
       // Both column refs (JOIN ON) — just track existence
       if (lhsIsCol && rhsIsCol) {
@@ -558,16 +550,17 @@ function walkFrom(
 // ── Statement walker ──────────────────────────────────────────────────────────
 
 function walkStatement(
-  ast:      any,
-  signals:  SignalMap,
-  colRefs:  ColRefMap,
-  tableSet: Set<string>,
-  cteNames: Set<string>,
-  aliasMap: Map<string, string>,
+  ast:         any,
+  signals:     SignalMap,
+  colRefs:     ColRefMap,
+  tableSet:    Set<string>,
+  cteNames:    Set<string>,
+  aliasMap:    Map<string, string>,
+  literalsMap: LiteralsMap = new Map(),
 ): void {
   if (!ast) return;
   switch (ast.type) {
-    case 'select': walkSelect(ast, signals, colRefs, tableSet, cteNames, aliasMap); break;
+    case 'select': walkSelect(ast, signals, colRefs, tableSet, cteNames, aliasMap, literalsMap); break;
     case 'insert': walkInsert(ast, signals, colRefs, tableSet); break;
     case 'update': walkUpdate(ast, signals, colRefs, tableSet); break;
     case 'delete': walkDelete(ast, signals, colRefs, tableSet, cteNames, aliasMap); break;
@@ -578,12 +571,13 @@ function walkStatement(
 // ── SELECT walker ─────────────────────────────────────────────────────────────
 
 function walkSelect(
-  ast:      any,
-  signals:  SignalMap,
-  colRefs:  ColRefMap,
-  tableSet: Set<string>,
-  cteNames: Set<string>,
-  aliasMap: Map<string, string>,
+  ast:         any,
+  signals:     SignalMap,
+  colRefs:     ColRefMap,
+  tableSet:    Set<string>,
+  cteNames:    Set<string>,
+  aliasMap:    Map<string, string>,
+  literalsMap: LiteralsMap = new Map(),
 ): void {
   // 1. Process CTEs (spec 3.1 "CTEs")
   if (Array.isArray(ast.with)) {
@@ -593,7 +587,7 @@ function walkSelect(
 
       const cteBody = cte.stmt?.ast ?? cte.stmt;
       if (cteBody) {
-        walkStatement(cteBody, signals, colRefs, tableSet, cteNames, new Map<string, string>());
+        walkStatement(cteBody, signals, colRefs, tableSet, cteNames, new Map<string, string>(), literalsMap);
       }
     }
   }
@@ -605,14 +599,14 @@ function walkSelect(
 
   // 3. Walk WHERE
   if (ast.where) {
-    walkExpr(ast.where, aliasMap, scope, signals, colRefs, tableSet, cteNames);
+    walkExpr(ast.where, aliasMap, scope, signals, colRefs, tableSet, cteNames, literalsMap);
   }
 
   // 4. Walk SELECT column list
   if (Array.isArray(ast.columns)) {
     for (const col of ast.columns) {
       if (col?.expr) {
-        walkExpr(col.expr, aliasMap, scope, signals, colRefs, tableSet, cteNames);
+        walkExpr(col.expr, aliasMap, scope, signals, colRefs, tableSet, cteNames, literalsMap);
       }
     }
   }
@@ -731,6 +725,7 @@ function buildSchemaMap(
   cteNames: Set<string>,
   signals:  SignalMap,
   colRefs:  ColRefMap,
+  literalsMap: LiteralsMap = new Map(),
 ): InferredSchemaMap {
   const result: InferredSchemaMap = new Map();
 
@@ -750,10 +745,11 @@ function buildSchemaMap(
         tableName,
         isDefault: !domainSchema,
         columns: targetSpecs.map(dc => ({
-          name:        dc.name,
-          logicalType: dc.logicalType,
-          sqliteType:  SQLITE_DDL[dc.logicalType],
-          source:      domainSchema ? `domain catalog: matched ${tableName} schema` : `universal fallback schema`,
+          name:              dc.name,
+          logicalType:       dc.logicalType,
+          sqliteType:        SQLITE_DDL[dc.logicalType],
+          source:            domainSchema ? `domain catalog: matched ${tableName} schema` : `universal fallback schema`,
+          predicateLiterals: literalsMap.get(signalKey(tableName, dc.name)),
         })),
       });
       continue;
@@ -763,32 +759,41 @@ function buildSchemaMap(
     const colNameSet = new Set<string>();
 
     for (const col of referencedCols) {
-      const key    = signalKey(tableName, col);
-      const signal = signals.get(key);
+      const key      = signalKey(tableName, col);
+      const signal   = signals.get(key);
+      const lits     = literalsMap.get(key);
       colNameSet.add(col.toLowerCase());
 
       if (signal) {
+        let finalType = signal.type;
+        const hint = nameHeuristicType(col);
+        if (signal.type === 'NUMERIC' && hint && hint.type !== 'NUMERIC') {
+          finalType = hint.type;
+        }
         columns.push({
-          name:        col,
-          logicalType: signal.type,
-          sqliteType:  SQLITE_DDL[signal.type],
-          source:      signal.source,
+          name:              col,
+          logicalType:       finalType,
+          sqliteType:        SQLITE_DDL[finalType],
+          source:            signal.source,
+          predicateLiterals: lits,
         });
       } else {
         const hint = nameHeuristicType(col);
         if (hint) {
           columns.push({
-            name:        col,
-            logicalType: hint.type,
-            sqliteType:  SQLITE_DDL[hint.type],
-            source:      hint.source,
+            name:              col,
+            logicalType:       hint.type,
+            sqliteType:        SQLITE_DDL[hint.type],
+            source:            hint.source,
+            predicateLiterals: lits,
           });
         } else {
           columns.push({
-            name:        col,
-            logicalType: 'VARCHAR',
-            sqliteType:  SQLITE_DDL['VARCHAR'],
-            source:      `spec 3.2 last row: no signal found → fallback VARCHAR(255)`,
+            name:              col,
+            logicalType:       'VARCHAR',
+            sqliteType:        SQLITE_DDL['VARCHAR'],
+            source:            `spec 3.2 last row: no signal found → fallback VARCHAR(255)`,
+            predicateLiterals: lits,
           });
         }
       }
@@ -800,10 +805,11 @@ function buildSchemaMap(
       for (const dc of domainSchema) {
         if (!colNameSet.has(dc.name.toLowerCase())) {
           columns.push({
-            name:        dc.name,
-            logicalType: dc.logicalType,
-            sqliteType:  SQLITE_DDL[dc.logicalType],
-            source:      `domain catalog: augmented ${tableName} schema`,
+            name:              dc.name,
+            logicalType:       dc.logicalType,
+            sqliteType:        SQLITE_DDL[dc.logicalType],
+            source:            `domain catalog: augmented ${tableName} schema`,
+            predicateLiterals: literalsMap.get(signalKey(tableName, dc.name)),
           });
           colNameSet.add(dc.name.toLowerCase());
         }
@@ -837,10 +843,11 @@ export function inferSchema(queryText: string, dialect: Dialect): InferredSchema
   const aliasMap: Map<string, string>   = new Map();
   const signals:  SignalMap             = new Map();
   const colRefs:  ColRefMap             = new Map();
+  const literalsMap: LiteralsMap        = new Map();
 
   for (const ast of astNodes) {
-    walkStatement(ast, signals, colRefs, tableSet, cteNames, aliasMap);
+    walkStatement(ast, signals, colRefs, tableSet, cteNames, aliasMap, literalsMap);
   }
 
-  return buildSchemaMap(tableSet, cteNames, signals, colRefs);
+  return buildSchemaMap(tableSet, cteNames, signals, colRefs, literalsMap);
 }
