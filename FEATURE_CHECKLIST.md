@@ -59,10 +59,10 @@ Progress: [███████████████████████
 - [x] **500ms Debounced Auto-Save**: Background sync buffering tab edits and query states to IndexedDB every 500ms.
 - [x] **Query History Log Drawer**: Scrollable session query history with timestamps, execution duration (ms), row counts, and 1-click query reload.
 - [x] **Session Memory Reset**: 1-click Recycle Bin reset restoring clean memory state.
+- [x] **Named Workspaces Manager**: Create, save, switch, and manage named project workspace profiles (e.g. *"E-Commerce Project"*, *"HR Analytics"*).
+- [x] **Tab Pinning (`📌`)**: Pin critical query tabs to lock them on the left and protect against accidental closure.
 - [ ] **Unlimited Query Tabs** *(Free: 3 tabs max; Pro: Unlimited)*.
-- [ ] **Named Workspaces**: Save & switch between named workspace projects (e.g. *"E-Commerce Project"*).
 - [ ] **Tab Grouping**: Color-coded tab groups with drag-to-reorder.
-- [ ] **Tab Pinning**: Pin critical tabs to prevent accidental closure.
 - [ ] **Cloud Workspace Sync**: Cross-device workspace auto-sync on user login.
 - [ ] **Git-Style Tab Version History**: Revert query tabs to previous snapshots with diff view.
 
