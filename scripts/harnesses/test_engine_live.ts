@@ -3,8 +3,8 @@
  * Runs 20 distinct SQL query patterns directly through src/engine/executor.ts
  */
 
-import { SQLExecutor } from './src/engine/executor';
-import { Dialect } from './src/engine/parser';
+import { SQLExecutor } from '../../src/engine/executor';
+import { Dialect } from '../../src/engine/parser';
 
 async function main() {
   console.log('╔════════════════════════════════════════════════════════════════════════╗');
