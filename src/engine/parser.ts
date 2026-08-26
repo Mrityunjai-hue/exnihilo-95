@@ -489,6 +489,132 @@ export function extractJoinTypes(ast: AST | AST[]): string[] {
   return joins;
 }
 
+// ── Batch 2: DDL Statements (TRUNCATE TABLE, CREATE DATABASE/SCHEMA, CREATE VIEW) ────
+
+export interface TruncateTableSpec {
+  tableName: string;
+  dbName?: string;
+}
+
+export interface CreateSchemaSpec {
+  name: string;
+  type: 'DATABASE' | 'SCHEMA';
+}
+
+export interface CreateViewSpec {
+  viewName: string;
+  dbName?: string;
+  selectAst: any;
+}
+
+/**
+ * Extracts TRUNCATE TABLE statement specifications from a parsed AST.
+ */
+export function extractTruncateStatements(ast: AST | AST[]): TruncateTableSpec[] {
+  const specs: TruncateTableSpec[] = [];
+
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+
+    if (node.type === 'truncate') {
+      const nameObj = Array.isArray(node.name) ? node.name[0] : node.name;
+      const rawTable = nameObj?.table || nameObj?.value || (typeof nameObj === 'string' ? nameObj : '');
+      const rawDb = nameObj?.db || undefined;
+      if (rawTable) {
+        specs.push({ tableName: String(rawTable), dbName: rawDb ? String(rawDb) : undefined });
+      }
+    }
+
+    for (const key of Object.keys(node)) {
+      if (typeof node[key] === 'object') walk(node[key]);
+    }
+  };
+
+  walk(ast);
+  return specs;
+}
+
+/**
+ * Extracts CREATE DATABASE and CREATE SCHEMA statement specifications from a parsed AST.
+ */
+export function extractCreateSchemaStatements(ast: AST | AST[]): CreateSchemaSpec[] {
+  const specs: CreateSchemaSpec[] = [];
+
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+
+    if (node.type === 'create') {
+      const kw = String(node.keyword || '').toLowerCase();
+      if (kw === 'database' || kw === 'schema') {
+        const schemaObj = node.database || node.schema;
+        const nameVal =
+          schemaObj?.schema?.[0]?.value ??
+          schemaObj?.name ??
+          schemaObj?.value ??
+          (typeof schemaObj === 'string' ? schemaObj : '');
+        if (nameVal) {
+          specs.push({
+            name: String(nameVal),
+            type: kw === 'database' ? 'DATABASE' : 'SCHEMA',
+          });
+        }
+      }
+    }
+
+    for (const key of Object.keys(node)) {
+      if (typeof node[key] === 'object') walk(node[key]);
+    }
+  };
+
+  walk(ast);
+  return specs;
+}
+
+/**
+ * Extracts CREATE VIEW statement specifications from a parsed AST.
+ */
+export function extractCreateViewStatements(ast: AST | AST[]): CreateViewSpec[] {
+  const specs: CreateViewSpec[] = [];
+
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+
+    if (node.type === 'create' && String(node.keyword || '').toLowerCase() === 'view') {
+      const viewObj = node.view;
+      const rawView = viewObj?.view || viewObj?.value || (typeof viewObj === 'string' ? viewObj : '');
+      const rawDb = viewObj?.db || undefined;
+      const selectAst = node.select;
+      if (rawView) {
+        specs.push({
+          viewName: String(rawView),
+          dbName: rawDb ? String(rawDb) : undefined,
+          selectAst,
+        });
+      }
+    }
+
+    for (const key of Object.keys(node)) {
+      if (typeof node[key] === 'object') walk(node[key]);
+    }
+  };
+
+  walk(ast);
+  return specs;
+}
+
+
 
 
 

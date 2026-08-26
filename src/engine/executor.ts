@@ -17,7 +17,17 @@
  */
 
 import initSqlJs, { Database, SqlJsStatic } from 'sql.js';
-import { parse, Dialect, WindowSpec, WindowOrderClause, WindowFrameSpec, extractWindowSpecs } from './parser';
+import {
+  parse,
+  Dialect,
+  WindowSpec,
+  WindowOrderClause,
+  WindowFrameSpec,
+  extractWindowSpecs,
+  extractTruncateStatements,
+  extractCreateSchemaStatements,
+  extractCreateViewStatements,
+} from './parser';
 import { inferSchema, InferredSchemaMap, DEFAULT_COLUMNS, TableSchema, SQLITE_DDL } from './inference';
 
 import { buildTableGenerationPlan } from './relationships';
@@ -705,6 +715,64 @@ export class SQLExecutor {
       };
     }
 
+    // ── 1.5. Process DDL Statements & Register Schema/Tables/Views ────────────
+    if (parseResult.ast) {
+      const schemaSpecs = extractCreateSchemaStatements(parseResult.ast);
+      for (const s of schemaSpecs) {
+        this.catalog.createSchema(s.name);
+      }
+
+      const viewSpecs = extractCreateViewStatements(parseResult.ast);
+      for (const v of viewSpecs) {
+        this.catalog.setView(v.viewName, trimmedQuery, v.selectAst, v.dbName);
+      }
+
+      const truncateSpecs = extractTruncateStatements(parseResult.ast);
+      for (const t of truncateSpecs) {
+        this.catalog.truncateTable(t.tableName, t.dbName);
+      }
+
+      // Register explicit user-defined CREATE TABLE statements into catalog
+      const walkCreateTables = (node: any) => {
+        if (!node || typeof node !== 'object') return;
+        if (Array.isArray(node)) {
+          node.forEach(walkCreateTables);
+          return;
+        }
+        if (node.type === 'create' && String(node.keyword || '').toLowerCase() === 'table') {
+          const tblObj = Array.isArray(node.table) ? node.table[0] : node.table;
+          const rawName = tblObj?.table || tblObj?.value || (typeof tblObj === 'string' ? tblObj : '');
+          if (rawName) {
+            const cols: any[] = [];
+            if (Array.isArray(node.create_definitions)) {
+              node.create_definitions.forEach((defNode: any) => {
+                const colName = defNode.column?.column?.expr?.value || defNode.column?.column || defNode.column;
+                const dataType = defNode.definition?.dataType || 'TEXT';
+                if (colName) {
+                  cols.push({
+                    name: String(colName),
+                    logicalType: String(dataType).toUpperCase(),
+                    sqliteType: String(dataType).toUpperCase(),
+                    source: 'User-defined DDL',
+                  });
+                }
+              });
+            }
+            this.catalog.set(
+              String(rawName),
+              { tableName: String(rawName), isDefault: false, columns: cols },
+              0,
+              true
+            );
+          }
+        }
+        for (const k of Object.keys(node)) {
+          if (typeof node[k] === 'object') walkCreateTables(node[k]);
+        }
+      };
+      walkCreateTables(parseResult.ast);
+    }
+
     // ── 2. Identify Tables & Cache State ──────────────────────────────────────
     const allReferencedTables = parseResult.tableList.map(t => {
       // Table string format: "select::null::customers" -> "customers"
@@ -726,7 +794,12 @@ export class SQLExecutor {
     );
 
     for (const tbl of uniqueTables) {
-      if (this.catalog.has(tbl) || this.hasTableInSqlite(tbl) || createdInQuery.has(tbl)) {
+      if (
+        this.catalog.has(tbl) ||
+        this.catalog.hasView(tbl) ||
+        this.hasTableInSqlite(tbl) ||
+        createdInQuery.has(tbl)
+      ) {
         reusedTables.push(tbl);
       } else {
         missingTables.push(tbl);
@@ -765,20 +838,83 @@ export class SQLExecutor {
     }
 
     // ── 4. Execute Query in SQLite WASM ───────────────────────────────────────
-    const executableQuery = trimmedQuery
+    let executableQuery = trimmedQuery
       .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->>\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT_TEXT($1, $2)')
       .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT($1, $2)')
       .replace(/\bSTRING_AGG\s*\(\s*([^,]+?)\s*,\s*('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)')
       .replace(/\bSTRING_AGG\s*\(\s*([^)]+?)\s*\)/gi, 'GROUP_CONCAT($1)')
-      .replace(/\bGROUP_CONCAT\s*\(\s*(.*?)\s+SEPARATOR\s+('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)');
+      .replace(/\bGROUP_CONCAT\s*\(\s*(.*?)\s+SEPARATOR\s+('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)')
+      .replace(/\bTRUNCATE\s+(?:TABLE\s+)?([a-zA-Z0-9_.]+?);?$/gi, 'DELETE FROM "$1";')
+      .replace(/\bTRUNCATE\s+(?:TABLE\s+)?([a-zA-Z0-9_.]+?)\s*;/gi, 'DELETE FROM "$1";')
+      .replace(/CREATE\s+(?:DATABASE|SCHEMA)\s+[a-zA-Z0-9_.]+;?/gi, '')
+      .trim();
+
+    if (!executableQuery) {
+      return {
+        ok: true,
+        columns: ['status'],
+        rows: [['Statement executed successfully.']],
+        rowCount: 0,
+        executionTimeMs: performance.now() - startTime,
+        inferredTables,
+        reusedTables,
+      };
+    }
 
     try {
       const results = this.db.exec(executableQuery);
       const executionTimeMs = performance.now() - startTime;
 
+      // Sync row counts for all catalog entries from SQLite WASM database
+      for (const entry of this.catalog.getAll()) {
+        try {
+          const cntRes = this.db.exec(`SELECT COUNT(*) FROM "${entry.tableName}";`);
+          if (cntRes.length > 0 && cntRes[0].values.length > 0) {
+            entry.rowCount = Number(cntRes[0].values[0][0]);
+          }
+        } catch {
+          // Table may not exist yet in SQLite WASM
+        }
+      }
+
 
 
       if (results.length === 0) {
+        const isSelect =
+          /^\s*SELECT\b/i.test(codeWithoutComments) ||
+          (parseResult.ok && Array.isArray(parseResult.ast) && parseResult.ast.some((n: any) => n.type === 'select'));
+
+        if (isSelect) {
+          let selectCols: string[] = [];
+          if (allReferencedTables.length > 0) {
+            const entry = this.catalog.get(allReferencedTables[0]);
+            if (entry && entry.schema && Array.isArray(entry.schema.columns)) {
+              selectCols = entry.schema.columns.map(c => c.name);
+            }
+          }
+
+          if (selectCols.length === 0 && allReferencedTables.length > 0) {
+            try {
+              const pragmaRes = this.db.exec(`PRAGMA table_info("${allReferencedTables[0]}");`);
+              if (pragmaRes.length > 0 && Array.isArray(pragmaRes[0].values)) {
+                selectCols = pragmaRes[0].values.map((v: any) => String(v[1]));
+              }
+            } catch {
+              // fallback
+            }
+          }
+
+          return {
+            ok: true,
+            columns: selectCols,
+            rows: [],
+            rowCount: 0,
+            executionTimeMs,
+            inferredTables,
+            reusedTables,
+          };
+        }
+
         const rowsModified = (this.db as any).getRowsModified ? (this.db as any).getRowsModified() : 0;
         return {
           ok: true,
