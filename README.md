@@ -1,14 +1,18 @@
 # 🗄️ ExNihilo 95 — Zero-Config In-Browser SQL IDE
 
+![ExNihilo 95 Demo](exnihilo_demo.gif)
+
+[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/Mrityunjai-hue/exnihilo-95)
+[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-73%2F73%20Passed-brightgreen.svg)](https://github.com/Mrityunjai-hue/exnihilo-95)
+[![E2E Tests](https://img.shields.io/badge/E2E%20Tests-9%2F9%20Passed-brightgreen.svg)](https://github.com/Mrityunjai-hue/exnihilo-95)
+[![TypeScript](https://img.shields.io/badge/TypeScript-0%20Errors-brightgreen.svg)](https://github.com/Mrityunjai-hue/exnihilo-95)
 [![Live Demo](https://img.shields.io/badge/Live_Demo-exnihilo--95.vercel.app-brightgreen.svg)](https://exnihilo-95.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Copyright & Anti-Theft](https://img.shields.io/badge/Copyright-Anti--Theft_Protected-red.svg)](COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md)
 [![Next.js](https://img.shields.io/badge/Next.js-16.3.2-black.svg)](https://nextjs.org/)
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-sql.js_3.49.1-purple.svg)](https://sql.js.org/)
 [![Windows 95 UI](https://img.shields.io/badge/Style-Windows_95-teal.svg)](https://github.com/Mrityunjai-hue)
-[![N8N Community](https://img.shields.io/badge/Powered_by-N8N_Data_Science_Community-orange.svg)](https://n8n-ds-community.netlify.app/)
-[![Contributors Welcome](https://img.shields.io/badge/Contributors-Welcome!-ff69b4.svg)](#-calling-all-builders--contributors-wanted)
-[![Premium Roadmap](https://img.shields.io/badge/Premium_Roadmap-View_Plan-gold.svg)](PREMIUM_FEATURES.md)
+[![Powered by N8N](https://img.shields.io/badge/Powered_by-N8N_Data_Science_Community-orange.svg)](https://n8n-ds-community.netlify.app/)
 
 > **The SQL database environment with ZERO "Table not found" errors.**  
 > Built in the authentic nostalgic aesthetic of **Windows 95**, ExNihilo dynamically parses your SQL query's AST, automatically deduces column data types, maps foreign key relationships, synthesizes realistic test data on the fly, and executes queries entirely inside your browser via WebAssembly.
@@ -43,6 +47,74 @@ ExNihilo 95 is an open-source project created by **Mrityunjai ([@Mrityunjai-hue]
 
 ---
 
+## 🏗️ Architecture
+
+ExNihilo 95 implements a hybrid execution pipeline that decouples SQL compilation, AST schema inference, virtualized session state, and WebAssembly engine execution.
+
+### Query Execution Lifecycle
+
+```mermaid
+graph TD
+    RawSQL["Raw SQL Query"] --> ASTParser["AST Parser & AST Visitor"]
+    ASTParser -->|Dialect Rewriting| DialectTrans["Dialect Translation Engine"]
+    DialectTrans --> SessionCat["SessionCatalog (View/Trigger Shadow State)"]
+    SessionCat -->|Infer Missing Tables| SchemaInfer["Schema & Data Synthesis"]
+    SchemaInfer -->|Materialize Tables| WASMExec["WASM Engine (sql.js 3.49.1)"]
+    WASMExec --> VirtualDOM["Virtualized DOM Grid (60fps Windowing)"]
+```
+
+### 1. AST Parser & Rewriter Engine
+- **Multi-Dialect Normalization**: Uses `node-sql-parser` to parse incoming SQL strings into Abstract Syntax Trees (ASTs).
+- **Dialect Rewriting**: Normalizes dialect-specific aggregation functions and type casts prior to WASM execution:
+  - Rewrites PostgreSQL `STRING_AGG(col, delimiter)` and SQLite `group_concat(col, delimiter)` into standardized `GROUP_CONCAT()` calls.
+  - Normalizes PostgreSQL `::type` casting and SSMS bracketed identifiers (`[dbo].[users]`) into ANSI SQL standard identifier strings.
+  - Rewrites Window Function specifications (`ROW_NUMBER() OVER (...)`) for WASM compatibility.
+
+### 2. Hybrid Virtualization & SessionCatalog
+- **Interception of DDL & Procedural Logic**: Rather than risking WASM engine panics on unsupported dialect features, `SessionCatalog` intercepts `CREATE VIEW` and `CREATE TRIGGER` statements into in-memory JS shadow states.
+- **Shadow State Catalog**:
+  - `CREATE VIEW`: Virtualized views are registered in `SessionCatalog` without duplicate physical data storage. View queries are evaluated on-the-fly against underlying tables.
+  - `CREATE TRIGGER`: Triggers are stored in catalog registries and evaluated natively during `INSERT`/`UPDATE`/`DELETE` mutations.
+
+---
+
+## ⚡ Performance & State Isolation
+
+### 1. IndexedDB Persistence & 500ms Debounced Sync
+- **Bypassing the 5MB localStorage Boundary**: Modern browser `localStorage` enforces a strict 5MB limit. ExNihilo 95 uses a custom IndexedDB storage adapter (`useWorkspaceStorage`) supporting multi-megabyte database states, query history logs, and multiple script tabs.
+- **500ms Debounced Synchronization**: State mutations (tab edits, query history additions) are buffered and debounced to IndexedDB every 500ms to eliminate UI thread blocking during active typing.
+
+### 2. DOM Virtualization ($24\text{px}$ Windowing System)
+- **60fps Large Data Grid Rendering**: Rendering 10,000+ data rows as standard DOM nodes causes severe browser frame drops. ExNihilo 95 implements a fixed-height windowing system ($24\text{px}$ row height with an overscan buffer).
+- **Constant-Time DOM Footprint**: Only rows visible in the viewport ($\sim 25\text{--}35$ nodes) are rendered at any moment, maintaining 60fps performance regardless of result set size.
+
+### 3. ReDoS Immunity
+- **Safe Filtering for Large Payloads**: High-frequency grid search filters migrated from Regular Expressions to `.includes()` substring matching. This eliminates Regular Expression Denial of Service (ReDoS) vulnerability vectors when searching multi-thousand-row payloads.
+
+---
+
+## 🎯 SQL Dialect Support Matrix
+
+ExNihilo 95 provides full parsing and execution support across 4 major SQL dialects:
+
+| Feature / Command | MySQL | PostgreSQL | SQLite | T-SQL (SSMS) |
+| :--- | :---: | :---: | :---: | :---: |
+| `SELECT` / `WHERE` / `ORDER BY` | ✓ | ✓ | ✓ | ✓ |
+| `INNER JOIN` / `LEFT JOIN` / `RIGHT JOIN` | ✓ | ✓ | ✓ | ✓ |
+| `FULL OUTER JOIN` | ✓ | ✓ | ✓ | ✓ |
+| `GROUP BY` / `HAVING` | ✓ | ✓ | ✓ | ✓ |
+| `GROUP_CONCAT()` / `STRING_AGG()` | ✓ | ✓ | ✓ | ✓ |
+| `ROW_NUMBER()`, `RANK()`, `DENSE_RANK()` | ✓ | ✓ | ✓ | ✓ |
+| `LEAD()`, `LAG()`, `OVER (PARTITION BY)` | ✓ | ✓ | ✓ | ✓ |
+| `WITH RECURSIVE` (CTE Traversal) | ✓ | ✓ | ✓ | ✓ |
+| `TRUNCATE TABLE` | ✓ | ✓ | ✓ | ✓ |
+| `CREATE DATABASE` / `CREATE SCHEMA` | ✓ | ✓ | ✓ | ✓ |
+| `CREATE VIEW` (Virtualized) | ✓ | ✓ | ✓ | ✓ |
+| `CREATE TRIGGER` | ✓ | ✓ | ✓ | ✓ |
+| `CREATE PROCEDURE` / `CREATE FUNCTION` | ✓ | ✓ | ✓ | ✓ |
+
+---
+
 ## 🎯 Who is ExNihilo 95 Built For?
 
 > **Eliminating environment setup friction for students, recruiters, educators, and developers worldwide.**
@@ -71,56 +143,13 @@ I've laid out a comprehensive **[Premium Features Roadmap](PREMIUM_FEATURES.md)*
 
 ---
 
-## ✨ Key Features & Engine Capabilities
-
-- ⚡ **Zero Table Setup:** Type queries against tables that don't exist yet — ExNihilo infers schema and creates them on the fly.
-- 🎛️ **Multi-Dialect Support:** Natively parses **MySQL**, **PostgreSQL** (with `::type` casting & `WITH` CTEs), **SQLite**, and **SSMS** (Transact-SQL with bracket identifiers `[dbo].[table]`).
-- 📊 **Complete Window Functions Engine:** `ROW_NUMBER()`, `RANK()`, `DENSE_RANK()`, `LEAD()`, `LAG()`, aggregate functions (`SUM()`, `AVG()`, `MIN()`, `MAX() OVER ()`), and sliding frames (`ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING`).
-- 🔗 **Advanced Joins & Aggregators:** `FULL OUTER JOIN` / `FULL JOIN`, `GROUP_CONCAT()`, `STRING_AGG()`, and custom separators (`GROUP_CONCAT(name SEPARATOR ', ')`).
-- 🗄️ **DDL & Catalog Namespaces:** `TRUNCATE TABLE` (resets row counts to 0 while preserving schema), `CREATE DATABASE / CREATE SCHEMA` namespaces, `CREATE VIEW` virtualized views without data redundancy.
-- ⚙️ **Procedural Logic & Triggers:** `CREATE PROCEDURE`, `CREATE FUNCTION`, `CREATE TRIGGER` with native WebAssembly event execution in SQLite WASM.
-- 🌳 **Recursive CTEs & Hierarchies:** `WITH RECURSIVE` hierarchical tree & graph traversal (`Electronics > Laptops > Gaming Laptops`).
-- 🖥️ **Virtualized Data Grid:** Virtualized DOM rendering, case-insensitive ReDoS-safe substring search, interactive column sorting, and CSV file exports.
-- 💾 **Hybrid Storage Architecture:** IndexedDB workspace storage with native browser Quota Meter, completely isolated from user auth state in `localStorage`.
-- 📂 **Cascading Win95 Menus & Desktop Environment:** Classic teal desktop (`#008080`), Start menu, taskbar tabs, CodeMirror 6 query editor, and interactive SQL Dictionary reference window.
-
----
-
-## 🏗️ Architecture & Pipeline
-
-```mermaid
-graph TD
-    A[User SQL Query] --> B[Dialect Parser node-sql-parser]
-    B -->|AST Validation| C[Session Schema Catalog]
-    C -->|Table Exists| G[Execute in sql.js WASM]
-    C -->|Table Missing| D[Precedence Schema Inference]
-    D --> E[Relationship Graph & Topological DAG Sort]
-    E --> F[Synthetic Data & DDL/INSERT Generation]
-    F -->|Materialize| G
-    G -->|Runtime Exception: No such table| H[Retry-Once Safety Net]
-    H -->|Materialize Default Schema| G
-    G --> I[Virtualized Results Grid & Schema Tree]
-```
-
----
-
-## 🧪 Comprehensive Test Suite (100% Pass Rate)
-
-ExNihilo 95 is rigorously validated across unit and E2E browser test suites:
-
-- **Vitest Unit Test Suite:** **73 / 73 passed (100%)**
-- **Next.js Production Build (`npm run build`):** **0 errors**
-- **Playwright E2E Browser Test Suite:** **9 / 9 passed (100%)**
-
----
-
 ## 🚀 Getting Started
 
-### 🌐 Instant Web Access
-No installation required — launch the full application in your browser:  
-👉 **[https://exnihilo-95.vercel.app](https://exnihilo-95.vercel.app)**
+### Prerequisites
+- **Node.js**: `v18.0.0` or higher
+- **npm**: `v9.0.0` or higher (or `yarn` / `pnpm`)
 
-### 💻 Local Installation & Run
+### 1. Installation & Local Development
 
 1. Clone the repository:
    ```bash
@@ -142,13 +171,26 @@ No installation required — launch the full application in your browser:
 
 ---
 
-## 📦 Scripts
+## 🧪 Testing Suites & Validation
 
-- `npm run dev` — Launches Next.js Turbopack development server on `localhost:3000`.
-- `npm run build` — Creates an optimized production static bundle.
-- `npm run test` / `npx vitest run` — Runs 73 unit tests.
-- `npx playwright test` — Runs Playwright E2E browser automation tests.
-- `node scripts/harnesses/phase6_full_suite.cjs` — Executes the full 14-query headless verification harness.
+ExNihilo 95 enforces strict multi-layered testing validation across unit, end-to-end, and compilation suites:
+
+```bash
+# 1. Run Unit Test Suite (73/73 Passed)
+npx vitest run
+
+# 2. Run Playwright E2E Browser Test Suite (9/9 Passed)
+npx playwright test
+
+# 3. Next.js Production Build Validation (0 TypeScript Errors)
+npm run build
+```
+
+| Suite | Command | Scope & Coverage | Status |
+| :--- | :--- | :--- | :---: |
+| **Vitest Unit** | `npx vitest run` | Validates AST extraction, schema inference, DDL, Window Functions, and Graph/CTE execution. | **73 / 73 Passed** |
+| **Playwright E2E** | `npx playwright test` | Validates window drag isolation, IndexedDB state persistence, and retro UI lifecycle. | **9 / 9 Passed** |
+| **TypeScript Build** | `npm run build` | Validates zero static type errors, Next.js page generation, and bundle optimization. | **0 Errors** |
 
 ---
 
