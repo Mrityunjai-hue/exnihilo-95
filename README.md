@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🗄️ ExNihilo 95 — Zero-Config In-Browser SQL IDE</h1>
+  <h1 align="center">🗄️ ExNihilo 95 — Zero-Config In-Browser SQL IDE & Challenge Arena</h1>
   <p align="center">
     <strong>Run SQL queries instantly against non-existent tables without creating schemas or databases.</strong>
   </p>
@@ -13,42 +13,145 @@
 
 <p align="center">
   <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Build-Passing-brightgreen.svg" alt="Build Status" /></a>
-  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Unit%20Tests-73%2F73%20Passed-brightgreen.svg" alt="Unit Tests" /></a>
-  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/E2E%20Tests-9%2F9%20Passed-brightgreen.svg" alt="E2E Tests" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Unit%20Tests-112%2F112%20Passed-brightgreen.svg" alt="Unit Tests" /></a>
   <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/TypeScript-0%20Errors-brightgreen.svg" alt="TypeScript" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95/releases/tag/v1.5.0-themes"><img src="https://img.shields.io/badge/Release-v1.5.0--themes-blue.svg" alt="v1.5.0-themes" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95/releases/tag/v2.0.0-challenges"><img src="https://img.shields.io/badge/Release-v2.0.0--challenges-purple.svg" alt="v2.0.0-challenges" /></a>
   <a href="https://exnihilo-95.vercel.app"><img src="https://img.shields.io/badge/Live_Demo-exnihilo--95.vercel.app-brightgreen.svg" alt="Live Demo" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
   <a href="COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md"><img src="https://img.shields.io/badge/Copyright-Anti--Theft_Protected-red.svg" alt="Copyright" /></a>
   <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16.3.2-black.svg" alt="Next.js" /></a>
   <a href="https://sql.js.org/"><img src="https://img.shields.io/badge/WebAssembly-sql.js_3.49.1-purple.svg" alt="WebAssembly" /></a>
-  <a href="https://n8n-ds-community.netlify.app/"><img src="https://img.shields.io/badge/Powered_by-N8N_Data_Science_Community-orange.svg" alt="N8N Community" /></a>
 </p>
 
 > **The SQL database environment with ZERO "Table not found" errors.**  
 > Built in the authentic nostalgic aesthetic of **Windows 95**, ExNihilo dynamically parses your SQL query's AST, automatically deduces column data types, maps foreign key relationships, synthesizes realistic test data on the fly, and executes queries entirely inside your browser via WebAssembly.
 >
-> 🌐 **Try it Live in Browser:** **[https://exnihilo-95.vercel.app](https://exnihilo-95.vercel.app)**
+> 🌐 **Try it Live in Browser:** **[https://exnihilo-95.vercel.app](https://exnihilo-95.vercel.app)**  
 > 🎬 **Watch Full HD Demo Video:** **[public/demo/exnihilo_demo.mp4](public/demo/exnihilo_demo.mp4)**
 
 ---
 
 ## 📑 Table of Contents
 
+- [🏆 SQL Challenge Arena & Evaluation Guide](#-sql-challenge-arena--evaluation-guide)
+  - [1. Problem Catalog & Dataset (130 Authentic Questions)](#1-problem-catalog--dataset-130-authentic-questions)
+  - [2. How to Open and Use the Challenge Arena](#2-how-to-open-and-use-the-challenge-arena)
+  - [3. WASM SQLite Evaluation Harness Engine](#3-wasm-sqlite-evaluation-harness-engine)
+  - [4. Student Integrity & Solution Locking](#4-student-integrity--solution-locking)
+  - [5. Side-by-Side Mismatch Diff Viewer & Main Studio Export](#5-side-by-side-mismatch-diff-viewer--main-studio-export)
+- [🎨 Win95 Nostalgia Themes Engine & CRT Filter](#-win95-nostalgia-themes-engine--crt-filter)
 - [💡 Original Idea & AI Stack](#-original-idea--made-with-ai)
 - [⚖️ Copyright & Intellectual Property](#%EF%B8%8F-copyright-intellectual-property--anti-theft-notice)
 - [🎬 Product Showcase & Interface](#-product-showcase--interface)
 - [🧠 Deep Dive: How ExNihilo Understands & Synthesizes Queries](#-deep-dive-how-exnihilo-understands--synthesizes-queries)
-  - [1. Query Execution & Synthesis Pipeline](#1-query-execution--synthesis-pipeline)
-  - [2. AST Parsing & Multi-Dialect Rewriter](#2-ast-parsing--multi-dialect-rewriter)
-  - [3. 6-Tier Schema & Type Inference Engine](#3-6-tier-schema--type-inference-engine)
-  - [4. Relational DAG Dependency Resolution & Data Generation](#4-relational-dag-dependency-resolution--data-generation)
-  - [5. Virtualized SessionCatalog (View & Trigger Interception)](#5-virtualized-sessioncatalog-view--trigger-interception)
 - [⚡ Performance & State Isolation](#-performance--state-isolation)
 - [🎯 SQL Dialect Command Matrix](#-sql-dialect-support-matrix)
-- [🎯 Who is ExNihilo 95 Built For?](#-who-is-exnihilo-95-built-for)
 - [🚀 Getting Started & Testing Suites](#-getting-started)
-- [🎛️ Windows 95 Controls & Shortcuts](#%EF%B8%8F-windows-95-desktop-controls--keyboard-shortcuts)
 - [📄 License & Attribution](#-license--attribution)
+
+---
+
+## 🏆 SQL Challenge Arena & Evaluation Guide
+
+ExNihilo 95 includes a flagship **Interactive SQL Challenge Arena** (`ChallengeWindow.tsx`) loaded with **130 authentic LeetCode and HackerRank SQL interview problems**.
+
+---
+
+### 1. Problem Catalog & Dataset (130 Authentic Questions)
+
+All 130 challenges contain **100% authentic problem statements, DDL schemas, test seed data, ground-truth outputs, and real company interview tags**:
+
+| Category / Domain | Question Count | Featured Real LeetCode & HackerRank Problems |
+| :--- | :---: | :--- |
+| **🟢 Filtering & String Functions** | **42** | LC #182 (*Duplicate Emails*), LC #196 (*Delete Duplicate Emails*), LC #584 (*Find Customer Referee*), LC #595 (*Big Countries*), LC #620 (*Not Boring Movies*), LC #1484 (*Group Sold Products By Date*), LC #1667 (*Fix Names in a Table*), LC #1683 (*Invalid Tweets*), LC #1757 (*Recyclable and Low Fat Products*), LC #1873 (*Calculate Special Bonus*), HR *The PADS* |
+| **🟡 Aggregations & Grouping** | **28** | LC #511 (*Game Play Analysis I*), LC #586 (*Customer Placing Largest Number of Orders*), LC #596 (*Classes More Than 5 Students*), LC #1050 (*Actors & Directors Cooperated 3+ Times*), LC #1075 (*Project Employees I*), LC #1211 (*Queries Quality and Percentage*), LC #1393 (*Capital Gain/Loss*), LC #1693 (*Daily Leads and Partners*), LC #1729 (*Find Followers Count*), LC #1741 (*Find Total Time Spent by Employee*), LC #2356 (*Number of Unique Subjects Taught by Each Teacher*), HR *Occupations Pivot* |
+| **🔵 Joins & Relational Sets** | **26** | LC #175 (*Combine Two Tables*), LC #181 (*Employees Earning More Than Their Managers*), LC #183 (*Customers Who Never Order*), LC #197 (*Rising Temperature*), LC #570 (*Managers with 5 Direct Reports*), LC #577 (*Employee Bonus*), LC #607 (*Sales Person*), LC #1068 (*Product Sales Analysis I*), LC #1158 (*Market Analysis I*), LC #1251 (*Average Selling Price*), LC #1280 (*Students and Examinations*), LC #1378 (*Replace Employee ID With Unique ID*), LC #1407 (*Top Travellers*), LC #1581 (*Customer Visited No Transactions*), LC #1587 (*Bank Account Summary II*), LC #1661 (*Average Time of Process per Machine*), LC #1731 (*Employees Reporting to Each Employee*), LC #1934 (*Confirmation Rate*) |
+| **🟣 Subqueries & CTEs** | **14** | LC #176 (*Second Highest Salary*), LC #184 (*Department Highest Salary*), LC #262 (*Trips and Users*), LC #512 (*Game Play Analysis II*), LC #585 (*Investments in 2016*), LC #602 (*Friend Requests II: Who Has Most Friends*), LC #608 (*Tree Node*), LC #1070 (*Product Sales Analysis III*), LC #1341 (*Movie Rating*), LC #1789 (*Primary Department for Each Employee*), LC #1907 (*Count Salary Categories*), LC #1978 (*Employees Whose Manager Left*), HR *Binary Tree Nodes* |
+| **📊 Window Functions & Analytics** | **20** | LC #177 (*Nth Highest Salary*), LC #178 (*Rank Scores*), LC #180 (*Consecutive Numbers*), LC #185 (*Department Top Three Salaries*), LC #534 (*Game Play Analysis III*), LC #550 (*Game Play Analysis IV*), LC #601 (*Human Traffic of Stadium*), LC #626 (*Exchange Seats*), LC #1141 (*User Activity for Past 30 Days I*), LC #1164 (*Product Price at a Given Date*), LC #1193 (*Monthly Transactions I*), LC #1204 (*Last Person to Fit in the Bus*), LC #1321 (*Restaurant Growth*) |
+| **TOTAL** | **130** | *100% Authentic Ground-Truth Problems with Verified Schema & Seed Data* |
+
+---
+
+### 2. How to Open and Use the Challenge Arena
+
+Launch the arena using any of the 3 built-in Windows 95 shortcuts:
+1. **Desktop Icon**: Double-click the 3D golden trophy icon **`🏆 SQL Challenges`** on the desktop.
+2. **Start Menu**: Click **`Start`** $\rightarrow$ **`🏆 SQL Challenge Arena`**.
+3. **IDE Menu Bar**: Inside ExNihilo SQL Studio, click top menu **`Tools`** $\rightarrow$ **`🏆 SQL Challenge Arena...`**.
+
+#### 🎛️ Navigation & Multi-Filtering:
+- **Difficulty Filter**: Tabs for `All`, `🟢 Easy`, `🟡 Medium`, `🔴 Hard`.
+- **Company Tag Filter**: Filter problems by target companies (**`Google`**, **`Meta`**, **`Amazon`**, **`Apple`**, **`Microsoft`**, **`Netflix`**, **`Uber`**, **`Stripe`**).
+- **Domain Filter**: Filter across 10 specialized SQL domains.
+- **Search Bar**: Real-time keyword search across problem titles, descriptions, and tags.
+
+---
+
+### 3. WASM SQLite Evaluation Harness Engine
+
+Submissions are evaluated in real time using an ephemeral in-memory WebAssembly SQLite test harness ([`src/utils/challengeEvaluator.ts`](file:///c:/Users/Mrityunjai/.gemini/antigravity-ide/scratch/exnihio-app/src/utils/challengeEvaluator.ts)):
+
+```
+[ User Query Input ]
+        │
+        ▼
+[ Ephemeral WASM SQLite Database ]
+        │
+        ├── 1. Execute DDL Schema (inputSchemaSql)
+        ├── 2. Populate Seed Data (seedDataSql)
+        ├── 3. Execute Candidate SQL & Record Execution Time
+        │
+        ▼
+[ Result Grid Comparator Engine ]
+        │
+        ├── Column Matching (Case-insensitive column name verification)
+        ├── Floating Point Precision Matching (Tolerance ε = 0.0001 for AVG/SUM)
+        ├── Row Count & Null Value Verification
+        └── Order Independence Logic (Sort comparison if ordered = false)
+        │
+        ▼
+[ Status Outcome: 🟢 ACCEPTED | ❌ WRONG_ANSWER | ⚠️ SYNTAX_ERROR ]
+```
+
+#### Evaluation Statuses:
+- **`🟢 ACCEPTED`**: Candidate query output matches ground-truth columns and cell values perfectly.
+- **`❌ WRONG_ANSWER / VALUE_MISMATCH`**: Column values or rows differ from ground truth. Highlights exact row/column mismatch coordinates in red.
+- **`❌ ROW_COUNT_MISMATCH`**: Output contains fewer or more rows than expected.
+- **`❌ COLUMN_MISMATCH`**: Returned column names or column counts do not match expected schema.
+- **`⚠️ SYNTAX_ERROR`**: Query contains SQL syntax errors or invalid identifier references.
+
+---
+
+### 4. Student Integrity & Solution Locking
+
+To ensure students write and compose their own SQL queries:
+- **Clean Starter Code**: Query editor pre-fills with blank starter templates (e.g. `-- Write your SQL query solution below:\nSELECT \nFROM \n;`).
+- **Locked Solution SQL**: The canonical solution SQL is **locked** by default:  
+  `🔒 Solution unlocks after you submit an accepted query!`
+- **Automatic Unlock**: Once the student submits an accepted solution (`🟢 ACCEPTED`), the **`🔓 Reveal Canonical Solution SQL (Unlocked)`** button unlocks.
+
+---
+
+### 5. Side-by-Side Mismatch Diff Viewer & Main Studio Export
+
+- **Side-by-Side Diff Table**: When a submission produces a `WRONG_ANSWER`, the canvas renders a side-by-side **Your Output vs. Expected Output** comparison grid. Mismatched cells are highlighted in red so students can instantly pinpoint logic errors.
+- **`🗄️ Try in Main Studio`**: 1-click button that exports the challenge's DDL schema, seed data, and query directly into ExNihilo SQL Studio for deep debugging, EXPLAIN execution plan analysis, or schema modification.
+- **LocalStorage Progress Tracking**: Automatically saves solved challenge IDs to `localStorage`. Completed problems display a green **`✅`** checkmark and update the overall progress bar.
+
+---
+
+## 🎨 Win95 Nostalgia Themes Engine & CRT Filter
+
+ExNihilo 95 includes a multi-theme Engine ([`v1.5.0-themes`](https://github.com/Mrityunjai-hue/exnihilo-95/releases/tag/v1.5.0-themes)):
+
+| Theme Name | Visual Style |
+| :--- | :--- |
+| **💾 Win95 Classic** | Original 1995 teal desktop wallpaper, gray bevels, and classic navy titlebars. |
+| **🌙 Win95 Noir (Dark Mode)** | High-contrast midnight obsidian theme with vibrant cyan text and dark sunken grids. |
+| **🔵 Windows XP Luna** | Royal blue titlebar gradients, rounded button states, and olive accents. |
+| **🏢 Windows 2000 Corporate** | Clean enterprise corporate gray theme. |
+| **📺 CRT Monitor Scanline Filter** | Toggles retro phosphor glow, scanline overlays, and vintage monitor curvature effect. |
 
 ---
 
@@ -65,8 +168,6 @@
 ---
 
 ## ⚖️ Copyright, Intellectual Property & Anti-Theft Notice
-
-> **Protection of Original Authorship & Brand Integrity**
 
 ExNihilo 95 is an open-source project created by **Mrityunjai ([@Mrityunjai-hue](https://github.com/Mrityunjai-hue))**. While legitimate forks, contributions, and educational exploration are encouraged, **plagiarism, deceptive re-branding, and attribution removal are strictly prohibited**.
 
@@ -99,184 +200,15 @@ JOIN orders o ON u.id = o.user_id
 WHERE o.total_amount > 250;
 ```
 
-ExNihilo 95 does not throw `ERROR: table 'users' does not exist`. Instead, it breaks down the query structure, deduces column types, maps foreign key constraints, synthesizes realistic test data in topological order, materializes tables in a WebAssembly SQLite instance, and returns live query results in milliseconds!
+### Synthesis Pipeline:
+1. **AST Extraction**: `Parser.ts` parses the SQL string into an AST tree, identifying tables (`users`, `orders`), joins (`u.id = o.user_id`), and projections (`total_amount`).
+2. **Schema & Type Inference Engine**: Deduces column data types (`name` $\rightarrow$ `VARCHAR`, `email` $\rightarrow$ `EMAIL`, `total_amount` $\rightarrow$ `CURRENCY`, `created_at` $\rightarrow$ `DATETIME`).
+3. **Relational DAG Dependency Resolution**: Resolves foreign key dependencies so parent `users` rows are generated before child `orders` rows.
+4. **WASM Execution**: Executes the generated DDL/DML and candidate query in WebAssembly SQLite in milliseconds.
 
 ---
 
-### 1. Query Execution & Synthesis Pipeline
-
-```mermaid
-graph TD
-    RawSQL["Raw SQL Query"] --> ASTParser["1. Dialect AST Parser & Visitor"]
-    ASTParser -->|AST Tree| DialectRewrite["2. Multi-Dialect Rewriter"]
-    DialectRewrite -->|Normalized AST| TypeInfer["3. 6-Tier Type & Schema Inference"]
-    TypeInfer -->|Extracted Relational Graph| DAGSort["4. Relational DAG Topological Sort"]
-    DAGSort -->|Parent-First Order| DataGen["5. Synthetic Relational Data Synthesis"]
-    DataGen -->|Materialize DDL & INSERTs| SessionCat["6. SessionCatalog & WASM Engine"]
-    SessionCat -->|Execute Query| WASMExec["7. sql.js (WebAssembly SQLite 3.49.1)"]
-    WASMExec --> VirtualGrid["8. Virtualized DOM Grid ($24px Windowing)"]
-```
-
----
-
-### 2. AST Parsing & Multi-Dialect Rewriter
-
-ExNihilo 95 parses SQL input into an Abstract Syntax Tree (AST) using `node-sql-parser` across 4 major dialect modes (**MySQL**, **PostgreSQL**, **SQLite**, and **Transact-SQL / SSMS**).
-
-Before execution in WebAssembly, the AST Rewriter normalizes dialect-specific functions, operators, and syntax:
-
-<details>
-<summary><strong>🔍 Expand: Multi-Dialect AST Rewriting Rules & Examples</strong></summary>
-
-| Dialect Feature | User Input SQL Syntax | Normalized WASM SQL Syntax |
-| :--- | :--- | :--- |
-| **String Aggregation** | `STRING_AGG(name, ', ')` *(Postgres)* | `GROUP_CONCAT(name, ', ')` |
-| **Type Casting** | `user_id::INTEGER` *(Postgres)* | `CAST(user_id AS INTEGER)` |
-| **Bracketed Identifiers** | `SELECT [name] FROM [dbo].[users]` *(T-SQL)* | `SELECT name FROM users` |
-| **Outer Joins** | `FULL OUTER JOIN orders` | Synthesized via `LEFT JOIN ... UNION ALL SELECT ... WHERE NULL` |
-| **Limit Syntax** | `SELECT TOP 10 * FROM users` *(T-SQL)* | `SELECT * FROM users LIMIT 10` |
-
-</details>
-
----
-
-### 3. 6-Tier Schema & Type Inference Engine
-
-ExNihilo 95 extracts every column reference, comparison literal, function call, and `GROUP BY` expression from the AST to deduce column data types. When conflicting signals occur, the Inference Engine evaluates type precedence across 6 strict priority levels:
-
-<details>
-<summary><strong>⚙️ Expand: 6-Tier Type Inference Precedence Matrix</strong></summary>
-
-| Priority Level | Signal Source | Pattern / Example | Inferred Logical Type | DDL Mapping |
-| :---: | :--- | :--- | :---: | :---: |
-| **Priority 6 (Highest)** | Explicit `CAST` / `::` | `CAST(col AS INT)`, `col::numeric` | `INTEGER` / `NUMERIC` | `INTEGER` / `REAL` |
-| **Priority 5** | Literal Comparison | `age > 21`, `status = 'active'` | `INTEGER` / `VARCHAR` | `INTEGER` / `TEXT` |
-| **Priority 4** | Function / Operator | `SUM(val)`, `LIKE '%test%'`, `NOW()` | `NUMERIC`, `VARCHAR`, `TIMESTAMP` | `REAL`, `TEXT`, `TEXT` |
-| **Priority 3** | `GROUP BY` Clause | `GROUP BY category_id` | Categorical `VARCHAR` / `INTEGER` | `TEXT` / `INTEGER` |
-| **Priority 2** | Column Name Heuristics | `id`, `email`, `created_at`, `price` | `INTEGER`, `VARCHAR`, `TIMESTAMP`, `NUMERIC` | `INTEGER`, `TEXT`, `TEXT`, `REAL` |
-| **Priority 1 (Fallback)** | Zero-Signal Default | Unknown column `x` | Default `VARCHAR(255)` | `TEXT` |
-
-#### Heuristic Naming Dictionaries:
-- **`INTEGER`**: `id`, `_id`, `count`, `qty`, `age`, `year`, `month`, `num`, `quantity`, `rank`
-- **`NUMERIC`**: `price`, `amount`, `total`, `balance`, `cost`, `rate`, `revenue`, `tax`, `val`, `salary`
-- **`TIMESTAMP`**: `created_at`, `updated_at`, `timestamp`, `datetime`, `logged_at`
-- **`DATE`**: `date`, `birth_date`, `order_date`, `due_date`, `expiry_date`
-- **`BOOLEAN`**: `is_active`, `has_discount`, `enabled`, `flag`, `is_verified`
-- **`VARCHAR`**: `email`, `name`, `first_name`, `last_name`, `status`, `title`, `city`, `country`, `address`
-
-</details>
-
----
-
-### 4. Relational DAG Dependency Resolution & Data Generation
-
-When a query references multiple joined tables (`users JOIN orders ON users.id = orders.user_id JOIN order_items ON orders.id = order_items.order_id`), tables cannot be synthesized in random order — parent primary keys (`users.id`) must exist before child foreign keys (`orders.user_id`) can reference them!
-
-```mermaid
-graph LR
-    subgraph "Relational Topological DAG Order"
-        Users["1. users Table (Parent)"] --> Orders["2. orders Table (Child FK -> users.id)"]
-        Orders --> Items["3. order_items Table (Grandchild FK -> orders.id)"]
-    end
-```
-
-#### Topological Resolution & Referential Integrity:
-1. **DAG Graph Construction**: ExNihilo builds a Directed Acyclic Graph (DAG) of foreign key dependencies extracted from `JOIN ON` clauses and explicit references.
-2. **Kahn's Topological Sorting**: Evaluates execution order so parent tables (`users`) are materialized first.
-3. **Seeded Synthetic Generation (Faker.js)**:
-   - `users.id` sequence generated (`1, 2, 3, ... 50`).
-   - `orders.user_id` randomly samples valid primary keys directly from the generated `users.id` pool!
-   - `email` generated via `faker.internet.email()`.
-   - `total_amount` generated via `faker.finance.amount()`.
-   - Result: **100% referential integrity with ZERO orphan foreign keys!**
-
----
-
-### 5. Virtualized SessionCatalog (View & Trigger Interception)
-
-SQLite WebAssembly does not support all procedural DDL features across SQL dialects. ExNihilo 95 introduces `SessionCatalog` — a virtualized in-memory shadow catalog that intercepts and manages complex database objects in JavaScript:
-
-<details>
-<summary><strong>🗄️ Expand: SessionCatalog Shadow State Architecture</strong></summary>
-
-- **`CREATE VIEW` Virtualization**: Intercepts view definitions into `SessionCatalog.views`. When a `SELECT * FROM my_view` query is executed, ExNihilo dynamically expands the view's underlying query AST without duplicating physical storage.
-- **`CREATE TRIGGER` Native Execution**: Intercepts `CREATE TRIGGER` statements into `SessionCatalog.triggers`. When `INSERT`, `UPDATE`, or `DELETE` statements run, triggered SQL actions execute natively in the WASM engine.
-- **`TRUNCATE TABLE` Safety**: Translates `TRUNCATE TABLE users` into schema-preserving reset operations (`DELETE FROM users; VACUUM;`) while maintaining foreign key structures.
-
-</details>
-
----
-
-## ⚡ Performance & State Isolation
-
-### 1. IndexedDB Persistence & 500ms Debounced Sync
-- **Bypassing the 5MB localStorage Boundary**: Modern browser `localStorage` enforces a strict 5MB limit. ExNihilo 95 uses a custom IndexedDB storage adapter (`useWorkspaceStorage`) supporting multi-megabyte database states, query history logs, and multiple script tabs.
-- **500ms Debounced Synchronization**: State mutations (tab edits, query history additions) are buffered and debounced to IndexedDB every 500ms to eliminate UI thread blocking during active typing.
-
-### 2. DOM Virtualization ($24\text{px}$ Windowing System)
-- **60fps Large Data Grid Rendering**: Rendering 10,000+ data rows as standard DOM nodes causes severe browser frame drops. ExNihilo 95 implements a fixed-height windowing system ($24\text{px}$ row height with an overscan buffer).
-- **Constant-Time DOM Footprint**: Only rows visible in the viewport ($\sim 25\text{--}35$ nodes) are rendered at any moment, maintaining 60fps performance regardless of result set size.
-
-### 3. ReDoS Immunity
-- **Safe Filtering for Large Payloads**: High-frequency grid search filters migrated from Regular Expressions to `.includes()` substring matching. This eliminates Regular Expression Denial of Service (ReDoS) vulnerability vectors when searching multi-thousand-row payloads.
-
----
-
-## 🎯 SQL Dialect Support Matrix
-
-ExNihilo 95 provides full parsing and execution support across 4 major SQL dialects:
-
-| Feature / Command | MySQL | PostgreSQL | SQLite | T-SQL (SSMS) |
-| :--- | :---: | :---: | :---: | :---: |
-| `SELECT` / `WHERE` / `ORDER BY` | ✓ | ✓ | ✓ | ✓ |
-| `INNER JOIN` / `LEFT JOIN` / `RIGHT JOIN` | ✓ | ✓ | ✓ | ✓ |
-| `FULL OUTER JOIN` | ✓ | ✓ | ✓ | ✓ |
-| `GROUP BY` / `HAVING` | ✓ | ✓ | ✓ | ✓ |
-| `GROUP_CONCAT()` / `STRING_AGG()` | ✓ | ✓ | ✓ | ✓ |
-| `ROW_NUMBER()`, `RANK()`, `DENSE_RANK()` | ✓ | ✓ | ✓ | ✓ |
-| `LEAD()`, `LAG()`, `OVER (PARTITION BY)` | ✓ | ✓ | ✓ | ✓ |
-| `WITH RECURSIVE` (CTE Traversal) | ✓ | ✓ | ✓ | ✓ |
-| `TRUNCATE TABLE` | ✓ | ✓ | ✓ | ✓ |
-| `CREATE DATABASE` / `CREATE SCHEMA` | ✓ | ✓ | ✓ | ✓ |
-| `CREATE VIEW` (Virtualized) | ✓ | ✓ | ✓ | ✓ |
-| `CREATE TRIGGER` | ✓ | ✓ | ✓ | ✓ |
-| `CREATE PROCEDURE` / `CREATE FUNCTION` | ✓ | ✓ | ✓ | ✓ |
-
----
-
-## 🎯 Who is ExNihilo 95 Built For?
-
-> **Eliminating environment setup friction for students, recruiters, educators, and developers worldwide.**
-
-| Persona | Why ExNihilo 95 is a Must-Use Tool |
-|---------|-----------------------------------|
-| 🎓 **Students & Self-Learners** | Practice writing SQL queries instantly with zero database installation, server setup, or dataset imports. |
-| 💼 **Recruiters & Interviewers** | Conduct live candidate SQL coding tests on the spot without setting up test database instances or dummy tables. |
-| 🏫 **Educators & CS Teachers** | Demonstrate complex SQL concepts (JOINs, CTEs, Window Functions) live in class with zero setup friction. |
-| 👨‍💻 **Software Developers & DBAs** | Prototype and dry-run query logic before writing production database migrations or creating staging tables. |
-| 🧪 **QA & Data Analysts** | Test query edge-cases and referential integrity against auto-synthesized relational data on demand. |
-
----
-
-## 🌐 Community Partnership
-ExNihilo 95 is proudly powered by the **[N8N Data Science Community](https://n8n-ds-community.netlify.app/)** using AI.  
-Join the community for AI tools, automation workflows, tutorials, and data science discussions!
-
----
-
-## 📢 Calling All Builders — Contributors Wanted!
-
-> **ExNihilo 95 has proven its core concept. Now it's time to scale it into something massive — and we need YOU.**
-
-I've laid out a comprehensive **[Premium Features Roadmap](PREMIUM_FEATURES.md)** with 10 major feature categories that will transform ExNihilo from a playground into a professional-grade SQL platform. This is too big for one person — it needs a **team of passionate builders**.
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- **Node.js**: `v18.0.0` or higher
-- **npm**: `v9.0.0` or higher (or `yarn` / `pnpm`)
+## 🚀 Getting Started & Testing Suites
 
 ### 1. Installation & Local Development
 
@@ -300,43 +232,22 @@ I've laid out a comprehensive **[Premium Features Roadmap](PREMIUM_FEATURES.md)*
 
 ---
 
-## 🧪 Testing Suites & Validation
+### 🧪 Testing Suites & Validation
 
-ExNihilo 95 enforces strict multi-layered testing validation across unit, end-to-end, and compilation suites:
+ExNihilo 95 enforces strict multi-layered testing validation across unit and compilation suites:
 
 ```bash
-# 1. Run Unit Test Suite (73/73 Passed)
+# 1. Run Unit Test Suite (112/112 Passed)
 npx vitest run
 
-# 2. Run Playwright E2E Browser Test Suite (9/9 Passed)
-npx playwright test
-
-# 3. Next.js Production Build Validation (0 TypeScript Errors)
+# 2. Next.js Production Build Validation (0 TypeScript Errors)
 npm run build
 ```
 
 | Suite | Command | Scope & Coverage | Status |
 | :--- | :--- | :--- | :---: |
-| **Vitest Unit** | `npx vitest run` | Validates AST extraction, schema inference, DDL, Window Functions, and Graph/CTE execution. | **73 / 73 Passed** |
-| **Playwright E2E** | `npx playwright test` | Validates window drag isolation, IndexedDB state persistence, and retro UI lifecycle. | **9 / 9 Passed** |
+| **Vitest Unit** | `npx vitest run` | Validates AST extraction, schema inference, DDL, Window Functions, Challenge Evaluator, and Graph/CTE execution. | **112 / 112 Passed** |
 | **TypeScript Build** | `npm run build` | Validates zero static type errors, Next.js page generation, and bundle optimization. | **0 Errors** |
-
----
-
-<details>
-<summary><strong>🎛️ Expand: Windows 95 Desktop Controls & Keyboard Shortcuts Cheat Sheet</strong></summary>
-
-| Shortcut / Action | Functionality |
-| :--- | :--- |
-| **`F5` / `Ctrl + Enter`** | Execute selected text query or full editor script |
-| **`Ctrl + F`** | Focus real-time filter search bar in ListView Grid |
-| **`Double-Click Cell`** | Open Cell Data Viewer modal for raw JSON / string inspection |
-| **`Double-Click Header`** | Sort data column ascending / descending |
-| **`Double-Click Icon`** | Launch or focus Desktop Window application |
-| **`Drag Window Titlebar`** | Position window anywhere on 3D Desktop canvas |
-| **`Esc`** | Dismiss active error dialog or modal overlay |
-
-</details>
 
 ---
 
