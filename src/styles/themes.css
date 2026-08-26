@@ -163,6 +163,33 @@
   background-color: rgba(56, 189, 248, 0.1) !important;
 }
 
+/* Win95 Grid Table Dark Mode Overrides */
+[data-theme="win95-noir"] .win95-grid th {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+[data-theme="win95-noir"] .win95-grid td {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #1e293b !important;
+}
+
+[data-theme="win95-noir"] .win95-grid tr:nth-child(even) td {
+  background-color: #0f172a !important;
+}
+
+[data-theme="win95-noir"] .win95-grid tr:nth-child(odd) td {
+  background-color: #1e293b !important;
+}
+
+[data-theme="win95-noir"] .win95-grid tr td:first-child {
+  background-color: #1e293b !important;
+  color: #94a3b8 !important;
+  border-right-color: #334155 !important;
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
  * WINDOWS XP LUNA & WIN2000 OVERRIDES
  * ───────────────────────────────────────────────────────────────────────────── */

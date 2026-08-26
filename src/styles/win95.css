@@ -583,18 +583,18 @@ html, body {
 }
 
 .win95-dropdown-item:hover {
-  background-color: #000080;
-  color: #ffffff;
+  background-color: var(--w95-title-active-bg, #000080);
+  color: var(--w95-title-active-text, #ffffff);
 }
 
 .win95-dropdown-item.disabled {
-  color: #888888;
+  color: var(--w95-dark-gray, #888888);
   cursor: default;
 }
 
 .win95-dropdown-item.disabled:hover {
   background-color: transparent;
-  color: #888888;
+  color: var(--w95-dark-gray, #888888);
 }
 
 .win95-dropdown-divider {
@@ -629,15 +629,15 @@ html, body {
 
 .win95-grid td {
   padding: 2px 6px;
-  border-bottom: 1px solid #e0e0e0;
-  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--w95-dark-gray, #e0e0e0);
+  border-right: 1px solid var(--w95-dark-gray, #e0e0e0);
   font-family: var(--w95-mono);
   font-size: 11px;
 }
 
 .win95-grid tr:hover td {
-  background-color: #000080;
-  color: #ffffff;
+  background-color: var(--w95-title-active-bg, #000080);
+  color: var(--w95-title-active-text, #ffffff);
 }
 
 /* Tabs */
@@ -714,7 +714,7 @@ html, body {
   font-weight: bold;
   padding: 0 3px;
   cursor: pointer;
-  color: #666;
+  color: var(--w95-text-color, #666);
   border-radius: 2px;
 }
 
@@ -739,7 +739,7 @@ html, body {
 }
 
 .win95-new-tab-btn:hover {
-  background-color: #dcdcdc;
+  background-color: var(--w95-light-gray);
 }
 
 .win95-new-tab-btn:active {
@@ -755,6 +755,7 @@ html, body {
   gap: 4px;
   padding: 3px 2px 1px 2px;
   background-color: var(--w95-gray);
+  color: var(--w95-text-color);
   flex-shrink: 0;
   box-sizing: border-box;
 }
@@ -767,6 +768,7 @@ html, body {
   padding: 2px 6px;
   font-size: 11px;
   white-space: nowrap;
+  color: var(--w95-text-color);
 }
 
 /* TreeView */
@@ -777,11 +779,12 @@ html, body {
   padding: 2px 4px;
   cursor: pointer;
   font-size: 11px;
+  color: var(--w95-sunken-text);
 }
 
 .win95-tree-item:hover {
-  background-color: #000080;
-  color: #ffffff;
+  background-color: var(--w95-title-active-bg, #000080);
+  color: var(--w95-title-active-text, #ffffff) !important;
 }
 
 /* Vintage Scrollbars */

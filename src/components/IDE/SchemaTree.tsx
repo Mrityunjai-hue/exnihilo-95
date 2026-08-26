@@ -140,14 +140,14 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                       display: 'inline-block',
                       textAlign: 'center',
                       fontWeight: 'bold',
-                      color: '#000080',
+                      color: 'var(--w95-sunken-text, #000080)',
                     }}
                   >
                     {isExpanded ? '[-] ' : '[+] '}
                   </span>
                   <span>🗃️</span>
-                  <strong style={{ flex: 1, color: '#000080' }}>{entry.tableName}</strong>
-                  <span style={{ fontSize: '9px', color: '#666' }}>({entry.rowCount}r)</span>
+                  <strong style={{ flex: 1, color: 'var(--w95-sunken-text, #000080)' }}>{entry.tableName}</strong>
+                  <span style={{ fontSize: '9px', color: 'var(--w95-dark-gray, #666)' }}>({entry.rowCount}r)</span>
 
                   {/* Quick Action Badges */}
                   <button

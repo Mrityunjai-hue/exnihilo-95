@@ -395,9 +395,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
               {toastNotice}
             </span>
           )}
-        </div>
-
-        {/* Quick Search Input (ReDoS Immunity: .includes()) */}
+          {/* Quick Search Input (ReDoS Immunity: .includes()) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <label style={{ fontSize: '10px', fontWeight: 'bold' }}>Filter:</label>
           <input
@@ -406,7 +404,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
             placeholder="Search rows..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ width: '130px', padding: '1px 4px', fontSize: '10px' }}
+            style={{ width: '130px', padding: '1px 4px', fontSize: '10px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
           />
           {searchQuery && (
             <button
@@ -418,6 +416,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
             </button>
           )}
         </div>
+        </div>
       </div>
 
       {/* Multi-Query Result Tabs */}
@@ -426,9 +425,10 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           style={{
             display: 'flex',
             gap: '2px',
-            background: '#d4d0c8',
+            background: 'var(--w95-gray, #d4d0c8)',
+            color: 'var(--w95-text-color, #000000)',
             padding: '3px 4px 0 4px',
-            borderBottom: '1px solid #808080',
+            borderBottom: '1px solid var(--w95-dark-gray, #808080)',
             overflowX: 'auto',
           }}
         >
@@ -461,11 +461,11 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
       <div
         ref={containerRef}
         onScroll={(e) => setScrollTop((e.target as HTMLDivElement).scrollTop)}
-        style={{ flex: 1, overflow: 'auto', position: 'relative' }}
+        style={{ flex: 1, overflow: 'auto', position: 'relative', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
       >
         <table className="win95-grid" style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ position: 'sticky', top: 0, zIndex: 10, background: '#c0c0c0' }}>
+            <tr style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--w95-gray, #c0c0c0)', color: 'var(--w95-text-color, #000000)' }}>
               <th style={{ width: '40px', textAlign: 'center' }}>#</th>
               {columns.map((col, idx) => {
                 const isSorted = sortColIdx === idx;
@@ -478,7 +478,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                   >
                     <span>{col}</span>
                     {isSorted && (
-                      <span style={{ marginLeft: '4px', fontSize: '9px', color: '#000080' }}>
+                      <span style={{ marginLeft: '4px', fontSize: '9px', color: 'var(--w95-text-color, #000080)' }}>
                         {sortDir === 'asc' ? '▲' : '▼'}
                       </span>
                     )}
@@ -490,7 +490,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           <tbody>
             {processedRows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + 1} style={{ textAlign: 'center', padding: '16px', color: '#666' }}>
+                <td colSpan={columns.length + 1} style={{ textAlign: 'center', padding: '16px', color: 'var(--w95-dark-gray, #666)' }}>
                   {searchQuery ? 'No rows match filter criteria.' : 'Query executed successfully (0 rows returned).'}
                 </td>
               </tr>
@@ -506,7 +506,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                 {/* Visible Virtual Window Rows */}
                 {visibleRows.map(({ row, originalIndex }) => (
                   <tr key={originalIndex} style={{ height: `${ROW_HEIGHT}px` }}>
-                    <td style={{ textAlign: 'center', color: '#888', background: '#f5f5f5' }}>
+                    <td style={{ textAlign: 'center', color: 'var(--w95-text-color, #888)', background: 'var(--w95-gray, #f5f5f5)', fontWeight: 'bold' }}>
                       {originalIndex + 1}
                     </td>
                     {row.map((val, colIdx) => (
@@ -517,7 +517,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                         style={{ cursor: 'pointer' }}
                       >
                         {val === null || val === undefined ? (
-                          <span style={{ color: '#999999', fontStyle: 'italic' }}>&lt;NULL&gt;</span>
+                          <span style={{ color: 'var(--w95-dark-gray, #999999)', fontStyle: 'italic' }}>&lt;NULL&gt;</span>
                         ) : typeof val === 'object' ? (
                           JSON.stringify(val)
                         ) : (
@@ -540,13 +540,8 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
         </table>
       </div>
 
-      {/* Grid Status Footer */}
+      {/* Grid Bottom Summary Bar */}
       <div className="win95-statusbar">
-        {hasMultipleResults && allResults && (
-          <div className="win95-statusbar-pane" style={{ color: '#800080', fontWeight: 'bold' }}>
-            Viewing Query {activeTab + 1} of {allResults.length}
-          </div>
-        )}
         <div className="win95-statusbar-pane">
           Rows: <strong>{processedRows.length}</strong> {searchQuery && `(filtered from ${rowCount})`}
         </div>
@@ -557,12 +552,12 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           Time: <strong>{executionTimeMs !== null ? `${executionTimeMs.toFixed(1)} ms` : '0 ms'}</strong>
         </div>
         {inferredTables.length > 0 && (
-          <div className="win95-statusbar-pane" style={{ color: '#000080' }}>
+          <div className="win95-statusbar-pane" style={{ color: 'var(--w95-text-color, #000080)' }}>
             Inferred: <strong>{inferredTables.join(', ')}</strong>
           </div>
         )}
         {reusedTables.length > 0 && (
-          <div className="win95-statusbar-pane" style={{ color: '#006600' }}>
+          <div className="win95-statusbar-pane" style={{ color: 'var(--w95-text-color, #006600)' }}>
             Cached: <strong>{reusedTables.join(', ')}</strong>
           </div>
         )}
@@ -599,8 +594,8 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
 
             <div style={{ padding: '12px' }}>
               <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '4px' }}>
-                Column: <span style={{ color: '#000080' }}>{inspectedCell.colName}</span> | Type:{' '}
-                <span style={{ color: '#800080' }}>{inspectedCell.val === null ? 'NULL' : typeof inspectedCell.val}</span>
+                Column: <span style={{ color: 'var(--w95-text-color, #000080)' }}>{inspectedCell.colName}</span> | Type:{' '}
+                <span style={{ color: 'var(--w95-text-color, #800080)' }}>{inspectedCell.val === null ? 'NULL' : typeof inspectedCell.val}</span>
               </div>
 
               <textarea
@@ -618,9 +613,9 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                   height: '140px',
                   fontFamily: 'monospace',
                   fontSize: '11px',
-                  padding: '6px',
+                  background: 'var(--w95-sunken-bg, #ffffff)',
+                  color: 'var(--w95-sunken-text, #000000)',
                   boxSizing: 'border-box',
-                  background: '#ffffff',
                 }}
               />
 

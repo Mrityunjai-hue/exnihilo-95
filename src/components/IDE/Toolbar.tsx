@@ -204,7 +204,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         {/* Group 3: Database & Dialect Selector */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <label htmlFor="dialect-select" style={{ fontSize: '11px', fontWeight: 'bold' }}>
+            <label htmlFor="dialect-select" style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--w95-text-color, #000000)' }}>
               Dialect:
             </label>
             <select
@@ -212,12 +212,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               className="win95-sunken"
               value={dialect}
               onChange={(e) => onDialectChange(e.target.value as Dialect)}
-              style={{ padding: '2px 4px', fontSize: '11px', height: '22px' }}
+              style={{ padding: '2px 4px', fontSize: '11px', height: '22px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
             >
-              <option value="MySQL">MySQL</option>
-              <option value="PostgreSQL">PostgreSQL</option>
-              <option value="SQLite">SQLite</option>
-              <option value="SSMS">SSMS (Transact-SQL)</option>
+              <option value="MySQL" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>MySQL</option>
+              <option value="PostgreSQL" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>PostgreSQL</option>
+              <option value="SQLite" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>SQLite</option>
+              <option value="SSMS" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>SSMS (Transact-SQL)</option>
             </select>
           </div>
 
