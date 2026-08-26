@@ -130,7 +130,7 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
       </div>
 
       {/* Content Area */}
-      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: '#ffffff', padding: '12px 14px 48px 14px', boxSizing: 'border-box', fontSize: '11px', lineHeight: '1.6' }}>
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', padding: '12px 14px 48px 14px', boxSizing: 'border-box', fontSize: '11px', lineHeight: '1.6' }}>
 
 
         {/* ─── TAB 1: ORIGINALITY CLAIM ─── */}

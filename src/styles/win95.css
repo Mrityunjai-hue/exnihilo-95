@@ -682,7 +682,8 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: #b0b0b0;
+  background-color: var(--w95-gray, #b0b0b0);
+  color: var(--w95-text-color, #333);
   border-top: 2px solid var(--w95-white);
   border-left: 2px solid var(--w95-white);
   border-right: 2px solid var(--w95-black);
@@ -691,17 +692,16 @@ html, body {
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
-  color: #333;
 }
 
 .win95-editor-tab:hover {
-  background-color: #c4c4c4;
+  filter: brightness(1.08);
 }
 
 .win95-editor-tab.active {
-  background-color: #ffffff;
-  border-bottom: 2px solid #ffffff;
-  color: #000000;
+  background-color: var(--w95-sunken-bg, #ffffff);
+  border-bottom: 2px solid var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
   font-weight: bold;
   padding-bottom: 5px;
   margin-bottom: -2px;

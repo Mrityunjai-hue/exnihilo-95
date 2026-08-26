@@ -397,7 +397,7 @@ ${
           {/* Tab Content Area */}
           <div
             className="win95-inset"
-            style={{ padding: '14px', background: '#c0c0c0', minHeight: '320px', maxHeight: '440px', overflowY: 'auto' }}
+            style={{ padding: '14px', background: 'var(--w95-gray, #c0c0c0)', color: 'var(--w95-text-color, #000000)', minHeight: '320px', maxHeight: '440px', overflowY: 'auto' }}
           >
             {/* TAB 1: MY ACCOUNT */}
             {activeTab === 'account' && (

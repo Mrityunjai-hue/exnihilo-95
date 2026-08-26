@@ -187,6 +187,10 @@
   --w95-grid-odd-bg: #f5f4ef;
   --w95-editor-bg: #ffffff;
   --w95-editor-text: #000000;
+  --w95-callout-yellow-bg: #ffffe0;
+  --w95-callout-yellow-text: #000000;
+  --w95-callout-blue-bg: #e6f0fa;
+  --w95-callout-blue-text: #000000;
 }
 
 [data-theme="win2000"] {
@@ -210,4 +214,8 @@
   --w95-grid-odd-bg: #f0eee9;
   --w95-editor-bg: #ffffff;
   --w95-editor-text: #000000;
+  --w95-callout-yellow-bg: #ffffe0;
+  --w95-callout-yellow-text: #000000;
+  --w95-callout-blue-bg: #e6f0fa;
+  --w95-callout-blue-text: #000000;
 }

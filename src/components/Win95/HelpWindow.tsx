@@ -514,7 +514,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
         {/* Topic Reader Pane */}
         <div
           className="win95-inset"
-          style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '12px 14px 48px 14px', background: '#ffffff', boxSizing: 'border-box' }}
+          style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '12px 14px 48px 14px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', boxSizing: 'border-box' }}
         >
           <div style={{ paddingBottom: '24px' }}>
             {currentTopic.content}

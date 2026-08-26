@@ -259,13 +259,14 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
         </div>
 
         {/* Balloon Body */}
-        <div style={{ padding: '14px', background: '#c0c0c0' }}>
+        <div style={{ padding: '14px', background: 'var(--w95-gray, #c0c0c0)', color: 'var(--w95-text-color, #000000)' }}>
           <div
             className="win95-inset"
             style={{
               padding: '12px',
-              background: '#ffffe0',
-              border: '1px solid #808000',
+              background: 'var(--w95-callout-yellow-bg, #ffffe0)',
+              color: 'var(--w95-callout-yellow-text, #000000)',
+              border: '1px solid var(--w95-dark-gray, #808000)',
               marginBottom: '12px',
             }}
           >

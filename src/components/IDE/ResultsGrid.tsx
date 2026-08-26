@@ -157,13 +157,14 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#ffffff',
+          background: 'var(--w95-sunken-bg, #ffffff)',
+          color: 'var(--w95-sunken-text, #000000)',
           gap: '8px',
         }}
       >
         <div style={{ fontSize: '28px', animation: 'spin 1s linear infinite' }}>⏳</div>
         <div style={{ fontSize: '12px', fontWeight: 'bold' }}>Executing Query in WebAssembly...</div>
-        <div style={{ fontSize: '10px', color: '#666' }}>Inferring schema & generating synthetic dataset</div>
+        <div style={{ fontSize: '10px', color: 'var(--w95-dark-gray, #666)' }}>Inferring schema & generating synthetic dataset</div>
       </div>
     );
   }
@@ -179,8 +180,8 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#ffffff',
-          color: '#666666',
+          background: 'var(--w95-sunken-bg, #ffffff)',
+          color: 'var(--w95-sunken-text, #666666)',
         }}
       >
         <div style={{ fontSize: '24px', marginBottom: '4px' }}>📋</div>
@@ -335,7 +336,8 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: '#ffffff',
+        background: 'var(--w95-sunken-bg, #ffffff)',
+        color: 'var(--w95-sunken-text, #000000)',
         overflow: 'hidden',
       }}
     >
@@ -346,8 +348,9 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           justifyContent: 'space-between',
           alignItems: 'center',
           padding: '3px 6px',
-          background: '#c0c0c0',
-          borderBottom: '1px solid #808080',
+          background: 'var(--w95-gray, #c0c0c0)',
+          color: 'var(--w95-text-color, #000000)',
+          borderBottom: '1px solid var(--w95-dark-gray, #808080)',
           fontSize: '11px',
           gap: '6px',
           flexWrap: 'wrap',

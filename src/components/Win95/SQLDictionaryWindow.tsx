@@ -151,7 +151,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
       </div>
 
       {/* ── Top Header Controls & Dialect Selector ────────────────────────── */}
-      <div style={{ background: '#c0c0c0', padding: '6px 8px', borderBottom: '1px solid #808080' }}>
+      <div style={{ background: 'var(--w95-gray, #c0c0c0)', color: 'var(--w95-text-color, #000000)', padding: '6px 8px', borderBottom: '1px solid var(--w95-dark-gray, #808080)' }}>
         {/* Dialect Tabs Bar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
           <div style={{ display: 'flex', gap: '2px' }}>
@@ -163,7 +163,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
                 fontSize: '11px',
                 padding: '2px 10px',
                 fontWeight: selectedDialect === 'ALL' ? 'bold' : 'normal',
-                color: selectedDialect === 'ALL' ? '#000080' : '#000000',
+                color: selectedDialect === 'ALL' ? 'var(--w95-title-active-bg, #000080)' : 'var(--w95-text-color, #000000)',
               }}
             >
               🌐 All Dialects
@@ -181,7 +181,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
                     fontSize: '11px',
                     padding: '2px 10px',
                     fontWeight: isSelected ? 'bold' : 'normal',
-                    color: isSelected ? '#000080' : '#000000',
+                    color: isSelected ? 'var(--w95-title-active-bg, #000080)' : 'var(--w95-text-color, #000000)',
                   }}
                 >
                   {meta.icon} {dialect}
@@ -191,7 +191,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
           </div>
 
           {/* Quick Counter */}
-          <div style={{ fontSize: '11px', background: '#ffffff', padding: '2px 8px', border: '1px solid #808080', fontWeight: 'bold' }}>
+          <div style={{ fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', padding: '2px 8px', border: '1px solid var(--w95-dark-gray, #808080)', fontWeight: 'bold' }}>
             {filteredItems.length} Commands Available
           </div>
         </div>
@@ -208,8 +208,9 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
               placeholder="Search SQL keywords, syntax, functions..."
               style={{
                 flex: 1,
-                background: '#ffffff',
-                border: '1px solid #808080',
+                background: 'var(--w95-sunken-bg, #ffffff)',
+                color: 'var(--w95-sunken-text, #000000)',
+                border: '1px solid var(--w95-dark-gray, #808080)',
                 padding: '2px 6px',
                 fontSize: '11px',
                 fontFamily: 'var(--w95-mono)',
@@ -276,7 +277,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
       </div>
 
       {/* ── 2-Pane Master Detail Layout ──────────────────────────────────── */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', padding: '4px', gap: '4px', background: '#c0c0c0' }}>
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', padding: '4px', gap: '4px', background: 'var(--w95-gray, #c0c0c0)' }}>
         {/* Left Master Pane: Command Index List */}
         <div
           className="win95-inset"
@@ -284,7 +285,8 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
             width: '260px',
             height: '100%',
             overflowY: 'auto',
-            background: '#ffffff',
+            background: 'var(--w95-sunken-bg, #ffffff)',
+            color: 'var(--w95-sunken-text, #000000)',
             padding: '2px 2px 48px 2px',
             boxSizing: 'border-box',
           }}
@@ -339,7 +341,8 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
             flex: 1,
             height: '100%',
             overflowY: 'auto',
-            background: '#ffffff',
+            background: 'var(--w95-sunken-bg, #ffffff)',
+            color: 'var(--w95-sunken-text, #000000)',
             padding: '12px 14px 48px 14px',
             display: 'flex',
             flexDirection: 'column',

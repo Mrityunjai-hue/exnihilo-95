@@ -98,7 +98,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
         {/* Right Step Content */}
         <div
           className="win95-inset"
-          style={{ flex: 1, height: '100%', background: '#ffffff', padding: '16px', overflowY: 'auto' }}
+          style={{ flex: 1, height: '100%', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', padding: '16px', overflowY: 'auto' }}
         >
           {step === 1 && (
             <div>

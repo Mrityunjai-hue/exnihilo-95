@@ -99,7 +99,8 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
         <div
           className="win95-inset"
           style={{
-            background: '#ffffff',
+            background: 'var(--w95-sunken-bg, #ffffff)',
+            color: 'var(--w95-sunken-text, #000000)',
             padding: '14px',
             maxHeight: '260px',
             overflowY: 'auto',
