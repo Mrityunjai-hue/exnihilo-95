@@ -9,14 +9,14 @@
 
 | Metric | Status |
 | :--- | :---: |
-| **Total Tracked Features** | **70 Features** |
-| **✅ Fully Implemented** | **30 Features** (43%) |
+| **Total Tracked Features** | **72 Features** |
+| **✅ Fully Implemented** | **35 Features** (49%) |
 | **🟡 Partially Implemented** | **6 Features** (8%) |
-| **❌ Pending Roadmap** | **34 Features** (49%) |
-| **Overall Completion** | **~51% Functional Baseline** |
+| **❌ Pending Roadmap** | **31 Features** (43%) |
+| **Overall Completion** | **~57% Functional Baseline** |
 
 ```
-Progress: [██████████████████████░░░░░░░░░░░░░░░░░░░░░] 51% Completed
+Progress: [█████████████████████████░░░░░░░░░░░░░░░░░░░] 57% Completed
 ```
 
 ---
@@ -127,12 +127,14 @@ Progress: [██████████████████████░
 - [x] **Deterministic Random Seeding**: Reproducible synthetic dataset generation per session.
 - [x] **Column Heuristics Engine**: Auto-infers types for `id`, `email`, `created_at`, `price`, `status`, `name`.
 - [x] **Table-Name Aware Schema Inference**: Auto-infer domain-relevant default columns based on table names (e.g. `users` → `first_name`, `last_name`, `email`; `products` → `sku`, `price`, `stock_quantity`; `orders` → `user_id`, `status`, `total_amount`; `employees` → `department`, `salary`, `hire_date`).
-- [x] **Domain-Contextual Data Generation**: Synthesize highly realistic domain values matched to table intent (E-Commerce, HR/Employee, Payments, Healthcare, SaaS, Telemetry).
-- [x] **Custom Column Generator Overrides**: Column heuristics for `email`, `phone`, `url`, `ip_address`, `uuid`, `price`, `salary`, `age`, `qty`, `score`, `balance`, `date`/`time`, `is_`/`has_`, `zip`, `city`, `country`.
+- [x] **Domain-Contextual Data Generation**: Synthesize highly realistic domain values matched to table intent (E-Commerce, HR/Employee, Payments, Healthcare, SaaS, Telemetry, Books & Publishing).
+- [x] **Custom Column Generator Overrides**: Column heuristics for `email`, `phone`, `url`, `ip_address`, `uuid`, `price`, `salary`, `age`, `qty`, `score`, `balance`, `date`/`time`, `is_`/`has_`, `zip`, `city`, `country`, `author`, `title`, `cover_type`, `pages`, `translated`, `transcript`, `stage`, `manager`, `message`.
+- [x] **Impenetrable Tokenizer Engine**: Word-boundary token matching (`\b`) and exact $O(1)$ set lookups preventing loose substring collisions (`country` vs `count`, `discount` vs `count`, `transcript` vs `ip`).
+- [x] **WHERE & HAVING Literal-Aware Seeding**: Comparison literal extraction automatically seeding at least 40% of generated dataset rows with exact user WHERE predicate values.
+- [x] **Pre-Built Domain Data Packs**: Synthetic datasets for *E-Commerce*, *HR/Employees*, *Payments/Banking*, *Healthcare*, *SaaS*, *Telemetry*, and *Books/Publishing*.
 - [ ] **Pro Row Cap Unlocked** *(Up to 10,000 rows per table)*.
 - [ ] **Custom Column Constraint Rules**: Define rules (e.g. `email MUST END WITH @company.com`, `age BETWEEN 18 AND 65`).
 - [ ] **Seed CSV / JSON Upload**: Upload custom seed files to merge with inferred schemas.
-- [ ] **Pre-Built Domain Data Packs**: Synthetic datasets for *Healthcare*, *Finance*, *E-Commerce*, *SaaS*, and *Gaming*.
 - [ ] **Locale-Aware Data Synthesis**: Generate names, addresses, and phone numbers matching US, UK, India, Japan, etc.
 
 ---
@@ -154,6 +156,8 @@ Progress: [██████████████████████░
 - [x] **Win95 Boot Animation**: Authentic startup sequence with retro chime sound effect.
 - [x] **Window Z-Index & Focus Manager**: Click any window to bring to front; minimize/maximize/close controls.
 - [x] **Start Menu & Taskbar**: Windows 95 start menu and active window taskbar buttons.
+- [x] **Streamlined Win95 Action Toolbar**: 4-group organized action bar separated by 3D Win95 vertical dividers (`.win95-divider-v`).
+- [x] **Flush Maximized Window View**: Pixel-perfect `calc(100vh - 32px)` window height preventing bottom statusbar taskbar overlap.
 - [ ] **Win95 Noir Dark Mode**: Dark desktop theme with vibrant neon syntax highlighting.
 - [ ] **Windows XP Luna Theme**: Blue & green XP aesthetic with the famous Bliss wallpaper.
 - [ ] **Windows 98 & Windows 2000 Skins**: Corporate gray minimalism.
