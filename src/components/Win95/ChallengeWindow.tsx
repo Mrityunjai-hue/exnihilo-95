@@ -453,29 +453,46 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
                 );
               })}
 
-              {/* Reveal Solution Button */}
+              {/* Reveal Solution Button (Only Unlocked After Solving) */}
               <div style={{ marginTop: '6px' }}>
-                <button
-                  className="win95-button"
-                  style={{ fontSize: '10px', padding: '1px 6px', width: '100%' }}
-                  onClick={() => setShowSolution((prev) => !prev)}
-                >
-                  {showSolution ? '▲ Hide Canonical Solution' : '🔓 Reveal Canonical Solution SQL'}
-                </button>
-                {showSolution && (
-                  <pre
-                    className="win95-sunken"
+                {solvedIds.includes(selectedChallenge.id) ? (
+                  <>
+                    <button
+                      className="win95-button"
+                      style={{ fontSize: '10px', padding: '1px 6px', width: '100%', fontWeight: 'bold' }}
+                      onClick={() => setShowSolution((prev) => !prev)}
+                    >
+                      {showSolution ? '▲ Hide Canonical Solution' : '🔓 Reveal Canonical Solution SQL (Unlocked)'}
+                    </button>
+                    {showSolution && (
+                      <pre
+                        className="win95-sunken"
+                        style={{
+                          padding: '6px',
+                          fontSize: '10px',
+                          fontFamily: 'var(--w95-mono)',
+                          background: '#f4f4f4',
+                          overflowX: 'auto',
+                          marginTop: '2px',
+                        }}
+                      >
+                        {selectedChallenge.solutionSql}
+                      </pre>
+                    )}
+                  </>
+                ) : (
+                  <div
                     style={{
-                      padding: '6px',
                       fontSize: '10px',
-                      fontFamily: 'var(--w95-mono)',
-                      background: '#f4f4f4',
-                      overflowX: 'auto',
-                      marginTop: '2px',
+                      color: '#808080',
+                      textAlign: 'center',
+                      padding: '4px',
+                      background: '#f0f0f0',
+                      border: '1px dashed #a0a0a0',
                     }}
                   >
-                    {selectedChallenge.solutionSql}
-                  </pre>
+                    🔒 Solution unlocks after you submit an accepted query!
+                  </div>
                 )}
               </div>
             </div>

@@ -339,15 +339,10 @@ SELECT Department, Employee, Salary
 FROM RankedSalaries
 WHERE rnk <= 3;`,
     starterSql: `-- Problem #61: Department Top Three Salaries
-WITH RankedSalaries AS (
-  SELECT d.name AS Department, e.name AS Employee, e.salary AS Salary,
-         DENSE_RANK() OVER (PARTITION BY e.departmentId ORDER BY e.salary DESC) AS rnk
-  FROM Employee e
-  JOIN Department d ON e.departmentId = d.id
-)
-SELECT Department, Employee, Salary
-FROM RankedSalaries
-WHERE rnk <= 3;`,
+-- Write your SQL query solution below:
+SELECT 
+FROM 
+;`,
   },
 
   // 🟣 DOMAIN 10: RECURSIVE CTES & GRAPH TRAVERSAL
@@ -407,18 +402,12 @@ WITH RECURSIVE OrgHierarchy AS (
 )
 SELECT emp_id, name, depth FROM OrgHierarchy ORDER BY depth, emp_id;`,
     starterSql: `-- Problem #117: Organizational Hierarchy Depth
+-- Write your recursive SQL query solution below:
 WITH RECURSIVE OrgHierarchy AS (
-  SELECT emp_id, name, 1 AS depth
-  FROM Employees
-  WHERE manager_id IS NULL
-  UNION ALL
-  SELECT e.emp_id, e.name, h.depth + 1
-  FROM Employees e
-  JOIN OrgHierarchy h ON e.manager_id = h.emp_id
+
 )
-SELECT emp_id, name, depth
-FROM OrgHierarchy
-ORDER BY depth, emp_id;`,
+SELECT 
+FROM OrgHierarchy;`,
   },
 ];
 
