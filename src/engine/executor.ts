@@ -765,14 +765,14 @@ export class SQLExecutor {
     }
 
     // ── 4. Execute Query in SQLite WASM ───────────────────────────────────────
-    try {
-      const executableQuery = trimmedQuery
-        .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->>\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT_TEXT($1, $2)')
-        .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT($1, $2)')
-        .replace(/\bSTRING_AGG\s*\(\s*([^,]+?)\s*,\s*('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)')
-        .replace(/\bSTRING_AGG\s*\(\s*([^)]+?)\s*\)/gi, 'GROUP_CONCAT($1)')
-        .replace(/\bGROUP_CONCAT\s*\(\s*(.*?)\s+SEPARATOR\s+('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)');
+    const executableQuery = trimmedQuery
+      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->>\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT_TEXT($1, $2)')
+      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT($1, $2)')
+      .replace(/\bSTRING_AGG\s*\(\s*([^,]+?)\s*,\s*('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)')
+      .replace(/\bSTRING_AGG\s*\(\s*([^)]+?)\s*\)/gi, 'GROUP_CONCAT($1)')
+      .replace(/\bGROUP_CONCAT\s*\(\s*(.*?)\s+SEPARATOR\s+('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)');
 
+    try {
       const results = this.db.exec(executableQuery);
       const executionTimeMs = performance.now() - startTime;
 
