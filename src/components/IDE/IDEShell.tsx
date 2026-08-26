@@ -17,7 +17,16 @@ import { ResultsGrid } from './ResultsGrid';
 import { SchemaTree } from './SchemaTree';
 import { Toolbar } from './Toolbar';
 import { WindowControls } from '../Win95/WindowControls';
-import { useWorkspaceStorage, loadWorkspaceFromStorage, removeTabFromStorage } from '../../hooks/useWorkspaceStorage';
+import {
+  useWorkspaceStorage,
+  loadWorkspaceFromStorage,
+  removeTabFromStorage,
+  getWorkspacesList,
+  saveWorkspacesList,
+  getActiveWorkspaceId,
+  setActiveWorkspaceId,
+  WorkspaceProfile,
+} from '../../hooks/useWorkspaceStorage';
 
 
 interface QueryTab {
@@ -27,6 +36,7 @@ interface QueryTab {
   result:          ExecutionSuccess | null;
   isLoading:       boolean;
   executionTimeMs: number | null;
+  isPinned?:       boolean;
 }
 
 interface QueryHistoryItem {
@@ -143,6 +153,93 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
   const [tabContextMenu, setTabContextMenu] = useState<{ x: number; y: number; tabId: string } | null>(null);
 
+  // Named Workspaces & Tab Pinning State
+  const [isWorkspacesModalOpen, setIsWorkspacesModalOpen] = useState(false);
+  const [workspacesList, setWorkspacesList] = useState<WorkspaceProfile[]>(() => getWorkspacesList());
+  const [activeWsId, setActiveWsId] = useState<string>(() => getActiveWorkspaceId());
+  const [newWsNameInput, setNewWsNameInput] = useState('');
+
+  const handleTogglePin = (tabId: string) => {
+    setTabs((prev) =>
+      prev.map((t) => (t.id === tabId ? { ...t, isPinned: !t.isPinned } : t))
+    );
+  };
+
+  const handleCreateNewWorkspace = () => {
+    if (!newWsNameInput.trim()) return;
+    const newWs: WorkspaceProfile = {
+      id: `ws_${Date.now()}`,
+      name: newWsNameInput.trim(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      activeTabId: 'tab_1',
+      tabs: [
+        {
+          id: 'tab_1',
+          title: 'Query 1.sql',
+          queryText: '-- New Workspace\nSELECT * FROM customers;',
+          dialect,
+          isPinned: false,
+        },
+      ],
+    };
+    const updated = [...workspacesList, newWs];
+    setWorkspacesList(updated);
+    saveWorkspacesList(updated);
+    setActiveWsId(newWs.id);
+    setActiveWorkspaceId(newWs.id);
+
+    setTabs([
+      {
+        id: 'tab_1',
+        title: 'Query 1.sql',
+        queryText: '-- New Workspace\nSELECT * FROM customers;',
+        result: null,
+        isLoading: false,
+        executionTimeMs: null,
+        isPinned: false,
+      },
+    ]);
+    setActiveTabId('tab_1');
+    onQueryChange('-- New Workspace\nSELECT * FROM customers;');
+    setNewWsNameInput('');
+  };
+
+  const handleSwitchWorkspace = (wsId: string) => {
+    const target = workspacesList.find((w) => w.id === wsId);
+    if (!target) return;
+
+    setActiveWsId(wsId);
+    setActiveWorkspaceId(wsId);
+
+    if (target.tabs && target.tabs.length > 0) {
+      const convertedTabs: QueryTab[] = target.tabs.map((t) => ({
+        id: t.id,
+        title: t.title,
+        queryText: t.queryText,
+        result: null,
+        isLoading: false,
+        executionTimeMs: null,
+        isPinned: Boolean(t.isPinned),
+      }));
+      setTabs(convertedTabs);
+      const activeId = target.activeTabId && convertedTabs.some((t) => t.id === target.activeTabId) ? target.activeTabId : convertedTabs[0].id;
+      setActiveTabId(activeId);
+      const activeTabObj = convertedTabs.find((t) => t.id === activeId) || convertedTabs[0];
+      onQueryChange(activeTabObj.queryText);
+    }
+  };
+
+  const handleDeleteWorkspace = (wsId: string) => {
+    if (workspacesList.length <= 1) return;
+    const remaining = workspacesList.filter((w) => w.id !== wsId);
+    setWorkspacesList(remaining);
+    saveWorkspacesList(remaining);
+    if (activeWsId === wsId) {
+      handleSwitchWorkspace(remaining[0].id);
+    }
+  };
+
   // Sync workspace state to localStorage with 500ms debounce
   useEffect(() => {
     const meta = tabs.map((t) => ({
@@ -150,6 +247,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       title: t.title,
       queryText: t.queryText,
       dialect,
+      isPinned: Boolean(t.isPinned),
     }));
     saveWorkspaceDebounced(meta, activeTabId);
   }, [tabs, activeTabId, dialect, saveWorkspaceDebounced]);
@@ -713,6 +811,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         onFormatSql={handleFormatSql}
         onInsertTemplate={handleInsertTemplate}
         onToggleHistory={() => setIsHistoryOpen(true)}
+        onOpenWorkspaces={() => setIsWorkspacesModalOpen(true)}
         onOpenHelp={onOpenHelp}
         onOpenSettings={onOpenSettings}
         onStartTour={onStartTour}
@@ -753,28 +852,42 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px', height: '100%', overflow: 'hidden' }}>
           {/* Query Editor Multi-Tab Bar */}
           <div id="tour-query-tabs" className="win95-editor-tabs">
-            {tabs.map((tab) => {
-              const isActive = tab.id === activeTabId;
-              return (
-                <div
-                  key={tab.id}
-                  className={`win95-editor-tab ${isActive ? 'active' : ''}`}
-                  onClick={() => handleSelectTab(tab.id)}
-                  onContextMenu={(e) => handleTabContextMenu(e, tab.id)}
-                  title={tab.title}
-                >
-                  <span>📄</span>
-                  <span>{tab.title}</span>
-                  <button
-                    className="win95-editor-tab-close"
-                    onClick={(e) => handleCloseTab(e, tab.id)}
-                    title="Close Tab"
+            {[...tabs]
+              .sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0))
+              .map((tab) => {
+                const isActive = tab.id === activeTabId;
+                return (
+                  <div
+                    key={tab.id}
+                    className={`win95-editor-tab ${isActive ? 'active' : ''}`}
+                    onClick={() => handleSelectTab(tab.id)}
+                    onContextMenu={(e) => handleTabContextMenu(e, tab.id)}
+                    title={tab.title}
                   >
-                    ✕
-                  </button>
-                </div>
-              );
-            })}
+                    <button
+                      type="button"
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '10px' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTogglePin(tab.id);
+                      }}
+                      title={tab.isPinned ? 'Unpin tab' : 'Pin tab'}
+                    >
+                      {tab.isPinned ? '📌' : '📄'}
+                    </button>
+                    <span>{tab.title}</span>
+                    {!tab.isPinned && (
+                      <button
+                        className="win95-editor-tab-close"
+                        onClick={(e) => handleCloseTab(e, tab.id)}
+                        title="Close Tab"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
 
             {tabContextMenu && (
               <div
@@ -1067,6 +1180,117 @@ export const IDEShell: React.FC<IDEShellProps> = ({
                   🗑️ Clear History
                 </button>
                 <button className="win95-button" style={{ fontWeight: 'bold' }} onClick={() => setIsHistoryOpen(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Named Workspaces Manager Modal */}
+      {isWorkspacesModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999999,
+          }}
+        >
+          <div className="win95-window" style={{ width: '480px', display: 'flex', flexDirection: 'column', boxShadow: '4px 4px 10px rgba(0,0,0,0.5)' }}>
+            <div className="win95-titlebar">
+              <div className="win95-titlebar-text">
+                <span>📁</span>
+                <span>Named Workspaces Manager</span>
+              </div>
+              <div className="win95-titlebar-controls">
+                <button className="win95-btn-titlebar" onClick={() => setIsWorkspacesModalOpen(false)}>
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div style={{ padding: '12px', fontSize: '11px' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Create New Named Workspace Profile:</div>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
+                <input
+                  type="text"
+                  className="win95-sunken"
+                  placeholder="e.g. E-Commerce Project, HR Analytics..."
+                  value={newWsNameInput}
+                  onChange={(e) => setNewWsNameInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCreateNewWorkspace();
+                  }}
+                  style={{ flex: 1, padding: '3px 6px', fontSize: '11px' }}
+                />
+                <button
+                  type="button"
+                  className="win95-button"
+                  onClick={handleCreateNewWorkspace}
+                  disabled={!newWsNameInput.trim()}
+                  style={{ fontWeight: 'bold' }}
+                >
+                  ➕ Create
+                </button>
+              </div>
+
+              <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>Available Project Workspaces ({workspacesList.length}):</div>
+              <div className="win95-sunken" style={{ maxHeight: '180px', overflowY: 'auto', background: '#ffffff', padding: '4px' }}>
+                {workspacesList.map((ws) => {
+                  const isActive = ws.id === activeWsId;
+                  return (
+                    <div
+                      key={ws.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '6px 8px',
+                        borderBottom: '1px solid #e0e0e0',
+                        background: isActive ? '#e0e0ff' : 'transparent',
+                      }}
+                    >
+                      <div>
+                        <strong>{ws.name}</strong> {isActive && <span style={{ color: '#006600', fontSize: '10px' }}>(Active)</span>}
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        {!isActive && (
+                          <button
+                            type="button"
+                            className="win95-button"
+                            style={{ fontSize: '10px', padding: '1px 6px' }}
+                            onClick={() => handleSwitchWorkspace(ws.id)}
+                          >
+                            🔄 Switch
+                          </button>
+                        )}
+                        {workspacesList.length > 1 && (
+                          <button
+                            type="button"
+                            className="win95-button"
+                            style={{ fontSize: '10px', padding: '1px 6px', color: '#b00020' }}
+                            onClick={() => handleDeleteWorkspace(ws.id)}
+                            title="Delete Workspace"
+                          >
+                            🗑️
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+                <button className="win95-button" style={{ fontWeight: 'bold' }} onClick={() => setIsWorkspacesModalOpen(false)}>
                   Close
                 </button>
               </div>

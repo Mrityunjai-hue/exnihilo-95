@@ -8,6 +8,8 @@ import {
   loadWorkspaceFromStorage,
   removeTabFromStorage,
   clearWorkspaceStorage,
+  getWorkspacesList,
+  saveWorkspacesList,
   PersistedTabMeta,
 } from '../../hooks/useWorkspaceStorage';
 
@@ -132,13 +134,35 @@ describe('UI State Resilience & Storage (Phase 3) Tests', () => {
       localStorage.setItem('exnihilo_active_tab_id', 'tab_ext');
       localStorage.setItem(
         'exnihilo_tab_tab_ext',
-        JSON.stringify({ id: 'tab_ext', title: 'External.sql', queryText: 'SELECT 99;', dialect: 'SQLite' })
+        JSON.stringify({ id: 'tab_ext', title: 'External.sql', queryText: 'SELECT 99;', dialect: 'SQLite', isPinned: true })
       );
 
       const reloaded = loadWorkspaceFromStorage();
       expect(reloaded?.tabs).toHaveLength(1);
       expect(reloaded?.tabs[0].id).toBe('tab_ext');
       expect(reloaded?.tabs[0].queryText).toBe('SELECT 99;');
+      expect(reloaded?.tabs[0].isPinned).toBe(true);
+    });
+  });
+
+  // ── 4. Named Workspaces Profiles ─────────────────────────────────────────
+  describe('Named Workspaces Profiles', () => {
+    it('returns default workspace profile when no storage exists', () => {
+      const list = getWorkspacesList();
+      expect(list).toHaveLength(1);
+      expect(list[0].id).toBe('ws_default');
+      expect(list[0].name).toBe('Default Workspace');
+    });
+
+    it('saves and retrieves multiple named workspace profiles', () => {
+      const ws1 = { id: 'ws_1', name: 'E-Commerce', createdAt: '', updatedAt: '', activeTabId: 't1', tabs: [] };
+      const ws2 = { id: 'ws_2', name: 'HR Analytics', createdAt: '', updatedAt: '', activeTabId: 't2', tabs: [] };
+      saveWorkspacesList([ws1, ws2]);
+
+      const list = getWorkspacesList();
+      expect(list).toHaveLength(2);
+      expect(list[0].name).toBe('E-Commerce');
+      expect(list[1].name).toBe('HR Analytics');
     });
   });
 });

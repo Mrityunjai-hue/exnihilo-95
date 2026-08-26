@@ -15,6 +15,7 @@ interface ToolbarProps {
   onFormatSql?:      () => void;
   onInsertTemplate?: (templateSql: string) => void;
   onToggleHistory?:  () => void;
+  onOpenWorkspaces?: () => void;
   onOpenHelp:        () => void;
   onOpenSettings:    () => void;
   onStartTour:       () => void;
@@ -31,6 +32,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onFormatSql,
   onInsertTemplate,
   onToggleHistory,
+  onOpenWorkspaces,
   onOpenHelp,
   onOpenSettings,
   onStartTour,
@@ -179,6 +181,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <span>🕒</span>
             <span>History ({historyCount})</span>
           </button>
+
+          {onOpenWorkspaces && (
+            <button
+              id="btn-workspaces"
+              className="win95-button"
+              onClick={onOpenWorkspaces}
+              title="Manage Named Project Workspaces & Saved Profiles"
+              style={{ padding: '2px 6px' }}
+            >
+              <span>📁</span>
+              <span>Workspaces</span>
+            </button>
+          )}
         </div>
 
         <div className="win95-divider-v" />
