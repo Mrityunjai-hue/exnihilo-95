@@ -98,7 +98,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const { position, handleMouseDown: handleHeaderDrag } = useDraggable(propPosition || { x: 40, y: 30 });
   const [activeMenu, setActiveMenu] = useState<'file' | 'edit' | 'query' | 'view' | 'tools' | 'help' | null>(null);
   const [showExplorer, setShowExplorer] = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(240);
+  const [sidebarWidth, setSidebarWidth] = useState(190);
   const [editorHeightPercent, setEditorHeightPercent] = useState(42); // 42% height for editor
   const [hasSelection, setHasSelection] = useState(false);
   const [selectedText, setSelectedText] = useState('');
@@ -561,12 +561,12 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             }
           : {
               position: 'absolute',
-              top: `${position.y}px`,
-              left: `${position.x}px`,
-              width: 'calc(100vw - 100px)',
-              height: 'calc(100vh - 100px)',
-              maxWidth: '1280px',
-              maxHeight: '800px',
+              top: `${Math.min(position.y, 20)}px`,
+              left: `${Math.min(position.x, 20)}px`,
+              width: 'calc(100vw - 40px)',
+              height: 'calc(100vh - 55px)',
+              maxWidth: '1800px',
+              maxHeight: '95vh',
               zIndex,
               display: isMinimized ? 'none' : 'flex',
               flexDirection: 'column',
