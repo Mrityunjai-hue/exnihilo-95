@@ -26,6 +26,7 @@ import { AuthWindow } from './AuthWindow';
 import { AdminDashboard, SessionStats } from './AdminDashboard';
 import { ErrorBoundary } from './ErrorBoundary';
 import { SQLDictionaryWindow } from './SQLDictionaryWindow';
+import { ChallengeWindow } from './ChallengeWindow';
 import { DialectName } from '../../data/dialectCommands';
 import { clearWorkspaceStorage } from '../../hooks/useWorkspaceStorage';
 import { decodeSharePayload } from '../../utils/shareEncoder';
@@ -95,6 +96,7 @@ export const Desktop: React.FC = () => {
     legal: false,
     auth: false,
     admin: false,
+    challenges: false,
   });
   const [minimizedWindows, setMinimizedWindows] = useState<Record<string, boolean>>({
     ide: false,
@@ -108,6 +110,7 @@ export const Desktop: React.FC = () => {
     legal: false,
     auth: false,
     admin: false,
+    challenges: false,
   });
 
   // Boot Animation State
@@ -496,6 +499,15 @@ export const Desktop: React.FC = () => {
 
         <div
           className="win95-desktop-icon"
+          onDoubleClick={() => focusWindow('challenges')}
+          onClick={() => focusWindow('challenges')}
+        >
+          <div style={{ fontSize: '32px', filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,0.5))' }}>🏆</div>
+          <span>SQL Challenges</span>
+        </div>
+
+        <div
+          className="win95-desktop-icon"
           onDoubleClick={() => focusWindow('settings')}
           onClick={() => focusWindow('settings')}
         >
@@ -592,6 +604,7 @@ export const Desktop: React.FC = () => {
             onFocus={() => focusWindow('ide')}
             onOpenHelp={() => focusWindow('help')}
             onOpenSettings={() => focusWindow('settings')}
+            onOpenChallenges={() => focusWindow('challenges')}
             onStartTour={handleStartGuidedTour}
             crtEnabled={crtEnabled}
             onToggleCrt={handleToggleCrt}
@@ -748,6 +761,20 @@ export const Desktop: React.FC = () => {
         onClose={() => closeWindow('legal')}
         onMinimize={() => toggleMinimize('legal')}
         onFocus={() => focusWindow('legal')}
+      />
+
+      {/* Flagship SQL Challenge Arena Window */}
+      <ChallengeWindow
+        isOpen={openWindows.challenges}
+        zIndex={getZIndex('challenges')}
+        onClose={() => closeWindow('challenges')}
+        onFocus={() => focusWindow('challenges')}
+        onTryInStudio={(sql, ddl, seed) => {
+          executor.execute(ddl + '\n' + seed, dialect).catch(console.error);
+          setQueryText(sql);
+          closeWindow('challenges');
+          focusWindow('ide');
+        }}
       />
 
       {/* Interactive Tour Balloon */}

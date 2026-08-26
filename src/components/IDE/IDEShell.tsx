@@ -67,6 +67,7 @@ interface IDEShellProps {
   onReset:                 () => void;
   onOpenHelp:              () => void;
   onOpenSettings:          () => void;
+  onOpenChallenges?:       () => void;
   onStartTour:             () => void;
   crtEnabled?:             boolean;
   onToggleCrt?:            () => void;
@@ -92,6 +93,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   onReset,
   onOpenHelp,
   onOpenSettings,
+  onOpenChallenges,
   onStartTour,
   crtEnabled,
   onToggleCrt,
@@ -747,6 +749,11 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               <div className="win95-dropdown-item" onClick={() => { setIsERDOpen(true); setActiveMenu(null); }}>
                 <span>🌐 Entity Relationship Diagram (ERD)</span>
               </div>
+              {onOpenChallenges && (
+                <div className="win95-dropdown-item" onClick={() => { onOpenChallenges(); setActiveMenu(null); }}>
+                  <span>🏆 SQL Challenge Arena...</span>
+                </div>
+              )}
               <div className="win95-dropdown-item" onClick={() => { onReset(); setActiveMenu(null); }}>
                 <span>🔄 Reset Schema & Database</span>
               </div>

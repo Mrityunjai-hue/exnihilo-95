@@ -145,6 +145,17 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               </div>
             </div>
 
+            <div
+              className="win95-start-item"
+              onClick={() => { onOpenWindow('challenges'); setStartMenuOpen(false); }}
+            >
+              <span style={{ fontSize: '16px' }}>🏆</span>
+              <div>
+                <strong>SQL Challenge Arena</strong>
+                <div style={{ fontSize: '10px', color: '#555' }}>126+ LeetCode SQL Puzzles</div>
+              </div>
+            </div>
+
             <div className="win95-start-divider" />
 
             <div
