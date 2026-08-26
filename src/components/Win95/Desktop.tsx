@@ -399,10 +399,10 @@ export const Desktop: React.FC = () => {
           className="win95-desktop-icon"
           onDoubleClick={() => focusWindow(isLoggedIn ? 'admin' : 'auth')}
           onClick={() => focusWindow(isLoggedIn ? 'admin' : 'auth')}
-          title={isLoggedIn ? `Logged in as ${currentUser?.displayName}` : 'Log in or Register'}
+          title={isLoggedIn ? `Logged in as ${currentUser?.displayName}` : 'Log in or Register User Account'}
         >
-          <img src="/icons/author_shield.png" alt="Mrityunjai Sachan" />
-          <span>{isLoggedIn ? currentUser?.displayName || 'Mrityunjai' : 'Mrityunjai Sachan'}</span>
+          <img src="/icons/author_shield.png" alt="User Account" />
+          <span>{isLoggedIn ? currentUser?.displayName || 'User Account' : 'User Account'}</span>
         </div>
 
         <div
