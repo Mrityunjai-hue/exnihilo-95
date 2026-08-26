@@ -76,6 +76,9 @@
 |---------|:----:|:---:|
 | Rows per Table | 20 max | **Up to 10,000 rows** |
 | Table Cap | 25 max | **Unlimited tables** |
+| **Table-Name Aware Schemas** | ✗ | **Auto-infer domain columns by table name** (e.g. `users` → `email`, `phone`; `products` → `sku`, `price`, `stock`; `employees` → `department`, `salary`) |
+| **Domain-Contextual Values** | ✗ | Synthesize highly realistic values matching domain intent (E-Commerce, HR, Payments, Healthcare) |
+| **Custom Generator Overrides** | ✗ | Assign specific Faker generators (Credit Card, IPv4, UUID v4, Company Name) to any column |
 | **Custom Data Profiles** | ✗ | Define column-level data rules (e.g., "email must end with @company.com", "age between 18-65") |
 | **Seed Data Upload** | ✗ | Upload a CSV/JSON and ExNihilo merges it with inferred schemas |
 | **Deterministic Seeding** | ✗ | Set a seed number for reproducible data across sessions |
