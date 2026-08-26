@@ -348,6 +348,7 @@ export const Desktop: React.FC = () => {
     { id: 'wizard', title: 'Setup Wizard', icon: '🧙‍♂️', isOpen: openWindows.wizard, isMinimized: minimizedWindows.wizard, zIndex: getZIndex('wizard') },
     { id: 'settings', title: 'Options & Control Panel', icon: '⚙️', isOpen: openWindows.settings, isMinimized: false, zIndex: getZIndex('settings') },
     { id: 'contributors', title: 'Join the Team', icon: '🤝', isOpen: openWindows.contributors, isMinimized: minimizedWindows.contributors, zIndex: getZIndex('contributors') },
+    { id: 'challenges', title: '🏆 SQL Challenge Arena', icon: '🏆', isOpen: openWindows.challenges, isMinimized: minimizedWindows.challenges, zIndex: getZIndex('challenges') },
     { id: 'legal', title: 'Legal & IP Protection', icon: '⚖️', isOpen: openWindows.legal, isMinimized: minimizedWindows.legal, zIndex: getZIndex('legal') },
     { id: 'auth', title: 'Security Logon', icon: '🔑', isOpen: openWindows.auth, isMinimized: false, zIndex: getZIndex('auth') },
     { id: 'admin', title: 'Admin Control Panel', icon: '🎛️', isOpen: openWindows.admin, isMinimized: false, zIndex: getZIndex('admin') },
@@ -768,8 +769,10 @@ export const Desktop: React.FC = () => {
       {/* Flagship SQL Challenge Arena Window */}
       <ChallengeWindow
         isOpen={openWindows.challenges}
+        isMinimized={minimizedWindows.challenges}
         zIndex={getZIndex('challenges')}
         onClose={() => closeWindow('challenges')}
+        onMinimize={() => toggleMinimize('challenges')}
         onFocus={() => focusWindow('challenges')}
         onTryInStudio={(sql, ddl, seed) => {
           executor.execute(ddl + '\n' + seed, dialect).catch(console.error);

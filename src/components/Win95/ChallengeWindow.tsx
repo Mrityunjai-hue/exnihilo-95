@@ -16,10 +16,12 @@ import { QueryEditor } from '../IDE/QueryEditor';
 import { Dialect } from '../../engine/parser';
 
 interface ChallengeWindowProps {
-  isOpen:      boolean;
-  zIndex:      number;
-  onClose:     () => void;
-  onFocus:     () => void;
+  isOpen:        boolean;
+  isMinimized?:  boolean;
+  zIndex:        number;
+  onClose:       () => void;
+  onMinimize?:   () => void;
+  onFocus:       () => void;
   onTryInStudio?: (sql: string, ddl: string, seed: string) => void;
 }
 
@@ -27,8 +29,10 @@ const STORAGE_KEY = 'exnihilo_challenge_progress';
 
 export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
   isOpen,
+  isMinimized = false,
   zIndex,
   onClose,
+  onMinimize,
   onFocus,
   onTryInStudio,
 }) => {
@@ -37,6 +41,7 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
   const [userSql, setUserSql] = useState<string>(SQL_CHALLENGES[0].starterSql);
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
 
   // Filter States
   const [diffFilter, setDiffFilter] = useState<string>('All');
@@ -78,7 +83,7 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
     }
   }, [selectedChallenge]);
 
-  if (!isOpen) return null;
+  if (!isOpen || isMinimized) return null;
 
   const handleSelectChallenge = (c: SQLChallenge) => {
     setSelectedChallenge(c);
@@ -122,21 +127,40 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
   return (
     <div
       className="win95-window"
-      style={{
-        position: 'fixed',
-        top: '25px',
-        left: '20px',
-        right: '20px',
-        bottom: '40px',
-        width: 'calc(100vw - 40px)',
-        height: 'calc(100vh - 65px)',
-        maxWidth: '1800px',
-        maxHeight: '94vh',
-        zIndex,
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '4px 4px 12px rgba(0,0,0,0.5)',
-      }}
+      style={
+        isMaximized
+          ? {
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: '30px',
+              width: '100vw',
+              height: 'calc(100vh - 30px)',
+              maxWidth: '100vw',
+              maxHeight: '100vh',
+              zIndex,
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: 'none',
+              borderRadius: 0,
+            }
+          : {
+              position: 'fixed',
+              top: '25px',
+              left: '20px',
+              right: '20px',
+              bottom: '40px',
+              width: 'calc(100vw - 40px)',
+              height: 'calc(100vh - 65px)',
+              maxWidth: '1800px',
+              maxHeight: '94vh',
+              zIndex,
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '4px 4px 12px rgba(0,0,0,0.5)',
+            }
+      }
       onMouseDown={onFocus}
     >
       {/* Titlebar */}
@@ -145,7 +169,12 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
           <span>🏆</span>
           <span>ExNihilo SQL Challenge Arena — #{selectedChallenge.id}. {selectedChallenge.title}</span>
         </div>
-        <WindowControls onClose={onClose} />
+        <WindowControls
+          onMinimize={onMinimize}
+          onMaximize={() => setIsMaximized((prev) => !prev)}
+          isMaximized={isMaximized}
+          onClose={onClose}
+        />
       </div>
 
       {/* Control Strip & Multi-Filters */}
