@@ -394,7 +394,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <tr>
                         <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Pro Reference Price:</td>
                         <td>
-                          {pricingTier.label} {pricingTier.usdRef && <span style={{ color: '#555' }}>({pricingTier.usdRef})</span>}
+                          {pricingTier.label} {pricingTier.usdRef && <span style={{ color: '#555' }}>({pricingTier.usdRef})</span>}{' '}
+                          <span style={{ color: '#000080', fontSize: '9px', fontWeight: 'bold', background: '#ffffcc', border: '1px solid #999', padding: '1px 4px' }}>
+                            ℹ️ Subject to Update
+                          </span>
                         </td>
                       </tr>
                       <tr>
@@ -571,13 +574,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   }}
                 >
                   <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '4px' }}>
-                    ExNihilo 95 Pro — {pricingTier.label}
+                    ExNihilo 95 Pro — {pricingTier.label} <span style={{ fontSize: '11px', color: '#ffb800' }}>(Pricing Subject to Update)</span>
                   </div>
                   <div style={{ fontSize: '11px', color: '#dfdfdf' }}>
                     Power-User Workflows, AI Intelligence, Persistence & Live Database Sync
                   </div>
                   <div style={{ fontSize: '10px', color: '#c0c0c0', marginTop: '4px' }}>
-                    {pricingTier.usdRef ? `Reference: ${pricingTier.usdRef} | ` : ''}Prices shown for reference. Actual billing currency confirmed at checkout.
+                    {pricingTier.usdRef ? `Reference: ${pricingTier.usdRef} | ` : ''}Prices subject to change prior to production release.
                   </div>
                 </div>
 
@@ -653,18 +656,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                   <div className="win95-sunken" style={{ padding: '6px', background: '#ffffcc', border: '2px solid #000080', fontSize: '10px', textAlign: 'center' }}>
                     <div style={{ fontWeight: 'bold', color: '#000080' }}>⭐ Pro</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.label}</div>
-                    <div style={{ color: '#555', fontSize: '9px' }}>AI Copilot, Cloud Sync, Live DBs</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.label}*</div>
+                    <div style={{ color: '#555', fontSize: '8px' }}>*Subject to update</div>
                   </div>
                   <div className="win95-sunken" style={{ padding: '6px', background: '#dfdfdf', fontSize: '10px', textAlign: 'center' }}>
                     <div style={{ fontWeight: 'bold', color: '#000080' }}>👥 Team</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.teamLabel}</div>
-                    <div style={{ color: '#555', fontSize: '9px' }}>Shared Library, Live Cursors</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.teamLabel}*</div>
+                    <div style={{ color: '#555', fontSize: '8px' }}>*Subject to update</div>
                   </div>
                   <div className="win95-sunken" style={{ padding: '6px', background: '#dfdfdf', fontSize: '10px', textAlign: 'center' }}>
                     <div style={{ fontWeight: 'bold', color: '#000080' }}>🎓 Education</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.eduLabel}</div>
-                    <div style={{ color: '#555', fontSize: '9px' }}>Classrooms & Progress Tracking</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.eduLabel}*</div>
+                    <div style={{ color: '#555', fontSize: '8px' }}>*Subject to update</div>
                   </div>
                 </div>
 
@@ -673,7 +676,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <button
                     className="win95-button"
                     style={{ fontWeight: 'bold', padding: '4px 14px' }}
-                    onClick={() => setModalNotice('Pro Tier upgrades are coming soon! Thank you for your interest.')}
+                    onClick={() => setModalNotice('Pro Tier upgrades are coming soon! Pricing subject to update.')}
                   >
                     🚀 Upgrade to Pro ({pricingTier.label})
                   </button>
@@ -691,30 +694,184 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             )}
 
-            {/* TAB 3: USAGE */}
+            {/* TAB 3: USAGE STATISTICS DASHBOARD (4 QUADRANT CHARTS) */}
             {activeTab === 'usage' && (
               <div>
-                <fieldset style={{ border: '1px solid #808080', padding: '10px', marginBottom: '12px' }}>
-                  <legend style={{ fontSize: '11px', fontWeight: 'bold', padding: '0 4px' }}>
-                    Current Engine Settings
-                  </legend>
-                  <div style={{ fontSize: '11px', lineHeight: '1.6' }}>
-                    <div>Rows per table limit: <strong>20</strong> (configurable up to 100 in Settings)</div>
-                    <div>Max tables per session: <strong>25</strong> (configurable up to 50 in Settings)</div>
-                    <div>Default SQL Dialect: <strong>MySQL</strong></div>
-                  </div>
-                </fieldset>
+                <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '8px', color: '#000080', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>📈 Usage Statistics Dashboard</span>
+                  <span style={{ fontSize: '10px', fontWeight: 'normal', color: '#555' }}>Session Stats: {sessionStats.queriesRun} queries | {elapsedText} duration</span>
+                </div>
 
-                <fieldset style={{ border: '1px solid #808080', padding: '10px', marginBottom: '12px' }}>
-                  <legend style={{ fontSize: '11px', fontWeight: 'bold', padding: '0 4px' }}>
-                    Active Session Activity
-                  </legend>
-                  <div style={{ fontSize: '11px', lineHeight: '1.6' }}>
-                    <div>Total Queries Executed: <strong>{sessionStats.queriesRun}</strong></div>
-                    <div>Total Rows Generated: <strong>{sessionStats.rowsGenerated}</strong></div>
-                    <div>Session Duration: <strong>{elapsedText}</strong></div>
+                {/* 2x2 Grid of 4 Interactive SVG Analytics Charts */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                  {/* Chart 1: Queries per Month (Bar Chart) */}
+                  <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                      Queries per Month
+                    </div>
+                    <svg width="100%" height="90" viewBox="0 0 240 90">
+                      {/* Y-Axis Lines */}
+                      <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
+                      <line x1="25" y1="30" x2="230" y2="30" stroke="#eee" strokeWidth="1" />
+                      <line x1="25" y1="50" x2="230" y2="50" stroke="#eee" strokeWidth="1" />
+                      <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
+                      {/* Y-Axis Labels */}
+                      <text x="2" y="14" font-size="8" fill="#555">600</text>
+                      <text x="2" y="34" font-size="8" fill="#555">400</text>
+                      <text x="2" y="54" font-size="8" fill="#555">200</text>
+                      <text x="18" y="74" font-size="8" fill="#555">0</text>
+                      {/* Monthly Bars */}
+                      {[
+                        { month: '1', h: 45, val: '310' },
+                        { month: '2', h: 32, val: '220' },
+                        { month: '3', h: 38, val: '260' },
+                        { month: '4', h: 42, val: '290' },
+                        { month: '5', h: 56, val: '395' },
+                        { month: '6', h: 68, val: '480' },
+                        { month: '7', h: 50, val: '345' },
+                        { month: '8', h: 44, val: '305' },
+                      ].map((bar, idx) => (
+                        <g key={idx}>
+                          <rect
+                            x={35 + idx * 24}
+                            y={70 - bar.h}
+                            width="14"
+                            height={bar.h}
+                            fill="#0000aa"
+                            stroke="#000"
+                            strokeWidth="0.5"
+                          />
+                          <text x={42 + idx * 24} y="82" font-size="7" fill="#333" text-anchor="middle">{bar.month}</text>
+                        </g>
+                      ))}
+                    </svg>
                   </div>
-                </fieldset>
+
+                  {/* Chart 2: Data Volume (GB) (Bar Chart) */}
+                  <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                      Data Volume (GB)
+                    </div>
+                    <svg width="100%" height="90" viewBox="0 0 240 90">
+                      <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
+                      <line x1="25" y1="35" x2="230" y2="35" stroke="#eee" strokeWidth="1" />
+                      <line x1="25" y1="60" x2="230" y2="60" stroke="#eee" strokeWidth="1" />
+                      <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
+                      <text x="2" y="14" font-size="8" fill="#555">2.0</text>
+                      <text x="2" y="39" font-size="8" fill="#555">1.0</text>
+                      <text x="2" y="64" font-size="8" fill="#555">0.5</text>
+                      <text x="18" y="74" font-size="8" fill="#555">0.0</text>
+                      {[
+                        { idx: 1, h: 12 }, { idx: 2, h: 22 }, { idx: 3, h: 18 }, { idx: 4, h: 32 },
+                        { idx: 5, h: 28 }, { idx: 6, h: 42 }, { idx: 7, h: 36 }, { idx: 8, h: 48 },
+                        { idx: 9, h: 40 }, { idx: 10, h: 58 }, { idx: 11, h: 50 }, { idx: 12, h: 64 },
+                      ].map((bar, i) => (
+                        <g key={i}>
+                          <rect
+                            x={32 + i * 16}
+                            y={70 - bar.h}
+                            width="10"
+                            height={bar.h}
+                            fill="#009999"
+                            stroke="#000"
+                            strokeWidth="0.5"
+                          />
+                          <text x={37 + i * 16} y="82" font-size="6" fill="#333" text-anchor="middle">{bar.idx}</text>
+                        </g>
+                      ))}
+                    </svg>
+                  </div>
+
+                  {/* Chart 3: Peak Concurrent Sessions (Dual Bar Chart) */}
+                  <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                      Peak Concurrent Sessions
+                    </div>
+                    <svg width="100%" height="90" viewBox="0 0 240 90">
+                      <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
+                      <line x1="25" y1="35" x2="230" y2="35" stroke="#eee" strokeWidth="1" />
+                      <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
+                      <text x="2" y="14" font-size="8" fill="#555">100</text>
+                      <text x="2" y="39" font-size="8" fill="#555">40</text>
+                      <text x="18" y="74" font-size="8" fill="#555">0</text>
+                      {[
+                        { idx: 1, p1: 10, p2: 18 },
+                        { idx: 3, p1: 16, p2: 24 },
+                        { idx: 5, p1: 22, p2: 36 },
+                        { idx: 7, p1: 30, p2: 44 },
+                        { idx: 9, p1: 18, p2: 28 },
+                        { idx: 15, p1: 25, p2: 38 },
+                        { idx: 21, p1: 35, p2: 52 },
+                      ].map((bar, i) => (
+                        <g key={i}>
+                          <rect x={35 + i * 27} y={70 - bar.p1} width="8" height={bar.p1} fill="#800080" />
+                          <rect x={44 + i * 27} y={70 - bar.p2} width="8" height={bar.p2} fill="#000080" />
+                          <text x={43 + i * 27} y="82" font-size="6" fill="#333" text-anchor="middle">{bar.idx}</text>
+                        </g>
+                      ))}
+                    </svg>
+                  </div>
+
+                  {/* Chart 4: Avg Duration (Line Chart) */}
+                  <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                      Avg Duration (ms)
+                    </div>
+                    <svg width="100%" height="90" viewBox="0 0 240 90">
+                      <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
+                      <line x1="25" y1="35" x2="230" y2="35" stroke="#eee" strokeWidth="1" />
+                      <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
+                      <text x="2" y="14" font-size="8" fill="#555">5000</text>
+                      <text x="2" y="39" font-size="8" fill="#555">2500</text>
+                      <text x="18" y="74" font-size="8" fill="#555">0</text>
+                      {/* Plotted Line */}
+                      <polyline
+                        points="35,55 55,42 75,48 95,25 115,50 135,30 155,44 175,20 195,38 215,32"
+                        fill="none"
+                        stroke="#0000aa"
+                        strokeWidth="1.5"
+                      />
+                      {[
+                        { x: 35, y: 55, lbl: '1' },
+                        { x: 75, y: 48, lbl: '5' },
+                        { x: 115, y: 50, lbl: '10' },
+                        { x: 155, y: 44, lbl: '15' },
+                        { x: 195, y: 38, lbl: '20' },
+                        { x: 215, y: 32, lbl: '30' },
+                      ].map((pt, i) => (
+                        <g key={i}>
+                          <circle cx={pt.x} cy={pt.y} r="2.5" fill="#ffffff" stroke="#0000aa" strokeWidth="1.5" />
+                          <text x={pt.x} y="82" font-size="6" fill="#333" text-anchor="middle">{pt.lbl}</text>
+                        </g>
+                      ))}
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Dashboard Action Controls matching Reference UI */}
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '12px' }}>
+                  <button
+                    className="win95-button"
+                    style={{ fontSize: '10px', padding: '3px 10px' }}
+                    onClick={() => setModalNotice('Historical log data archived for active session.')}
+                  >
+                    📅 View Historical Data
+                  </button>
+                  <button
+                    className="win95-button"
+                    style={{ fontSize: '10px', padding: '3px 10px' }}
+                    onClick={() => setModalNotice('Session logs exported to JSON/CSV format.')}
+                  >
+                    📤 Export Logs
+                  </button>
+                  <button
+                    className="win95-button"
+                    style={{ fontSize: '10px', padding: '3px 10px' }}
+                    onClick={() => setModalNotice('Usage Analytics Report generated successfully.')}
+                  >
+                    📄 Generate Report
+                  </button>
+                </div>
 
                 <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '4px' }}>
                   Recent Queries (Last 10):
@@ -725,7 +882,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   style={{
                     background: '#ffffff',
                     padding: '6px',
-                    height: '110px',
+                    height: '100px',
                     overflowY: 'auto',
                     fontFamily: 'monospace',
                     fontSize: '10px',

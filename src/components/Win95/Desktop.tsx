@@ -27,6 +27,20 @@ import { AdminDashboard, SessionStats } from './AdminDashboard';
 import { ErrorBoundary } from './ErrorBoundary';
 import { SQLDictionaryWindow } from './SQLDictionaryWindow';
 import { DialectName } from '../../data/dialectCommands';
+import {
+  AuthorShieldIcon,
+  RebootIcon,
+  AboutIcon,
+  TeamIcon,
+  IdeIcon,
+  LegalIcon,
+  DictionaryIcon,
+  RecycleBinIcon,
+  TutorialIcon,
+  WizardIcon,
+  OptionsIcon,
+  TourIcon,
+} from './Win95Icons';
 
 
 
@@ -369,7 +383,7 @@ export const Desktop: React.FC = () => {
 
       {/* Desktop Shortcut Icons */}
       <div className="win95-icon-grid" style={{ position: 'relative', zIndex: 2 }}>
-        {/* Admin / Account Icon */}
+        {/* Admin / Account Control Icon */}
         <div
           className="win95-desktop-icon"
           onDoubleClick={() => focusWindow(isLoggedIn ? 'admin' : 'auth')}
@@ -377,9 +391,9 @@ export const Desktop: React.FC = () => {
           title={isLoggedIn ? `Logged in as ${currentUser?.displayName}` : 'Log in or Register'}
         >
           <div className="icon-symbol" style={{ opacity: isSecureContext ? 1 : 0.5 }}>
-            {isLoggedIn ? (currentUser?.avatar || '🎛️') : '🎛️'}
+            <AuthorShieldIcon size={36} />
           </div>
-          <span>{isLoggedIn ? `${currentUser?.avatar || '🎛️'} ${currentUser?.displayName}` : '🎛️ Admin Control'}</span>
+          <span>{isLoggedIn ? currentUser?.displayName || 'Mrityunjai' : 'Mrityunjai Sachan'}</span>
         </div>
 
         <div
@@ -387,7 +401,9 @@ export const Desktop: React.FC = () => {
           onDoubleClick={() => focusWindow('welcome')}
           onClick={() => focusWindow('welcome')}
         >
-          <div className="icon-symbol">✨</div>
+          <div className="icon-symbol">
+            <AboutIcon size={36} />
+          </div>
           <span>About ExNihilo</span>
         </div>
 
@@ -396,7 +412,9 @@ export const Desktop: React.FC = () => {
           onDoubleClick={() => focusWindow('ide')}
           onClick={() => focusWindow('ide')}
         >
-          <div className="icon-symbol">🗄️</div>
+          <div className="icon-symbol">
+            <IdeIcon size={36} />
+          </div>
           <span>ExNihilo SQL IDE</span>
         </div>
 
@@ -406,7 +424,9 @@ export const Desktop: React.FC = () => {
           onClick={() => focusWindow('sqlDictionary')}
           title="SQL Dictionary & Dialect Reference"
         >
-          <div className="icon-symbol">📖</div>
+          <div className="icon-symbol">
+            <DictionaryIcon size={36} />
+          </div>
           <span>SQL Dictionary</span>
         </div>
 
@@ -415,17 +435,20 @@ export const Desktop: React.FC = () => {
           onDoubleClick={() => focusWindow('help')}
           onClick={() => focusWindow('help')}
         >
-          <div className="icon-symbol">❓</div>
+          <div className="icon-symbol">
+            <TutorialIcon size={36} />
+          </div>
           <span>Query Tutorial</span>
         </div>
-
 
         <div
           className="win95-desktop-icon"
           onDoubleClick={() => focusWindow('wizard')}
           onClick={() => focusWindow('wizard')}
         >
-          <div className="icon-symbol">🧙‍♂️</div>
+          <div className="icon-symbol">
+            <WizardIcon size={36} />
+          </div>
           <span>Setup Wizard</span>
         </div>
 
@@ -434,7 +457,9 @@ export const Desktop: React.FC = () => {
           onDoubleClick={() => focusWindow('settings')}
           onClick={() => focusWindow('settings')}
         >
-          <div className="icon-symbol">⚙️</div>
+          <div className="icon-symbol">
+            <OptionsIcon size={36} />
+          </div>
           <span>Options & Config</span>
         </div>
 
@@ -442,7 +467,9 @@ export const Desktop: React.FC = () => {
           className="win95-desktop-icon"
           onClick={() => setTourOpen(true)}
         >
-          <div className="icon-symbol">💡</div>
+          <div className="icon-symbol">
+            <TourIcon size={36} />
+          </div>
           <span>Guided Tour</span>
         </div>
 
@@ -451,7 +478,9 @@ export const Desktop: React.FC = () => {
           onClick={() => setShowBootAnimation(true)}
           title="Play Windows 95 Opening Animation"
         >
-          <div className="icon-symbol">🔄</div>
+          <div className="icon-symbol">
+            <RebootIcon size={36} />
+          </div>
           <span>Reboot 95</span>
         </div>
 
@@ -459,7 +488,9 @@ export const Desktop: React.FC = () => {
           className="win95-desktop-icon"
           onClick={() => focusWindow('contributors')}
         >
-          <div className="icon-symbol">🤝</div>
+          <div className="icon-symbol">
+            <TeamIcon size={36} />
+          </div>
           <span>Join the Team</span>
         </div>
 
@@ -467,7 +498,9 @@ export const Desktop: React.FC = () => {
           className="win95-desktop-icon"
           onClick={() => focusWindow('legal')}
         >
-          <div className="icon-symbol">⚖️</div>
+          <div className="icon-symbol">
+            <LegalIcon size={36} />
+          </div>
           <span>Legal & IP Notice</span>
         </div>
 
@@ -475,7 +508,9 @@ export const Desktop: React.FC = () => {
           className="win95-desktop-icon"
           onClick={handleResetSession}
         >
-          <div className="icon-symbol">🗑️</div>
+          <div className="icon-symbol">
+            <RecycleBinIcon size={36} />
+          </div>
           <span>Recycle Bin (Reset)</span>
         </div>
       </div>
