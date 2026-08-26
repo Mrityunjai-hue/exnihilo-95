@@ -105,9 +105,11 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const studioBodyRef = useRef<HTMLDivElement>(null);
 
   // ── Multi-Tab State Management with Debounced Persistence ─────────────────
-  const { saveWorkspaceDebounced } = useWorkspaceStorage(500);
+  const { saveWorkspaceDebounced, storageEstimate, formatIDEDisk } = useWorkspaceStorage(500);
+  const [showFormatConfirmDialog, setShowFormatConfirmDialog] = useState(false);
 
   const [tabs, setTabs] = useState<QueryTab[]>(() => {
+
     const stored = loadWorkspaceFromStorage();
     if (stored && stored.tabs.length > 0) {
       return stored.tabs.map((t) => ({
@@ -862,7 +864,94 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         <div className="win95-statusbar-pane">
           Engine: <strong>In-Browser WASM Kernel</strong>
         </div>
+        <div className="win95-statusbar-pane" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span>Storage: <strong>{storageEstimate.usedMb} MB / {storageEstimate.totalQuotaMb} MB</strong></span>
+          <button
+            type="button"
+            className="win95-button"
+            style={{ fontSize: '9px', padding: '0 4px', height: '16px', lineHeight: '14px' }}
+            onClick={() => setShowFormatConfirmDialog(true)}
+            title="Format IDE IndexedDB disk (preserves user login/auth session)"
+          >
+            💾 Format IDE Disk
+          </button>
+        </div>
       </div>
+
+      {/* Format IDE Disk Confirmation Modal */}
+      {showFormatConfirmDialog && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999999,
+          }}
+        >
+          <div className="win95-window" style={{ width: '400px', boxShadow: '4px 4px 10px rgba(0,0,0,0.5)' }}>
+            <div className="win95-titlebar">
+              <div className="win95-titlebar-text">
+                <span>⚠️</span>
+                <span>Confirm Format IDE Disk</span>
+              </div>
+              <div className="win95-titlebar-controls">
+                <button className="win95-btn-titlebar" onClick={() => setShowFormatConfirmDialog(false)}>
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div style={{ padding: '16px' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <span style={{ fontSize: '32px' }}>💾</span>
+                <div style={{ fontSize: '11px', lineHeight: '1.5' }}>
+                  <strong>Are you sure you want to Format the IDE Disk?</strong>
+                  <p style={{ margin: '4px 0 0 0', color: '#555' }}>
+                    This will clear all saved SQL query tabs from IndexedDB and reset the IDE workspace.
+                    <br /><br />
+                    <strong style={{ color: '#006600' }}>✓ Safe Hybrid Storage:</strong> Your login account, credentials, and user session in localStorage will remain <strong>100% untouched</strong>.
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+                <button
+                  className="win95-button"
+                  style={{ fontWeight: 'bold', color: '#b00020' }}
+                  onClick={async () => {
+                    await formatIDEDisk();
+                    const resetTabId = 'tab_1';
+                    const resetTab: QueryTab = {
+                      id: resetTabId,
+                      title: 'Query 1.sql',
+                      queryText: initialQueryText,
+                      result: null,
+                      isLoading: false,
+                      executionTimeMs: null,
+                    };
+                    setTabs([resetTab]);
+                    setActiveTabId(resetTabId);
+                    onQueryChange(initialQueryText);
+                    setShowFormatConfirmDialog(false);
+                  }}
+                >
+                  Confirm Format
+                </button>
+                <button className="win95-button" onClick={() => setShowFormatConfirmDialog(false)}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Query History Modal Drawer */}
       {isHistoryOpen && (

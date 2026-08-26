@@ -1,12 +1,12 @@
 /**
  * ResultsGrid.tsx — Enhanced Windows 95 ListView Results Grid
  * Supports multi-statement tabs, export (CSV, JSON, INSERTs), column sorting,
- * quick row search filtering, and cell value inspection.
+ * quick row search filtering (ReDoS-safe), cell value inspection, and DOM Virtualization.
  *
  * NOTE: All React Hooks are declared unconditionally at top of component (Rules of Hooks).
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ExecutionSuccess } from '../../engine/executor';
 
 interface ResultsGridProps {
@@ -15,6 +15,9 @@ interface ResultsGridProps {
   executionTimeMs: number | null;
   dialect?:        string;
 }
+
+const ROW_HEIGHT = 24;
+const OVERSCAN = 5;
 
 export const ResultsGrid: React.FC<ResultsGridProps> = ({
   result,
@@ -26,6 +29,10 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortColIdx, setSortColIdx] = useState<number | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(300);
+
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Cell inspector modal state
   const [inspectedCell, setInspectedCell] = useState<{
@@ -43,7 +50,22 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     setSortColIdx(null);
     setSortDir('asc');
     setInspectedCell(null);
+    setScrollTop(0);
   }, [result]);
+
+  // Update viewport height on resize or container mount
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const updateHeight = () => {
+      if (containerRef.current) {
+        setViewportHeight(containerRef.current.clientHeight || 300);
+      }
+    };
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   // Extract raw active rows safely for useMemo hook at top level
   const rawRows = useMemo(() => {
@@ -55,12 +77,22 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     return result.rows || [];
   }, [result, activeTab]);
 
+  // Calculate memory byte size once when active raw rows change
+  const dataSizeFormatted = useMemo(() => {
+    if (!rawRows || rawRows.length === 0) return '0 B';
+    const bytes = new Blob([JSON.stringify(rawRows)]).size;
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  }, [rawRows]);
+
   // Filtered and Sorted Rows computation (Hook at top level)
+  // Security Guardrail: Case-insensitive plain .includes() matching to prevent ReDoS
   const processedRows = useMemo(() => {
     if (!rawRows || rawRows.length === 0) return [];
     let list = rawRows.map((row, originalIndex) => ({ row, originalIndex }));
 
-    // Search filter
+    // Search filter (ReDoS Immunity: plain .includes())
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(({ row }) =>
@@ -68,7 +100,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
       );
     }
 
-    // Sort
+    // Interactive Column Sorting
     if (sortColIdx !== null) {
       list.sort((a, b) => {
         const valA = a.row[sortColIdx];
@@ -89,6 +121,17 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
 
     return list;
   }, [rawRows, searchQuery, sortColIdx, sortDir]);
+
+  // Virtualization Slice Math
+  const visibleStartIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+  const visibleEndIndex = Math.min(
+    processedRows.length,
+    Math.ceil((scrollTop + viewportHeight) / ROW_HEIGHT) + OVERSCAN
+  );
+  const visibleRows = processedRows.slice(visibleStartIndex, visibleEndIndex);
+
+  const topSpacerHeight = visibleStartIndex * ROW_HEIGHT;
+  const bottomSpacerHeight = Math.max(0, (processedRows.length - visibleEndIndex) * ROW_HEIGHT);
 
   const showToast = (msg: string) => {
     setToastNotice(msg);
@@ -151,7 +194,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
 
   const { columns, rowCount } = currentResult;
 
-  // Handle column header click for sorting
+  // Handle column header click for sorting (ASC -> DESC -> Unsorted)
   const handleColumnSort = (colIdx: number) => {
     if (sortColIdx === colIdx) {
       if (sortDir === 'asc') {
@@ -170,13 +213,14 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   const handleExportCSV = () => {
     const rowsToExport = rawRows;
     if (rowsToExport.length === 0) return;
-    const header = columns.map((c) => `"${c.replace(/"/g, '""')}"`).join(',');
+    const header = columns.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',');
     const body = rowsToExport
       .map((r) =>
         r
           .map((v) => {
             if (v === null || v === undefined) return '""';
-            return `"${String(v).replace(/"/g, '""')}"`;
+            const str = String(v).replace(/"/g, '""');
+            return `"${str}"`;
           })
           .join(',')
       )
@@ -193,7 +237,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     showToast('✓ CSV file exported successfully.');
   };
 
-  const handleCopyJSON = () => {
+  const handleExportJSON = () => {
     const rowsToExport = rawRows;
     if (rowsToExport.length === 0) return;
     const jsonArr = rowsToExport.map((r) => {
@@ -204,11 +248,18 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
       return obj;
     });
 
-    navigator.clipboard.writeText(JSON.stringify(jsonArr, null, 2));
-    showToast('✓ Results copied to clipboard as JSON.');
+    const jsonStr = JSON.stringify(jsonArr, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `query_result_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✓ JSON file exported successfully.');
   };
 
-  const handleExportInserts = () => {
+  const handleExportSQL = () => {
     const rowsToExport = rawRows;
     if (rowsToExport.length === 0) return;
     const tableName = inferredTables[0] || 'result_data';
@@ -273,18 +324,18 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           <button
             className="win95-button"
             style={{ fontSize: '10px', padding: '1px 6px' }}
-            onClick={handleCopyJSON}
-            title="Copy results to clipboard as formatted JSON"
+            onClick={handleExportJSON}
+            title="Export results to JSON file"
           >
             📋 JSON
           </button>
           <button
             className="win95-button"
             style={{ fontSize: '10px', padding: '1px 6px' }}
-            onClick={handleExportInserts}
+            onClick={handleExportSQL}
             title="Generate SQL INSERT statements file"
           >
-            📄 INSERTs
+            📄 SQL
           </button>
 
           {toastNotice && (
@@ -294,7 +345,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           )}
         </div>
 
-        {/* Quick Search Input */}
+        {/* Quick Search Input (ReDoS Immunity: .includes()) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <label style={{ fontSize: '10px', fontWeight: 'bold' }}>Filter:</label>
           <input
@@ -354,11 +405,15 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
         </div>
       )}
 
-      {/* Scrollable Grid Table */}
-      <div style={{ flex: 1, overflow: 'auto' }}>
-        <table className="win95-grid">
+      {/* Virtualized Scrollable Grid Table */}
+      <div
+        ref={containerRef}
+        onScroll={(e) => setScrollTop((e.target as HTMLDivElement).scrollTop)}
+        style={{ flex: 1, overflow: 'auto', position: 'relative' }}
+      >
+        <table className="win95-grid" style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr>
+            <tr style={{ position: 'sticky', top: 0, zIndex: 10, background: '#c0c0c0' }}>
               <th style={{ width: '40px', textAlign: 'center' }}>#</th>
               {columns.map((col, idx) => {
                 const isSorted = sortColIdx === idx;
@@ -367,7 +422,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                     key={idx}
                     onClick={() => handleColumnSort(idx)}
                     style={{ cursor: 'pointer', userSelect: 'none' }}
-                    title="Click to sort column"
+                    title="Click to sort column (ASC -> DESC -> Unsorted)"
                   >
                     <span>{col}</span>
                     {isSorted && (
@@ -388,29 +443,46 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                 </td>
               </tr>
             ) : (
-              processedRows.map(({ row, originalIndex }) => (
-                <tr key={originalIndex}>
-                  <td style={{ textAlign: 'center', color: '#888', background: '#f5f5f5' }}>
-                    {originalIndex + 1}
-                  </td>
-                  {row.map((val, colIdx) => (
-                    <td
-                      key={colIdx}
-                      onDoubleClick={() => setInspectedCell({ val, colName: columns[colIdx], rowIdx: originalIndex + 1 })}
-                      title="Double-click to inspect cell value"
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {val === null || val === undefined ? (
-                        <span style={{ color: '#999999', fontStyle: 'italic' }}>&lt;NULL&gt;</span>
-                      ) : typeof val === 'object' ? (
-                        JSON.stringify(val)
-                      ) : (
-                        String(val)
-                      )}
+              <>
+                {/* Top Virtual Spacer */}
+                {topSpacerHeight > 0 && (
+                  <tr style={{ height: `${topSpacerHeight}px` }}>
+                    <td colSpan={columns.length + 1} style={{ padding: 0, border: 'none' }} />
+                  </tr>
+                )}
+
+                {/* Visible Virtual Window Rows */}
+                {visibleRows.map(({ row, originalIndex }) => (
+                  <tr key={originalIndex} style={{ height: `${ROW_HEIGHT}px` }}>
+                    <td style={{ textAlign: 'center', color: '#888', background: '#f5f5f5' }}>
+                      {originalIndex + 1}
                     </td>
-                  ))}
-                </tr>
-              ))
+                    {row.map((val, colIdx) => (
+                      <td
+                        key={colIdx}
+                        onDoubleClick={() => setInspectedCell({ val, colName: columns[colIdx], rowIdx: originalIndex + 1 })}
+                        title="Double-click to inspect cell value"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {val === null || val === undefined ? (
+                          <span style={{ color: '#999999', fontStyle: 'italic' }}>&lt;NULL&gt;</span>
+                        ) : typeof val === 'object' ? (
+                          JSON.stringify(val)
+                        ) : (
+                          String(val)
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+
+                {/* Bottom Virtual Spacer */}
+                {bottomSpacerHeight > 0 && (
+                  <tr style={{ height: `${bottomSpacerHeight}px` }}>
+                    <td colSpan={columns.length + 1} style={{ padding: 0, border: 'none' }} />
+                  </tr>
+                )}
+              </>
             )}
           </tbody>
         </table>
@@ -425,6 +497,9 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
         )}
         <div className="win95-statusbar-pane">
           Rows: <strong>{processedRows.length}</strong> {searchQuery && `(filtered from ${rowCount})`}
+        </div>
+        <div className="win95-statusbar-pane">
+          Size: <strong>{dataSizeFormatted}</strong>
         </div>
         <div className="win95-statusbar-pane">
           Time: <strong>{executionTimeMs !== null ? `${executionTimeMs.toFixed(1)} ms` : '0 ms'}</strong>
