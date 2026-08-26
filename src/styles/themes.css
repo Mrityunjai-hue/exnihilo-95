@@ -121,32 +121,55 @@
   border-color: #334155 !important;
 }
 
-/* Hardcoded Light Gray/White/Black Text Colors Fix for Dark Mode */
-[data-theme="win95-noir"] div,
-[data-theme="win95-noir"] p,
-[data-theme="win95-noir"] span,
-[data-theme="win95-noir"] h1,
-[data-theme="win95-noir"] h2,
-[data-theme="win95-noir"] h3,
-[data-theme="win95-noir"] h4,
-[data-theme="win95-noir"] strong,
-[data-theme="win95-noir"] td,
-[data-theme="win95-noir"] th,
-[data-theme="win95-noir"] legend,
-[data-theme="win95-noir"] label {
-  color: inherit;
+/* Master Dark Mode Input & Select Overrides */
+[data-theme="win95-noir"] input,
+[data-theme="win95-noir"] select,
+[data-theme="win95-noir"] textarea {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
 }
 
-/* Ensure text inside cards and dialogs in Noir is bright and readable */
-[data-theme="win95-noir"] [style*="color: #666"],
-[data-theme="win95-noir"] [style*="color: #555"],
-[data-theme="win95-noir"] [style*="color: #444"],
-[data-theme="win95-noir"] [style*="color: #333"],
+[data-theme="win95-noir"] input::placeholder,
+[data-theme="win95-noir"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Master Dark Mode Statusbar Overrides */
+[data-theme="win95-noir"] .win95-statusbar-pane {
+  background-color: #1b2230 !important;
+  color: #f8fafc !important;
+  border-top-color: #334155 !important;
+  border-left-color: #334155 !important;
+  border-right-color: #0f172a !important;
+  border-bottom-color: #0f172a !important;
+}
+
+[data-theme="win95-noir"] .win95-statusbar-pane strong,
+[data-theme="win95-noir"] .win95-statusbar-pane span {
+  color: #f8fafc !important;
+}
+
+/* Master Dark Mode Color Inversion for Hardcoded Dark Navy / Gray Inline Styles */
+[data-theme="win95-noir"] [style*="color: #000080"],
+[data-theme="win95-noir"] [style*="color: rgb(0, 0, 128)"],
+[data-theme="win95-noir"] [style*="color: #0000ff"],
+[data-theme="win95-noir"] [style*="color: #0000ee"],
 [data-theme="win95-noir"] [style*="color: #000"],
+[data-theme="win95-noir"] [style*="color: #000000"],
+[data-theme="win95-noir"] [style*="color: #111"],
+[data-theme="win95-noir"] [style*="color: #222"],
+[data-theme="win95-noir"] [style*="color: #333"],
+[data-theme="win95-noir"] [style*="color: #444"],
+[data-theme="win95-noir"] [style*="color: #555"],
+[data-theme="win95-noir"] [style*="color: #666"],
+[data-theme="win95-noir"] [style*="color: #777"],
+[data-theme="win95-noir"] [style*="color: #888"],
+[data-theme="win95-noir"] [style*="color: #999"],
 [data-theme="win95-noir"] [style*="color: rgb(0, 0, 0)"],
 [data-theme="win95-noir"] [style*="color: rgb(51, 51, 51)"],
 [data-theme="win95-noir"] [style*="color: rgb(102, 102, 102)"] {
-  color: #cbd5e1 !important;
+  color: #38bdf8 !important; /* Vibrant high-contrast neon cyan in dark mode */
 }
 
 /* CodeMirror Dark Mode Tweaks */
