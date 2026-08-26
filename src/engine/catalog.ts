@@ -18,6 +18,7 @@ export interface CatalogEntry {
   rowCount:       number;
   isUserDefined:  boolean;
   dbName?:        string;
+  triggers?:      string[];    // Names of triggers attached to this table
 }
 
 export interface ViewEntry {
@@ -28,10 +29,32 @@ export interface ViewEntry {
   dbName?:   string;
 }
 
+export interface RoutineEntry {
+  routineName: string;         // normalized lowercase
+  type:        'PROCEDURE' | 'FUNCTION';
+  parameters:  string[];
+  returnType?: string;
+  body:        string;
+  createdAt:   Date;
+  dbName?:     string;
+}
+
+export interface TriggerEntry {
+  triggerName: string;         // normalized lowercase
+  targetTable: string;         // normalized lowercase
+  timing:      'BEFORE' | 'AFTER' | 'INSTEAD OF';
+  event:       'INSERT' | 'UPDATE' | 'DELETE';
+  body:        string;
+  createdAt:   Date;
+  dbName?:     string;
+}
+
 export interface DatabaseSchema {
-  name:   string;
-  tables: Map<string, CatalogEntry>;
-  views:  Map<string, ViewEntry>;
+  name:     string;
+  tables:   Map<string, CatalogEntry>;
+  views:    Map<string, ViewEntry>;
+  routines: Map<string, RoutineEntry>;
+  triggers: Map<string, TriggerEntry>;
 }
 
 export class SessionCatalog {
@@ -64,6 +87,8 @@ export class SessionCatalog {
         name: key,
         tables: new Map(),
         views: new Map(),
+        routines: new Map(),
+        triggers: new Map(),
       });
     }
     return this.databases.get(key)!;
@@ -139,6 +164,13 @@ export class SessionCatalog {
     const existing = db.tables.get(name);
     const userDefined = isUserDefined || (existing?.isUserDefined ?? false);
 
+    const attachedTriggers = existing?.triggers ? [...existing.triggers] : [];
+    for (const tr of db.triggers.values()) {
+      if (tr.targetTable.toLowerCase() === name.toLowerCase() && !attachedTriggers.includes(tr.triggerName)) {
+        attachedTriggers.push(tr.triggerName);
+      }
+    }
+
     const entry: CatalogEntry = {
       tableName: name,
       schema,
@@ -146,6 +178,7 @@ export class SessionCatalog {
       rowCount,
       isUserDefined: userDefined,
       dbName: resolvedDb,
+      triggers: attachedTriggers,
     };
 
     db.tables.set(name, entry);
@@ -225,6 +258,150 @@ export class SessionCatalog {
       allViews.push(...Array.from(d.views.values()));
     }
     return allViews;
+  }
+
+  // ── Routine Management (PROCEDURE & FUNCTION) ────────────────────────────────
+
+  /**
+   * Register a stored procedure or function in the catalog.
+   */
+  setRoutine(
+    routineName: string,
+    type:        'PROCEDURE' | 'FUNCTION',
+    parameters:  string[],
+    body:        string,
+    returnType?: string,
+    dbName?:     string
+  ): RoutineEntry {
+    const { dbName: resolvedDb, name } = this.parseQualifiedName(routineName, dbName);
+    const db = this.createDatabase(resolvedDb);
+
+    const routineEntry: RoutineEntry = {
+      routineName: name,
+      type,
+      parameters,
+      returnType,
+      body,
+      createdAt: new Date(),
+      dbName: resolvedDb,
+    };
+
+    db.routines.set(name, routineEntry);
+    return routineEntry;
+  }
+
+  /**
+   * Retrieve a stored routine by name.
+   */
+  getRoutine(routineName: string, dbName?: string): RoutineEntry | undefined {
+    const { dbName: resolvedDb, name } = this.parseQualifiedName(routineName, dbName);
+    const db = this.databases.get(resolvedDb);
+    if (db && db.routines.has(name)) return db.routines.get(name);
+
+    if (!routineName.includes('.')) {
+      for (const d of this.databases.values()) {
+        if (d.routines.has(name)) return d.routines.get(name);
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Check if a stored routine exists in the catalog.
+   */
+  hasRoutine(routineName: string, dbName?: string): boolean {
+    return this.getRoutine(routineName, dbName) !== undefined;
+  }
+
+  /**
+   * Returns all registered routines across databases.
+   */
+  getAllRoutines(dbName?: string): RoutineEntry[] {
+    if (dbName) {
+      const db = this.databases.get(dbName.toLowerCase().trim());
+      return db ? Array.from(db.routines.values()) : [];
+    }
+    const allRoutines: RoutineEntry[] = [];
+    for (const d of this.databases.values()) {
+      allRoutines.push(...Array.from(d.routines.values()));
+    }
+    return allRoutines;
+  }
+
+  // ── Trigger Management ────────────────────────────────────────────────────────
+
+  /**
+   * Register a trigger in the catalog and attach it to its target table.
+   */
+  setTrigger(
+    triggerName: string,
+    targetTable: string,
+    timing:      'BEFORE' | 'AFTER' | 'INSTEAD OF',
+    event:       'INSERT' | 'UPDATE' | 'DELETE',
+    body:        string,
+    dbName?:     string
+  ): TriggerEntry {
+    const { dbName: resolvedDb, name } = this.parseQualifiedName(triggerName, dbName);
+    const db = this.createDatabase(resolvedDb);
+
+    const triggerEntry: TriggerEntry = {
+      triggerName: name,
+      targetTable: targetTable.toLowerCase().trim(),
+      timing,
+      event,
+      body,
+      createdAt: new Date(),
+      dbName: resolvedDb,
+    };
+
+    db.triggers.set(name, triggerEntry);
+
+    // Attach trigger name to target table catalog entry if present
+    const tableEntry = this.get(targetTable, resolvedDb);
+    if (tableEntry) {
+      if (!tableEntry.triggers) tableEntry.triggers = [];
+      if (!tableEntry.triggers.includes(name)) tableEntry.triggers.push(name);
+    }
+
+    return triggerEntry;
+  }
+
+  /**
+   * Retrieve a trigger by name.
+   */
+  getTrigger(triggerName: string, dbName?: string): TriggerEntry | undefined {
+    const { dbName: resolvedDb, name } = this.parseQualifiedName(triggerName, dbName);
+    const db = this.databases.get(resolvedDb);
+    if (db && db.triggers.has(name)) return db.triggers.get(name);
+
+    if (!triggerName.includes('.')) {
+      for (const d of this.databases.values()) {
+        if (d.triggers.has(name)) return d.triggers.get(name);
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Check if a trigger exists in the catalog.
+   */
+  hasTrigger(triggerName: string, dbName?: string): boolean {
+    return this.getTrigger(triggerName, dbName) !== undefined;
+  }
+
+  /**
+   * Returns all triggers across databases or for a specific database.
+   */
+  getAllTriggers(dbName?: string): TriggerEntry[] {
+    if (dbName) {
+      const db = this.databases.get(dbName.toLowerCase().trim());
+      return db ? Array.from(db.triggers.values()) : [];
+    }
+    const allTriggers: TriggerEntry[] = [];
+    for (const d of this.databases.values()) {
+      allTriggers.push(...Array.from(d.triggers.values()));
+    }
+    return allTriggers;
   }
 
   /**

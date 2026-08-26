@@ -614,6 +614,195 @@ export function extractCreateViewStatements(ast: AST | AST[]): CreateViewSpec[] 
   return specs;
 }
 
+// ── Final Batch: Procedural Routines, Triggers & Recursive CTEs ──────────────
+
+export interface RoutineSpec {
+  routineName: string;
+  type: 'PROCEDURE' | 'FUNCTION';
+  parameters: string[];
+  returnType?: string;
+  body: string;
+  dbName?: string;
+}
+
+export interface TriggerSpec {
+  triggerName: string;
+  targetTable: string;
+  timing: 'BEFORE' | 'AFTER' | 'INSTEAD OF';
+  event: 'INSERT' | 'UPDATE' | 'DELETE';
+  body: string;
+  dbName?: string;
+}
+
+export interface RecursiveCteSpec {
+  isRecursive: boolean;
+  cteNames: string[];
+}
+
+/**
+ * Extracts CREATE PROCEDURE and CREATE FUNCTION specifications from AST & query string.
+ */
+export function extractRoutineStatements(queryText: string, ast?: AST | AST[]): RoutineSpec[] {
+  const specs: RoutineSpec[] = [];
+
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+
+    if (node.type === 'create') {
+      const kw = String(node.keyword || '').toLowerCase();
+      if (kw === 'procedure' || kw === 'function') {
+        const routineName = node.procedure || node.function || node.name || 'unnamed_routine';
+        specs.push({
+          routineName: String(routineName),
+          type: kw === 'procedure' ? 'PROCEDURE' : 'FUNCTION',
+          parameters: Array.isArray(node.parameters) ? node.parameters.map((p: any) => String(p.name || p)) : [],
+          body: node.body ? String(node.body) : queryText,
+        });
+      }
+    }
+
+    for (const key of Object.keys(node)) {
+      if (typeof node[key] === 'object') walk(node[key]);
+    }
+  };
+
+  if (ast) walk(ast);
+
+  const procRegex = /CREATE\s+(PROCEDURE|FUNCTION)\s+([a-zA-Z0-9_.]+)\s*\((.*?)\)(?:\s+RETURNS\s+([a-zA-Z0-9_]+))?\s+([\s\S]+)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = procRegex.exec(queryText)) !== null) {
+    const typeStr = match[1].toUpperCase() as 'PROCEDURE' | 'FUNCTION';
+    const fullName = match[2];
+    const paramsRaw = match[3];
+    const returnType = match[4];
+    const body = match[5];
+
+    const params = paramsRaw
+      .split(',')
+      .map(p => p.trim())
+      .filter(Boolean);
+
+    if (!specs.some(s => s.routineName.toLowerCase() === fullName.toLowerCase())) {
+      specs.push({
+        routineName: fullName,
+        type: typeStr,
+        parameters: params,
+        returnType,
+        body,
+      });
+    }
+  }
+
+  return specs;
+}
+
+/**
+ * Extracts CREATE TRIGGER specifications from AST & query string.
+ */
+export function extractTriggerStatements(queryText: string, ast?: AST | AST[]): TriggerSpec[] {
+  const specs: TriggerSpec[] = [];
+
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+
+    if (node.type === 'create' && String(node.keyword || '').toLowerCase() === 'trigger') {
+      const triggerName = node.trigger?.table || node.trigger?.value || node.trigger || 'unnamed_trigger';
+      const targetTable = node.table?.table || node.table?.value || node.table || '';
+      const timing = String(node.time || 'AFTER').toUpperCase() as 'BEFORE' | 'AFTER' | 'INSTEAD OF';
+      const event = String(node.events?.[0]?.keyword || 'INSERT').toUpperCase() as 'INSERT' | 'UPDATE' | 'DELETE';
+
+      if (targetTable) {
+        specs.push({
+          triggerName: String(triggerName),
+          targetTable: String(targetTable),
+          timing,
+          event,
+          body: queryText,
+        });
+      }
+    }
+
+    for (const key of Object.keys(node)) {
+      if (typeof node[key] === 'object') walk(node[key]);
+    }
+  };
+
+  if (ast) walk(ast);
+
+  const triggerRegex = /CREATE\s+TRIGGER\s+([a-zA-Z0-9_.]+)\s+(BEFORE|AFTER|INSTEAD\s+OF)\s+(INSERT|UPDATE|DELETE)\s+ON\s+([a-zA-Z0-9_.]+)\s+([\s\S]+)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = triggerRegex.exec(queryText)) !== null) {
+    const triggerName = match[1];
+    const timing = match[2].toUpperCase().replace(/\s+/, ' ') as 'BEFORE' | 'AFTER' | 'INSTEAD OF';
+    const event = match[3].toUpperCase() as 'INSERT' | 'UPDATE' | 'DELETE';
+    const targetTable = match[4];
+    const body = match[5];
+
+    if (!specs.some(s => s.triggerName.toLowerCase() === triggerName.toLowerCase())) {
+      specs.push({
+        triggerName,
+        targetTable,
+        timing,
+        event,
+        body,
+      });
+    }
+  }
+
+  return specs;
+}
+
+/**
+ * Extracts CTE names and RECURSIVE status from WITH / WITH RECURSIVE clauses.
+ */
+export function extractRecursiveCtes(queryText: string, ast?: AST | AST[]): RecursiveCteSpec {
+  const cteNames: string[] = [];
+  let isRecursive = false;
+
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+
+    if (Array.isArray(node.with)) {
+      node.with.forEach((cte: any) => {
+        if (cte.recursive) isRecursive = true;
+        const nameVal = cte.name?.value || cte.name || (typeof cte === 'string' ? cte : '');
+        if (nameVal) cteNames.push(String(nameVal).toLowerCase());
+      });
+    }
+
+    for (const key of Object.keys(node)) {
+      if (typeof node[key] === 'object') walk(node[key]);
+    }
+  };
+
+  if (ast) walk(ast);
+
+  if (/WITH\s+RECURSIVE\b/i.test(queryText)) {
+    isRecursive = true;
+  }
+
+  const cteRegex = /WITH\s+(?:RECURSIVE\s+)?([a-zA-Z0-9_]+)\s*(?:\(.*?\))?\s+AS/gi;
+  let match: RegExpExecArray | null;
+  while ((match = cteRegex.exec(queryText)) !== null) {
+    const cteName = match[1].toLowerCase();
+    if (!cteNames.includes(cteName)) cteNames.push(cteName);
+  }
+
+  return { isRecursive, cteNames: Array.from(new Set(cteNames)) };
+}
+
 
 
 

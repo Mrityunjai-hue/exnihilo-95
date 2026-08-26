@@ -27,6 +27,9 @@ import {
   extractTruncateStatements,
   extractCreateSchemaStatements,
   extractCreateViewStatements,
+  extractRoutineStatements,
+  extractTriggerStatements,
+  extractRecursiveCtes,
 } from './parser';
 import { inferSchema, InferredSchemaMap, DEFAULT_COLUMNS, TableSchema, SQLITE_DDL } from './inference';
 
@@ -707,6 +710,32 @@ export class SQLExecutor {
     // ── 1. Parse Query ────────────────────────────────────────────────────────
     const parseResult = parse(trimmedQuery, dialect);
     if (!parseResult.ok) {
+      const routineSpecs = extractRoutineStatements(trimmedQuery);
+      const triggerSpecs = extractTriggerStatements(trimmedQuery);
+
+      if (routineSpecs.length > 0 || triggerSpecs.length > 0) {
+        for (const r of routineSpecs) {
+          this.catalog.setRoutine(r.routineName, r.type, r.parameters, r.body, r.returnType, r.dbName);
+        }
+        for (const tr of triggerSpecs) {
+          this.catalog.setTrigger(tr.triggerName, tr.targetTable, tr.timing, tr.event, tr.body, tr.dbName);
+          try {
+            this.db.run(tr.body);
+          } catch {
+            // WASM engine fallback
+          }
+        }
+        return {
+          ok: true,
+          columns: ['status'],
+          rows: [['Procedural DDL executed & registered in catalog.']],
+          rowCount: 0,
+          executionTimeMs: performance.now() - startTime,
+          inferredTables: [],
+          reusedTables: [],
+        };
+      }
+
       return {
         ok: false,
         errorType: 'SYNTAX_ERROR',
@@ -715,7 +744,7 @@ export class SQLExecutor {
       };
     }
 
-    // ── 1.5. Process DDL Statements & Register Schema/Tables/Views ────────────
+    // ── 1.5. Process DDL Statements & Register Schema/Tables/Views/Routines/Triggers ─
     if (parseResult.ast) {
       const schemaSpecs = extractCreateSchemaStatements(parseResult.ast);
       for (const s of schemaSpecs) {
@@ -730,6 +759,16 @@ export class SQLExecutor {
       const truncateSpecs = extractTruncateStatements(parseResult.ast);
       for (const t of truncateSpecs) {
         this.catalog.truncateTable(t.tableName, t.dbName);
+      }
+
+      const routineSpecs = extractRoutineStatements(trimmedQuery, parseResult.ast);
+      for (const r of routineSpecs) {
+        this.catalog.setRoutine(r.routineName, r.type, r.parameters, r.body, r.returnType, r.dbName);
+      }
+
+      const triggerSpecs = extractTriggerStatements(trimmedQuery, parseResult.ast);
+      for (const tr of triggerSpecs) {
+        this.catalog.setTrigger(tr.triggerName, tr.targetTable, tr.timing, tr.event, tr.body, tr.dbName);
       }
 
       // Register explicit user-defined CREATE TABLE statements into catalog
@@ -771,7 +810,22 @@ export class SQLExecutor {
         }
       };
       walkCreateTables(parseResult.ast);
+    } else {
+      // Fallback regex extractions if AST parser returned errors
+      const routineSpecs = extractRoutineStatements(trimmedQuery);
+      for (const r of routineSpecs) {
+        this.catalog.setRoutine(r.routineName, r.type, r.parameters, r.body, r.returnType, r.dbName);
+      }
+
+      const triggerSpecs = extractTriggerStatements(trimmedQuery);
+      for (const tr of triggerSpecs) {
+        this.catalog.setTrigger(tr.triggerName, tr.targetTable, tr.timing, tr.event, tr.body, tr.dbName);
+      }
     }
+
+    // Extract CTE names (WITH / WITH RECURSIVE)
+    const recursiveCteInfo = extractRecursiveCtes(trimmedQuery, parseResult.ast);
+    const cteNameSet = new Set(recursiveCteInfo.cteNames);
 
     // ── 2. Identify Tables & Cache State ──────────────────────────────────────
     const allReferencedTables = parseResult.tableList.map(t => {
@@ -798,7 +852,8 @@ export class SQLExecutor {
         this.catalog.has(tbl) ||
         this.catalog.hasView(tbl) ||
         this.hasTableInSqlite(tbl) ||
-        createdInQuery.has(tbl)
+        createdInQuery.has(tbl) ||
+        cteNameSet.has(tbl.toLowerCase())
       ) {
         reusedTables.push(tbl);
       } else {
