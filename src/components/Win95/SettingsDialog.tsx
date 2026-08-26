@@ -14,6 +14,8 @@ interface SettingsDialogProps {
   currentDialect: Dialect;
   rowsPerTable:   number;
   tableCap:       number;
+  crtEnabled?:    boolean;
+  onToggleCrt?:   () => void;
   onSave:         (rows: number, cap: number, dialect: Dialect) => void;
   onClose:        () => void;
   onFocus:        () => void;
@@ -25,6 +27,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   currentDialect,
   rowsPerTable,
   tableCap,
+  crtEnabled,
+  onToggleCrt,
   onSave,
   onClose,
   onFocus,
@@ -221,6 +225,35 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                   })}
                 </div>
               </fieldset>
+
+              {/* CRT Monitor Filter Toggle */}
+              {onToggleCrt && (
+                <fieldset style={{ border: '1px solid var(--w95-dark-gray, #808080)', padding: '10px', marginTop: '12px' }}>
+                  <legend style={{ padding: '0 4px', fontSize: '11px', fontWeight: 'bold' }}>
+                    📺 Retro CRT Monitor Effects
+                  </legend>
+                  <label
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={Boolean(crtEnabled)}
+                      onChange={onToggleCrt}
+                    />
+                    <strong>Enable Retro CRT Scanline & Glow Overlay</strong>
+                  </label>
+                  <p style={{ margin: '4px 0 0 24px', fontSize: '10px', opacity: 0.8 }}>
+                    Simulates authentic 1990s CRT monitor scanlines, edge vignette, and micro-flicker.
+                  </p>
+                </fieldset>
+              )}
             </div>
           )}
 

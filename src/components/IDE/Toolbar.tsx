@@ -20,6 +20,8 @@ interface ToolbarProps {
   onOpenHelp:        () => void;
   onOpenSettings:    () => void;
   onStartTour:       () => void;
+  crtEnabled?:       boolean;
+  onToggleCrt?:      () => void;
   isLoading:         boolean;
   hasSelection?:     boolean;
   historyCount?:     number;
@@ -38,6 +40,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onOpenHelp,
   onOpenSettings,
   onStartTour,
+  crtEnabled,
+  onToggleCrt,
   isLoading,
   hasSelection = false,
   historyCount = 0,
@@ -271,6 +275,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <span>🎨</span>
           <span>Themes</span>
         </button>
+
+        {onToggleCrt && (
+          <button
+            id="btn-crt"
+            className={`win95-button ${crtEnabled ? 'pressed' : ''}`}
+            onClick={onToggleCrt}
+            title="Toggle Retro CRT Monitor Scanline & Glow Overlay Effect"
+            style={{ padding: '2px 6px', fontWeight: crtEnabled ? 'bold' : 'normal' }}
+          >
+            <span>📺</span>
+            <span>CRT {crtEnabled ? 'ON' : 'OFF'}</span>
+          </button>
+        )}
 
         <button
           id="btn-options"

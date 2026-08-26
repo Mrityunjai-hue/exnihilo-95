@@ -67,6 +67,8 @@ interface IDEShellProps {
   onOpenHelp:              () => void;
   onOpenSettings:          () => void;
   onStartTour:             () => void;
+  crtEnabled?:             boolean;
+  onToggleCrt?:            () => void;
 }
 
 export const IDEShell: React.FC<IDEShellProps> = ({
@@ -90,6 +92,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   onOpenHelp,
   onOpenSettings,
   onStartTour,
+  crtEnabled,
+  onToggleCrt,
 }) => {
   const { position, handleMouseDown: handleHeaderDrag } = useDraggable(propPosition || { x: 40, y: 30 });
   const [activeMenu, setActiveMenu] = useState<'file' | 'edit' | 'query' | 'view' | 'tools' | 'help' | null>(null);
@@ -713,9 +717,11 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               <div className="win95-dropdown-item" onClick={() => { setIsERDOpen(true); setActiveMenu(null); }}>
                 <span>🌐 Entity Relationship Diagram (ERD)</span>
               </div>
-              <div className="win95-dropdown-divider" />
               <div className="win95-dropdown-item" onClick={() => { onOpenSettings(); setActiveMenu(null); }}>
                 <span>🎨 Vintage Themes & Dark Mode...</span>
+              </div>
+              <div className="win95-dropdown-item" onClick={() => { onToggleCrt?.(); setActiveMenu(null); }}>
+                <span>{crtEnabled ? '✓ 📺 CRT Scanline Filter (ON)' : '  📺 CRT Scanline Filter (OFF)'}</span>
               </div>
             </div>
           )}
@@ -736,15 +742,15 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           </span>
           {activeMenu === 'help' && (
             <div className="win95-dropdown-menu">
-              <div className="win95-dropdown-item" onClick={() => { onOpenSettings(); setActiveMenu(null); }}>
-                <span>⚙️ Options & Control Panel...</span>
-              </div>
-              <div className="win95-dropdown-divider" />
               <div className="win95-dropdown-item" onClick={() => { onOpenHelp(); setActiveMenu(null); }}>
-                <span>📖 SQL Query Tutorial...</span>
+                <span>📖 Open SQL Tutorial Guide (`winhlp32.exe`)</span>
               </div>
               <div className="win95-dropdown-item" onClick={() => { onStartTour(); setActiveMenu(null); }}>
-                <span>💡 Guided Balloon Tour</span>
+                <span>💡 Start Guided Feature Tour</span>
+              </div>
+              <div className="win95-dropdown-divider" />
+              <div className="win95-dropdown-item" onClick={() => { onOpenSettings(); setActiveMenu(null); }}>
+                <span>⚙️ Options & Control Panel...</span>
               </div>
             </div>
           )}
@@ -764,6 +770,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         onOpenHelp={onOpenHelp}
         onOpenSettings={onOpenSettings}
         onStartTour={onStartTour}
+        crtEnabled={crtEnabled}
+        onToggleCrt={onToggleCrt}
         isLoading={activeTab.isLoading}
         hasSelection={hasSelection}
         historyCount={queryHistory.length}

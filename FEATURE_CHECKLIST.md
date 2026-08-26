@@ -9,14 +9,14 @@
 
 | Metric | Status |
 | :--- | :---: |
-| **Total Tracked Features** | **98 Features** |
-| **✅ Fully Implemented** | **62 Features** (63%) |
+| **Total Tracked Features** | **97 Features** |
+| **✅ Fully Implemented** | **63 Features** (65%) |
 | **🟡 Partially Implemented** | **6 Features** (6%) |
-| **❌ Pending Roadmap** | **30 Features** (31%) |
-| **Overall Completion** | **~63% Functional Baseline** |
+| **❌ Pending Roadmap** | **28 Features** (29%) |
+| **Overall Completion** | **~65% Functional Baseline** |
 
 ```
-Progress: [███████████████████████████████░░░░░░░░░░░░░░░░] 63% Completed
+Progress: [████████████████████████████████░░░░░░░░░░░░░░░] 65% Completed
 ```
 
 ---
@@ -160,8 +160,7 @@ Progress: [███████████████████████
 - [x] **Win95 Noir Dark Mode**: Dark desktop theme (`#0a0e17`) with vibrant neon titlebars, dark slate windows, and dark CodeMirror editor.
 - [x] **Windows XP Luna Theme**: Bliss green (`#2d5a27`) desktop aesthetic with royal blue XP gradient titlebars (`#0055ea` $\rightarrow$ `#3f8cff`).
 - [x] **Windows 2000 Corporate Skin**: Steel blue (`#3a6ea5`) desktop with corporate slate gray windows (`#d4d0c8`).
-- [ ] **Custom Wallpaper Upload**: Upload custom desktop background images.
-- [ ] **CRT Scanline Filter**: Retro CRT monitor scanline & glow overlay effect.
+- [x] **CRT Scanline Filter**: Retro CRT monitor scanline, vignette & subtle flicker overlay effect.
 
 ---
 

@@ -115,6 +115,28 @@ export const Desktop: React.FC = () => {
   // Tour State
   const [tourOpen, setTourOpen] = useState(false);
 
+  // CRT Monitor Filter State
+  const [crtEnabled, setCrtEnabled] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedCrt = localStorage.getItem('exnihilo_crt_enabled');
+      if (savedCrt === 'true') {
+        setCrtEnabled(true);
+      }
+    }
+  }, []);
+
+  const handleToggleCrt = () => {
+    setCrtEnabled((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('exnihilo_crt_enabled', String(next));
+      }
+      return next;
+    });
+  };
+
   // Settings State
   const [rowsPerTable, setRowsPerTable] = useState(20);
   const [tableCap, setTableCap] = useState(25);
@@ -543,6 +565,8 @@ export const Desktop: React.FC = () => {
             onOpenHelp={() => focusWindow('help')}
             onOpenSettings={() => focusWindow('settings')}
             onStartTour={handleStartGuidedTour}
+            crtEnabled={crtEnabled}
+            onToggleCrt={handleToggleCrt}
           />
         </ErrorBoundary>
       )}
@@ -629,6 +653,8 @@ export const Desktop: React.FC = () => {
         currentDialect={dialect}
         rowsPerTable={rowsPerTable}
         tableCap={tableCap}
+        crtEnabled={crtEnabled}
+        onToggleCrt={handleToggleCrt}
         onSave={(r, c, d) => {
           setRowsPerTable(r);
           setTableCap(c);
@@ -637,6 +663,9 @@ export const Desktop: React.FC = () => {
         onClose={() => closeWindow('settings')}
         onFocus={() => focusWindow('settings')}
       />
+
+      {/* Retro CRT Monitor Filter Overlay */}
+      {crtEnabled && <div className="win95-crt-overlay" aria-hidden="true" />}
 
       {/* Error / Warning Dialog */}
       <ErrorDialog
