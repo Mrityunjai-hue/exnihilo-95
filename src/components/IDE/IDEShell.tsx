@@ -17,6 +17,7 @@ import { ResultsGrid } from './ResultsGrid';
 import { SchemaTree } from './SchemaTree';
 import { Toolbar } from './Toolbar';
 import { ERDViewer } from './ERDViewer';
+import { ShareDialog } from '../Win95/ShareDialog';
 import { WindowControls } from '../Win95/WindowControls';
 import {
   useWorkspaceStorage,
@@ -108,6 +109,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   // Query History State
   const [queryHistory, setQueryHistory] = useState<QueryHistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   // Drag Resizing State
   const [isResizingSidebar, setIsResizingSidebar] = useState(false);
@@ -631,6 +633,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               <div className="win95-dropdown-item" onClick={handleDownloadSql}>
                 <span>💾 Save / Export Query...</span>
               </div>
+              <div className="win95-dropdown-item" onClick={() => { setIsShareOpen(true); setActiveMenu(null); }}>
+                <span>🔗 Share Query Link...</span>
+              </div>
               <div className="win95-dropdown-divider" />
               <div className="win95-dropdown-item" onClick={(e) => handleCloseTab(e, activeTabId)}>
                 <span>✕ Close Active Tab</span>
@@ -796,6 +801,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         onOpenHelp={onOpenHelp}
         onOpenSettings={onOpenSettings}
         onStartTour={onStartTour}
+        onOpenShare={() => setIsShareOpen(true)}
         crtEnabled={crtEnabled}
         onToggleCrt={onToggleCrt}
         isLoading={activeTab.isLoading}
@@ -1211,6 +1217,17 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
       {/* Interactive ERD Diagram Viewer */}
       {isERDOpen && <ERDViewer catalog={catalog} onClose={() => setIsERDOpen(false)} />}
+
+      {/* Share SQL Query Playground Modal */}
+      <ShareDialog
+        isOpen={isShareOpen}
+        zIndex={99999}
+        queryText={activeTab.queryText}
+        currentDialect={dialect}
+        tabTitle={activeTab.title}
+        onClose={() => setIsShareOpen(false)}
+        onFocus={() => {}}
+      />
     </div>
   );
 };

@@ -10,13 +10,13 @@
 | Metric | Status |
 | :--- | :---: |
 | **Total Tracked Features** | **97 Features** |
-| **✅ Fully Implemented** | **63 Features** (65%) |
+| **✅ Fully Implemented** | **64 Features** (66%) |
 | **🟡 Partially Implemented** | **6 Features** (6%) |
-| **❌ Pending Roadmap** | **28 Features** (29%) |
-| **Overall Completion** | **~65% Functional Baseline** |
+| **❌ Pending Roadmap** | **27 Features** (28%) |
+| **Overall Completion** | **~66% Functional Baseline** |
 
 ```
-Progress: [████████████████████████████████░░░░░░░░░░░░░░░] 65% Completed
+Progress: [█████████████████████████████████░░░░░░░░░░░░░░] 66% Completed
 ```
 
 ---
@@ -86,8 +86,8 @@ Progress: [███████████████████████
 - [x] **Session Text Report Export**: Generate and download session summary report in `.txt` format.
 - [x] **SQL `INSERT` Script Export**: Export synthesized mock data as executable `INSERT INTO table VALUES (...)` files.
 - [x] **Schema DDL Export**: Export inferred schemas as `.sql` `CREATE TABLE` files formatted for any dialect.
-- [ ] **Shareable Query Links**: Generate unique URLs containing query text, dialect, and schema state.
-- [ ] **Embeddable `<iframe>` Widget**: Embed ExNihilo IDE sandbox inside blogs and documentation.
+- [x] **Shareable Query Links**: Generate unique URLs containing query text, dialect, and schema state.
+- [x] **Embeddable `<iframe>` Widget**: Embed ExNihilo IDE sandbox inside blogs and documentation.
 - [ ] **Formatted PDF Report**: Export query, results, and charts as a PDF document.
 
 ---

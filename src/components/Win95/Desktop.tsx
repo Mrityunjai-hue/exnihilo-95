@@ -28,6 +28,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { SQLDictionaryWindow } from './SQLDictionaryWindow';
 import { DialectName } from '../../data/dialectCommands';
 import { clearWorkspaceStorage } from '../../hooks/useWorkspaceStorage';
+import { decodeSharePayload } from '../../utils/shareEncoder';
 import {
   AuthorShieldIcon,
   RebootIcon,
@@ -179,6 +180,24 @@ export const Desktop: React.FC = () => {
     // Initialize DB
     executor.init().catch(console.error);
   }, [executor]);
+
+  // Share URL Link Hydration Engine
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hashOrSearch = window.location.hash || window.location.search;
+      if (hashOrSearch && hashOrSearch.includes('share=')) {
+        const payload = decodeSharePayload(hashOrSearch);
+        if (payload && payload.queryText) {
+          setQueryText(payload.queryText);
+          if (payload.dialect) {
+            setDialect(payload.dialect);
+          }
+          setShowBootAnimation(false);
+          focusWindow('ide');
+        }
+      }
+    }
+  }, []);
 
   // Window Management
   const focusWindow = (id: string) => {

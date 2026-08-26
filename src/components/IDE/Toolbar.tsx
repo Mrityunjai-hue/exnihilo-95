@@ -20,6 +20,7 @@ interface ToolbarProps {
   onOpenHelp:        () => void;
   onOpenSettings:    () => void;
   onStartTour:       () => void;
+  onOpenShare?:      () => void;
   crtEnabled?:       boolean;
   onToggleCrt?:      () => void;
   isLoading:         boolean;
@@ -40,6 +41,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onOpenHelp,
   onOpenSettings,
   onStartTour,
+  onOpenShare,
   crtEnabled,
   onToggleCrt,
   isLoading,
@@ -189,6 +191,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <span>🕒</span>
           <span>History ({historyCount})</span>
         </button>
+
+        {onOpenShare && (
+          <button
+            id="btn-share"
+            className="win95-button"
+            onClick={onOpenShare}
+            title="Share SQL Query & Playground URL"
+            style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 'bold' }}
+          >
+            <span>🔗</span>
+            <span>Share</span>
+          </button>
+        )}
       </div>
 
       {/* Right Dialect & Engine Selector Group */}
