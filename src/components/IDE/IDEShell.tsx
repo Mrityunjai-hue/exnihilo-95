@@ -22,11 +22,7 @@ import {
   useWorkspaceStorage,
   loadWorkspaceFromStorage,
   removeTabFromStorage,
-  getWorkspacesList,
-  saveWorkspacesList,
-  getActiveWorkspaceId,
-  setActiveWorkspaceId,
-  WorkspaceProfile,
+  clearWorkspaceStorage,
   PersistedTabMeta,
 } from '../../hooks/useWorkspaceStorage';
 
@@ -154,13 +150,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   });
 
   const [tabContextMenu, setTabContextMenu] = useState<{ x: number; y: number; tabId: string } | null>(null);
-
-  // Named Workspaces & Tab Pinning State
-  const [isWorkspacesModalOpen, setIsWorkspacesModalOpen] = useState(false);
   const [isERDOpen, setIsERDOpen] = useState(false);
-  const [workspacesList, setWorkspacesList] = useState<WorkspaceProfile[]>(() => getWorkspacesList());
-  const [activeWsId, setActiveWsId] = useState<string>(() => getActiveWorkspaceId());
-  const [newWsNameInput, setNewWsNameInput] = useState('');
 
   const handleTogglePin = (tabId: string) => {
     setTabs((prev) =>
@@ -168,132 +158,22 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     );
   };
 
-  const handleCreateNewWorkspace = () => {
-    if (!newWsNameInput.trim()) return;
-
-    const currentMeta: PersistedTabMeta[] = tabs.map((t) => ({
-      id: t.id,
-      title: t.title,
-      queryText: t.queryText,
-      dialect,
-      isPinned: Boolean(t.isPinned),
-    }));
-
-    const newWsId = `ws_${Date.now()}`;
-    const initialTabId = `tab_${newWsId}_1`;
-    const newWsName = newWsNameInput.trim();
-
-    const newWsProfile: WorkspaceProfile = {
-      id: newWsId,
-      name: newWsName,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      activeTabId: initialTabId,
-      tabs: [
-        {
-          id: initialTabId,
-          title: 'Query 1.sql',
-          queryText: `-- ${newWsName} Workspace\nSELECT * FROM customers;`,
-          dialect,
-          isPinned: false,
-        },
-      ],
-    };
-
-    const updatedList = workspacesList.map((ws) => {
-      if (ws.id === activeWsId) {
-        return {
-          ...ws,
-          updatedAt: new Date().toISOString(),
-          activeTabId,
-          tabs: currentMeta,
-        };
-      }
-      return ws;
-    });
-
-    const fullList = [...updatedList, newWsProfile];
-    setWorkspacesList(fullList);
-    saveWorkspacesList(fullList);
-
-    setActiveWsId(newWsId);
-    setActiveWorkspaceId(newWsId);
-
-    const newTab: QueryTab = {
-      id: initialTabId,
+  const handleReset = () => {
+    onReset();
+    clearWorkspaceStorage();
+    const resetTab: QueryTab = {
+      id: 'tab_1',
       title: 'Query 1.sql',
-      queryText: `-- ${newWsName} Workspace\nSELECT * FROM customers;`,
+      queryText: `-- Welcome to ExNihilo 95!\n-- Memory & catalog reset successfully.\nSELECT * FROM customers;`,
       result: null,
       isLoading: false,
       executionTimeMs: null,
       isPinned: false,
     };
-    setTabs([newTab]);
-    setActiveTabId(initialTabId);
-    onQueryChange(newTab.queryText);
-    setNewWsNameInput('');
-  };
-
-  const handleSwitchWorkspace = (targetWsId: string) => {
-    if (targetWsId === activeWsId) return;
-
-    const currentMeta: PersistedTabMeta[] = tabs.map((t) => ({
-      id: t.id,
-      title: t.title,
-      queryText: t.queryText,
-      dialect,
-      isPinned: Boolean(t.isPinned),
-    }));
-
-    const targetProfile = workspacesList.find((w) => w.id === targetWsId);
-    if (!targetProfile) return;
-
-    const updatedList = workspacesList.map((ws) => {
-      if (ws.id === activeWsId) {
-        return {
-          ...ws,
-          updatedAt: new Date().toISOString(),
-          activeTabId,
-          tabs: currentMeta,
-        };
-      }
-      return ws;
-    });
-
-    saveWorkspacesList(updatedList);
-    setWorkspacesList(updatedList);
-
-    setActiveWsId(targetWsId);
-    setActiveWorkspaceId(targetWsId);
-
-    if (targetProfile.tabs && targetProfile.tabs.length > 0) {
-      const convertedTabs: QueryTab[] = targetProfile.tabs.map((t) => ({
-        id: t.id,
-        title: t.title,
-        queryText: t.queryText,
-        result: null,
-        isLoading: false,
-        executionTimeMs: null,
-        isPinned: Boolean(t.isPinned),
-      }));
-      setTabs(convertedTabs);
-      const activeId = targetProfile.activeTabId && convertedTabs.some((t) => t.id === targetProfile.activeTabId)
-        ? targetProfile.activeTabId
-        : convertedTabs[0].id;
-      setActiveTabId(activeId);
-      const activeTabObj = convertedTabs.find((t) => t.id === activeId) || convertedTabs[0];
-      onQueryChange(activeTabObj.queryText);
-    }
-  };
-
-  const handleDeleteWorkspace = (wsId: string) => {
-    if (workspacesList.length <= 1) return;
-    const remaining = workspacesList.filter((w) => w.id !== wsId);
-    setWorkspacesList(remaining);
-    saveWorkspacesList(remaining);
-    if (activeWsId === wsId) {
-      handleSwitchWorkspace(remaining[0].id);
-    }
+    setTabs([resetTab]);
+    setActiveTabId('tab_1');
+    onQueryChange(resetTab.queryText);
+    setRefreshKey((k) => k + 1);
   };
 
   // Sync workspace state to localStorage with 500ms debounce
@@ -867,11 +747,10 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         dialect={dialect}
         onDialectChange={onDialectChange}
         onRun={handleExecute}
-        onReset={onReset}
+        onReset={handleReset}
         onFormatSql={handleFormatSql}
         onInsertTemplate={handleInsertTemplate}
         onToggleHistory={() => setIsHistoryOpen(true)}
-        onOpenWorkspaces={() => setIsWorkspacesModalOpen(true)}
         onOpenERD={() => setIsERDOpen(true)}
         onOpenHelp={onOpenHelp}
         onOpenSettings={onOpenSettings}
@@ -1241,117 +1120,6 @@ export const IDEShell: React.FC<IDEShellProps> = ({
                   🗑️ Clear History
                 </button>
                 <button className="win95-button" style={{ fontWeight: 'bold' }} onClick={() => setIsHistoryOpen(false)}>
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Named Workspaces Manager Modal */}
-      {isWorkspacesModalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.35)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 999999,
-          }}
-        >
-          <div className="win95-window" style={{ width: '480px', display: 'flex', flexDirection: 'column', boxShadow: '4px 4px 10px rgba(0,0,0,0.5)' }}>
-            <div className="win95-titlebar">
-              <div className="win95-titlebar-text">
-                <span>📁</span>
-                <span>Named Workspaces Manager</span>
-              </div>
-              <div className="win95-titlebar-controls">
-                <button className="win95-btn-titlebar" onClick={() => setIsWorkspacesModalOpen(false)}>
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            <div style={{ padding: '12px', fontSize: '11px' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Create New Named Workspace Profile:</div>
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
-                <input
-                  type="text"
-                  className="win95-sunken"
-                  placeholder="e.g. E-Commerce Project, HR Analytics..."
-                  value={newWsNameInput}
-                  onChange={(e) => setNewWsNameInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleCreateNewWorkspace();
-                  }}
-                  style={{ flex: 1, padding: '3px 6px', fontSize: '11px' }}
-                />
-                <button
-                  type="button"
-                  className="win95-button"
-                  onClick={handleCreateNewWorkspace}
-                  disabled={!newWsNameInput.trim()}
-                  style={{ fontWeight: 'bold' }}
-                >
-                  ➕ Create
-                </button>
-              </div>
-
-              <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>Available Project Workspaces ({workspacesList.length}):</div>
-              <div className="win95-sunken" style={{ maxHeight: '180px', overflowY: 'auto', background: '#ffffff', padding: '4px' }}>
-                {workspacesList.map((ws) => {
-                  const isActive = ws.id === activeWsId;
-                  return (
-                    <div
-                      key={ws.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '6px 8px',
-                        borderBottom: '1px solid #e0e0e0',
-                        background: isActive ? '#e0e0ff' : 'transparent',
-                      }}
-                    >
-                      <div>
-                        <strong>{ws.name}</strong> {isActive && <span style={{ color: '#006600', fontSize: '10px' }}>(Active)</span>}
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        {!isActive && (
-                          <button
-                            type="button"
-                            className="win95-button"
-                            style={{ fontSize: '10px', padding: '1px 6px' }}
-                            onClick={() => handleSwitchWorkspace(ws.id)}
-                          >
-                            🔄 Switch
-                          </button>
-                        )}
-                        {workspacesList.length > 1 && (
-                          <button
-                            type="button"
-                            className="win95-button"
-                            style={{ fontSize: '10px', padding: '1px 6px', color: '#b00020' }}
-                            onClick={() => handleDeleteWorkspace(ws.id)}
-                            title="Delete Workspace"
-                          >
-                            🗑️
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                <button className="win95-button" style={{ fontWeight: 'bold' }} onClick={() => setIsWorkspacesModalOpen(false)}>
                   Close
                 </button>
               </div>

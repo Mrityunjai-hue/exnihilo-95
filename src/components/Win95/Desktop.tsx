@@ -27,6 +27,7 @@ import { AdminDashboard, SessionStats } from './AdminDashboard';
 import { ErrorBoundary } from './ErrorBoundary';
 import { SQLDictionaryWindow } from './SQLDictionaryWindow';
 import { DialectName } from '../../data/dialectCommands';
+import { clearWorkspaceStorage } from '../../hooks/useWorkspaceStorage';
 import {
   AuthorShieldIcon,
   RebootIcon,
@@ -267,6 +268,7 @@ export const Desktop: React.FC = () => {
   // Reset Session
   const handleResetSession = () => {
     executor.reset();
+    clearWorkspaceStorage();
     setResult(null);
     setExecutionTimeMs(null);
     setActiveError(null);

@@ -184,19 +184,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <span>History ({historyCount})</span>
           </button>
 
-          {onOpenWorkspaces && (
-            <button
-              id="btn-workspaces"
-              className="win95-button"
-              onClick={onOpenWorkspaces}
-              title="Manage Named Project Workspaces & Saved Profiles"
-              style={{ padding: '2px 6px' }}
-            >
-              <span>📁</span>
-              <span>Workspaces</span>
-            </button>
-          )}
-
           {onOpenERD && (
             <button
               id="btn-erd"

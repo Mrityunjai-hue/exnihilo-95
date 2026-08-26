@@ -23,15 +23,6 @@ export interface PersistedTabMeta {
   isPinned?: boolean;
 }
 
-export interface WorkspaceProfile {
-  id: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  activeTabId: string;
-  tabs: PersistedTabMeta[];
-}
-
 export interface StorageEstimateResult {
   usedMb: number;
   totalQuotaMb: number;
@@ -39,14 +30,11 @@ export interface StorageEstimateResult {
 
 const DB_NAME = 'ExNihiloDB';
 const STORE_NAME = 'workspace_tabs';
-const WORKSPACES_STORE = 'workspace_profiles';
 const DB_VERSION = 1;
 
 const INDEX_KEY = 'exnihilo_tab_index';
 const ACTIVE_TAB_KEY = 'exnihilo_active_tab_id';
 const TAB_PREFIX = 'exnihilo_tab_';
-const WORKSPACES_KEY = 'exnihilo_workspaces_list';
-const ACTIVE_WS_KEY = 'exnihilo_active_workspace_id';
 
 /**
  * Open or upgrade the ExNihiloDB IndexedDB instance
@@ -71,7 +59,8 @@ function openIDB(): Promise<IDBDatabase | null> {
         resolve((event.target as IDBOpenDBRequest).result);
       };
 
-      request.onerror = () => {
+      request.onerror = (err) => {
+        console.warn('ExNihiloDB IndexedDB failed to open, falling back to localStorage:', err);
         resolve(null);
       };
     } catch {
@@ -105,17 +94,6 @@ export function loadWorkspaceFromStorage(): { tabs: PersistedTabMeta[]; activeTa
   if (typeof window === 'undefined' || !window.localStorage) return null;
 
   try {
-    const activeWsId = getActiveWorkspaceId();
-    const workspaces = getWorkspacesList();
-    const activeProfile = workspaces.find((w) => w.id === activeWsId) || workspaces[0];
-
-    if (activeProfile && activeProfile.tabs && activeProfile.tabs.length > 0) {
-      return {
-        tabs: activeProfile.tabs,
-        activeTabId: activeProfile.activeTabId || activeProfile.tabs[0].id,
-      };
-    }
-
     const rawIndex = localStorage.getItem(INDEX_KEY);
     if (!rawIndex) return null;
 
@@ -157,17 +135,6 @@ export function loadWorkspaceFromStorage(): { tabs: PersistedTabMeta[]; activeTa
  * Async IndexedDB Workspace Loader
  */
 export async function loadWorkspaceFromIDB(): Promise<{ tabs: PersistedTabMeta[]; activeTabId: string | null } | null> {
-  const activeWsId = getActiveWorkspaceId();
-  const workspaces = getWorkspacesList();
-  const activeProfile = workspaces.find((w) => w.id === activeWsId) || workspaces[0];
-
-  if (activeProfile && activeProfile.tabs && activeProfile.tabs.length > 0) {
-    return Promise.resolve({
-      tabs: activeProfile.tabs,
-      activeTabId: activeProfile.activeTabId || activeProfile.tabs[0].id,
-    });
-  }
-
   const db = await openIDB();
   if (!db) return loadWorkspaceFromStorage();
 
@@ -364,22 +331,6 @@ export function useWorkspaceStorage(debounceMs = 500) {
       saveTimerRef.current = setTimeout(async () => {
         const tabIds = tabs.map((t) => t.id);
 
-        // Update active profile in workspaces list
-        const activeWsId = getActiveWorkspaceId();
-        const currentWorkspaces = getWorkspacesList();
-        const updatedWorkspaces = currentWorkspaces.map((ws) => {
-          if (ws.id === activeWsId) {
-            return {
-              ...ws,
-              updatedAt: new Date().toISOString(),
-              activeTabId,
-              tabs,
-            };
-          }
-          return ws;
-        });
-        saveWorkspacesList(updatedWorkspaces);
-
         // Fallback localStorage save
         if (window.localStorage) {
           try {
@@ -478,74 +429,5 @@ export function useWorkspaceStorage(debounceMs = 500) {
     clearWorkspaceStorage,
     formatIDEDisk,
   };
-}
-
-/**
- * Named Workspaces Profiles Manager Helpers
- */
-export function getWorkspacesList(): WorkspaceProfile[] {
-  if (typeof window === 'undefined' || !window.localStorage) {
-    return [{
-      id: 'ws_default',
-      name: 'Default Workspace',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      activeTabId: 'tab_1',
-      tabs: [],
-    }];
-  }
-
-  try {
-    const raw = localStorage.getItem(WORKSPACES_KEY);
-    if (!raw) {
-      const defaultWs: WorkspaceProfile = {
-        id: 'ws_default',
-        name: 'Default Workspace',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        activeTabId: 'tab_1',
-        tabs: [],
-      };
-      localStorage.setItem(WORKSPACES_KEY, JSON.stringify([defaultWs]));
-      return [defaultWs];
-    }
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : [{
-      id: 'ws_default',
-      name: 'Default Workspace',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      activeTabId: 'tab_1',
-      tabs: [],
-    }];
-  } catch {
-    return [{
-      id: 'ws_default',
-      name: 'Default Workspace',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      activeTabId: 'tab_1',
-      tabs: [],
-    }];
-  }
-}
-
-export function saveWorkspacesList(list: WorkspaceProfile[]) {
-  if (typeof window === 'undefined' || !window.localStorage) return;
-  try {
-    localStorage.setItem(WORKSPACES_KEY, JSON.stringify(list));
-  } catch {
-    // Ignore storage quota errors
-  }
-}
-
-export function getActiveWorkspaceId(): string {
-  if (typeof window === 'undefined' || !window.localStorage) return 'ws_default';
-  return localStorage.getItem(ACTIVE_WS_KEY) || 'ws_default';
-}
-
-export function setActiveWorkspaceId(id: string) {
-  if (typeof window === 'undefined' || !window.localStorage) return;
-  localStorage.setItem(ACTIVE_WS_KEY, id);
 }
 

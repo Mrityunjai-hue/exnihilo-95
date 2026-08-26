@@ -58,8 +58,7 @@ Progress: [███████████████████████
 - [x] **IndexedDB Persistence Adapter**: Custom `useWorkspaceStorage` bypassing 5MB `localStorage` limit.
 - [x] **500ms Debounced Auto-Save**: Background sync buffering tab edits and query states to IndexedDB every 500ms.
 - [x] **Query History Log Drawer**: Scrollable session query history with timestamps, execution duration (ms), row counts, and 1-click query reload.
-- [x] **Session Memory Reset**: 1-click Recycle Bin reset restoring clean memory state.
-- [x] **Named Workspaces Manager**: Create, save, switch, and manage named project workspace profiles (e.g. *"E-Commerce Project"*, *"HR Analytics"*).
+- [x] **Session Memory Reset**: 1-click Recycle Bin reset restoring clean memory state & resetting Session Catalog.
 - [x] **Tab Pinning (`📌`)**: Pin critical query tabs to lock them on the left and protect against accidental closure.
 - [ ] **Unlimited Query Tabs** *(Free: 3 tabs max; Pro: Unlimited)*.
 - [ ] **Tab Grouping**: Color-coded tab groups with drag-to-reorder.
