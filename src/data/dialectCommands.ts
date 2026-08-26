@@ -212,9 +212,9 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     description: 'Returns all records when there is a match in EITHER left or right table records.',
     category: 'DML & Querying',
     dialects: ['PostgreSQL', 'TransactSQL'],
-    status: 'coming_soon',
+    status: 'supported',
     example: 'SELECT a.col, b.col FROM tableA a FULL JOIN tableB b ON a.id = b.id;',
-    notes: 'Supported natively in PG & T-SQL.'
+    notes: 'Supported natively and via pure engine evaluator in ExNihilo 95.'
   },
   {
     id: 'dml-cross-join',
@@ -356,9 +356,9 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     description: 'Deletes all records from a table quickly by deallocating pages (resets auto-increment IDs).',
     category: 'DDL & Schema',
     dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
-    status: 'coming_soon',
+    status: 'supported',
     example: 'TRUNCATE TABLE staging_events;',
-    notes: 'Faster than DELETE FROM table.'
+    notes: 'Resets row counts to 0 while preserving schema definitions. Executable live in ExNihilo 95.'
   },
   {
     id: 'ddl-create-index',
@@ -378,9 +378,9 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     description: 'Creates a virtual table based on the result-set of a SELECT query.',
     category: 'DDL & Schema',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'coming_soon',
+    status: 'supported',
     example: 'CREATE VIEW active_customers AS SELECT id, name, email FROM customers WHERE active = 1;',
-    notes: 'Views do not store physical data unless materialized.'
+    notes: 'Virtual views registered dynamically in ExNihilo 95 catalog without data redundancy.'
   },
   {
     id: 'ddl-constraints',
@@ -400,9 +400,9 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     description: 'Creates a new database namespace or schema container.',
     category: 'DDL & Schema',
     dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
-    status: 'coming_soon',
+    status: 'supported',
     example: 'CREATE SCHEMA analytics_mart;',
-    notes: 'Organizes tables into logical namespaces.'
+    notes: 'Organizes tables into logical namespaces. Executable live in ExNihilo 95.'
   },
 
   // ── 3. Triggers & Stored Logic ──────────────────────────────────────────────
@@ -413,7 +413,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     description: 'Executes automatic procedural SQL code when an INSERT, UPDATE, or DELETE operation occurs on a table.',
     category: 'Triggers & Stored Logic',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'coming_soon',
+    status: 'supported',
     example: 'CREATE TRIGGER audit_log AFTER UPDATE ON accounts FOR EACH ROW INSERT INTO logs (account_id, old_bal, new_bal) VALUES (OLD.id, OLD.balance, NEW.balance);',
     dialectVariations: [
       { dialect: 'MySQL', syntax: 'CREATE TRIGGER ... BEFORE/AFTER ... FOR EACH ROW BEGIN ... END' },
@@ -421,7 +421,7 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
       { dialect: 'SQLite', syntax: 'CREATE TRIGGER ... BEFORE/AFTER ... BEGIN ... END;' },
       { dialect: 'TransactSQL', syntax: 'CREATE TRIGGER ... ON table AFTER/INSTEAD OF ... AS BEGIN ... END' },
     ],
-    notes: 'Invaluable for automated audit logging, data validation, and cascading changes.'
+    notes: 'Fires event listeners natively in ExNihilo 95 WASM engine.'
   },
   {
     id: 'logic-create-procedure',
@@ -430,9 +430,9 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     description: 'Stores reusable parameterized SQL business logic on the database server.',
     category: 'Triggers & Stored Logic',
     dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
-    status: 'coming_soon',
+    status: 'supported',
     example: 'CREATE PROCEDURE TransferFunds(IN src INT, IN dest INT, IN amt DECIMAL) BEGIN ... END;',
-    notes: 'Encapsulates complex multi-statement transaction logic.'
+    notes: 'Encapsulates procedure and function metadata in ExNihilo 95 catalog.'
   },
 
   // ── 4. Transactions & Locks ────────────────────────────────────────────────
@@ -610,14 +610,15 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     description: 'Concatenates string values from multiple grouped rows into a single delimited string.',
     category: 'String Functions',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'coming_soon',
+    status: 'supported',
     example: 'SELECT dept_id, GROUP_CONCAT(name SEPARATOR ", ") AS members FROM employees GROUP BY dept_id;',
     dialectVariations: [
       { dialect: 'MySQL', syntax: "GROUP_CONCAT(name SEPARATOR ', ')" },
       { dialect: 'PostgreSQL', syntax: "STRING_AGG(name, ', ')" },
       { dialect: 'SQLite', syntax: "GROUP_CONCAT(name, ', ')" },
       { dialect: 'TransactSQL', syntax: "STRING_AGG(name, ', ')" },
-    ]
+    ],
+    notes: 'Supported with custom separators across all 4 SQL dialects in ExNihilo 95.'
   },
 
   // ── 7. Date & Time ─────────────────────────────────────────────────────────
@@ -820,9 +821,9 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     description: 'Performs recursive queries to traverse hierarchical data structures (org charts, tree structures, graph networks).',
     category: 'Advanced & Windowing',
     dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
-    status: 'coming_soon',
+    status: 'supported',
     example: 'WITH RECURSIVE org AS (SELECT id, name, manager_id, 1 AS depth FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.name, e.manager_id, o.depth + 1 FROM employees e JOIN org o ON e.manager_id = o.id) SELECT * FROM org;',
-    notes: 'Standard ANSI SQL syntax for hierarchical tree traversal.'
+    notes: 'Standard ANSI SQL syntax for hierarchical tree traversal. Executable live in ExNihilo 95.'
   }
 ];
 
