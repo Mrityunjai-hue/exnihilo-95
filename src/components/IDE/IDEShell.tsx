@@ -512,13 +512,14 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               top: 0,
               left: 0,
               width: '100vw',
-              height: 'calc(100vh - 28px)',
+              height: 'calc(100vh - 32px)',
               maxWidth: '100vw',
-              maxHeight: 'calc(100vh - 28px)',
+              maxHeight: 'calc(100vh - 32px)',
               zIndex,
               display: isMinimized ? 'none' : 'flex',
               flexDirection: 'column',
               borderRadius: 0,
+              boxSizing: 'border-box',
             }
           : {
               position: 'absolute',

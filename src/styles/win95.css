@@ -762,6 +762,8 @@ html, body {
   gap: 4px;
   padding: 3px 2px 1px 2px;
   background-color: var(--w95-gray);
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .win95-statusbar-pane {
