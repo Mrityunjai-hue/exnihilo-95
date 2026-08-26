@@ -390,9 +390,7 @@ export const Desktop: React.FC = () => {
           onClick={() => focusWindow(isLoggedIn ? 'admin' : 'auth')}
           title={isLoggedIn ? `Logged in as ${currentUser?.displayName}` : 'Log in or Register'}
         >
-          <div className="icon-symbol" style={{ opacity: isSecureContext ? 1 : 0.5 }}>
-            <AuthorShieldIcon size={36} />
-          </div>
+          <img src="/icons/author_shield.png" alt="Mrityunjai Sachan" />
           <span>{isLoggedIn ? currentUser?.displayName || 'Mrityunjai' : 'Mrityunjai Sachan'}</span>
         </div>
 
@@ -401,9 +399,7 @@ export const Desktop: React.FC = () => {
           onDoubleClick={() => focusWindow('welcome')}
           onClick={() => focusWindow('welcome')}
         >
-          <div className="icon-symbol">
-            <AboutIcon size={36} />
-          </div>
+          <img src="/icons/about_galaxy.png" alt="About ExNihilo" />
           <span>About ExNihilo</span>
         </div>
 
@@ -412,9 +408,7 @@ export const Desktop: React.FC = () => {
           onDoubleClick={() => focusWindow('ide')}
           onClick={() => focusWindow('ide')}
         >
-          <div className="icon-symbol">
-            <IdeIcon size={36} />
-          </div>
+          <img src="/icons/sql_ide.png" alt="ExNihilo SQL IDE" />
           <span>ExNihilo SQL IDE</span>
         </div>
 
@@ -424,9 +418,7 @@ export const Desktop: React.FC = () => {
           onClick={() => focusWindow('sqlDictionary')}
           title="SQL Dictionary & Dialect Reference"
         >
-          <div className="icon-symbol">
-            <DictionaryIcon size={36} />
-          </div>
+          <img src="/icons/sql_dictionary.png" alt="SQL Dictionary" />
           <span>SQL Dictionary</span>
         </div>
 
@@ -435,9 +427,7 @@ export const Desktop: React.FC = () => {
           onDoubleClick={() => focusWindow('help')}
           onClick={() => focusWindow('help')}
         >
-          <div className="icon-symbol">
-            <TutorialIcon size={36} />
-          </div>
+          <img src="/icons/query_tutorial.png" alt="Query Tutorial" />
           <span>Query Tutorial</span>
         </div>
 
@@ -446,9 +436,7 @@ export const Desktop: React.FC = () => {
           onDoubleClick={() => focusWindow('wizard')}
           onClick={() => focusWindow('wizard')}
         >
-          <div className="icon-symbol">
-            <WizardIcon size={36} />
-          </div>
+          <img src="/icons/setup_wizard.png" alt="Setup Wizard" />
           <span>Setup Wizard</span>
         </div>
 
@@ -457,9 +445,7 @@ export const Desktop: React.FC = () => {
           onDoubleClick={() => focusWindow('settings')}
           onClick={() => focusWindow('settings')}
         >
-          <div className="icon-symbol">
-            <OptionsIcon size={36} />
-          </div>
+          <img src="/icons/options_config.png" alt="Options & Config" />
           <span>Options & Config</span>
         </div>
 
@@ -467,9 +453,7 @@ export const Desktop: React.FC = () => {
           className="win95-desktop-icon"
           onClick={() => setTourOpen(true)}
         >
-          <div className="icon-symbol">
-            <TourIcon size={36} />
-          </div>
+          <img src="/icons/guided_tour.png" alt="Guided Tour" />
           <span>Guided Tour</span>
         </div>
 
@@ -478,9 +462,7 @@ export const Desktop: React.FC = () => {
           onClick={() => setShowBootAnimation(true)}
           title="Play Windows 95 Opening Animation"
         >
-          <div className="icon-symbol">
-            <RebootIcon size={36} />
-          </div>
+          <img src="/icons/reboot.png" alt="Reboot 95" />
           <span>Reboot 95</span>
         </div>
 
@@ -488,9 +470,7 @@ export const Desktop: React.FC = () => {
           className="win95-desktop-icon"
           onClick={() => focusWindow('contributors')}
         >
-          <div className="icon-symbol">
-            <TeamIcon size={36} />
-          </div>
+          <img src="/icons/join_team.png" alt="Join the Team" />
           <span>Join the Team</span>
         </div>
 
@@ -498,9 +478,7 @@ export const Desktop: React.FC = () => {
           className="win95-desktop-icon"
           onClick={() => focusWindow('legal')}
         >
-          <div className="icon-symbol">
-            <LegalIcon size={36} />
-          </div>
+          <img src="/icons/legal_gavel.png" alt="Legal & IP Notice" />
           <span>Legal & IP Notice</span>
         </div>
 
@@ -508,9 +486,7 @@ export const Desktop: React.FC = () => {
           className="win95-desktop-icon"
           onClick={handleResetSession}
         >
-          <div className="icon-symbol">
-            <RecycleBinIcon size={36} />
-          </div>
+          <img src="/icons/recycle_bin.png" alt="Recycle Bin" />
           <span>Recycle Bin (Reset)</span>
         </div>
       </div>
