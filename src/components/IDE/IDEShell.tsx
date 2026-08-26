@@ -778,6 +778,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             {tabContextMenu && (
               <div
                 className="win95-dropdown-menu"
+                onMouseDown={(e) => e.stopPropagation()}
                 style={{
                   position: 'fixed',
                   left: `${tabContextMenu.x}px`,
