@@ -20,6 +20,8 @@ interface TaskbarProps {
   currentUser:       StoredUser | null;
   isLoggedIn:        boolean;
   isSecureContext:   boolean;
+  crtEnabled?:       boolean;
+  onToggleCrt?:      () => void;
   onFocusWindow:     (id: string) => void;
   onToggleMinimize:  (id: string) => void;
   onOpenWindow:      (id: string) => void;
@@ -33,6 +35,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   currentUser,
   isLoggedIn,
   isSecureContext,
+  crtEnabled,
+  onToggleCrt,
   onFocusWindow,
   onToggleMinimize,
   onOpenWindow,
@@ -150,6 +154,19 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               <span style={{ fontSize: '16px' }}>⚙️</span>
               <div>Control Panel & Options</div>
             </div>
+
+            {onToggleCrt && (
+              <div
+                className="win95-start-item"
+                onClick={() => { onToggleCrt(); setStartMenuOpen(false); }}
+              >
+                <span style={{ fontSize: '16px' }}>📺</span>
+                <div>
+                  <strong>CRT Monitor Filter ({crtEnabled ? 'ON' : 'OFF'})</strong>
+                  <div style={{ fontSize: '10px', color: 'var(--w95-dark-gray, #555)' }}>Retro Scanlines & Glow</div>
+                </div>
+              </div>
+            )}
 
             <div
               className="win95-start-item"

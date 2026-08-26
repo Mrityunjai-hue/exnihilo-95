@@ -486,6 +486,15 @@ export const Desktop: React.FC = () => {
 
         <div
           className="win95-desktop-icon"
+          onClick={handleToggleCrt}
+          title="Toggle Retro CRT Monitor Scanline & Glow Overlay Effect"
+        >
+          <div style={{ fontSize: '32px', filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,0.5))' }}>📺</div>
+          <span>CRT Filter ({crtEnabled ? 'ON' : 'OFF'})</span>
+        </div>
+
+        <div
+          className="win95-desktop-icon"
           onClick={handleStartGuidedTour}
         >
           <img src="/icons/guided_tour.png" alt="Guided Tour" />
@@ -782,6 +791,8 @@ export const Desktop: React.FC = () => {
         currentUser={currentUser}
         isLoggedIn={isLoggedIn}
         isSecureContext={isSecureContext}
+        crtEnabled={crtEnabled}
+        onToggleCrt={handleToggleCrt}
         onFocusWindow={focusWindow}
         onToggleMinimize={toggleMinimize}
         onOpenWindow={focusWindow}
