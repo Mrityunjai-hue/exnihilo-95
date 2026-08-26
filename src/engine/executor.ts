@@ -497,6 +497,63 @@ export function evaluateRankingWindowFunction(
   return evaluateWindowFunction(columns, rows, spec);
 }
 
+// ── Pure Aggregation & Join Evaluators ────────────────────────────────────────
+
+/**
+ * Evaluates string aggregation (GROUP_CONCAT / STRING_AGG) over an array of row values.
+ * Collects non-null/non-undefined string values and joins them with the specified separator.
+ * Returns null if no non-null values exist.
+ */
+export function evaluateStringAggregate(values: any[], separator: string = ','): string | null {
+  const validStrings = values
+    .filter(v => v !== null && v !== undefined)
+    .map(v => String(v));
+
+  if (validStrings.length === 0) return null;
+  return validStrings.join(separator);
+}
+
+/**
+ * Pure evaluation function for FULL OUTER JOIN logic:
+ * 1. Executes Left Join (all left rows, matching right rows or null).
+ * 2. Identifies unmatched right rows.
+ * 3. Appends unmatched right rows (with nulls for left columns).
+ */
+export function evaluateFullOuterJoin<T extends Record<string, any>, U extends Record<string, any>>(
+  leftRows: T[],
+  rightRows: U[],
+  matchPredicate: (left: T, right: U) => boolean
+): { leftRow: T | null; rightRow: U | null }[] {
+  const result: { leftRow: T | null; rightRow: U | null }[] = [];
+  const matchedRightIndices = new Set<number>();
+
+  // 1. Left Join pass
+  for (const left of leftRows) {
+    let matched = false;
+    for (let j = 0; j < rightRows.length; j++) {
+      const right = rightRows[j];
+      if (matchPredicate(left, right)) {
+        matched = true;
+        matchedRightIndices.add(j);
+        result.push({ leftRow: left, rightRow: right });
+      }
+    }
+    if (!matched) {
+      result.push({ leftRow: left, rightRow: null });
+    }
+  }
+
+  // 2. Unmatched Right rows pass
+  for (let j = 0; j < rightRows.length; j++) {
+    if (!matchedRightIndices.has(j)) {
+      result.push({ leftRow: null, rightRow: rightRows[j] });
+    }
+  }
+
+  return result;
+}
+
+
 
 // ── SQLExecutor Class ─────────────────────────────────────────────────────────
 
@@ -659,8 +716,17 @@ export class SQLExecutor {
     const missingTables: string[] = [];
     const reusedTables:  string[] = [];
 
+    const createdInQuery = new Set(
+      parseResult.tableList
+        .filter(t => t.startsWith('create::'))
+        .map(t => {
+          const parts = t.split('::');
+          return (parts[parts.length - 1] || '').toLowerCase().trim();
+        })
+    );
+
     for (const tbl of uniqueTables) {
-      if (this.catalog.has(tbl) || this.hasTableInSqlite(tbl)) {
+      if (this.catalog.has(tbl) || this.hasTableInSqlite(tbl) || createdInQuery.has(tbl)) {
         reusedTables.push(tbl);
       } else {
         missingTables.push(tbl);
@@ -702,10 +768,14 @@ export class SQLExecutor {
     try {
       const executableQuery = trimmedQuery
         .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->>\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT_TEXT($1, $2)')
-        .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT($1, $2)');
+        .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT($1, $2)')
+        .replace(/\bSTRING_AGG\s*\(\s*([^,]+?)\s*,\s*('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)')
+        .replace(/\bSTRING_AGG\s*\(\s*([^)]+?)\s*\)/gi, 'GROUP_CONCAT($1)')
+        .replace(/\bGROUP_CONCAT\s*\(\s*(.*?)\s+SEPARATOR\s+('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)');
 
       const results = this.db.exec(executableQuery);
       const executionTimeMs = performance.now() - startTime;
+
 
 
       if (results.length === 0) {
@@ -792,7 +862,7 @@ export class SQLExecutor {
               inferredTables.push(fallbackTable);
 
               // Retry execution ONCE
-              const retryResults = this.db.exec(trimmedQuery);
+              const retryResults = this.db.exec(executableQuery);
               const executionTimeMs = performance.now() - startTime;
 
               if (retryResults.length === 0) {

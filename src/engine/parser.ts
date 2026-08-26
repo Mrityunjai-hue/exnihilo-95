@@ -377,6 +377,119 @@ export function extractWindowSpecs(ast: AST | AST[]): WindowSpec[] {
   return specs;
 }
 
+// ── String Aggregation (GROUP_CONCAT / STRING_AGG) AST Extraction ──────────────
+
+export interface StringAggregateSpec {
+  functionName: 'GROUP_CONCAT' | 'STRING_AGG';
+  alias: string;
+  targetColumn: string;
+  separator: string;
+}
+
+/**
+ * Extracts string aggregation function specifications (GROUP_CONCAT, STRING_AGG)
+ * from a parsed SQL AST.
+ */
+export function extractStringAggregates(ast: AST | AST[]): StringAggregateSpec[] {
+  const specs: StringAggregateSpec[] = [];
+
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+
+    let funcName = '';
+    if (typeof node.name === 'string') {
+      funcName = node.name.toUpperCase();
+    } else if (Array.isArray(node.name?.name)) {
+      funcName = String(node.name.name[0]?.value || '').toUpperCase();
+    } else if (typeof node.name?.value === 'string') {
+      funcName = node.name.value.toUpperCase();
+    }
+
+    if (funcName === 'GROUP_CONCAT' || funcName === 'STRING_AGG') {
+      let targetColumn = '';
+      let separator = ',';
+
+      // Case A: aggr_func structure (STRING_AGG or MySQL GROUP_CONCAT SEPARATOR)
+      if (node.args?.expr) {
+        targetColumn = extractColumnName(node.args.expr) || '';
+        if (node.args?.separator) {
+          const sepNode = node.args.separator;
+          const sepVal =
+            sepNode.delimiter?.value ??
+            sepNode.value?.value ??
+            sepNode.value ??
+            sepNode.delimiter;
+          if (typeof sepVal === 'string') separator = sepVal;
+        }
+      }
+      // Case B: expr_list structure (SQLite GROUP_CONCAT(name, ', '))
+      else if (node.args?.type === 'expr_list' && Array.isArray(node.args.value)) {
+        const valArr = node.args.value;
+        if (valArr.length > 0) {
+          targetColumn = extractColumnName(valArr[0]) || '';
+        }
+        if (valArr.length > 1) {
+          const sepArg = valArr[1];
+          if (typeof sepArg?.value === 'string') {
+            separator = sepArg.value;
+          }
+        }
+      }
+
+      if (targetColumn) {
+        specs.push({
+          functionName: funcName as 'GROUP_CONCAT' | 'STRING_AGG',
+          alias: node.as || funcName.toLowerCase(),
+          targetColumn,
+          separator,
+        });
+      }
+    }
+
+    for (const key of Object.keys(node)) {
+      if (typeof node[key] === 'object') {
+        walk(node[key]);
+      }
+    }
+  };
+
+  walk(ast);
+  return specs;
+}
+
+/**
+ * Extracts all JOIN types present in a parsed SQL AST.
+ */
+export function extractJoinTypes(ast: AST | AST[]): string[] {
+  const joins: string[] = [];
+
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+
+    if (typeof node.join === 'string') {
+      joins.push(node.join.toUpperCase());
+    }
+
+    for (const key of Object.keys(node)) {
+      if (typeof node[key] === 'object') {
+        walk(node[key]);
+      }
+    }
+  };
+
+  walk(ast);
+  return joins;
+}
+
+
 
 
 
