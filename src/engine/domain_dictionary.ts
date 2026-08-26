@@ -69,6 +69,7 @@ export const DOMAIN_CATALOG: Record<string, DomainTableSpec> = {
       { name: 'name', logicalType: 'VARCHAR', fakerGenerator: () => faker.person.fullName() },
       { name: 'department', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Engineering', 'Sales', 'Marketing', 'HR', 'Finance', 'Operations']) },
       { name: 'salary', logicalType: 'NUMERIC', fakerGenerator: () => faker.number.int({ min: 45000, max: 185000 }) },
+      { name: 'country', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['India', 'United States', 'United Kingdom', 'Canada', 'Germany', 'Australia', 'Japan']) },
       { name: 'hire_date', logicalType: 'DATE', fakerGenerator: () => faker.date.past({ years: 5 }).toISOString().split('T')[0] }
     ]
   },
@@ -135,6 +136,7 @@ export function resolveDomainSchema(rawTableName: string): DomainColumnSpec[] | 
 export function inferFakerFromColumnName(columnName: string): (() => any) | null {
   const cleanCol = columnName.toLowerCase();
   
+  if (cleanCol.includes('country')) return () => faker.helpers.arrayElement(['India', 'United States', 'United Kingdom', 'Canada', 'Germany', 'Australia', 'Japan', 'France']);
   if (cleanCol.includes('email')) return () => faker.internet.email().toLowerCase();
   if (cleanCol.includes('phone') || cleanCol.includes('mobile')) return () => faker.phone.number();
   if (cleanCol.includes('url') || cleanCol.includes('website')) return () => faker.internet.url();
@@ -143,14 +145,13 @@ export function inferFakerFromColumnName(columnName: string): (() => any) | null
   if (cleanCol.includes('price') || cleanCol.includes('amount') || cleanCol.includes('cost') || cleanCol === 'total') return () => parseFloat(faker.commerce.price({ min: 10, max: 1000, dec: 2 }));
   if (cleanCol.includes('salary')) return () => faker.number.int({ min: 45000, max: 185000 });
   if (cleanCol === 'age' || cleanCol.endsWith('_age')) return () => faker.number.int({ min: 18, max: 75 });
-  if (cleanCol.includes('qty') || cleanCol.includes('quantity') || cleanCol.includes('count')) return () => faker.number.int({ min: 1, max: 50 });
+  if (cleanCol.includes('qty') || cleanCol.includes('quantity') || cleanCol === 'count' || cleanCol.endsWith('_count') || cleanCol.startsWith('count_')) return () => faker.number.int({ min: 1, max: 50 });
   if (cleanCol.includes('score') || cleanCol.includes('rating')) return () => parseFloat(faker.number.float({ min: 1.0, max: 5.0, fractionDigits: 1 }).toFixed(1));
   if (cleanCol.includes('balance')) return () => parseFloat(faker.commerce.price({ min: 50, max: 25000, dec: 2 }));
   if (cleanCol.includes('date') || cleanCol.includes('time') || cleanCol.includes('_at')) return () => faker.date.recent().toISOString();
   if (cleanCol.includes('is_') || cleanCol.includes('has_')) return () => faker.datatype.boolean();
   if (cleanCol.includes('zip') || cleanCol.includes('postal')) return () => faker.location.zipCode();
   if (cleanCol.includes('city')) return () => faker.location.city();
-  if (cleanCol.includes('country')) return () => faker.location.country();
   
   // Return null when no specific keyword heuristic matches, allowing type-specific generators to handle baseline types
   return null;

@@ -134,22 +134,33 @@ export function nameHeuristicType(colName: string): { type: LogicalType; source:
   if (n === 'id' || n.endsWith('_id')) {
     return { type: 'INTEGER', source: `spec 3.2 row 9: name is 'id' or ends in '_id' → INTEGER` };
   }
-  // Price / numeric-sounding names → NUMERIC (generation hint elevated to heuristic)
-  if (/^(price|amount|total|cost|qty|quantity|score|rating|balance|salary|age|weight|height|num_|count_|cnt)/.test(n)
+
+  // Location & Text-sounding names → VARCHAR (Checked first so 'country' never matches 'count')
+  if (/^(country|city|state|province|address|street|zip|postal|phone|email|name|title|description|notes|comment|sku|status|type|category|role)/.test(n)
+    || n.endsWith('_name') || n.endsWith('_email') || n.endsWith('_phone') || n.endsWith('_country') || n.endsWith('_city')) {
+    return { type: 'VARCHAR', source: `spec 3.2 generation hint: ${n} matches string pattern → VARCHAR` };
+  }
+
+  // Price / numeric-sounding names → NUMERIC
+  if (/^(price|amount|total|cost|qty|quantity|score|rating|balance|salary|age|weight|height)$/.test(n)
+    || n.startsWith('num_') || n.startsWith('count_') || n.startsWith('cnt_') || n.startsWith('sum_') || n.startsWith('avg_')
     || n.endsWith('_price') || n.endsWith('_amount') || n.endsWith('_cost')
-    || n.endsWith('_score') || n.endsWith('_count') || n.endsWith('_qty')) {
+    || n.endsWith('_score') || n.endsWith('_count') || n.endsWith('_qty') || n.endsWith('_age')) {
     return { type: 'NUMERIC', source: `spec 3.2 generation hint: ${n} matches numeric pattern → NUMERIC` };
   }
+
   // Date-sounding names → DATE
   if (n.endsWith('_at') || n.endsWith('_date') || n.endsWith('_time')
     || n === 'date' || n === 'timestamp' || n.startsWith('date_')
     || n === 'born' || n.endsWith('_born')) {
     return { type: 'DATE', source: `spec 3.2 generation hint: ${n} matches date pattern → DATE` };
   }
+
   // Boolean-sounding names → BOOLEAN
   if (n.startsWith('is_') || n.startsWith('has_') || n.startsWith('can_') || n.startsWith('was_')) {
     return { type: 'BOOLEAN', source: `spec 3.2 generation hint: ${n} starts with is_/has_/can_/was_ → BOOLEAN` };
   }
+
   return null;
 }
 

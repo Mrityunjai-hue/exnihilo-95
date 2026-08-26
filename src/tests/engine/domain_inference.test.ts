@@ -48,6 +48,20 @@ describe('Phase 1: Semantic Matching, Schema Augmentation & Domain Inference', (
     expect(val).toMatch(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/);
   });
 
+  it('correctly types country as VARCHAR and generates country names, never matching count as integer', () => {
+    const generator = inferFakerFromColumnName('country')!;
+    expect(generator).not.toBeNull();
+    const val = generator();
+    expect(typeof val).toBe('string');
+    expect(['India', 'United States', 'United Kingdom', 'Canada', 'Germany', 'Australia', 'Japan', 'France']).toContain(val);
+
+    const schemaMap = inferSchema("SELECT * FROM employees WHERE country = 'india';", 'MySQL');
+    const schema = schemaMap.get('employees');
+    expect(schema).toBeDefined();
+    const countryCol = schema!.columns.find(c => c.name === 'country');
+    expect(countryCol?.logicalType).toBe('VARCHAR');
+  });
+
   it('returns null for non-keyword column names so scalar type generators handle baseline types', () => {
     const generator = inferFakerFromColumnName('random_custom_col');
     expect(generator).toBeNull();
