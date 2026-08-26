@@ -16,6 +16,7 @@ import { QueryEditor } from './QueryEditor';
 import { ResultsGrid } from './ResultsGrid';
 import { SchemaTree } from './SchemaTree';
 import { Toolbar } from './Toolbar';
+import { ERDViewer } from './ERDViewer';
 import { WindowControls } from '../Win95/WindowControls';
 import {
   useWorkspaceStorage,
@@ -156,6 +157,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
   // Named Workspaces & Tab Pinning State
   const [isWorkspacesModalOpen, setIsWorkspacesModalOpen] = useState(false);
+  const [isERDOpen, setIsERDOpen] = useState(false);
   const [workspacesList, setWorkspacesList] = useState<WorkspaceProfile[]>(() => getWorkspacesList());
   const [activeWsId, setActiveWsId] = useState<string>(() => getActiveWorkspaceId());
   const [newWsNameInput, setNewWsNameInput] = useState('');
@@ -826,6 +828,10 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               <div className="win95-dropdown-item" onClick={handleRefresh}>
                 <span>🔄 Refresh Schema Tree</span>
               </div>
+              <div className="win95-dropdown-divider" />
+              <div className="win95-dropdown-item" onClick={() => { setIsERDOpen(true); setActiveMenu(null); }}>
+                <span>🌐 Entity Relationship Diagram (ERD)</span>
+              </div>
             </div>
           )}
         </div>
@@ -866,6 +872,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         onInsertTemplate={handleInsertTemplate}
         onToggleHistory={() => setIsHistoryOpen(true)}
         onOpenWorkspaces={() => setIsWorkspacesModalOpen(true)}
+        onOpenERD={() => setIsERDOpen(true)}
         onOpenHelp={onOpenHelp}
         onOpenSettings={onOpenSettings}
         onStartTour={onStartTour}
@@ -1352,6 +1359,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           </div>
         </div>
       )}
+
+      {/* Interactive ERD Diagram Viewer */}
+      {isERDOpen && <ERDViewer catalog={catalog} onClose={() => setIsERDOpen(false)} />}
     </div>
   );
 };

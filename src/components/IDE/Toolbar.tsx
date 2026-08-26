@@ -16,6 +16,7 @@ interface ToolbarProps {
   onInsertTemplate?: (templateSql: string) => void;
   onToggleHistory?:  () => void;
   onOpenWorkspaces?: () => void;
+  onOpenERD?:        () => void;
   onOpenHelp:        () => void;
   onOpenSettings:    () => void;
   onStartTour:       () => void;
@@ -33,6 +34,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onInsertTemplate,
   onToggleHistory,
   onOpenWorkspaces,
+  onOpenERD,
   onOpenHelp,
   onOpenSettings,
   onStartTour,
@@ -192,6 +194,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             >
               <span>📁</span>
               <span>Workspaces</span>
+            </button>
+          )}
+
+          {onOpenERD && (
+            <button
+              id="btn-erd"
+              className="win95-button"
+              onClick={onOpenERD}
+              title="Interactive ERD Diagram & Visual Schema Relationship Map"
+              style={{ padding: '2px 6px' }}
+            >
+              <span>🌐</span>
+              <span>ERD</span>
             </button>
           )}
         </div>
