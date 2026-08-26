@@ -131,6 +131,9 @@ function generateInteger(colName: string, rowIndex: number): number {
   if (n === 'id' || n.endsWith('_pk')) {
     return rowIndex + 1; // 1, 2, 3, 4, ...
   }
+  if (n.endsWith('_id')) {
+    return faker.number.int({ min: 1, max: 20 });
+  }
   if (n === 'age') {
     return faker.number.int({ min: 21, max: 65 });
   }

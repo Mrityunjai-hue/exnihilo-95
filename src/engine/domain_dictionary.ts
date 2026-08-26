@@ -25,13 +25,26 @@ export interface DomainTableSpec {
 
 export const DOMAIN_CATALOG: Record<string, DomainTableSpec> = {
   users: {
-    aliases: ['user', 'users', 'app_users', 'customers', 'customer', 'accounts', 'members', 'clients', 'tbl_customers'],
+    aliases: ['user', 'users', 'app_users', 'accounts', 'members', 'tbl_users'],
+    columns: [
+      { name: 'id', logicalType: 'INTEGER', isPrimaryKey: true, fakerGenerator: () => 1 },
+      { name: 'username', logicalType: 'VARCHAR', fakerGenerator: () => faker.internet.username().toLowerCase() },
+      { name: 'email', logicalType: 'VARCHAR', fakerGenerator: () => faker.internet.email().toLowerCase() },
+      { name: 'role', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['admin', 'user', 'manager', 'editor']) },
+      { name: 'created_at', logicalType: 'TIMESTAMP', fakerGenerator: () => faker.date.past({ years: 2 }).toISOString().replace('T', ' ').substring(0, 19) }
+    ]
+  },
+  customers: {
+    aliases: ['customer', 'customers', 'client', 'clients', 'tbl_customers'],
     columns: [
       { name: 'id', logicalType: 'INTEGER', isPrimaryKey: true, fakerGenerator: () => 1 },
       { name: 'first_name', logicalType: 'VARCHAR', fakerGenerator: () => faker.person.firstName() },
       { name: 'last_name', logicalType: 'VARCHAR', fakerGenerator: () => faker.person.lastName() },
       { name: 'email', logicalType: 'VARCHAR', fakerGenerator: () => faker.internet.email().toLowerCase() },
-      { name: 'created_at', logicalType: 'TIMESTAMP', fakerGenerator: () => faker.date.past({ years: 2 }).toISOString() }
+      { name: 'phone', logicalType: 'VARCHAR', fakerGenerator: () => faker.phone.number() },
+      { name: 'city', logicalType: 'VARCHAR', fakerGenerator: () => faker.location.city() },
+      { name: 'country', logicalType: 'VARCHAR', fakerGenerator: () => faker.location.country() },
+      { name: 'created_at', logicalType: 'TIMESTAMP', fakerGenerator: () => faker.date.past({ years: 2 }).toISOString().replace('T', ' ').substring(0, 19) }
     ]
   },
   products: {
@@ -48,9 +61,12 @@ export const DOMAIN_CATALOG: Record<string, DomainTableSpec> = {
     aliases: ['order', 'orders', 'sales', 'transactions', 'purchases', 'checkouts', 'sales_orders'],
     columns: [
       { name: 'id', logicalType: 'INTEGER', isPrimaryKey: true, fakerGenerator: () => 1 },
-      { name: 'user_id', logicalType: 'INTEGER', isForeignKey: true, references: { table: 'users', column: 'id' }, fakerGenerator: () => 1 },
+      { name: 'customer_id', logicalType: 'INTEGER', isForeignKey: true, references: { table: 'customers', column: 'id' }, fakerGenerator: () => faker.number.int({ min: 1, max: 20 }) },
+      { name: 'user_id', logicalType: 'INTEGER', isForeignKey: true, references: { table: 'users', column: 'id' }, fakerGenerator: () => faker.number.int({ min: 1, max: 20 }) },
+      { name: 'order_date', logicalType: 'TIMESTAMP', fakerGenerator: () => faker.date.recent({ days: 180 }).toISOString().replace('T', ' ').substring(0, 19) },
       { name: 'status', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['PLACED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']) },
-      { name: 'total_amount', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.commerce.price({ min: 20, max: 2500, dec: 2 })) }
+      { name: 'total_amount', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.commerce.price({ min: 20, max: 2500, dec: 2 })) },
+      { name: 'payment_method', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['CREDIT_CARD', 'PAYPAL', 'UPI', 'BANK_TRANSFER']) }
     ]
   },
   organizations: {
