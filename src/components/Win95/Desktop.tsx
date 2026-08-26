@@ -43,6 +43,7 @@ import {
   WizardIcon,
   OptionsIcon,
   TourIcon,
+  ChallengeIcon,
 } from './Win95Icons';
 
 
@@ -471,6 +472,16 @@ export const Desktop: React.FC = () => {
 
         <div
           className="win95-desktop-icon"
+          onDoubleClick={() => focusWindow('challenges')}
+          onClick={() => focusWindow('challenges')}
+          title="SQL Challenge Arena (126+ LeetCode Puzzles)"
+        >
+          <ChallengeIcon size={36} />
+          <span>SQL Challenges</span>
+        </div>
+
+        <div
+          className="win95-desktop-icon"
           onDoubleClick={() => focusWindow('sqlDictionary')}
           onClick={() => focusWindow('sqlDictionary')}
           title="SQL Dictionary & Dialect Reference"
@@ -495,15 +506,6 @@ export const Desktop: React.FC = () => {
         >
           <img src="/icons/setup_wizard.png" alt="Setup Wizard" />
           <span>Setup Wizard</span>
-        </div>
-
-        <div
-          className="win95-desktop-icon"
-          onDoubleClick={() => focusWindow('challenges')}
-          onClick={() => focusWindow('challenges')}
-        >
-          <div style={{ fontSize: '32px', filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,0.5))' }}>🏆</div>
-          <span>SQL Challenges</span>
         </div>
 
         <div

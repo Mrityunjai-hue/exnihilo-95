@@ -195,3 +195,17 @@ export const TourIcon: React.FC<{ size?: number }> = ({ size = 36 }) => (
     <rect x="16" y="29" width="4" height="2" rx="1" fill="#475569" />
   </svg>
 );
+
+// 13. Challenge Arena Trophy Icon
+export const ChallengeIcon: React.FC<{ size?: number }> = ({ size = 36 }) => (
+  <svg width={size} height={size} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="30" width="16" height="4" fill="#808080" stroke="#000000" strokeWidth="1" />
+    <rect x="12" y="27" width="12" height="3" fill="#c0c0c0" stroke="#000000" strokeWidth="1" />
+    <rect x="16" y="21" width="4" height="6" fill="#ffd700" stroke="#b8860b" strokeWidth="1" />
+    <path d="M8 5H28V15C28 20.5 23.5 22 18 22C12.5 22 8 20.5 8 15V5Z" fill="#ffd700" stroke="#b8860b" strokeWidth="1.5" />
+    <path d="M10 7H18V19C13.5 19 10 17.5 10 13V7Z" fill="#ffec8b" />
+    <path d="M5 8C3 8 3 14 8 14" stroke="#ffd700" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+    <path d="M31 8C33 8 33 14 28 14" stroke="#ffd700" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+    <path d="M18 9L19.5 12H23L20 14L21.5 17L18 15L14.5 17L16 14L13 12H16.5L18 9Z" fill="#ffffff" stroke="#b8860b" strokeWidth="0.5" />
+  </svg>
+);
