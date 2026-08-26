@@ -712,6 +712,10 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               <div className="win95-dropdown-item" onClick={() => { setIsERDOpen(true); setActiveMenu(null); }}>
                 <span>🌐 Entity Relationship Diagram (ERD)</span>
               </div>
+              <div className="win95-dropdown-divider" />
+              <div className="win95-dropdown-item" onClick={() => { onOpenSettings(); setActiveMenu(null); }}>
+                <span>🎨 Vintage Themes & Dark Mode...</span>
+              </div>
             </div>
           )}
         </div>
@@ -731,6 +735,10 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           </span>
           {activeMenu === 'help' && (
             <div className="win95-dropdown-menu">
+              <div className="win95-dropdown-item" onClick={() => { onOpenSettings(); setActiveMenu(null); }}>
+                <span>⚙️ Options & Control Panel...</span>
+              </div>
+              <div className="win95-dropdown-divider" />
               <div className="win95-dropdown-item" onClick={() => { onOpenHelp(); setActiveMenu(null); }}>
                 <span>📖 SQL Query Tutorial...</span>
               </div>

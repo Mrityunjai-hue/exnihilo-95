@@ -261,6 +261,17 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </button>
 
         <button
+          id="btn-themes"
+          className="win95-button"
+          onClick={onOpenSettings}
+          title="Change Vintage Themes & Dark Mode (Win95, Noir, XP, Win2000)"
+          style={{ padding: '2px 6px', fontWeight: 'bold' }}
+        >
+          <span>🎨</span>
+          <span>Themes</span>
+        </button>
+
+        <button
           id="btn-options"
           className="win95-button"
           onClick={onOpenSettings}
