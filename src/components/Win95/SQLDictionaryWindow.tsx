@@ -291,12 +291,12 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
             boxSizing: 'border-box',
           }}
         >
-          <div style={{ padding: '4px 6px', background: '#000080', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', marginBottom: '2px' }}>
+          <div style={{ padding: '4px 6px', background: 'var(--w95-title-active-bg, #000080)', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', marginBottom: '2px' }}>
             📋 Command Index ({filteredItems.length})
           </div>
 
           {filteredItems.length === 0 ? (
-            <div style={{ padding: '16px', textWrap: 'wrap', textAlign: 'center', color: '#777', fontSize: '11px' }}>
+            <div style={{ padding: '16px', textWrap: 'wrap', textAlign: 'center', color: 'var(--w95-dark-gray, #777)', fontSize: '11px' }}>
               No commands match current filter criteria.
             </div>
           ) : (
@@ -311,14 +311,14 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
                   style={{
                     padding: '4px 6px',
                     cursor: 'pointer',
-                    background: isSelected ? '#000080' : 'transparent',
-                    color: isSelected ? '#ffffff' : '#000000',
+                    background: isSelected ? 'var(--w95-title-active-bg, #000080)' : 'transparent',
+                    color: isSelected ? '#ffffff' : 'var(--w95-sunken-text, #000000)',
                     fontSize: '11px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: '4px',
-                    borderBottom: '1px solid #f0f0f0',
+                    borderBottom: '1px solid var(--w95-dark-gray, #f0f0f0)',
                   }}
                 >
                   <div style={{ fontFamily: 'var(--w95-mono)', fontWeight: isSelected ? 'bold' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -353,12 +353,12 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
           {activeItem ? (
             <div>
               {/* Header: Title & Status Badge */}
-              <div style={{ borderBottom: '2px solid #000080', paddingBottom: '6px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ borderBottom: '2px solid var(--w95-dark-gray, #808080)', paddingBottom: '6px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h2 style={{ margin: 0, fontSize: '16px', color: '#000080', fontFamily: 'var(--w95-mono)', fontWeight: 'bold' }}>
+                  <h2 style={{ margin: 0, fontSize: '16px', color: 'var(--w95-sunken-text, #000080)', fontFamily: 'var(--w95-mono)', fontWeight: 'bold' }}>
                     {activeItem.command}
                   </h2>
-                  <div style={{ fontSize: '10px', color: '#555', marginTop: '2px' }}>
+                  <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
                     Category: <strong>{activeItem.category}</strong>
                   </div>
                 </div>
@@ -376,12 +376,12 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
 
               {/* Dialect Badges */}
               <div style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#444', marginRight: '4px' }}>Dialect Support:</span>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', marginRight: '4px' }}>Dialect Support:</span>
                 {activeItem.dialects.map((d) => (
                   <span
                     key={d}
                     style={{
-                      background: '#000080',
+                      background: 'var(--w95-title-active-bg, #000080)',
                       color: '#ffffff',
                       padding: '2px 6px',
                       fontSize: '10px',
@@ -396,15 +396,15 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
 
               {/* 1. What It Does */}
               <div style={{ marginBottom: '12px' }}>
-                <strong style={{ fontSize: '11px', color: '#000080' }}>📘 What It Does:</strong>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', lineHeight: '1.5', color: '#222' }}>
+                <strong style={{ fontSize: '11px', color: 'var(--w95-sunken-text, #000080)' }}>📘 What It Does:</strong>
+                <p style={{ margin: '4px 0 0 0', fontSize: '12px', lineHeight: '1.5' }}>
                   {activeItem.description}
                 </p>
               </div>
 
               {/* 2. Standard Syntax */}
               <div style={{ marginBottom: '12px' }}>
-                <strong style={{ fontSize: '11px', color: '#000080' }}>📄 Standard Syntax:</strong>
+                <strong style={{ fontSize: '11px', color: 'var(--w95-sunken-text, #000080)' }}>📄 Standard Syntax:</strong>
                 <div style={{ background: '#000000', color: '#00ff00', padding: '8px', fontFamily: 'var(--w95-mono)', fontSize: '11px', marginTop: '4px', border: '1px solid #808080' }}>
                   <code>{activeItem.syntax}</code>
                 </div>
@@ -413,25 +413,25 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
               {/* 3. Dialect Variations Comparison Table (If Available) */}
               {activeItem.dialectVariations && activeItem.dialectVariations.length > 0 && (
                 <div style={{ marginBottom: '12px' }}>
-                  <strong style={{ fontSize: '11px', color: '#000080' }}>🔄 Dialect Variations Comparison:</strong>
+                  <strong style={{ fontSize: '11px', color: 'var(--w95-sunken-text, #000080)' }}>🔄 Dialect Variations Comparison:</strong>
                   <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '4px', fontSize: '11px' }}>
                     <thead>
-                      <tr style={{ background: '#c0c0c0', borderBottom: '1px solid #808080' }}>
-                        <th style={{ padding: '4px', textAlign: 'left', border: '1px solid #808080' }}>Dialect</th>
-                        <th style={{ padding: '4px', textAlign: 'left', border: '1px solid #808080' }}>Dialect Syntax</th>
-                        <th style={{ padding: '4px', textAlign: 'left', border: '1px solid #808080' }}>Notes</th>
+                      <tr style={{ background: 'var(--w95-gray, #c0c0c0)', borderBottom: '1px solid var(--w95-dark-gray, #808080)', color: 'var(--w95-text-color, #000)' }}>
+                        <th style={{ padding: '4px', textAlign: 'left', border: '1px solid var(--w95-dark-gray, #808080)' }}>Dialect</th>
+                        <th style={{ padding: '4px', textAlign: 'left', border: '1px solid var(--w95-dark-gray, #808080)' }}>Dialect Syntax</th>
+                        <th style={{ padding: '4px', textAlign: 'left', border: '1px solid var(--w95-dark-gray, #808080)' }}>Notes</th>
                       </tr>
                     </thead>
                     <tbody>
                       {activeItem.dialectVariations.map((v) => (
-                        <tr key={v.dialect} style={{ background: '#f8f9fa' }}>
-                          <td style={{ padding: '4px', border: '1px solid #dfdfdf', fontWeight: 'bold' }}>
+                        <tr key={v.dialect} style={{ background: 'var(--w95-grid-even-bg, #f8f9fa)', color: 'var(--w95-sunken-text, #000)' }}>
+                          <td style={{ padding: '4px', border: '1px solid var(--w95-dark-gray, #dfdfdf)', fontWeight: 'bold' }}>
                             {DIALECT_METADATA[v.dialect]?.icon} {v.dialect}
                           </td>
-                          <td style={{ padding: '4px', border: '1px solid #dfdfdf', fontFamily: 'var(--w95-mono)', color: '#000080' }}>
+                          <td style={{ padding: '4px', border: '1px solid var(--w95-dark-gray, #dfdfdf)', fontFamily: 'var(--w95-mono)' }}>
                             <code>{v.syntax}</code>
                           </td>
-                          <td style={{ padding: '4px', border: '1px solid #dfdfdf', color: '#555' }}>
+                          <td style={{ padding: '4px', border: '1px solid var(--w95-dark-gray, #dfdfdf)' }}>
                             {v.note || '-'}
                           </td>
                         </tr>
@@ -444,7 +444,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
               {/* 4. Executable Code Example */}
               <div style={{ marginBottom: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <strong style={{ fontSize: '11px', color: '#000080' }}>💡 Code Example:</strong>
+                  <strong style={{ fontSize: '11px', color: 'var(--w95-sunken-text, #000080)' }}>💡 Code Example:</strong>
                   <button
                     type="button"
                     onClick={() => handleCopyCode(activeItem.id, activeItem.example)}
@@ -454,20 +454,20 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
                     {copiedId === activeItem.id ? '✓ Copied!' : '📋 Copy SQL'}
                   </button>
                 </div>
-                <div style={{ background: '#f0f4f8', border: '1px dashed #000080', padding: '8px', fontFamily: 'var(--w95-mono)', fontSize: '11px', color: '#111' }}>
+                <div style={{ background: 'var(--w95-grid-even-bg, #f0f4f8)', color: 'var(--w95-sunken-text, #111)', border: '1px dashed var(--w95-dark-gray, #000080)', padding: '8px', fontFamily: 'var(--w95-mono)', fontSize: '11px' }}>
                   <code>{activeItem.example}</code>
                 </div>
               </div>
 
               {/* 5. Notes & Gotchas */}
               {activeItem.notes && (
-                <div style={{ background: '#fff8e1', borderLeft: '4px solid #ffb300', padding: '6px 10px', fontSize: '11px', color: '#444' }}>
+                <div style={{ background: 'var(--w95-callout-yellow-bg, #fff8e1)', color: 'var(--w95-callout-yellow-text, #444)', borderLeft: '4px solid #ffb300', padding: '6px 10px', fontSize: '11px' }}>
                   <strong>🎓 Student Note:</strong> {activeItem.notes}
                 </div>
               )}
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--w95-dark-gray, #888)' }}>
               Select a command from the left index list to inspect its specification.
             </div>
           )}

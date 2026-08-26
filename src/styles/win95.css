@@ -317,14 +317,14 @@ html, body {
 .win95-btn-titlebar {
   width: 16px;
   height: 14px;
-  background-color: var(--w95-gray);
-  border-top: 1px solid var(--w95-white);
-  border-left: 1px solid var(--w95-white);
-  border-right: 1px solid var(--w95-black);
-  border-bottom: 1px solid var(--w95-black);
-  box-shadow: inset 1px 1px 0px var(--w95-light-gray),
-              inset -1px -1px 0px var(--w95-dark-gray);
-  color: var(--w95-black);
+  background-color: #c0c0c0 !important;
+  border-top: 1px solid #ffffff !important;
+  border-left: 1px solid #ffffff !important;
+  border-right: 1px solid #000000 !important;
+  border-bottom: 1px solid #000000 !important;
+  box-shadow: inset 1px 1px 0px #dfdfdf,
+              inset -1px -1px 0px #808080;
+  color: #000000 !important;
   font-size: 9px;
   font-weight: bold;
   display: flex;
@@ -333,20 +333,19 @@ html, body {
   cursor: pointer;
   padding: 0;
   line-height: 1;
-  transition: background-color 0.1s ease;
 }
 
 .win95-btn-titlebar:hover {
-  background-color: #e8e8e8;
-  filter: brightness(1.05);
+  background-color: #d6d6d6 !important;
+  color: #000000 !important;
 }
 
 .win95-btn-titlebar:active {
-  border-top: 1px solid var(--w95-black);
-  border-left: 1px solid var(--w95-black);
-  border-right: 1px solid var(--w95-white);
-  border-bottom: 1px solid var(--w95-white);
-  box-shadow: inset 1px 1px 0px var(--w95-dark-gray);
+  border-top: 1px solid #000000 !important;
+  border-left: 1px solid #000000 !important;
+  border-right: 1px solid #ffffff !important;
+  border-bottom: 1px solid #ffffff !important;
+  box-shadow: inset 1px 1px 0px #808080;
   padding: 1px 0 0 1px;
 }
 
