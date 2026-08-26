@@ -221,7 +221,12 @@ export const Desktop: React.FC = () => {
           queriesRun: prev.queriesRun + 1,
           rowsGenerated: prev.rowsGenerated + rowsCount,
           queryHistory: [
-            { sql: targetSql.split('\n')[0].substring(0, 60), timeMs: res.executionTimeMs, timestamp: now },
+            {
+              sql: targetSql.split('\n')[0].substring(0, 60),
+              timeMs: res.executionTimeMs,
+              timestamp: now,
+              rowCount: rowsCount,
+            },
             ...prev.queryHistory.slice(0, 9),
           ],
         }));

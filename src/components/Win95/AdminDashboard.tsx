@@ -14,7 +14,7 @@ export interface SessionStats {
   queriesRun: number;
   rowsGenerated: number;
   sessionStartTime: number;
-  queryHistory: Array<{ sql: string; timeMs: number; timestamp: string }>;
+  queryHistory: Array<{ sql: string; timeMs: number; timestamp: string; rowCount?: number }>;
 }
 
 interface AdminDashboardProps {
@@ -81,6 +81,76 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }, 1000);
     return () => clearInterval(interval);
   }, [activeSession]);
+
+  // Dynamic Real Live Data Computations
+  const liveQueriesCount = sessionStats.queriesRun;
+  const liveRowsCount = sessionStats.rowsGenerated;
+  const liveDataKb = (sessionStats.rowsGenerated * 0.28).toFixed(1);
+  const avgLatencyMs =
+    sessionStats.queryHistory.length > 0
+      ? Math.round(
+          sessionStats.queryHistory.reduce((acc, q) => acc + q.timeMs, 0) /
+            sessionStats.queryHistory.length
+        )
+      : 0;
+
+  // Handler for Exporting Live Session Logs (JSON format)
+  const handleExportLogs = () => {
+    if (!currentUser) return;
+    const logData = {
+      user: currentUser.displayName,
+      username: currentUser.usernameNorm,
+      exportTimestamp: new Date().toISOString(),
+      queriesRun: sessionStats.queriesRun,
+      rowsGenerated: sessionStats.rowsGenerated,
+      elapsedDuration: elapsedText,
+      queryHistory: sessionStats.queryHistory,
+    };
+    const jsonStr = JSON.stringify(logData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `exnihilo_session_logs_${currentUser.usernameNorm}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Handler for Exporting Live Session Report (TXT format)
+  const handleGenerateReport = () => {
+    if (!currentUser) return;
+    const reportText = `=====================================================
+EXNIHILO 95 — LIVE SESSION ANALYTICS REPORT
+=====================================================
+User: ${currentUser.displayName} (@${currentUser.usernameNorm})
+Generated: ${new Date().toLocaleString()}
+Session Duration: ${elapsedText}
+
+SESSION METRICS:
+-----------------------------------------------------
+- Total Queries Executed : ${sessionStats.queriesRun}
+- Total Rows Generated   : ${sessionStats.rowsGenerated}
+- Estimated Data Memory  : ${liveDataKb} KB
+- Avg Execution Latency  : ${avgLatencyMs} ms
+
+RECENT EXECUTED QUERIES (${sessionStats.queryHistory.length}):
+-----------------------------------------------------
+${
+  sessionStats.queryHistory.length === 0
+    ? 'No queries executed in this session yet.'
+    : sessionStats.queryHistory
+        .map((q, i) => `${i + 1}. [${q.timestamp}] (${q.timeMs}ms) SQL: ${q.sql}`)
+        .join('\n')
+}
+=====================================================`;
+    const blob = new Blob([reportText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `exnihilo_session_report_${currentUser.usernameNorm}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   if (!isOpen || !currentUser) return null;
 
@@ -694,182 +764,257 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             )}
 
-            {/* TAB 3: USAGE STATISTICS DASHBOARD (4 QUADRANT CHARTS) */}
+            {/* TAB 3: REAL-TIME LIVE USAGE STATISTICS DASHBOARD */}
             {activeTab === 'usage' && (
               <div>
                 <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '8px', color: '#000080', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>📈 Usage Statistics Dashboard</span>
-                  <span style={{ fontSize: '10px', fontWeight: 'normal', color: '#555' }}>Session Stats: {sessionStats.queriesRun} queries | {elapsedText} duration</span>
+                  <span>📈 Live Session Analytics Monitor</span>
+                  <span style={{ fontSize: '10px', fontWeight: 'normal', color: '#555' }}>Active Session: {elapsedText} duration</span>
                 </div>
 
-                {/* 2x2 Grid of 4 Interactive SVG Analytics Charts */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                  {/* Chart 1: Queries per Month (Bar Chart) */}
-                  <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
-                      Queries per Month
-                    </div>
-                    <svg width="100%" height="90" viewBox="0 0 240 90">
-                      {/* Y-Axis Lines */}
-                      <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
-                      <line x1="25" y1="30" x2="230" y2="30" stroke="#eee" strokeWidth="1" />
-                      <line x1="25" y1="50" x2="230" y2="50" stroke="#eee" strokeWidth="1" />
-                      <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
-                      {/* Y-Axis Labels */}
-                      <text x="2" y="14" font-size="8" fill="#555">600</text>
-                      <text x="2" y="34" font-size="8" fill="#555">400</text>
-                      <text x="2" y="54" font-size="8" fill="#555">200</text>
-                      <text x="18" y="74" font-size="8" fill="#555">0</text>
-                      {/* Monthly Bars */}
-                      {[
-                        { month: '1', h: 45, val: '310' },
-                        { month: '2', h: 32, val: '220' },
-                        { month: '3', h: 38, val: '260' },
-                        { month: '4', h: 42, val: '290' },
-                        { month: '5', h: 56, val: '395' },
-                        { month: '6', h: 68, val: '480' },
-                        { month: '7', h: 50, val: '345' },
-                        { month: '8', h: 44, val: '305' },
-                      ].map((bar, idx) => (
-                        <g key={idx}>
-                          <rect
-                            x={35 + idx * 24}
-                            y={70 - bar.h}
-                            width="14"
-                            height={bar.h}
-                            fill="#0000aa"
-                            stroke="#000"
-                            strokeWidth="0.5"
-                          />
-                          <text x={42 + idx * 24} y="82" font-size="7" fill="#333" text-anchor="middle">{bar.month}</text>
-                        </g>
-                      ))}
-                    </svg>
+                {/* Real Live Session Summary Metric Badges */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '10px' }}>
+                  <div className="win95-sunken" style={{ padding: '6px', background: '#ffffff', fontSize: '10px', textAlign: 'center' }}>
+                    <div style={{ color: '#555', fontSize: '9px' }}>Total Queries</div>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#000080', margin: '2px 0' }}>{liveQueriesCount}</div>
+                    <div style={{ fontSize: '8px', color: '#888' }}>Executed</div>
                   </div>
-
-                  {/* Chart 2: Data Volume (GB) (Bar Chart) */}
-                  <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
-                      Data Volume (GB)
-                    </div>
-                    <svg width="100%" height="90" viewBox="0 0 240 90">
-                      <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
-                      <line x1="25" y1="35" x2="230" y2="35" stroke="#eee" strokeWidth="1" />
-                      <line x1="25" y1="60" x2="230" y2="60" stroke="#eee" strokeWidth="1" />
-                      <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
-                      <text x="2" y="14" font-size="8" fill="#555">2.0</text>
-                      <text x="2" y="39" font-size="8" fill="#555">1.0</text>
-                      <text x="2" y="64" font-size="8" fill="#555">0.5</text>
-                      <text x="18" y="74" font-size="8" fill="#555">0.0</text>
-                      {[
-                        { idx: 1, h: 12 }, { idx: 2, h: 22 }, { idx: 3, h: 18 }, { idx: 4, h: 32 },
-                        { idx: 5, h: 28 }, { idx: 6, h: 42 }, { idx: 7, h: 36 }, { idx: 8, h: 48 },
-                        { idx: 9, h: 40 }, { idx: 10, h: 58 }, { idx: 11, h: 50 }, { idx: 12, h: 64 },
-                      ].map((bar, i) => (
-                        <g key={i}>
-                          <rect
-                            x={32 + i * 16}
-                            y={70 - bar.h}
-                            width="10"
-                            height={bar.h}
-                            fill="#009999"
-                            stroke="#000"
-                            strokeWidth="0.5"
-                          />
-                          <text x={37 + i * 16} y="82" font-size="6" fill="#333" text-anchor="middle">{bar.idx}</text>
-                        </g>
-                      ))}
-                    </svg>
+                  <div className="win95-sunken" style={{ padding: '6px', background: '#ffffff', fontSize: '10px', textAlign: 'center' }}>
+                    <div style={{ color: '#555', fontSize: '9px' }}>Rows Produced</div>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#008000', margin: '2px 0' }}>{liveRowsCount}</div>
+                    <div style={{ fontSize: '8px', color: '#888' }}>Synthetic Rows</div>
                   </div>
-
-                  {/* Chart 3: Peak Concurrent Sessions (Dual Bar Chart) */}
-                  <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
-                      Peak Concurrent Sessions
-                    </div>
-                    <svg width="100%" height="90" viewBox="0 0 240 90">
-                      <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
-                      <line x1="25" y1="35" x2="230" y2="35" stroke="#eee" strokeWidth="1" />
-                      <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
-                      <text x="2" y="14" font-size="8" fill="#555">100</text>
-                      <text x="2" y="39" font-size="8" fill="#555">40</text>
-                      <text x="18" y="74" font-size="8" fill="#555">0</text>
-                      {[
-                        { idx: 1, p1: 10, p2: 18 },
-                        { idx: 3, p1: 16, p2: 24 },
-                        { idx: 5, p1: 22, p2: 36 },
-                        { idx: 7, p1: 30, p2: 44 },
-                        { idx: 9, p1: 18, p2: 28 },
-                        { idx: 15, p1: 25, p2: 38 },
-                        { idx: 21, p1: 35, p2: 52 },
-                      ].map((bar, i) => (
-                        <g key={i}>
-                          <rect x={35 + i * 27} y={70 - bar.p1} width="8" height={bar.p1} fill="#800080" />
-                          <rect x={44 + i * 27} y={70 - bar.p2} width="8" height={bar.p2} fill="#000080" />
-                          <text x={43 + i * 27} y="82" font-size="6" fill="#333" text-anchor="middle">{bar.idx}</text>
-                        </g>
-                      ))}
-                    </svg>
+                  <div className="win95-sunken" style={{ padding: '6px', background: '#ffffff', fontSize: '10px', textAlign: 'center' }}>
+                    <div style={{ color: '#555', fontSize: '9px' }}>Memory Footprint</div>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#008080', margin: '2px 0' }}>{liveDataKb} KB</div>
+                    <div style={{ fontSize: '8px', color: '#888' }}>In-Memory WASM</div>
                   </div>
-
-                  {/* Chart 4: Avg Duration (Line Chart) */}
-                  <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
-                      Avg Duration (ms)
-                    </div>
-                    <svg width="100%" height="90" viewBox="0 0 240 90">
-                      <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
-                      <line x1="25" y1="35" x2="230" y2="35" stroke="#eee" strokeWidth="1" />
-                      <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
-                      <text x="2" y="14" font-size="8" fill="#555">5000</text>
-                      <text x="2" y="39" font-size="8" fill="#555">2500</text>
-                      <text x="18" y="74" font-size="8" fill="#555">0</text>
-                      {/* Plotted Line */}
-                      <polyline
-                        points="35,55 55,42 75,48 95,25 115,50 135,30 155,44 175,20 195,38 215,32"
-                        fill="none"
-                        stroke="#0000aa"
-                        strokeWidth="1.5"
-                      />
-                      {[
-                        { x: 35, y: 55, lbl: '1' },
-                        { x: 75, y: 48, lbl: '5' },
-                        { x: 115, y: 50, lbl: '10' },
-                        { x: 155, y: 44, lbl: '15' },
-                        { x: 195, y: 38, lbl: '20' },
-                        { x: 215, y: 32, lbl: '30' },
-                      ].map((pt, i) => (
-                        <g key={i}>
-                          <circle cx={pt.x} cy={pt.y} r="2.5" fill="#ffffff" stroke="#0000aa" strokeWidth="1.5" />
-                          <text x={pt.x} y="82" font-size="6" fill="#333" text-anchor="middle">{pt.lbl}</text>
-                        </g>
-                      ))}
-                    </svg>
+                  <div className="win95-sunken" style={{ padding: '6px', background: '#ffffff', fontSize: '10px', textAlign: 'center' }}>
+                    <div style={{ color: '#555', fontSize: '9px' }}>Avg Execution</div>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#800080', margin: '2px 0' }}>{avgLatencyMs} ms</div>
+                    <div style={{ fontSize: '8px', color: '#888' }}>Engine Latency</div>
                   </div>
                 </div>
 
-                {/* Dashboard Action Controls matching Reference UI */}
+                {/* 2x2 Grid of Live Dynamic Real-Time Analytics Charts */}
+                {sessionStats.queryHistory.length === 0 ? (
+                  <div
+                    style={{
+                      background: '#ffffcc',
+                      border: '1px solid #c0c000',
+                      padding: '12px',
+                      fontSize: '11px',
+                      lineHeight: '1.5',
+                      marginBottom: '12px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    ℹ️ <strong>Live Session Analytics Empty</strong>
+                    <br />
+                    No SQL queries have been executed in this browser session yet.
+                    <br />
+                    <span style={{ color: '#555', fontSize: '10px' }}>
+                      Run queries in <strong>ExNihilo SQL IDE</strong> to record live execution latency curves, row generation counts, and data memory footprint.
+                    </span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                    {/* Live Chart 1: Real Execution Latency (ms) per Query */}
+                    <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                        Live Query Latency (ms)
+                      </div>
+                      {(() => {
+                        const history = [...sessionStats.queryHistory].reverse();
+                        const maxLat = Math.max(...history.map((q) => q.timeMs), 10);
+                        return (
+                          <svg width="100%" height="90" viewBox="0 0 240 90">
+                            <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
+                            <line x1="25" y1="40" x2="230" y2="40" stroke="#eee" strokeWidth="1" />
+                            <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
+                            <text x="2" y="14" font-size="8" fill="#555">{maxLat}ms</text>
+                            <text x="2" y="44" font-size="8" fill="#555">{Math.round(maxLat / 2)}ms</text>
+                            <text x="18" y="74" font-size="8" fill="#555">0</text>
+                            {history.map((q, idx) => {
+                              const barH = Math.max(4, Math.round((q.timeMs / maxLat) * 55));
+                              return (
+                                <g key={idx}>
+                                  <rect
+                                    x={35 + idx * 18}
+                                    y={70 - barH}
+                                    width="12"
+                                    height={barH}
+                                    fill="#0000aa"
+                                    stroke="#000"
+                                    strokeWidth="0.5"
+                                  >
+                                    <title>{`Query #${idx + 1}: ${q.timeMs}ms - ${q.sql}`}</title>
+                                  </rect>
+                                  <text x={41 + idx * 18} y="82" font-size="6" fill="#333" text-anchor="middle">
+                                    #{idx + 1}
+                                  </text>
+                                </g>
+                              );
+                            })}
+                          </svg>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Live Chart 2: Real Rows Produced per Query */}
+                    <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                        Live Rows Generated per Query
+                      </div>
+                      {(() => {
+                        const history = [...sessionStats.queryHistory].reverse();
+                        const maxRows = Math.max(...history.map((q) => q.rowCount || 1), 5);
+                        return (
+                          <svg width="100%" height="90" viewBox="0 0 240 90">
+                            <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
+                            <line x1="25" y1="40" x2="230" y2="40" stroke="#eee" strokeWidth="1" />
+                            <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
+                            <text x="2" y="14" font-size="8" fill="#555">{maxRows}</text>
+                            <text x="2" y="44" font-size="8" fill="#555">{Math.round(maxRows / 2)}</text>
+                            <text x="18" y="74" font-size="8" fill="#555">0</text>
+                            {history.map((q, idx) => {
+                              const rCount = q.rowCount || 0;
+                              const barH = Math.max(4, Math.round((rCount / maxRows) * 55));
+                              return (
+                                <g key={idx}>
+                                  <rect
+                                    x={35 + idx * 18}
+                                    y={70 - barH}
+                                    width="12"
+                                    height={barH}
+                                    fill="#009999"
+                                    stroke="#000"
+                                    strokeWidth="0.5"
+                                  >
+                                    <title>{`Query #${idx + 1}: ${rCount} rows - ${q.sql}`}</title>
+                                  </rect>
+                                  <text x={41 + idx * 18} y="82" font-size="6" fill="#333" text-anchor="middle">
+                                    #{idx + 1}
+                                  </text>
+                                </g>
+                              );
+                            })}
+                          </svg>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Live Chart 3: Real Cumulative Memory Growth (KB) */}
+                    <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                        Data Memory Growth (KB)
+                      </div>
+                      {(() => {
+                        const history = [...sessionStats.queryHistory].reverse();
+                        let cum = 0;
+                        const cumData = history.map((q) => {
+                          cum += (q.rowCount || 0) * 0.28;
+                          return Number(cum.toFixed(1));
+                        });
+                        const maxCum = Math.max(...cumData, 1);
+
+                        return (
+                          <svg width="100%" height="90" viewBox="0 0 240 90">
+                            <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
+                            <line x1="25" y1="40" x2="230" y2="40" stroke="#eee" strokeWidth="1" />
+                            <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
+                            <text x="2" y="14" font-size="8" fill="#555">{maxCum.toFixed(0)}KB</text>
+                            <text x="2" y="44" font-size="8" fill="#555">{(maxCum / 2).toFixed(0)}KB</text>
+                            <text x="18" y="74" font-size="8" fill="#555">0</text>
+                            {cumData.map((val, idx) => {
+                              const barH = Math.max(4, Math.round((val / maxCum) * 55));
+                              return (
+                                <g key={idx}>
+                                  <rect x={35 + idx * 18} y={70 - barH} width="12" height={barH} fill="#800080" />
+                                  <text x={41 + idx * 18} y="82" font-size="6" fill="#333" text-anchor="middle">
+                                    #{idx + 1}
+                                  </text>
+                                </g>
+                              );
+                            })}
+                          </svg>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Live Chart 4: Live Latency Trend Polyline */}
+                    <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                        Execution Latency Trend Curve (ms)
+                      </div>
+                      {(() => {
+                        const history = [...sessionStats.queryHistory].reverse();
+                        const maxLat = Math.max(...history.map((q) => q.timeMs), 10);
+
+                        const points = history
+                          .map((q, idx) => {
+                            const x = 35 + idx * 18;
+                            const y = 70 - Math.max(4, Math.round((q.timeMs / maxLat) * 55));
+                            return `${x},${y}`;
+                          })
+                          .join(' ');
+
+                        return (
+                          <svg width="100%" height="90" viewBox="0 0 240 90">
+                            <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
+                            <line x1="25" y1="40" x2="230" y2="40" stroke="#eee" strokeWidth="1" />
+                            <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
+                            <text x="2" y="14" font-size="8" fill="#555">{maxLat}ms</text>
+                            <text x="2" y="44" font-size="8" fill="#555">{Math.round(maxLat / 2)}ms</text>
+                            <text x="18" y="74" font-size="8" fill="#555">0</text>
+                            {points.length > 0 && (
+                              <polyline points={points} fill="none" stroke="#0000aa" strokeWidth="2" />
+                            )}
+                            {history.map((q, idx) => {
+                              const x = 35 + idx * 18;
+                              const y = 70 - Math.max(4, Math.round((q.timeMs / maxLat) * 55));
+                              return (
+                                <g key={idx}>
+                                  <circle cx={x} cy={y} r="3" fill="#ffffff" stroke="#0000aa" strokeWidth="1.5" />
+                                  <text x={x} y="82" font-size="6" fill="#333" text-anchor="middle">
+                                    #{idx + 1}
+                                  </text>
+                                </g>
+                              );
+                            })}
+                          </svg>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
+
+                {/* Dashboard Action Controls with Real Export / Report Functionality */}
                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '12px' }}>
                   <button
                     className="win95-button"
                     style={{ fontSize: '10px', padding: '3px 10px' }}
-                    onClick={() => setModalNotice('Historical log data archived for active session.')}
+                    onClick={() =>
+                      setModalNotice(
+                        `Active Session History: ${sessionStats.queryHistory.length} query records logged in memory.`
+                      )
+                    }
                   >
-                    📅 View Historical Data
+                    📅 View Session Logs ({sessionStats.queryHistory.length})
                   </button>
                   <button
                     className="win95-button"
                     style={{ fontSize: '10px', padding: '3px 10px' }}
-                    onClick={() => setModalNotice('Session logs exported to JSON/CSV format.')}
+                    onClick={handleExportLogs}
                   >
-                    📤 Export Logs
+                    📤 Export Logs (.json)
                   </button>
                   <button
                     className="win95-button"
                     style={{ fontSize: '10px', padding: '3px 10px' }}
-                    onClick={() => setModalNotice('Usage Analytics Report generated successfully.')}
+                    onClick={handleGenerateReport}
                   >
-                    📄 Generate Report
+                    📄 Generate Report (.txt)
                   </button>
                 </div>
 
