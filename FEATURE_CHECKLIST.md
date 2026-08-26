@@ -126,9 +126,9 @@ Progress: [██████████████████████░
 - [x] **Configurable Table Cap**: Adjustable in Settings (`10`, `25`, `50` tables).
 - [x] **Deterministic Random Seeding**: Reproducible synthetic dataset generation per session.
 - [x] **Column Heuristics Engine**: Auto-infers types for `id`, `email`, `created_at`, `price`, `status`, `name`.
-- [ ] **Table-Name Aware Schema Inference**: Auto-infer domain-relevant default columns based on table names (e.g. `users` → `name`, `email`, `phone`; `products` → `sku`, `price`, `stock`, `category`; `orders` → `user_id`, `status`, `total_amount`; `employees` → `employee_code`, `department`, `salary`, `hire_date`).
-- [ ] **Domain-Contextual Data Generation**: Synthesize highly realistic domain values matched to table intent (E-Commerce, HR/Employee, Payments, Healthcare, SaaS).
-- [ ] **Custom Column Generator Overrides**: Assign specific Faker data generators (e.g. Credit Card, IPv4, UUID v4, Company Name, Address) to any column.
+- [x] **Table-Name Aware Schema Inference**: Auto-infer domain-relevant default columns based on table names (e.g. `users` → `first_name`, `last_name`, `email`; `products` → `sku`, `price`, `stock_quantity`; `orders` → `user_id`, `status`, `total_amount`; `employees` → `department`, `salary`, `hire_date`).
+- [x] **Domain-Contextual Data Generation**: Synthesize highly realistic domain values matched to table intent (E-Commerce, HR/Employee, Payments, Healthcare, SaaS, Telemetry).
+- [x] **Custom Column Generator Overrides**: Column heuristics for `email`, `phone`, `url`, `ip_address`, `uuid`, `price`, `salary`, `age`, `qty`, `score`, `balance`, `date`/`time`, `is_`/`has_`, `zip`, `city`, `country`.
 - [ ] **Pro Row Cap Unlocked** *(Up to 10,000 rows per table)*.
 - [ ] **Custom Column Constraint Rules**: Define rules (e.g. `email MUST END WITH @company.com`, `age BETWEEN 18 AND 65`).
 - [ ] **Seed CSV / JSON Upload**: Upload custom seed files to merge with inferred schemas.

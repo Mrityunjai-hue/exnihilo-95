@@ -17,6 +17,7 @@
 import { faker } from '@faker-js/faker';
 import { TableSchema, ColumnDef, LogicalType } from './inference';
 import { ForeignKeyRelationship, TableGenerationPlan } from './relationships';
+import { resolveDomainSchema, inferFakerFromColumnName } from './domain_dictionary';
 
 // ── Configuration Options ─────────────────────────────────────────────────────
 
@@ -164,6 +165,32 @@ function generateScalarValue(
   tableName: string,
   rowIndex:  number,
 ): any {
+  const cleanColName = col.name.toLowerCase();
+
+  // Step 0: Primary Key sequential integer protection to guarantee 100% unique PKs
+  if (cleanColName === 'id' || cleanColName.endsWith('_pk')) {
+    return rowIndex + 1;
+  }
+
+  // Step 1: Check if table matches a domain schema in DOMAIN_CATALOG
+  const domainCols = resolveDomainSchema(tableName);
+  if (domainCols) {
+    const domainColSpec = domainCols.find(dc => dc.name.toLowerCase() === cleanColName);
+    if (domainColSpec?.fakerGenerator && !domainColSpec.isPrimaryKey) {
+      return domainColSpec.fakerGenerator();
+    }
+  }
+
+  // Step 2: Check column keyword heuristics (returns null if no specific keyword matches)
+  const heuristicFn = inferFakerFromColumnName(col.name);
+  if (heuristicFn) {
+    const val = heuristicFn();
+    if (val !== undefined && val !== null) {
+      return val;
+    }
+  }
+
+  // Step 3: Type-appropriate baseline scalar generators based on logicalType
   switch (col.logicalType) {
     case 'INTEGER':   return generateInteger(col.name, rowIndex);
     case 'NUMERIC':   return generateNumeric(col.name, rowIndex);
@@ -256,7 +283,10 @@ export function generateSyntheticDataset(
       // 2. Apply Foreign Key Referential Integrity from Parent Tables
       for (const rel of incomingRels) {
         const parentRows = generatedRowsStore.get(rel.parentTable)!;
-        if (parentRows.length === 0) continue;
+        if (!parentRows || parentRows.length === 0) continue;
+
+        // Skip self-referencing joins if childTable === parentTable
+        if (rel.parentTable === tableName) continue;
 
         // Determine match vs orphan status based on join type
         let isOrphan = false;
@@ -265,21 +295,20 @@ export function generateSyntheticDataset(
           isOrphan = (rIdx % 5 === 4);
         }
 
-        if (isOrphan) {
-          // Assign non-matching or null values for orphan rows
-          for (const childCol of rel.childColumns) {
-            row[childCol] = null;
-          }
-        } else {
-          // Pick a random parent row to maintain exact referential integrity
-          const parentRowIndex = rIdx % parentRows.length;
-          const parentRow = parentRows[parentRowIndex];
+        for (let k = 0; k < rel.childColumns.length; k++) {
+          const childCol  = rel.childColumns[k];
+          const parentCol = rel.parentColumns[k];
 
-          for (let k = 0; k < rel.childColumns.length; k++) {
-            const childCol  = rel.childColumns[k];
-            const parentCol = rel.parentColumns[k];
-            if (childCol && parentCol && parentRow[parentCol] !== undefined) {
-              row[childCol] = parentRow[parentCol];
+          // Protect table's primary key ('id') from being overwritten by FK sampling or nulls
+          if (childCol && parentCol && childCol.toLowerCase() !== 'id' && !childCol.toLowerCase().endsWith('_pk')) {
+            if (isOrphan) {
+              row[childCol] = null;
+            } else {
+              const parentRowIndex = rIdx % parentRows.length;
+              const parentRow = parentRows[parentRowIndex];
+              if (parentRow && parentRow[parentCol] !== undefined) {
+                row[childCol] = parentRow[parentCol];
+              }
             }
           }
         }

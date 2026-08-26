@@ -22,6 +22,7 @@
  */
 
 import { parse, Dialect } from './parser';
+import { resolveDomainSchema, UNIVERSAL_FALLBACK_SCHEMA } from './domain_dictionary';
 
 // ── Logical types (dialect-agnostic layer) ────────────────────────────────────
 
@@ -732,23 +733,28 @@ function buildSchemaMap(
     }
 
     if (referencedCols.size === 0) {
+      const domainSchema = resolveDomainSchema(tableName);
+      const targetSpecs = domainSchema ?? UNIVERSAL_FALLBACK_SCHEMA;
       result.set(tableName, {
         tableName,
-        isDefault: true,
-        columns: DEFAULT_COLUMNS.map(dc => ({
+        isDefault: !domainSchema,
+        columns: targetSpecs.map(dc => ({
           name:        dc.name,
           logicalType: dc.logicalType,
           sqliteType:  SQLITE_DDL[dc.logicalType],
-          source:      `spec 3.1: zero column signal → default starter schema`,
+          source:      domainSchema ? `domain catalog: matched ${tableName} schema` : `universal fallback schema`,
         })),
       });
       continue;
     }
 
     const columns: ColumnDef[] = [];
+    const colNameSet = new Set<string>();
+
     for (const col of referencedCols) {
       const key    = signalKey(tableName, col);
       const signal = signals.get(key);
+      colNameSet.add(col.toLowerCase());
 
       if (signal) {
         columns.push({
@@ -773,6 +779,22 @@ function buildSchemaMap(
             sqliteType:  SQLITE_DDL['VARCHAR'],
             source:      `spec 3.2 last row: no signal found → fallback VARCHAR(255)`,
           });
+        }
+      }
+    }
+
+    // Domain Schema Augmentation: fill in complementary domain columns if table matches a domain spec
+    const domainSchema = resolveDomainSchema(tableName);
+    if (domainSchema) {
+      for (const dc of domainSchema) {
+        if (!colNameSet.has(dc.name.toLowerCase())) {
+          columns.push({
+            name:        dc.name,
+            logicalType: dc.logicalType,
+            sqliteType:  SQLITE_DDL[dc.logicalType],
+            source:      `domain catalog: augmented ${tableName} schema`,
+          });
+          colNameSet.add(dc.name.toLowerCase());
         }
       }
     }
