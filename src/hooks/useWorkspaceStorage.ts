@@ -105,6 +105,17 @@ export function loadWorkspaceFromStorage(): { tabs: PersistedTabMeta[]; activeTa
   if (typeof window === 'undefined' || !window.localStorage) return null;
 
   try {
+    const activeWsId = getActiveWorkspaceId();
+    const workspaces = getWorkspacesList();
+    const activeProfile = workspaces.find((w) => w.id === activeWsId) || workspaces[0];
+
+    if (activeProfile && activeProfile.tabs && activeProfile.tabs.length > 0) {
+      return {
+        tabs: activeProfile.tabs,
+        activeTabId: activeProfile.activeTabId || activeProfile.tabs[0].id,
+      };
+    }
+
     const rawIndex = localStorage.getItem(INDEX_KEY);
     if (!rawIndex) return null;
 
@@ -146,6 +157,17 @@ export function loadWorkspaceFromStorage(): { tabs: PersistedTabMeta[]; activeTa
  * Async IndexedDB Workspace Loader
  */
 export async function loadWorkspaceFromIDB(): Promise<{ tabs: PersistedTabMeta[]; activeTabId: string | null } | null> {
+  const activeWsId = getActiveWorkspaceId();
+  const workspaces = getWorkspacesList();
+  const activeProfile = workspaces.find((w) => w.id === activeWsId) || workspaces[0];
+
+  if (activeProfile && activeProfile.tabs && activeProfile.tabs.length > 0) {
+    return Promise.resolve({
+      tabs: activeProfile.tabs,
+      activeTabId: activeProfile.activeTabId || activeProfile.tabs[0].id,
+    });
+  }
+
   const db = await openIDB();
   if (!db) return loadWorkspaceFromStorage();
 
@@ -341,6 +363,22 @@ export function useWorkspaceStorage(debounceMs = 500) {
 
       saveTimerRef.current = setTimeout(async () => {
         const tabIds = tabs.map((t) => t.id);
+
+        // Update active profile in workspaces list
+        const activeWsId = getActiveWorkspaceId();
+        const currentWorkspaces = getWorkspacesList();
+        const updatedWorkspaces = currentWorkspaces.map((ws) => {
+          if (ws.id === activeWsId) {
+            return {
+              ...ws,
+              updatedAt: new Date().toISOString(),
+              activeTabId,
+              tabs,
+            };
+          }
+          return ws;
+        });
+        saveWorkspacesList(updatedWorkspaces);
 
         // Fallback localStorage save
         if (window.localStorage) {

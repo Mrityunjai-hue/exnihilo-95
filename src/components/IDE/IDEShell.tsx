@@ -26,6 +26,7 @@ import {
   getActiveWorkspaceId,
   setActiveWorkspaceId,
   WorkspaceProfile,
+  PersistedTabMeta,
 } from '../../hooks/useWorkspaceStorage';
 
 
@@ -167,53 +168,104 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
   const handleCreateNewWorkspace = () => {
     if (!newWsNameInput.trim()) return;
-    const newWs: WorkspaceProfile = {
-      id: `ws_${Date.now()}`,
-      name: newWsNameInput.trim(),
+
+    const currentMeta: PersistedTabMeta[] = tabs.map((t) => ({
+      id: t.id,
+      title: t.title,
+      queryText: t.queryText,
+      dialect,
+      isPinned: Boolean(t.isPinned),
+    }));
+
+    const newWsId = `ws_${Date.now()}`;
+    const initialTabId = `tab_${newWsId}_1`;
+    const newWsName = newWsNameInput.trim();
+
+    const newWsProfile: WorkspaceProfile = {
+      id: newWsId,
+      name: newWsName,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      activeTabId: 'tab_1',
+      activeTabId: initialTabId,
       tabs: [
         {
-          id: 'tab_1',
+          id: initialTabId,
           title: 'Query 1.sql',
-          queryText: '-- New Workspace\nSELECT * FROM customers;',
+          queryText: `-- ${newWsName} Workspace\nSELECT * FROM customers;`,
           dialect,
           isPinned: false,
         },
       ],
     };
-    const updated = [...workspacesList, newWs];
-    setWorkspacesList(updated);
-    saveWorkspacesList(updated);
-    setActiveWsId(newWs.id);
-    setActiveWorkspaceId(newWs.id);
 
-    setTabs([
-      {
-        id: 'tab_1',
-        title: 'Query 1.sql',
-        queryText: '-- New Workspace\nSELECT * FROM customers;',
-        result: null,
-        isLoading: false,
-        executionTimeMs: null,
-        isPinned: false,
-      },
-    ]);
-    setActiveTabId('tab_1');
-    onQueryChange('-- New Workspace\nSELECT * FROM customers;');
+    const updatedList = workspacesList.map((ws) => {
+      if (ws.id === activeWsId) {
+        return {
+          ...ws,
+          updatedAt: new Date().toISOString(),
+          activeTabId,
+          tabs: currentMeta,
+        };
+      }
+      return ws;
+    });
+
+    const fullList = [...updatedList, newWsProfile];
+    setWorkspacesList(fullList);
+    saveWorkspacesList(fullList);
+
+    setActiveWsId(newWsId);
+    setActiveWorkspaceId(newWsId);
+
+    const newTab: QueryTab = {
+      id: initialTabId,
+      title: 'Query 1.sql',
+      queryText: `-- ${newWsName} Workspace\nSELECT * FROM customers;`,
+      result: null,
+      isLoading: false,
+      executionTimeMs: null,
+      isPinned: false,
+    };
+    setTabs([newTab]);
+    setActiveTabId(initialTabId);
+    onQueryChange(newTab.queryText);
     setNewWsNameInput('');
   };
 
-  const handleSwitchWorkspace = (wsId: string) => {
-    const target = workspacesList.find((w) => w.id === wsId);
-    if (!target) return;
+  const handleSwitchWorkspace = (targetWsId: string) => {
+    if (targetWsId === activeWsId) return;
 
-    setActiveWsId(wsId);
-    setActiveWorkspaceId(wsId);
+    const currentMeta: PersistedTabMeta[] = tabs.map((t) => ({
+      id: t.id,
+      title: t.title,
+      queryText: t.queryText,
+      dialect,
+      isPinned: Boolean(t.isPinned),
+    }));
 
-    if (target.tabs && target.tabs.length > 0) {
-      const convertedTabs: QueryTab[] = target.tabs.map((t) => ({
+    const targetProfile = workspacesList.find((w) => w.id === targetWsId);
+    if (!targetProfile) return;
+
+    const updatedList = workspacesList.map((ws) => {
+      if (ws.id === activeWsId) {
+        return {
+          ...ws,
+          updatedAt: new Date().toISOString(),
+          activeTabId,
+          tabs: currentMeta,
+        };
+      }
+      return ws;
+    });
+
+    saveWorkspacesList(updatedList);
+    setWorkspacesList(updatedList);
+
+    setActiveWsId(targetWsId);
+    setActiveWorkspaceId(targetWsId);
+
+    if (targetProfile.tabs && targetProfile.tabs.length > 0) {
+      const convertedTabs: QueryTab[] = targetProfile.tabs.map((t) => ({
         id: t.id,
         title: t.title,
         queryText: t.queryText,
@@ -223,7 +275,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         isPinned: Boolean(t.isPinned),
       }));
       setTabs(convertedTabs);
-      const activeId = target.activeTabId && convertedTabs.some((t) => t.id === target.activeTabId) ? target.activeTabId : convertedTabs[0].id;
+      const activeId = targetProfile.activeTabId && convertedTabs.some((t) => t.id === targetProfile.activeTabId)
+        ? targetProfile.activeTabId
+        : convertedTabs[0].id;
       setActiveTabId(activeId);
       const activeTabObj = convertedTabs.find((t) => t.id === activeId) || convertedTabs[0];
       onQueryChange(activeTabObj.queryText);
