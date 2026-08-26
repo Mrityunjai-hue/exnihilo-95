@@ -77,12 +77,27 @@ export function extractERDData(catalog: SessionCatalog): ERDGraphData {
   });
 
   // 2. Second pass: Infer Foreign Key Relationships
+  const SYNONYM_GROUPS: Record<string, string[]> = {
+    user: ['customers', 'users', 'clients', 'accounts', 'members'],
+    customer: ['customers', 'users', 'clients', 'accounts', 'members'],
+    client: ['customers', 'users', 'clients', 'accounts'],
+    account: ['accounts', 'users', 'customers'],
+    product: ['products', 'items', 'inventory'],
+    item: ['products', 'items'],
+    category: ['categories', 'category'],
+    author: ['authors', 'writers'],
+  };
+
   const findMatchingTargetTable = (colName: string, currentNodeId: string): string | null => {
     const colLower = colName.toLowerCase();
     if (!colLower.endsWith('_id') || colLower === 'id') return null;
 
     const base = colLower.replace(/_id$/, '');
     const candidates = [base, `${base}s`, `${base}es`].map((c) => c.toLowerCase());
+
+    if (SYNONYM_GROUPS[base]) {
+      candidates.push(...SYNONYM_GROUPS[base]);
+    }
 
     for (const cand of candidates) {
       if (tableNames.has(cand) && cand !== currentNodeId) {

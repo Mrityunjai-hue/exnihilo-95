@@ -240,33 +240,66 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({ catalog, onClose }) => {
               </defs>
 
               {erdData.links.map((link) => {
+                const sourceNode = erdData.nodes.find((n) => n.id === link.sourceTable);
+                const targetNode = erdData.nodes.find((n) => n.id === link.targetTable);
                 const sourcePos = positions[link.sourceTable];
                 const targetPos = positions[link.targetTable];
 
-                if (!sourcePos || !targetPos) return null;
+                if (!sourcePos || !targetPos || !sourceNode || !targetNode) return null;
 
-                const sx = sourcePos.x + 240;
-                const sy = sourcePos.y + 60;
-                const tx = targetPos.x;
-                const ty = targetPos.y + 60;
+                const sourceColIdx = sourceNode.columns.findIndex(
+                  (c) => c.name.toLowerCase() === link.sourceColumn.toLowerCase()
+                );
+                const targetColIdx = targetNode.columns.findIndex(
+                  (c) => c.name.toLowerCase() === link.targetColumn.toLowerCase()
+                );
 
-                const dx = Math.abs(tx - sx) * 0.5;
-                const pathD = `M ${sx} ${sy} C ${sx + dx} ${sy}, ${tx - dx} ${ty}, ${tx} ${ty}`;
+                const sy = sourcePos.y + 36 + Math.max(0, sourceColIdx) * 22;
+                const ty = targetPos.y + 36 + Math.max(0, targetColIdx) * 22;
+
+                const isTargetToRight = targetPos.x >= sourcePos.x;
+                const sx = isTargetToRight ? sourcePos.x + 260 : sourcePos.x;
+                const tx = isTargetToRight ? targetPos.x : targetPos.x + 260;
+
+                const dx = Math.max(40, Math.abs(tx - sx) * 0.4);
+                const c1x = isTargetToRight ? sx + dx : sx - dx;
+                const c2x = isTargetToRight ? tx - dx : tx + dx;
+                const pathD = `M ${sx} ${sy} C ${c1x} ${sy}, ${c2x} ${ty}, ${tx} ${ty}`;
                 const isHovered = hoveredLink === link.id;
 
                 return (
-                  <path
-                    key={link.id}
-                    d={pathD}
-                    fill="none"
-                    stroke={isHovered ? '#ff0000' : '#000080'}
-                    strokeWidth={isHovered ? 3 : 2}
-                    strokeDasharray={isHovered ? 'none' : '4,2'}
-                    markerEnd="url(#erd-arrow)"
-                    onMouseEnter={() => setHoveredLink(link.id)}
-                    onMouseLeave={() => setHoveredLink(null)}
-                    style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
-                  />
+                  <g key={link.id}>
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke={isHovered ? '#ff0000' : '#000080'}
+                      strokeWidth={isHovered ? 3 : 2}
+                      strokeDasharray={isHovered ? 'none' : '4,2'}
+                      markerEnd="url(#erd-arrow)"
+                      onMouseEnter={() => setHoveredLink(link.id)}
+                      onMouseLeave={() => setHoveredLink(null)}
+                      style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+                    />
+                    {/* Cardinality Badge 1 -> N */}
+                    <text
+                      x={isTargetToRight ? sx + 12 : sx - 20}
+                      y={sy - 4}
+                      fill="#000080"
+                      fontSize="10"
+                      fontWeight="bold"
+                    >
+                      ∞
+                    </text>
+                    <text
+                      x={isTargetToRight ? tx - 20 : tx + 12}
+                      y={ty - 4}
+                      fill="#000080"
+                      fontSize="10"
+                      fontWeight="bold"
+                    >
+                      1
+                    </text>
+                  </g>
                 );
               })}
             </svg>
