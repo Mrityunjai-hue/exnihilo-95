@@ -202,8 +202,10 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
       <div
         className="win95-raised"
         style={{
-          width: 860,
-          height: 640,
+          width: 880,
+          height: '90vh',
+          maxHeight: 760,
+          minHeight: 680,
           background: 'var(--w95-gray, #c0c0c0)',
           color: 'var(--w95-text-color, #000000)',
           fontFamily: 'var(--w95-font)',
@@ -353,7 +355,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
               </div>
 
               {/* Top Half: Access 95 Column Grid (Sunken Viewport) */}
-              <div className="win95-inset" style={{ height: '34%', overflowY: 'auto', background: 'var(--w95-sunken-bg,#fff)', flexShrink: 0 }}>
+              <div className="win95-inset" style={{ height: 150, overflowY: 'auto', background: 'var(--w95-sunken-bg,#fff)', flexShrink: 0 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                   <thead>
                     <tr style={{ background: 'var(--w95-gray,#c0c0c0)', fontWeight: 'bold', borderBottom: '2px solid var(--w95-dark-gray,#808080)', position: 'sticky', top: 0, zIndex: 10 }}>
@@ -460,7 +462,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
               </div>
 
               {/* Bottom Half: Win95 Property Inspector Grid for Active Column */}
-              <div className="win95-fieldset" style={{ height: '40%', overflowY: 'auto', margin: 0, padding: 6, flexShrink: 0 }}>
+              <div className="win95-fieldset" style={{ height: 180, overflowY: 'auto', margin: 0, padding: 6, flexShrink: 0 }}>
                 <legend style={{ fontWeight: 'bold', fontSize: 11, color: 'var(--w95-titlebar-active,#000080)' }}>
                   ⚙️ Property Inspector for Selected Column: <u>{activeCol?.name || `#${activeColIdx + 1}`}</u> [{activeCol?.type || 'INT'}]
                 </legend>
@@ -812,7 +814,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
               </div>
 
               {/* Bottom Section: Collapsible View for Table Constraints or Live DDL Preview */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ flex: 1, minHeight: 140, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #808080', flexShrink: 0 }}>
                   <button
                     className="win95-button"
@@ -863,9 +865,10 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                       value={ddlSql || '(Fill in column names to generate DDL)'}
                       style={{
                         flex: 1,
+                        minHeight: 90,
                         width: '100%',
                         fontFamily: 'var(--w95-mono)',
-                        fontSize: 10,
+                        fontSize: 11,
                         padding: 6,
                         boxSizing: 'border-box',
                         background: 'var(--w95-sunken-bg,#fff)',
