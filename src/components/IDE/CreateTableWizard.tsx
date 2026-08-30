@@ -19,6 +19,7 @@ import {
   TableConstraintForm,
   DIALECT_TYPE_MANIFEST,
   buildCreateTableSql,
+  parseEnumOrSetInput,
 } from '../../utils/dbManagerUtils';
 
 const REFERENTIAL_ACTIONS = ['CASCADE', 'SET NULL', 'SET DEFAULT', 'RESTRICT', 'NO ACTION'];
@@ -607,7 +608,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                               value={activeCol.enumRawInput ?? (activeCol.enumValues || []).join(', ')}
                               onChange={e => {
                                 const raw = e.target.value;
-                                const clean = raw.split(',').map(v => v.replace(/^['"\[\s]+|['"\]\s]+$/g, '').trim()).filter(Boolean);
+                                const clean = parseEnumOrSetInput(raw);
                                 const patch: Partial<ColumnFormRow> = { enumRawInput: raw, enumValues: clean };
                                 if (clean.length > 0 && !activeCol.type.toUpperCase().includes('ENUM')) {
                                   patch.type = 'ENUM(...)';
@@ -630,7 +631,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                               value={activeCol.setRawInput ?? (activeCol.setValues || []).join(', ')}
                               onChange={e => {
                                 const raw = e.target.value;
-                                const clean = raw.split(',').map(v => v.replace(/^['"\[\s]+|['"\]\s]+$/g, '').trim()).filter(Boolean);
+                                const clean = parseEnumOrSetInput(raw);
                                 const patch: Partial<ColumnFormRow> = { setRawInput: raw, setValues: clean };
                                 if (clean.length > 0 && !activeCol.type.toUpperCase().includes('SET')) {
                                   patch.type = 'SET(...)';

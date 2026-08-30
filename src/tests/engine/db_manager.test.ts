@@ -5,6 +5,7 @@ import {
   buildColumnDDL,
   buildCreateTableSql,
   mapFormTypeToLogicalType,
+  parseEnumOrSetInput,
   ColumnFormRow,
   TableConstraintForm,
 } from '../../utils/dbManagerUtils';
@@ -200,6 +201,83 @@ describe('Visual Database Manager — Engine & Utility Test Suite', () => {
       const droppedDb = await executor.dropUserDatabase('test_db');
       expect(droppedDb).toBe(true);
       expect(catalog.hasDatabase('test_db')).toBe(false);
+    });
+  });
+
+  // ── 3. ENUM and SET Comprehensive Input & DDL Testing Suite ──────────────────
+
+  describe('ENUM and SET Comprehensive Input & DDL Testing Suite', () => {
+    it('parses plain numbers e.g. "0, 1"', () => {
+      expect(parseEnumOrSetInput('0, 1')).toEqual(['0', '1']);
+    });
+
+    it('parses unspaced numbers e.g. "0,1"', () => {
+      expect(parseEnumOrSetInput('0,1')).toEqual(['0', '1']);
+    });
+
+    it('parses single-quoted numbers e.g. "\'0\', \'1\'"', () => {
+      expect(parseEnumOrSetInput("'0', '1'")).toEqual(['0', '1']);
+    });
+
+    it('parses double-quoted numbers e.g. \'"0", "1"\'', () => {
+      expect(parseEnumOrSetInput('"0", "1"')).toEqual(['0', '1']);
+    });
+
+    it('parses array bracket notation e.g. "[0, 1]" or "[\'0\', \'1\']"', () => {
+      expect(parseEnumOrSetInput('[0, 1]')).toEqual(['0', '1']);
+      expect(parseEnumOrSetInput("['0', '1']")).toEqual(['0', '1']);
+      expect(parseEnumOrSetInput('["0", "1"]')).toEqual(['0', '1']);
+    });
+
+    it('parses full DDL string e.g. "ENUM(\'0\', \'1\')"', () => {
+      expect(parseEnumOrSetInput("ENUM('0', '1')")).toEqual(['0', '1']);
+      expect(parseEnumOrSetInput("SET('read', 'write')")).toEqual(['read', 'write']);
+    });
+
+    it('parses text labels e.g. "active, inactive, pending"', () => {
+      expect(parseEnumOrSetInput('active, inactive, pending')).toEqual(['active', 'inactive', 'pending']);
+    });
+
+    it('parses booleans and codes e.g. "true, false" or "Y, N"', () => {
+      expect(parseEnumOrSetInput('true, false')).toEqual(['true', 'false']);
+      expect(parseEnumOrSetInput('Y, N')).toEqual(['Y', 'N']);
+    });
+
+    it('generates valid DDL SQL for ENUM with numeric values', () => {
+      const col: ColumnFormRow = {
+        name: 'deleted',
+        type: 'ENUM(...)',
+        enumValues: ['0', '1'],
+        isPrimaryKey: false,
+        isAutoIncrement: false,
+        isNotNull: true,
+        isUnique: false,
+      };
+      const ddl = buildColumnDDL(col, 'MySQL');
+      expect(ddl).toBe("`deleted` ENUM('0', '1') NOT NULL");
+    });
+
+    it('generates synthetic dataset matching ENUM permitted values', async () => {
+      const cols: ColumnFormRow[] = [
+        { name: 'id', type: 'INT', isPrimaryKey: true, isAutoIncrement: true, isNotNull: true, isUnique: false },
+        { name: 'status', type: 'ENUM(...)', enumValues: ['active', 'inactive'], isPrimaryKey: false, isAutoIncrement: false, isNotNull: true, isUnique: false },
+        { name: 'deleted', type: 'ENUM(...)', enumValues: ['0', '1'], isPrimaryKey: false, isAutoIncrement: false, isNotNull: true, isUnique: false },
+      ];
+      const ddl = buildCreateTableSql('user_flags', cols, [], 'MySQL');
+      const res = await executor.createUserTable('user_flags', ddl, cols, 'default', 10);
+      expect(res.ok).toBe(true);
+
+      const queryRes = await executor.execute('SELECT * FROM user_flags;', 'SQLite');
+      expect(queryRes.ok).toBe(true);
+      if (queryRes.ok) {
+        expect(queryRes.rows.length).toBe(10);
+        queryRes.rows.forEach((row: any) => {
+          const status = row.status ?? row.STATUS ?? Object.values(row)[1];
+          const deleted = row.deleted ?? row.DELETED ?? Object.values(row)[2];
+          expect(['active', 'inactive']).toContain(status);
+          expect(['0', '1']).toContain(String(deleted));
+        });
+      }
     });
   });
 });

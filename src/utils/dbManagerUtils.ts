@@ -241,6 +241,28 @@ export function mapFormTypeToLogicalType(formType: string): LogicalType {
   return 'VARCHAR';
 }
 
+// ── parseEnumOrSetInput ───────────────────────────────────────────────────────
+
+export function parseEnumOrSetInput(raw: string | string[] | undefined | null): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw
+      .map(v => v.replace(/^['"\[\s()]+|['"\]\s()]+$/g, '').trim())
+      .filter(Boolean);
+  }
+  let text = String(raw).trim();
+  if (/^(ENUM|SET)\s*\(/i.test(text)) {
+    text = text.replace(/^(ENUM|SET)\s*\(/i, '').replace(/\)$/, '');
+  }
+  if (text.startsWith('[') && text.endsWith(']')) {
+    text = text.slice(1, -1);
+  }
+  return text
+    .split(',')
+    .map(v => v.replace(/^['"\[\s()]+|['"\]\s()]+$/g, '').trim())
+    .filter(Boolean);
+}
+
 // ── buildColumnDDL ────────────────────────────────────────────────────────────
 
 export function buildColumnDDL(col: ColumnFormRow, dialect: Dialect): string {
@@ -255,13 +277,13 @@ export function buildColumnDDL(col: ColumnFormRow, dialect: Dialect): string {
   const upperType = typeStr.toUpperCase();
 
   if (upperType.startsWith('ENUM')) {
-    const rawVals = (col.enumValues && col.enumValues.length > 0) ? col.enumValues : (col.setValues || []);
-    const cleanVals = rawVals.map(v => v.replace(/^['"\[\s]+|['"\]\s]+$/g, '').trim()).filter(Boolean);
+    const rawVals = (col.enumValues && col.enumValues.length > 0) ? col.enumValues : (col.enumRawInput || col.setValues || col.setRawInput || []);
+    const cleanVals = parseEnumOrSetInput(rawVals);
     const finalVals = cleanVals.length > 0 ? cleanVals : ['val1', 'val2'];
     typeStr = `ENUM(${finalVals.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
   } else if (upperType.startsWith('SET')) {
-    const rawVals = (col.setValues && col.setValues.length > 0) ? col.setValues : (col.enumValues || []);
-    const cleanVals = rawVals.map(v => v.replace(/^['"\[\s]+|['"\]\s]+$/g, '').trim()).filter(Boolean);
+    const rawVals = (col.setValues && col.setValues.length > 0) ? col.setValues : (col.setRawInput || col.enumValues || col.enumRawInput || []);
+    const cleanVals = parseEnumOrSetInput(rawVals);
     const finalVals = cleanVals.length > 0 ? cleanVals : ['val1', 'val2'];
     typeStr = `SET(${finalVals.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
   } else if (upperType.includes('GENERATED')) {
