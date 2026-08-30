@@ -604,16 +604,17 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                             <input
                               type="text"
                               className="win95-sunken"
-                              value={(activeCol.enumValues || []).map(v => v.replace(/^['"]+|['"]+$/g, '')).join(', ')}
+                              value={activeCol.enumRawInput ?? (activeCol.enumValues || []).join(', ')}
                               onChange={e => {
-                                const clean = e.target.value.split(',').map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
-                                const patch: Partial<ColumnFormRow> = { enumValues: clean };
+                                const raw = e.target.value;
+                                const clean = raw.split(',').map(v => v.replace(/^['"\[\s]+|['"\]\s]+$/g, '').trim()).filter(Boolean);
+                                const patch: Partial<ColumnFormRow> = { enumRawInput: raw, enumValues: clean };
                                 if (clean.length > 0 && !activeCol.type.toUpperCase().includes('ENUM')) {
                                   patch.type = 'ENUM(...)';
                                 }
                                 handleColumnChange(activeColIdx, patch);
                               }}
-                              placeholder="e.g. active, inactive, pending"
+                              placeholder="e.g. 0, 1  or  active, inactive, pending"
                               style={{ ...inputStyle, width: '100%' }}
                             />
                           </td>
@@ -626,10 +627,11 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                             <input
                               type="text"
                               className="win95-sunken"
-                              value={(activeCol.setValues || []).map(v => v.replace(/^['"]+|['"]+$/g, '')).join(', ')}
+                              value={activeCol.setRawInput ?? (activeCol.setValues || []).join(', ')}
                               onChange={e => {
-                                const clean = e.target.value.split(',').map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
-                                const patch: Partial<ColumnFormRow> = { setValues: clean };
+                                const raw = e.target.value;
+                                const clean = raw.split(',').map(v => v.replace(/^['"\[\s]+|['"\]\s]+$/g, '').trim()).filter(Boolean);
+                                const patch: Partial<ColumnFormRow> = { setRawInput: raw, setValues: clean };
                                 if (clean.length > 0 && !activeCol.type.toUpperCase().includes('SET')) {
                                   patch.type = 'SET(...)';
                                 }

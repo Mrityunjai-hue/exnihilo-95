@@ -22,8 +22,10 @@ export interface ColumnFormRow {
   isUnique: boolean;
   defaultValue?: string;
   checkExpr?: string;
-  enumValues?: string[];  // for ENUM / SET
+  enumValues?: string[];  // for ENUM
   setValues?: string[];   // for SET
+  enumRawInput?: string; // preserves raw typed text for ENUM input (trailing commas/spaces)
+  setRawInput?: string;  // preserves raw typed text for SET input (trailing commas/spaces)
   references?: {
     table: string;
     column: string;
@@ -254,12 +256,12 @@ export function buildColumnDDL(col: ColumnFormRow, dialect: Dialect): string {
 
   if (upperType.startsWith('ENUM')) {
     const rawVals = (col.enumValues && col.enumValues.length > 0) ? col.enumValues : (col.setValues || []);
-    const cleanVals = rawVals.map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
+    const cleanVals = rawVals.map(v => v.replace(/^['"\[\s]+|['"\]\s]+$/g, '').trim()).filter(Boolean);
     const finalVals = cleanVals.length > 0 ? cleanVals : ['val1', 'val2'];
     typeStr = `ENUM(${finalVals.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
   } else if (upperType.startsWith('SET')) {
     const rawVals = (col.setValues && col.setValues.length > 0) ? col.setValues : (col.enumValues || []);
-    const cleanVals = rawVals.map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
+    const cleanVals = rawVals.map(v => v.replace(/^['"\[\s]+|['"\]\s]+$/g, '').trim()).filter(Boolean);
     const finalVals = cleanVals.length > 0 ? cleanVals : ['val1', 'val2'];
     typeStr = `SET(${finalVals.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
   } else if (upperType.includes('GENERATED')) {
