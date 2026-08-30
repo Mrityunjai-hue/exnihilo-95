@@ -337,7 +337,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
 
           {/* ── STEP 2: Access 95 Table Designer Split View ──────────────────── */}
           {step === 2 && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto' }}>
 
               {/* Toolbar */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
@@ -814,7 +814,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
               </div>
 
               {/* Bottom Section: Collapsible View for Table Constraints or Live DDL Preview */}
-              <div style={{ flex: 1, minHeight: 140, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ minHeight: 160, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
                 <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #808080', flexShrink: 0 }}>
                   <button
                     className="win95-button"
@@ -833,7 +833,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                 </div>
 
                 {bottomTab === 'ddl' && (
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '4px 0', gap: 4, overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', padding: '4px 0', gap: 4, flexShrink: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
                         <span style={{ fontWeight: 'bold' }}>🎲 Auto-Populate Rows:</span>
@@ -859,21 +859,29 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                       </button>
                     </div>
 
+                    <div style={{ fontSize: 11, fontWeight: 'bold', color: 'var(--w95-titlebar-active,#000080)', marginTop: 2 }}>
+                      📄 Generated DDL Syntax ({dialect}):
+                    </div>
+
                     <textarea
                       readOnly
                       className="win95-sunken"
                       value={ddlSql || '(Fill in column names to generate DDL)'}
                       style={{
-                        flex: 1,
-                        minHeight: 90,
+                        height: 110,
+                        minHeight: 110,
+                        flexShrink: 0,
                         width: '100%',
                         fontFamily: 'var(--w95-mono)',
                         fontSize: 11,
+                        fontWeight: 'bold',
+                        color: 'var(--w95-titlebar-active,#000080)',
                         padding: 6,
                         boxSizing: 'border-box',
                         background: 'var(--w95-sunken-bg,#fff)',
-                        color: 'var(--w95-sunken-text,#000)',
-                        resize: 'none',
+                        border: '2px solid #808080',
+                        resize: 'vertical',
+                        overflowY: 'auto',
                       }}
                     />
                   </div>

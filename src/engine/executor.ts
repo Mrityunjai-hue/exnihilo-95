@@ -598,6 +598,9 @@ export class SQLExecutor {
     db.create_function('PG_JSON_EXTRACT_TEXT', (val: any, key: any) => evalPgJsonExtract(val, key, true));
   }
 
+  private isRehydrated = false;
+  private userTableDefs = new Map<string, { ddlSql: string; columns: any[] }>();
+
   /**
    * Initialize sql.js engine and create fresh in-memory database.
    */
@@ -615,9 +618,64 @@ export class SQLExecutor {
       }
       this.db = new this.SQL.Database();
       this.registerCustomFunctions(this.db);
+
+      if (!this.isRehydrated) {
+        this.isRehydrated = true;
+        await this.rehydrateUserCatalog();
+      }
     })();
 
     return this.initPromise;
+  }
+
+  private async rehydrateUserCatalog(): Promise<void> {
+    try {
+      const { loadUserCatalogFromStorage } = await import('../utils/userCatalogStorage');
+      const persisted = loadUserCatalogFromStorage();
+      if (!persisted) return;
+
+      for (const dbName of persisted.databases) {
+        if (!this.catalog.hasDatabase(dbName)) {
+          this.catalog.createDatabase(dbName);
+        }
+      }
+
+      for (const table of persisted.tables) {
+        if (!this.catalog.has(table.tableName, table.dbName)) {
+          await this.createUserTable(table.tableName, table.ddlSql, table.columns, table.dbName, table.rowCount);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  private async syncUserCatalogToStorage(): Promise<void> {
+    try {
+      const { saveUserCatalogToStorage } = await import('../utils/userCatalogStorage');
+      const dbs = this.catalog.getDatabaseNames().filter(d => d !== 'default');
+      const userTables: import('../utils/userCatalogStorage').PersistedUserTable[] = [];
+
+      for (const entry of this.catalog.getAll()) {
+        if (entry.isUserDefined) {
+          const key = `${entry.dbName || 'default'}.${entry.tableName}`;
+          const meta = this.userTableDefs.get(key);
+          if (meta) {
+            userTables.push({
+              tableName: entry.tableName,
+              dbName: entry.dbName || 'default',
+              ddlSql: meta.ddlSql,
+              columns: meta.columns,
+              rowCount: entry.rowCount,
+            });
+          }
+        }
+      }
+
+      saveUserCatalogToStorage(dbs, userTables);
+    } catch {
+      // ignore
+    }
   }
 
   /**
@@ -1118,6 +1176,7 @@ export class SQLExecutor {
     if (!trimmed || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(trimmed)) return false;
     if (this.catalog.hasDatabase(trimmed)) return false;
     this.catalog.createDatabase(trimmed);
+    this.syncUserCatalogToStorage();
     return true;
   }
 
@@ -1137,6 +1196,7 @@ export class SQLExecutor {
       }
     }
     this.catalog.dropDatabase(trimmed);
+    await this.syncUserCatalogToStorage();
     return true;
   }
 
@@ -1222,8 +1282,11 @@ export class SQLExecutor {
       // Data generation failure is non-fatal — table is still created
     }
 
-    // ── 4. Register in catalog ─────────────────────────────────────────────────
+    // ── 4. Register in catalog & persist to storage ────────────────────────────
     this.catalog.set(safeTable, tableSchema, insertedRows, true, dbName);
+    const key = `${dbName.toLowerCase()}.${safeTable}`;
+    this.userTableDefs.set(key, { ddlSql, columns });
+    await this.syncUserCatalogToStorage();
 
     return { ok: true, rowCount: insertedRows, ddl: ddlSql };
   }
@@ -1245,6 +1308,9 @@ export class SQLExecutor {
     } catch { /* ignore */ }
 
     this.catalog.delete(safeTable, dbName);
+    const key = `${dbName.toLowerCase()}.${safeTable}`;
+    this.userTableDefs.delete(key);
+    await this.syncUserCatalogToStorage();
     return true;
   }
 }
