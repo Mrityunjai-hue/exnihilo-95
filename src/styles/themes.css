@@ -474,3 +474,65 @@
   background-color: rgba(51, 153, 255, 0.25) !important;
   color: #0c2340 !important;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * MARVEL COMICS CELEBRATION & TEASER KEYFRAME ANIMATIONS
+ * ───────────────────────────────────────────────────────────────────────────── */
+@keyframes marvelParadeAcross {
+  0% {
+    transform: translateX(-140px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100% + 140px));
+    opacity: 0;
+  }
+}
+
+@keyframes marvelBobbing {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes marvelPopUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  15% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+  85% {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes marvelPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.9), 0 0 30px rgba(255, 105, 180, 0.6);
+  }
+}
+

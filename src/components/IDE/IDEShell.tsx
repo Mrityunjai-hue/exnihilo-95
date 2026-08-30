@@ -1010,6 +1010,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               executionTimeMs={activeTab.executionTimeMs}
               dialect={dialect}
             />
+
+
           </div>
         </div>
       </div>

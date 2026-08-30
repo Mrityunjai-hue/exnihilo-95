@@ -16,8 +16,11 @@ import {
   ColumnType,
 } from '../../engine/sql_exporter';
 
+import { MarvelCelebrationBanner, MarvelCelebrationTrigger } from '../Win95/MarvelCelebrationBanner';
+
 interface ResultsGridProps {
   result:          ExecutionSuccess | null;
+  error?:          any;
   isLoading:       boolean;
   executionTimeMs: number | null;
   dialect?:        string;
@@ -28,6 +31,7 @@ const OVERSCAN = 5;
 
 export const ResultsGrid: React.FC<ResultsGridProps> = ({
   result,
+  error,
   isLoading,
   executionTimeMs,
   dialect = 'MySQL',
@@ -42,6 +46,12 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Marvel Celebration & Teaser Trigger State
+  const [celebrationTrigger, setCelebrationTrigger] = useState<MarvelCelebrationTrigger>({
+    type: 'NONE',
+    timestamp: 0,
+  });
+
   // Cell inspector modal state
   const [inspectedCell, setInspectedCell] = useState<{
     val: any;
@@ -50,6 +60,24 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   } | null>(null);
 
   const [toastNotice, setToastNotice] = useState<string | null>(null);
+
+  // Trigger celebration on success or teaser on error result
+  useEffect(() => {
+    if (!result) return;
+
+    if ((result as any).error) {
+      setCelebrationTrigger({
+        type: 'FAILURE',
+        timestamp: Date.now(),
+      });
+    } else {
+      setCelebrationTrigger({
+        type: 'SUCCESS',
+        timestamp: Date.now(),
+      });
+    }
+  }, [result]);
+
 
   // Reset state when new query result arrives
   useEffect(() => {
@@ -60,6 +88,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     setInspectedCell(null);
     setScrollTop(0);
   }, [result]);
+
 
   // Update viewport height on resize or container mount
   useEffect(() => {
@@ -340,8 +369,11 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
         background: 'var(--w95-sunken-bg, #ffffff)',
         color: 'var(--w95-sunken-text, #000000)',
         overflow: 'hidden',
+        position: 'relative',
       }}
     >
+      <MarvelCelebrationBanner trigger={celebrationTrigger} />
+
       {/* Action & Export Bar */}
       <div
         style={{
