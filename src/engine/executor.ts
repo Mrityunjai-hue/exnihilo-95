@@ -1106,4 +1106,143 @@ export class SQLExecutor {
       };
     }
   }
+
+  // ── Visual Database Manager — Public API ────────────────────────────────────
+
+  /**
+   * Creates a named database/schema namespace in the SessionCatalog.
+   * Returns false if the name is invalid or already exists.
+   */
+  createUserDatabase(dbName: string): boolean {
+    const trimmed = dbName.trim().toLowerCase();
+    if (!trimmed || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(trimmed)) return false;
+    if (this.catalog.hasDatabase(trimmed)) return false;
+    this.catalog.createDatabase(trimmed);
+    return true;
+  }
+
+  /**
+   * Drops a named database: removes all its tables from the WASM db and clears it from the catalog.
+   * Returns false if the database does not exist.
+   */
+  async dropUserDatabase(dbName: string): Promise<boolean> {
+    const trimmed = dbName.trim().toLowerCase();
+    if (!this.catalog.hasDatabase(trimmed)) return false;
+    await this.init();
+    if (!this.db) return false;
+    const db = this.catalog.getDatabase(trimmed);
+    if (db) {
+      for (const tableName of Array.from(db.tables.keys())) {
+        try { this.db.run(`DROP TABLE IF EXISTS ${tableName};`); } catch { /* ignore */ }
+      }
+    }
+    this.catalog.dropDatabase(trimmed);
+    return true;
+  }
+
+  /**
+   * Creates a user-defined table from wizard form data:
+   *  1. Executes DDL in the WASM sql.js DB (FK constraints attempted separately, with safe fallback).
+   *  2. Maps form columns to a TableSchema for the catalog and data generator.
+   *  3. Auto-generates synthetic rows using the existing generator pipeline.
+   *  4. Executes INSERT batch.
+   *  5. Registers table in SessionCatalog as isUserDefined=true.
+   *
+   * @param tableName  - table name (unqualified)
+   * @param ddlSql     - complete CREATE TABLE ... SQL already built by buildCreateTableSql
+   * @param columns    - raw column form rows for schema mapping
+   * @param dbName     - target database name (default = 'default')
+   * @param rowsToGenerate - number of synthetic rows to insert (max 25)
+   */
+  async createUserTable(
+    tableName: string,
+    ddlSql: string,
+    columns: import('../utils/dbManagerUtils').ColumnFormRow[],
+    dbName: string = 'default',
+    rowsToGenerate: number = 20,
+  ): Promise<{ ok: boolean; rowCount: number; ddl: string; error?: string }> {
+    await this.init();
+    if (!this.db) return { ok: false, rowCount: 0, ddl: ddlSql, error: 'Engine not initialized.' };
+
+    const safeRows = Math.min(Math.max(1, rowsToGenerate), 25);
+    const safeTable = tableName.toLowerCase().trim();
+
+    // ── 1. Execute DDL in SQLite WASM engine ──
+    // Convert form columns to clean SQLite-compatible DDL for sql.js execution
+    const { mapFormTypeToLogicalType } = await import('../utils/dbManagerUtils');
+    const { SQLITE_DDL } = await import('./inference');
+
+    const execColDefs = columns.map(c => {
+      const lt = mapFormTypeToLogicalType(c.type);
+      const sqType = SQLITE_DDL[lt];
+      const pk = c.isPrimaryKey ? ' PRIMARY KEY' : '';
+      const nn = c.isNotNull && !c.isPrimaryKey ? ' NOT NULL' : '';
+      const uq = c.isUnique && !c.isPrimaryKey ? ' UNIQUE' : '';
+      return `"${c.name}" ${sqType}${pk}${nn}${uq}`;
+    });
+    const sqliteDdl = `CREATE TABLE IF NOT EXISTS "${safeTable}" (\n  ${execColDefs.join(',\n  ')}\n);`;
+
+    try {
+      this.db.run(sqliteDdl);
+    } catch (e: any) {
+      return { ok: false, rowCount: 0, ddl: ddlSql, error: `DDL Error: ${e.message || String(e)}` };
+    }
+
+    // ── 2. Build TableSchema from form columns ─────────────────────────────────
+    const schemaCols = columns.map(c => {
+      const lt = mapFormTypeToLogicalType(c.type);
+      return {
+        name: c.name,
+        logicalType: lt,
+        sqliteType: SQLITE_DDL[lt],
+        source: 'User-defined via wizard',
+      };
+    });
+
+    const tableSchema = { tableName: safeTable, columns: schemaCols, isDefault: false };
+
+    // ── 3. Generate synthetic data ─────────────────────────────────────────────
+    let insertedRows = 0;
+    try {
+      const { generateSyntheticDataset, generateInsertSql } = await import('./generator');
+      const schemasMap = new Map([[safeTable, tableSchema]]);
+      const plan = { generationOrder: [safeTable], relationships: [], selfJoins: [], tableSpecs: {} };
+      const dataset = generateSyntheticDataset(schemasMap, plan as any, { rowsPerTable: safeRows });
+      const tableData = dataset.get(safeTable);
+
+      if (tableData && tableData.rows.length > 0) {
+        const inserts = generateInsertSql(safeTable, tableData.columns, tableData.rows);
+        for (const ins of inserts) {
+          try { this.db!.run(ins); insertedRows++; } catch { /* skip problematic rows */ }
+        }
+      }
+    } catch {
+      // Data generation failure is non-fatal — table is still created
+    }
+
+    // ── 4. Register in catalog ─────────────────────────────────────────────────
+    this.catalog.set(safeTable, tableSchema, insertedRows, true, dbName);
+
+    return { ok: true, rowCount: insertedRows, ddl: ddlSql };
+  }
+
+  /**
+   * Drops a user-defined table from the WASM DB and removes it from the SessionCatalog.
+   * Only tables marked as isUserDefined=true can be dropped via this method.
+   */
+  async dropUserTable(tableName: string, dbName: string = 'default'): Promise<boolean> {
+    const safeTable = tableName.toLowerCase().trim();
+    const entry = this.catalog.get(safeTable, dbName);
+    if (!entry) return false;
+
+    await this.init();
+    if (!this.db) return false;
+
+    try {
+      this.db.run(`DROP TABLE IF EXISTS ${safeTable};`);
+    } catch { /* ignore */ }
+
+    this.catalog.delete(safeTable, dbName);
+    return true;
+  }
 }

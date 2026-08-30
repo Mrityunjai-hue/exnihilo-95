@@ -405,6 +405,23 @@ export class SessionCatalog {
   }
 
   /**
+   * Returns the raw DatabaseSchema object for a given name (for enumeration).
+   */
+  getDatabase(dbName: string): DatabaseSchema | undefined {
+    return this.databases.get(dbName.toLowerCase().trim());
+  }
+
+  /**
+   * Drops an entire database namespace and all its tables, views, routines, and triggers.
+   * Cannot drop the default database.
+   */
+  dropDatabase(dbName: string): boolean {
+    const key = dbName.toLowerCase().trim();
+    if (key === this.defaultDbName) return false; // protect default namespace
+    return this.databases.delete(key);
+  }
+
+  /**
    * Remove a single table from the catalog.
    */
   delete(tableName: string, dbName?: string): boolean {

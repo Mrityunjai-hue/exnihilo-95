@@ -19,6 +19,9 @@ import { Toolbar } from './Toolbar';
 import { ERDViewer } from './ERDViewer';
 import { ShareDialog } from '../Win95/ShareDialog';
 import { WindowControls } from '../Win95/WindowControls';
+import { CreateDatabaseDialog } from './CreateDatabaseDialog';
+import { CreateTableWizard } from './CreateTableWizard';
+
 import {
   useWorkspaceStorage,
   loadWorkspaceFromStorage,
@@ -107,6 +110,12 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const [selectedText, setSelectedText] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const [isMaximized, setIsMaximized] = useState(false);
+
+  // Visual Database Manager state
+  const [showCreateDbDialog, setShowCreateDbDialog] = useState(false);
+  const [showCreateTableWizard, setShowCreateTableWizard] = useState(false);
+  const [createTableTargetDb, setCreateTableTargetDb] = useState('default');
+  const [dbManagerNotif, setDbManagerNotif] = useState<{ msg: string; ok: boolean } | null>(null);
 
   // Query History State
   const [queryHistory, setQueryHistory] = useState<QueryHistoryItem[]>([]);
@@ -823,8 +832,11 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           <div id="tour-schema-tree" style={{ width: `${sidebarWidth}px`, height: '100%', display: 'flex', flexDirection: 'column' }}>
             <SchemaTree
               catalog={catalog}
+              executor={executor}
               onSelectTable={handleSelectTable}
               onRefresh={handleRefresh}
+              onNewDatabase={() => setShowCreateDbDialog(true)}
+              onNewTable={(targetDb) => { setCreateTableTargetDb(targetDb); setShowCreateTableWizard(true); }}
             />
           </div>
         )}
@@ -1235,6 +1247,65 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         onClose={() => setIsShareOpen(false)}
         onFocus={() => {}}
       />
+
+      {/* ── Visual Database Manager Modals ─────────────────────────────────── */}
+
+      {/* DB Manager: Success/Error notification (auto-dismiss handled inside SchemaTree, duplicate here for tab-level context) */}
+      {dbManagerNotif && (
+        <div style={{
+          position: 'fixed', bottom: 40, right: 24, zIndex: 99998,
+          padding: '6px 14px', fontSize: 11, fontFamily: 'var(--w95-font)',
+          background: dbManagerNotif.ok ? '#dfffdf' : '#ffe0e0',
+          border: `1px solid ${dbManagerNotif.ok ? '#80c080' : '#c08080'}`,
+          boxShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+        }}>
+          {dbManagerNotif.msg}
+        </div>
+      )}
+
+      {/* Create Database Dialog */}
+      {showCreateDbDialog && (
+        <CreateDatabaseDialog
+          existingDatabases={catalog.getDatabaseNames()}
+          onConfirm={(dbName) => {
+            const ok = executor.createUserDatabase(dbName);
+            setShowCreateDbDialog(false);
+            if (ok) {
+              setDbManagerNotif({ msg: `✅ Database "${dbName}" created.`, ok: true });
+              setTimeout(() => setDbManagerNotif(null), 3500);
+              handleRefresh();
+            } else {
+              setDbManagerNotif({ msg: `❌ Could not create database "${dbName}".`, ok: false });
+              setTimeout(() => setDbManagerNotif(null), 4000);
+            }
+          }}
+          onCancel={() => setShowCreateDbDialog(false)}
+        />
+      )}
+
+      {/* Create Table Wizard */}
+      {showCreateTableWizard && (
+        <CreateTableWizard
+          dialect={dialect}
+          catalog={catalog}
+          defaultDb={createTableTargetDb}
+          onConfirm={async (tableName, ddlSql, columns, dbName, rowsToGenerate) => {
+            setShowCreateTableWizard(false);
+            const result = await executor.createUserTable(tableName, ddlSql, columns, dbName, rowsToGenerate);
+            if (result.ok) {
+              setDbManagerNotif({ msg: `✅ Table "${tableName}" created with ${result.rowCount} rows.`, ok: true });
+              setTimeout(() => setDbManagerNotif(null), 4000);
+              handleRefresh();
+              // Open a SELECT tab for the new table
+              handleSelectTable(tableName, `SELECT * FROM ${tableName};`);
+            } else {
+              setDbManagerNotif({ msg: `❌ Failed to create "${tableName}": ${result.error ?? 'Unknown error'}`, ok: false });
+              setTimeout(() => setDbManagerNotif(null), 5000);
+            }
+          }}
+          onCancel={() => setShowCreateTableWizard(false)}
+        />
+      )}
     </div>
   );
 };
