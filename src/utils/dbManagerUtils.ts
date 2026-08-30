@@ -252,18 +252,16 @@ export function buildColumnDDL(col: ColumnFormRow, dialect: Dialect): string {
   let typeStr = col.type.replace('(...)', '').replace('(p,s)', '').replace('(n)', '').trim();
   const upperType = typeStr.toUpperCase();
 
-  if (upperType === 'ENUM') {
+  if (upperType.startsWith('ENUM')) {
     const rawVals = (col.enumValues && col.enumValues.length > 0) ? col.enumValues : (col.setValues || []);
     const cleanVals = rawVals.map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
-    if (cleanVals.length > 0) {
-      typeStr = `ENUM(${cleanVals.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
-    }
-  } else if (upperType === 'SET') {
+    const finalVals = cleanVals.length > 0 ? cleanVals : ['val1', 'val2'];
+    typeStr = `ENUM(${finalVals.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
+  } else if (upperType.startsWith('SET')) {
     const rawVals = (col.setValues && col.setValues.length > 0) ? col.setValues : (col.enumValues || []);
     const cleanVals = rawVals.map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
-    if (cleanVals.length > 0) {
-      typeStr = `SET(${cleanVals.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
-    }
+    const finalVals = cleanVals.length > 0 ? cleanVals : ['val1', 'val2'];
+    typeStr = `SET(${finalVals.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
   } else if (upperType.includes('GENERATED')) {
     typeStr = '';
   }

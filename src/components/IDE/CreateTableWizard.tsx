@@ -607,17 +607,15 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                               value={(activeCol.enumValues || []).map(v => v.replace(/^['"]+|['"]+$/g, '')).join(', ')}
                               onChange={e => {
                                 const clean = e.target.value.split(',').map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
-                                handleColumnChange(activeColIdx, { enumValues: clean });
+                                const patch: Partial<ColumnFormRow> = { enumValues: clean };
+                                if (clean.length > 0 && !activeCol.type.toUpperCase().includes('ENUM')) {
+                                  patch.type = 'ENUM(...)';
+                                }
+                                handleColumnChange(activeColIdx, patch);
                               }}
                               placeholder="e.g. active, inactive, pending"
-                              disabled={!activeCol.type.toUpperCase().includes('ENUM')}
-                              style={{ ...inputStyle, width: '80%', opacity: activeCol.type.toUpperCase().includes('ENUM') ? 1 : 0.5 }}
+                              style={{ ...inputStyle, width: '100%' }}
                             />
-                            {!activeCol.type.toUpperCase().includes('ENUM') && (
-                              <span style={{ fontSize: 9, color: 'var(--w95-dark-gray,#777)', marginLeft: 6 }}>
-                                (Applies to ENUM type only)
-                              </span>
-                            )}
                           </td>
                         </tr>
 
@@ -631,17 +629,15 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                               value={(activeCol.setValues || []).map(v => v.replace(/^['"]+|['"]+$/g, '')).join(', ')}
                               onChange={e => {
                                 const clean = e.target.value.split(',').map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
-                                handleColumnChange(activeColIdx, { setValues: clean });
+                                const patch: Partial<ColumnFormRow> = { setValues: clean };
+                                if (clean.length > 0 && !activeCol.type.toUpperCase().includes('SET')) {
+                                  patch.type = 'SET(...)';
+                                }
+                                handleColumnChange(activeColIdx, patch);
                               }}
                               placeholder="e.g. read, write, execute"
-                              disabled={!activeCol.type.toUpperCase().includes('SET')}
-                              style={{ ...inputStyle, width: '80%', opacity: activeCol.type.toUpperCase().includes('SET') ? 1 : 0.5 }}
+                              style={{ ...inputStyle, width: '100%' }}
                             />
-                            {!activeCol.type.toUpperCase().includes('SET') && (
-                              <span style={{ fontSize: 9, color: 'var(--w95-dark-gray,#777)', marginLeft: 6 }}>
-                                (Applies to SET type only)
-                              </span>
-                            )}
                           </td>
                         </tr>
 
