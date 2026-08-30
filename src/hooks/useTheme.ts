@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeId = 'win95-classic' | 'win95-noir' | 'winxp-luna' | 'win2000';
+export type ThemeId = 'win95-classic' | 'win95-noir' | 'winxp-luna' | 'win2000' | 'win7-aero';
 
 export interface ThemeMeta {
   id: ThemeId;
@@ -30,6 +30,15 @@ export const THEME_PRESETS: ThemeMeta[] = [
     desktopBg: '#008080',
     windowBg: '#c0c0c0',
     titleGradient: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
+    isDark: false,
+  },
+  {
+    id: 'win7-aero',
+    name: 'Windows 7 Aero Glass',
+    badge: '🩵 Aero Glass & Sky Blue',
+    desktopBg: 'linear-gradient(135deg, #0e4166 0%, #1e5799 40%, #207cca 70%, #2989d8 100%)',
+    windowBg: '#eef5fc',
+    titleGradient: 'linear-gradient(180deg, rgba(185, 220, 250, 0.85) 0%, rgba(135, 190, 235, 0.75) 50%, rgba(100, 165, 225, 0.8) 51%, rgba(155, 210, 250, 0.9) 100%)',
     isDark: false,
   },
   {

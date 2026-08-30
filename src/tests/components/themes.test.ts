@@ -43,10 +43,11 @@ describe('Multi-Theme Engine Unit Tests', () => {
     localStorage.clear();
   });
 
-  it('contains 4 authentic nostalgia theme presets', () => {
-    expect(THEME_PRESETS).toHaveLength(4);
+  it('contains 5 authentic nostalgia theme presets', () => {
+    expect(THEME_PRESETS).toHaveLength(5);
     const themeIds = THEME_PRESETS.map((t) => t.id);
     expect(themeIds).toContain('win95-classic');
+    expect(themeIds).toContain('win7-aero');
     expect(themeIds).toContain('win95-noir');
     expect(themeIds).toContain('winxp-luna');
     expect(themeIds).toContain('win2000');

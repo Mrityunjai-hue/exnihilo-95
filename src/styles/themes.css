@@ -269,3 +269,158 @@
   --w95-callout-blue-bg: #e6f0fa;
   --w95-callout-blue-text: #000000;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * WINDOWS 7 AERO GLASS THEME ENGINE
+ * ───────────────────────────────────────────────────────────────────────────── */
+[data-theme="win7-aero"] {
+  --w95-desktop-bg: linear-gradient(135deg, #0e4166 0%, #1e5799 40%, #207cca 70%, #2989d8 100%);
+  --w95-gray: #eef5fc;
+  --w95-light-gray: #f4f8fd;
+  --w95-white: #ffffff;
+  --w95-dark-gray: #8e9da7;
+  --w95-black: #1c2833;
+  --w95-text-color: #1c2833;
+  --w95-sunken-bg: #ffffff;
+  --w95-sunken-text: #1c2833;
+  --w95-title-active-bg: rgba(162, 206, 241, 0.85);
+  --w95-title-active-text: #0c2340;
+  --w95-title-active-gradient: linear-gradient(180deg, rgba(185, 220, 250, 0.9) 0%, rgba(135, 190, 235, 0.8) 50%, rgba(100, 165, 225, 0.85) 51%, rgba(155, 210, 250, 0.95) 100%);
+  --w95-title-inactive-bg: rgba(200, 220, 240, 0.7);
+  --w95-border-light: rgba(255, 255, 255, 0.85);
+  --w95-border-dark: #8e9da7;
+  --w95-border-darkest: #5c6b73;
+  --w95-grid-even-bg: #ffffff;
+  --w95-grid-odd-bg: #f4f8fd;
+  --w95-editor-bg: #ffffff;
+  --w95-editor-text: #1c2833;
+  --w95-callout-yellow-bg: #ffffea;
+  --w95-callout-yellow-text: #1c2833;
+  --w95-callout-blue-bg: #e1f0fc;
+  --w95-callout-blue-text: #0c2340;
+}
+
+/* Windows 7 Aero Glass Window & Dialog Overrides */
+[data-theme="win7-aero"] .win95-window,
+[data-theme="win7-aero"] .win95-dialog,
+[data-theme="win7-aero"] .win95-raised {
+  background-color: rgba(225, 238, 248, 0.88) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Windows 7 Aero Glass Titlebar Overrides */
+[data-theme="win7-aero"] .win95-titlebar {
+  background: linear-gradient(180deg, rgba(185, 220, 250, 0.9) 0%, rgba(135, 190, 235, 0.8) 50%, rgba(100, 165, 225, 0.85) 51%, rgba(155, 210, 250, 0.95) 100%) !important;
+  border-radius: 5px 5px 0 0 !important;
+  color: #0c2340 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="win7-aero"] .win95-titlebar-text {
+  color: #0c2340 !important;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.9), 1px 1px 2px rgba(255, 255, 255, 0.8) !important;
+  font-weight: bold !important;
+}
+
+/* Windows 7 Aero Red Glass Close Button */
+[data-theme="win7-aero"] .win95-btn-titlebar {
+  background: linear-gradient(180deg, #f8696b 0%, #c92a2a 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #9e1c1c !important;
+  border-radius: 3px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+[data-theme="win7-aero"] .win95-btn-titlebar:hover {
+  background: linear-gradient(180deg, #ff8082 0%, #e03131 100%) !important;
+  box-shadow: 0 0 6px rgba(248, 105, 107, 0.8), inset 0 1px 0 #ffffff !important;
+}
+
+/* Windows 7 Aero Rounded Buttons */
+[data-theme="win7-aero"] .win95-button {
+  border-radius: 3px !important;
+  border: 1px solid #70a0d0 !important;
+  background: linear-gradient(180deg, #f2f7fc 0%, #e1edfb 50%, #d0e2f7 51%, #e5f0fc 100%) !important;
+  color: #1c2833 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.15s ease !important;
+}
+
+[data-theme="win7-aero"] .win95-button:hover:not(:disabled) {
+  border-color: #3b82f6 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #e6f0fa 50%, #cce0f5 51%, #edf5fe 100%) !important;
+  box-shadow: 0 0 8px rgba(51, 153, 255, 0.65), inset 0 1px 0 #ffffff !important;
+}
+
+[data-theme="win7-aero"] .win95-button:active:not(:disabled) {
+  background: linear-gradient(180deg, #d0e2f7 0%, #b8d5f3 100%) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Windows 7 Aero Form Controls */
+[data-theme="win7-aero"] input,
+[data-theme="win7-aero"] select,
+[data-theme="win7-aero"] textarea,
+[data-theme="win7-aero"] .win95-sunken,
+[data-theme="win7-aero"] .win95-inset {
+  border-radius: 2px !important;
+  border: 1px solid #8e9da7 !important;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="win7-aero"] input:focus,
+[data-theme="win7-aero"] select:focus,
+[data-theme="win7-aero"] textarea:focus {
+  border-color: #3b82f6 !important;
+  outline: none !important;
+  box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), inset 1px 1px 2px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Windows 7 Aero Superbar Taskbar */
+[data-theme="win7-aero"] .win95-taskbar {
+  background: rgba(12, 28, 48, 0.82) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="win7-aero"] .win95-start-button {
+  background: linear-gradient(180deg, #2b6cb0 0%, #1a4971 100%) !important;
+  border: 1px solid #4299e1 !important;
+  border-radius: 4px !important;
+  color: #ffffff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 8px rgba(66, 153, 225, 0.4) !important;
+}
+
+[data-theme="win7-aero"] .win95-taskbar-item {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 3px !important;
+  color: #ffffff !important;
+}
+
+[data-theme="win7-aero"] .win95-taskbar-item.active {
+  background: rgba(255, 255, 255, 0.35) !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Windows 7 Aero Start Menu */
+[data-theme="win7-aero"] .win95-start-menu {
+  background: rgba(235, 243, 250, 0.95) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-radius: 6px 6px 0 0 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* CodeMirror & Grid Views Aero Highlight */
+[data-theme="win7-aero"] .win95-grid tr.selected td,
+[data-theme="win7-aero"] .win95-tree-node.selected {
+  background-color: rgba(51, 153, 255, 0.25) !important;
+  color: #0c2340 !important;
+}
