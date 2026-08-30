@@ -597,18 +597,51 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                           </td>
                         </tr>
 
-                        {/* 9. ENUM / SET Allowed Values */}
+                        {/* 9a. ENUM Permitted Values */}
                         <tr>
-                          <td className="win95-prop-name-col">ENUM / SET Allowed Values</td>
+                          <td className="win95-prop-name-col">ENUM Permitted Values</td>
                           <td className="win95-prop-val-col">
                             <input
                               type="text"
                               className="win95-sunken"
-                              value={(activeCol.enumValues || []).join(', ')}
-                              onChange={e => handleColumnChange(activeColIdx, { enumValues: e.target.value.split(',').map(v => v.trim()).filter(Boolean) })}
-                              placeholder="e.g. 'active', 'inactive', 'pending'"
-                              style={{ ...inputStyle, width: '100%' }}
+                              value={(activeCol.enumValues || []).map(v => v.replace(/^['"]+|['"]+$/g, '')).join(', ')}
+                              onChange={e => {
+                                const clean = e.target.value.split(',').map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
+                                handleColumnChange(activeColIdx, { enumValues: clean });
+                              }}
+                              placeholder="e.g. active, inactive, pending"
+                              disabled={!activeCol.type.toUpperCase().includes('ENUM')}
+                              style={{ ...inputStyle, width: '80%', opacity: activeCol.type.toUpperCase().includes('ENUM') ? 1 : 0.5 }}
                             />
+                            {!activeCol.type.toUpperCase().includes('ENUM') && (
+                              <span style={{ fontSize: 9, color: 'var(--w95-dark-gray,#777)', marginLeft: 6 }}>
+                                (Applies to ENUM type only)
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+
+                        {/* 9b. SET Permitted Values */}
+                        <tr>
+                          <td className="win95-prop-name-col">SET Permitted Values</td>
+                          <td className="win95-prop-val-col">
+                            <input
+                              type="text"
+                              className="win95-sunken"
+                              value={(activeCol.setValues || []).map(v => v.replace(/^['"]+|['"]+$/g, '')).join(', ')}
+                              onChange={e => {
+                                const clean = e.target.value.split(',').map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
+                                handleColumnChange(activeColIdx, { setValues: clean });
+                              }}
+                              placeholder="e.g. read, write, execute"
+                              disabled={!activeCol.type.toUpperCase().includes('SET')}
+                              style={{ ...inputStyle, width: '80%', opacity: activeCol.type.toUpperCase().includes('SET') ? 1 : 0.5 }}
+                            />
+                            {!activeCol.type.toUpperCase().includes('SET') && (
+                              <span style={{ fontSize: 9, color: 'var(--w95-dark-gray,#777)', marginLeft: 6 }}>
+                                (Applies to SET type only)
+                              </span>
+                            )}
                           </td>
                         </tr>
 

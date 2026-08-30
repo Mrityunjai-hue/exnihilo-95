@@ -1191,11 +1191,13 @@ export class SQLExecutor {
     // ── 2. Build TableSchema from form columns ─────────────────────────────────
     const schemaCols = columns.map(c => {
       const lt = mapFormTypeToLogicalType(c.type);
+      const ev = (c.type.toUpperCase().includes('ENUM') ? c.enumValues : c.setValues);
       return {
         name: c.name,
         logicalType: lt,
         sqliteType: SQLITE_DDL[lt],
         source: 'User-defined via wizard',
+        enumValues: (ev && ev.length > 0) ? ev : undefined,
       };
     });
 

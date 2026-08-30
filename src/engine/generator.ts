@@ -174,6 +174,12 @@ function generateScalarValue(
     return rowIndex + 1;
   }
 
+  // Step 0.25: ENUM / SET Permitted Value Sampling
+  if (col.enumValues && col.enumValues.length > 0) {
+    const rawVal = col.enumValues[rowIndex % col.enumValues.length];
+    return rawVal.replace(/^['"]+|['"]+$/g, '').trim();
+  }
+
   // Step 0.5: WHERE / HAVING Predicate Literal Seeding (guarantees rows matching WHERE col = 'literal' exist)
   if (col.predicateLiterals && col.predicateLiterals.length > 0 && (rowIndex % 2 === 0 || rowIndex < 5)) {
     const rawLit = col.predicateLiterals[rowIndex % col.predicateLiterals.length];

@@ -248,13 +248,23 @@ export function buildColumnDDL(col: ColumnFormRow, dialect: Dialect): string {
   // Column name
   parts.push(`\`${col.name}\``);
 
-  // Data type
+  // Data type formatting
   let typeStr = col.type.replace('(...)', '').replace('(p,s)', '').replace('(n)', '').trim();
-  if ((typeStr === 'ENUM' || typeStr === 'SET') && col.enumValues && col.enumValues.length > 0) {
-    const vals = col.enumValues.map(v => `'${v.replace(/'/g, "''")}'`).join(', ');
-    typeStr = `${typeStr}(${vals})`;
-  } else if (typeStr.includes('GENERATED')) {
-    // handled below
+  const upperType = typeStr.toUpperCase();
+
+  if (upperType === 'ENUM') {
+    const rawVals = (col.enumValues && col.enumValues.length > 0) ? col.enumValues : (col.setValues || []);
+    const cleanVals = rawVals.map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
+    if (cleanVals.length > 0) {
+      typeStr = `ENUM(${cleanVals.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
+    }
+  } else if (upperType === 'SET') {
+    const rawVals = (col.setValues && col.setValues.length > 0) ? col.setValues : (col.enumValues || []);
+    const cleanVals = rawVals.map(v => v.replace(/^['"]+|['"]+$/g, '').trim()).filter(Boolean);
+    if (cleanVals.length > 0) {
+      typeStr = `SET(${cleanVals.map(v => `'${v.replace(/'/g, "''")}'`).join(', ')})`;
+    }
+  } else if (upperType.includes('GENERATED')) {
     typeStr = '';
   }
 

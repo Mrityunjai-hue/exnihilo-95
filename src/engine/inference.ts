@@ -69,6 +69,7 @@ export interface ColumnDef {
   sqliteType:        string;   // translated via SQLITE_DDL
   source:            string;   // which rule row determined this type (for traceability)
   predicateLiterals?: any[];   // literal values captured from WHERE/HAVING comparison clauses
+  enumValues?:       string[]; // permitted values for ENUM / SET data types
 }
 
 export interface TableSchema {
