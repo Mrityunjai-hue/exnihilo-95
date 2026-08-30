@@ -21,6 +21,7 @@ import {
   buildCreateTableSql,
   parseEnumOrSetInput,
 } from '../../utils/dbManagerUtils';
+import { TableDesignerTour } from '../Tour/TableDesignerTour';
 
 const REFERENTIAL_ACTIONS = ['CASCADE', 'SET NULL', 'SET DEFAULT', 'RESTRICT', 'NO ACTION'];
 
@@ -100,6 +101,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
   const [bottomTab, setBottomTab] = useState<'ddl' | 'table_constraints'>('ddl');
   const [step2Error, setStep2Error] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
 
   const dbNames = catalog.getDatabaseNames();
   const manifest = DIALECT_TYPE_MANIFEST[dialect];
@@ -199,6 +201,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
+      <TableDesignerTour isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
       <div
         className="win95-raised"
         style={{
@@ -235,7 +238,17 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
             <span>🗄️</span>
             <span>Table Designer — [{tableName || 'New Table'}] — <strong>{dialect} Dialect</strong></span>
           </div>
-          <button className="win95-button" style={{ padding: '0 4px', minHeight: 16, fontSize: 10 }} onClick={onCancel} title="Close">✕</button>
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+            <button
+              className="win95-button"
+              style={{ padding: '0 6px', height: 18, fontSize: 10, fontWeight: 'bold' }}
+              onClick={() => setIsTourOpen(true)}
+              title="Start Table Designer Guided Tour"
+            >
+              💡 Quick Tour
+            </button>
+            <button className="win95-button" style={{ padding: '0 4px', minHeight: 16, fontSize: 10 }} onClick={onCancel} title="Close">✕</button>
+          </div>
         </div>
 
         {/* Step Indicator Header */}
@@ -274,7 +287,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
 
           {/* ── STEP 1: Details Setup ────────────────────────────────────────── */}
           {step === 1 && (
-            <div style={{ maxWidth: 520, margin: '30px auto 0', width: '100%' }}>
+            <div id="tour-tbl-meta" style={{ maxWidth: 520, margin: '30px auto 0', width: '100%' }}>
               <div className="win95-fieldset" style={{ padding: 16 }}>
                 <legend style={{ fontWeight: 'bold', fontSize: 12 }}>🗄️ Database & Table Configuration</legend>
 
@@ -355,7 +368,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
               </div>
 
               {/* Top Half: Access 95 Column Grid (Sunken Viewport) */}
-              <div className="win95-inset" style={{ height: 150, overflowY: 'auto', background: 'var(--w95-sunken-bg,#fff)', flexShrink: 0 }}>
+              <div id="tour-col-grid" className="win95-inset" style={{ height: 150, overflowY: 'auto', background: 'var(--w95-sunken-bg,#fff)', flexShrink: 0 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                   <thead>
                     <tr style={{ background: 'var(--w95-gray,#c0c0c0)', fontWeight: 'bold', borderBottom: '2px solid var(--w95-dark-gray,#808080)', position: 'sticky', top: 0, zIndex: 10 }}>
@@ -462,7 +475,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
               </div>
 
               {/* Bottom Half: Win95 Property Inspector Grid for Active Column */}
-              <div className="win95-fieldset" style={{ height: 180, overflowY: 'auto', margin: 0, padding: 6, flexShrink: 0 }}>
+              <div id="tour-prop-table" className="win95-fieldset" style={{ height: 180, overflowY: 'auto', margin: 0, padding: 6, flexShrink: 0 }}>
                 <legend style={{ fontWeight: 'bold', fontSize: 11, color: 'var(--w95-titlebar-active,#000080)' }}>
                   ⚙️ Property Inspector for Selected Column: <u>{activeCol?.name || `#${activeColIdx + 1}`}</u> [{activeCol?.type || 'INT'}]
                 </legend>
@@ -601,7 +614,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                         </tr>
 
                         {/* 9a. ENUM Permitted Values */}
-                        <tr>
+                        <tr id="tour-enum-inputs">
                           <td className="win95-prop-name-col">ENUM Permitted Values</td>
                           <td className="win95-prop-val-col">
                             <input
@@ -814,7 +827,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
               </div>
 
               {/* Bottom Section: Collapsible View for Table Constraints or Live DDL Preview */}
-              <div style={{ minHeight: 160, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+              <div id="tour-ddl-preview" style={{ minHeight: 160, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
                 <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #808080', flexShrink: 0 }}>
                   <button
                     className="win95-button"
@@ -962,6 +975,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
             )}
             {step === 2 && (
               <button
+                id="tour-btn-create"
                 className="win95-button"
                 style={{ minWidth: 140, fontWeight: 'bold' }}
                 onClick={handleCreate}
