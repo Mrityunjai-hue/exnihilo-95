@@ -1,13 +1,14 @@
 /**
- * CreateTableWizard.tsx — Classic Access 95 Table Design View for ExNihilo SQL Studio.
+ * CreateTableWizard.tsx — Access 95 & SSMS Table Design View with Property Inspector Grid.
  *
- * Fixed Window Dimensions: 860px wide x 620px tall (zIndex: 1000000)
+ * Fixed Dimensions: 860px wide x 640px tall (zIndex: 1000000)
  *
  * Step 1: Table & Database Setup
- * Step 2: Access 95 Table Designer Split View:
- *   - Top Half: Sunken Column Grid (Row Indicator 👉, Name, Grouped Type, PK 🔑, NN, UQ, Default)
- *   - Bottom Half: Field Properties Panel for currently active column (Auto-Increment, CHECK, ENUM/SET, FK Picker, GENERATED, UNSIGNED, ZEROFILL, COLLATE, COMMENT)
- *   - Bottom Collapsible Panel: Table-Level Constraints & Live DDL Preview
+ * Step 2: Access 95 Table Designer View:
+ *   - Top Half: Sunken Column Grid Viewport (Row Indicator 👉, Name, Grouped Type, PK 🔑, NN, UQ, Default)
+ *   - Bottom Half: Property Inspector Table for Currently Selected Column (#activeColIdx)
+ *       Listing ALL 19 properties in clear, un-cramped, structured key-value rows.
+ *   - Bottom Section: Live DDL Preview & Table-Level Multi-Column Constraints
  */
 
 import React, { useState, useMemo } from 'react';
@@ -201,14 +202,14 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
         className="win95-raised"
         style={{
           width: 860,
-          height: 620,
+          height: 640,
           background: 'var(--w95-gray, #c0c0c0)',
           color: 'var(--w95-text-color, #000000)',
           fontFamily: 'var(--w95-font)',
           fontSize: 12,
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '6px 6px 12px rgba(0,0,0,0.6)',
+          boxShadow: '6px 6px 14px rgba(0,0,0,0.6)',
           border: '2px solid',
           borderColor: '#ffffff #808080 #808080 #ffffff',
           boxSizing: 'border-box',
@@ -331,7 +332,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
             </div>
           )}
 
-          {/* ── STEP 2: Access 95 Table Designer Split-Pane View ─────────────── */}
+          {/* ── STEP 2: Access 95 Table Designer Split View ──────────────────── */}
           {step === 2 && (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
 
@@ -351,7 +352,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
               </div>
 
               {/* Top Half: Access 95 Column Grid (Sunken Viewport) */}
-              <div className="win95-inset" style={{ height: '38%', overflowY: 'auto', background: 'var(--w95-sunken-bg,#fff)', flexShrink: 0 }}>
+              <div className="win95-inset" style={{ height: '34%', overflowY: 'auto', background: 'var(--w95-sunken-bg,#fff)', flexShrink: 0 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                   <thead>
                     <tr style={{ background: 'var(--w95-gray,#c0c0c0)', fontWeight: 'bold', borderBottom: '2px solid var(--w95-dark-gray,#808080)', position: 'sticky', top: 0, zIndex: 10 }}>
@@ -457,185 +458,323 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                 </table>
               </div>
 
-              {/* Bottom Half: Field Properties Panel for Currently Active Column */}
-              <div className="win95-fieldset" style={{ height: '35%', overflowY: 'auto', margin: 0, padding: 8, flexShrink: 0 }}>
+              {/* Bottom Half: Win95 Property Inspector Grid for Active Column */}
+              <div className="win95-fieldset" style={{ height: '40%', overflowY: 'auto', margin: 0, padding: 6, flexShrink: 0 }}>
                 <legend style={{ fontWeight: 'bold', fontSize: 11, color: 'var(--w95-titlebar-active,#000080)' }}>
-                  ⚙️ Field Properties for Column: <u>{activeCol?.name || `#${activeColIdx + 1}`}</u> [{activeCol?.type || 'INT'}]
+                  ⚙️ Property Inspector for Selected Column: <u>{activeCol?.name || `#${activeColIdx + 1}`}</u> [{activeCol?.type || 'INT'}]
                 </legend>
 
                 {activeCol && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, fontSize: 11 }}>
-
-                    {/* Left Column: Scalar Constraints & Modifiers */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {/* Auto-Increment / Serial / Identity */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ minWidth: 110, fontWeight: 'bold' }}>Auto-Increment:</span>
-                        {manifest.autoIncrementKeyword ? (
-                          <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div className="win95-inset" style={{ overflowY: 'auto', maxHeight: '100%' }}>
+                    <table className="win95-prop-table">
+                      <tbody>
+                        {/* 1. Column Name */}
+                        <tr>
+                          <td className="win95-prop-name-col">Column Name</td>
+                          <td className="win95-prop-val-col">
                             <input
-                              type="checkbox"
-                              checked={!!activeCol.isAutoIncrement}
-                              onChange={e => handleColumnChange(activeColIdx, { isAutoIncrement: e.target.checked })}
+                              type="text"
+                              className="win95-sunken"
+                              value={activeCol.name}
+                              onChange={e => handleColumnChange(activeColIdx, { name: e.target.value })}
+                              style={{ ...inputStyle, width: '100%' }}
                             />
-                            {manifest.autoIncrementKeyword}
-                          </label>
-                        ) : (
-                          <span style={{ color: 'var(--w95-dark-gray,#666)', fontSize: 10 }}>Not supported in {dialect}</span>
-                        )}
-                      </div>
+                          </td>
+                        </tr>
 
-                      {/* CHECK Expression */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ minWidth: 110, fontWeight: 'bold' }}>CHECK (expr):</span>
-                        <input
-                          type="text"
-                          className="win95-sunken"
-                          value={activeCol.checkExpr ?? ''}
-                          onChange={e => handleColumnChange(activeColIdx, { checkExpr: e.target.value })}
-                          placeholder={`e.g. ${activeCol.name || 'col'} >= 0`}
-                          style={{ ...inputStyle, flex: 1 }}
-                        />
-                      </div>
+                        {/* 2. Data Type */}
+                        <tr>
+                          <td className="win95-prop-name-col">Data Type ({dialect})</td>
+                          <td className="win95-prop-val-col">
+                            <select
+                              className="win95-sunken"
+                              value={activeCol.type}
+                              onChange={e => handleColumnChange(activeColIdx, { type: e.target.value })}
+                              style={{ ...inputStyle, width: '100%' }}
+                            >
+                              {manifest.typeGroups.map(g => (
+                                <optgroup key={g.group} label={`── ${g.group} ──`}>
+                                  {g.types.map(t => <option key={t} value={t}>{t}</option>)}
+                                </optgroup>
+                              ))}
+                            </select>
+                          </td>
+                        </tr>
 
-                      {/* ENUM / SET Values */}
-                      {(activeCol.type.includes('ENUM') || activeCol.type.includes('SET')) && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ minWidth: 110, fontWeight: 'bold' }}>ENUM/SET Values:</span>
-                          <input
-                            type="text"
-                            className="win95-sunken"
-                            value={(activeCol.enumValues || []).join(', ')}
-                            onChange={e => handleColumnChange(activeColIdx, { enumValues: e.target.value.split(',').map(v => v.trim()).filter(Boolean) })}
-                            placeholder="active, inactive, pending"
-                            style={{ ...inputStyle, flex: 1 }}
-                          />
-                        </div>
-                      )}
+                        {/* 3. Primary Key */}
+                        <tr>
+                          <td className="win95-prop-name-col">Primary Key (PK)</td>
+                          <td className="win95-prop-val-col">
+                            <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <input
+                                type="checkbox"
+                                checked={activeCol.isPrimaryKey}
+                                onChange={e => handleColumnChange(activeColIdx, { isPrimaryKey: e.target.checked, isUnique: e.target.checked ? false : activeCol.isUnique })}
+                                disabled={hasPk && !activeCol.isPrimaryKey}
+                              />
+                              🔑 Primary Key constraint
+                            </label>
+                          </td>
+                        </tr>
 
-                      {/* Modifiers: UNSIGNED & ZEROFILL */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ minWidth: 110, fontWeight: 'bold' }}>Modifiers:</span>
-                        {manifest.constraints['UNSIGNED'] && (
-                          <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {/* 4. Allow Nulls / NOT NULL */}
+                        <tr>
+                          <td className="win95-prop-name-col">Allow Nulls (NOT NULL)</td>
+                          <td className="win95-prop-val-col">
+                            <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <input
+                                type="checkbox"
+                                checked={activeCol.isNotNull}
+                                onChange={e => handleColumnChange(activeColIdx, { isNotNull: e.target.checked })}
+                              />
+                              NOT NULL (Disallow NULL values)
+                            </label>
+                          </td>
+                        </tr>
+
+                        {/* 5. Unique Constraint */}
+                        <tr>
+                          <td className="win95-prop-name-col">Unique Constraint (UQ)</td>
+                          <td className="win95-prop-val-col">
+                            <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <input
+                                type="checkbox"
+                                checked={activeCol.isUnique}
+                                onChange={e => handleColumnChange(activeColIdx, { isUnique: e.target.checked })}
+                                disabled={activeCol.isPrimaryKey}
+                              />
+                              UNIQUE index constraint
+                            </label>
+                          </td>
+                        </tr>
+
+                        {/* 6. Default Value */}
+                        <tr>
+                          <td className="win95-prop-name-col">Default Value / Expression</td>
+                          <td className="win95-prop-val-col">
                             <input
-                              type="checkbox"
-                              checked={!!activeCol.isUnsigned}
-                              onChange={e => handleColumnChange(activeColIdx, { isUnsigned: e.target.checked })}
-                            /> UNSIGNED
-                          </label>
-                        )}
-                        {manifest.constraints['ZEROFILL'] && (
-                          <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                              type="text"
+                              className="win95-sunken"
+                              value={activeCol.defaultValue ?? ''}
+                              onChange={e => handleColumnChange(activeColIdx, { defaultValue: e.target.value })}
+                              placeholder="e.g. 0, 'active', CURRENT_TIMESTAMP, NULL"
+                              style={{ ...inputStyle, width: '100%' }}
+                            />
+                          </td>
+                        </tr>
+
+                        {/* 7. Auto-Increment / Identity */}
+                        <tr>
+                          <td className="win95-prop-name-col">Auto-Increment / Identity</td>
+                          <td className="win95-prop-val-col">
+                            {manifest.autoIncrementKeyword ? (
+                              <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <input
+                                  type="checkbox"
+                                  checked={!!activeCol.isAutoIncrement}
+                                  onChange={e => handleColumnChange(activeColIdx, { isAutoIncrement: e.target.checked })}
+                                />
+                                {manifest.autoIncrementKeyword} ({dialect})
+                              </label>
+                            ) : (
+                              <span style={{ color: 'var(--w95-dark-gray,#666)', fontSize: 10 }}>Not supported in {dialect}</span>
+                            )}
+                          </td>
+                        </tr>
+
+                        {/* 8. CHECK Expression */}
+                        <tr>
+                          <td className="win95-prop-name-col">CHECK Expression</td>
+                          <td className="win95-prop-val-col">
                             <input
-                              type="checkbox"
-                              checked={!!activeCol.isZerofill}
-                              onChange={e => handleColumnChange(activeColIdx, { isZerofill: e.target.checked })}
-                            /> ZEROFILL
-                          </label>
-                        )}
-                      </div>
-                    </div>
+                              type="text"
+                              className="win95-sunken"
+                              value={activeCol.checkExpr ?? ''}
+                              onChange={e => handleColumnChange(activeColIdx, { checkExpr: e.target.value })}
+                              placeholder={`e.g. ${activeCol.name || 'col'} >= 0 AND ${activeCol.name || 'col'} <= 100`}
+                              style={{ ...inputStyle, width: '100%' }}
+                            />
+                          </td>
+                        </tr>
 
-                    {/* Right Column: Foreign Keys & Computed Columns */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {/* 9. ENUM / SET Allowed Values */}
+                        <tr>
+                          <td className="win95-prop-name-col">ENUM / SET Allowed Values</td>
+                          <td className="win95-prop-val-col">
+                            <input
+                              type="text"
+                              className="win95-sunken"
+                              value={(activeCol.enumValues || []).join(', ')}
+                              onChange={e => handleColumnChange(activeColIdx, { enumValues: e.target.value.split(',').map(v => v.trim()).filter(Boolean) })}
+                              placeholder="e.g. 'active', 'inactive', 'pending'"
+                              style={{ ...inputStyle, width: '100%' }}
+                            />
+                          </td>
+                        </tr>
 
-                      {/* Foreign Key REFERENCES */}
-                      <div style={{ border: '1px solid #aaa', padding: 5, background: 'var(--w95-light-gray,#f5f5f5)' }}>
-                        <div style={{ fontWeight: 'bold', fontSize: 10, marginBottom: 3, color: 'var(--w95-titlebar-active,#000080)' }}>
-                          🔗 Foreign Key (REFERENCES)
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 4 }}>
-                          <select
-                            className="win95-sunken"
-                            value={activeCol.references?.table ?? ''}
-                            onChange={e => handleColumnChange(activeColIdx, { references: { table: e.target.value, column: '', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' } })}
-                            style={{ ...inputStyle, width: '100%' }}
-                          >
-                            <option value="">(no FK reference)</option>
-                            {allTables.map(t => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                          <select
-                            className="win95-sunken"
-                            value={activeCol.references?.column ?? ''}
-                            onChange={e => handleColumnChange(activeColIdx, { references: { ...activeCol.references!, column: e.target.value } })}
-                            style={{ ...inputStyle, width: '100%' }}
-                            disabled={!activeCol.references?.table}
-                          >
-                            <option value="">(parent column)</option>
-                            {parentTableCols.map(c => <option key={c} value={c}>{c}</option>)}
-                          </select>
-                        </div>
-                        {activeCol.references?.table && (
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-                            <div>
-                              <span style={{ fontSize: 9 }}>ON DELETE:</span>
-                              <select
-                                className="win95-sunken"
-                                value={activeCol.references?.onDelete ?? 'NO ACTION'}
-                                onChange={e => handleColumnChange(activeColIdx, { references: { ...activeCol.references!, onDelete: e.target.value } })}
-                                style={{ ...inputStyle, width: '100%', fontSize: 10 }}
-                              >
-                                {REFERENTIAL_ACTIONS.map(a => <option key={a} value={a}>{a}</option>)}
-                              </select>
-                            </div>
-                            <div>
-                              <span style={{ fontSize: 9 }}>ON UPDATE:</span>
-                              <select
-                                className="win95-sunken"
-                                value={activeCol.references?.onUpdate ?? 'NO ACTION'}
-                                onChange={e => handleColumnChange(activeColIdx, { references: { ...activeCol.references!, onUpdate: e.target.value } })}
-                                style={{ ...inputStyle, width: '100%', fontSize: 10 }}
-                              >
-                                {REFERENTIAL_ACTIONS.map(a => <option key={a} value={a}>{a}</option>)}
-                              </select>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                        {/* 10. Foreign Key Parent Table */}
+                        <tr>
+                          <td className="win95-prop-name-col">Foreign Key Parent Table</td>
+                          <td className="win95-prop-val-col">
+                            <select
+                              className="win95-sunken"
+                              value={activeCol.references?.table ?? ''}
+                              onChange={e => handleColumnChange(activeColIdx, { references: { table: e.target.value, column: '', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' } })}
+                              style={{ ...inputStyle, width: '100%' }}
+                            >
+                              <option value="">(no Foreign Key reference)</option>
+                              {allTables.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                          </td>
+                        </tr>
 
-                      {/* GENERATED Column */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ minWidth: 100, fontWeight: 'bold' }}>GENERATED:</span>
-                        <input
-                          type="text"
-                          className="win95-sunken"
-                          value={activeCol.generatedExpr ?? ''}
-                          onChange={e => handleColumnChange(activeColIdx, { generatedExpr: e.target.value })}
-                          placeholder="expr e.g. price * qty"
-                          style={{ ...inputStyle, flex: 1 }}
-                        />
-                        <select
-                          className="win95-sunken"
-                          value={activeCol.generatedMode ?? 'STORED'}
-                          onChange={e => handleColumnChange(activeColIdx, { generatedMode: e.target.value as any })}
-                          style={{ ...inputStyle, width: 80 }}
-                        >
-                          <option value="STORED">{manifest.generatedStoredKeyword}</option>
-                          {manifest.generatedVirtualSupported && <option value="VIRTUAL">VIRTUAL</option>}
-                        </select>
-                      </div>
+                        {/* 11. Foreign Key Parent Column */}
+                        <tr>
+                          <td className="win95-prop-name-col">Foreign Key Parent Column</td>
+                          <td className="win95-prop-val-col">
+                            <select
+                              className="win95-sunken"
+                              value={activeCol.references?.column ?? ''}
+                              onChange={e => handleColumnChange(activeColIdx, { references: { ...activeCol.references!, column: e.target.value } })}
+                              style={{ ...inputStyle, width: '100%' }}
+                              disabled={!activeCol.references?.table}
+                            >
+                              <option value="">(select parent column)</option>
+                              {parentTableCols.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                          </td>
+                        </tr>
 
-                      {/* COLLATE & COMMENT */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                        <input
-                          type="text"
-                          className="win95-sunken"
-                          value={activeCol.collate ?? ''}
-                          onChange={e => handleColumnChange(activeColIdx, { collate: e.target.value })}
-                          placeholder="COLLATE (optional)"
-                          style={{ ...inputStyle, width: '100%' }}
-                        />
-                        <input
-                          type="text"
-                          className="win95-sunken"
-                          value={activeCol.comment ?? ''}
-                          onChange={e => handleColumnChange(activeColIdx, { comment: e.target.value })}
-                          placeholder="COMMENT (optional)"
-                          style={{ ...inputStyle, width: '100%' }}
-                        />
-                      </div>
-                    </div>
+                        {/* 12. FK ON DELETE Action */}
+                        <tr>
+                          <td className="win95-prop-name-col">FK ON DELETE Action</td>
+                          <td className="win95-prop-val-col">
+                            <select
+                              className="win95-sunken"
+                              value={activeCol.references?.onDelete ?? 'NO ACTION'}
+                              onChange={e => handleColumnChange(activeColIdx, { references: { ...activeCol.references!, onDelete: e.target.value } })}
+                              style={{ ...inputStyle, width: '100%' }}
+                            >
+                              {REFERENTIAL_ACTIONS.map(a => <option key={a} value={a}>{a}</option>)}
+                            </select>
+                          </td>
+                        </tr>
+
+                        {/* 13. FK ON UPDATE Action */}
+                        <tr>
+                          <td className="win95-prop-name-col">FK ON UPDATE Action</td>
+                          <td className="win95-prop-val-col">
+                            <select
+                              className="win95-sunken"
+                              value={activeCol.references?.onUpdate ?? 'NO ACTION'}
+                              onChange={e => handleColumnChange(activeColIdx, { references: { ...activeCol.references!, onUpdate: e.target.value } })}
+                              style={{ ...inputStyle, width: '100%' }}
+                            >
+                              {REFERENTIAL_ACTIONS.map(a => <option key={a} value={a}>{a}</option>)}
+                            </select>
+                          </td>
+                        </tr>
+
+                        {/* 14. Computed Expression (AS) */}
+                        <tr>
+                          <td className="win95-prop-name-col">Computed Expression (AS)</td>
+                          <td className="win95-prop-val-col">
+                            <input
+                              type="text"
+                              className="win95-sunken"
+                              value={activeCol.generatedExpr ?? ''}
+                              onChange={e => handleColumnChange(activeColIdx, { generatedExpr: e.target.value })}
+                              placeholder="e.g. price * quantity"
+                              style={{ ...inputStyle, width: '100%' }}
+                            />
+                          </td>
+                        </tr>
+
+                        {/* 15. Computed Mode */}
+                        <tr>
+                          <td className="win95-prop-name-col">Computed Mode</td>
+                          <td className="win95-prop-val-col">
+                            <select
+                              className="win95-sunken"
+                              value={activeCol.generatedMode ?? 'STORED'}
+                              onChange={e => handleColumnChange(activeColIdx, { generatedMode: e.target.value as any })}
+                              style={{ ...inputStyle, width: '100%' }}
+                            >
+                              <option value="STORED">{manifest.generatedStoredKeyword}</option>
+                              {manifest.generatedVirtualSupported && <option value="VIRTUAL">VIRTUAL</option>}
+                            </select>
+                          </td>
+                        </tr>
+
+                        {/* 16. Unsigned Numeric */}
+                        <tr>
+                          <td className="win95-prop-name-col">Unsigned Numeric</td>
+                          <td className="win95-prop-val-col">
+                            {manifest.constraints['UNSIGNED'] ? (
+                              <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <input
+                                  type="checkbox"
+                                  checked={!!activeCol.isUnsigned}
+                                  onChange={e => handleColumnChange(activeColIdx, { isUnsigned: e.target.checked })}
+                                />
+                                UNSIGNED (MySQL)
+                              </label>
+                            ) : (
+                              <span style={{ color: 'var(--w95-dark-gray,#666)', fontSize: 10 }}>Only supported in MySQL</span>
+                            )}
+                          </td>
+                        </tr>
+
+                        {/* 17. Zerofill */}
+                        <tr>
+                          <td className="win95-prop-name-col">Zerofill Modifier</td>
+                          <td className="win95-prop-val-col">
+                            {manifest.constraints['ZEROFILL'] ? (
+                              <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <input
+                                  type="checkbox"
+                                  checked={!!activeCol.isZerofill}
+                                  onChange={e => handleColumnChange(activeColIdx, { isZerofill: e.target.checked })}
+                                />
+                                ZEROFILL (MySQL)
+                              </label>
+                            ) : (
+                              <span style={{ color: 'var(--w95-dark-gray,#666)', fontSize: 10 }}>Only supported in MySQL</span>
+                            )}
+                          </td>
+                        </tr>
+
+                        {/* 18. Collation (COLLATE) */}
+                        <tr>
+                          <td className="win95-prop-name-col">Collation (COLLATE)</td>
+                          <td className="win95-prop-val-col">
+                            <input
+                              type="text"
+                              className="win95-sunken"
+                              value={activeCol.collate ?? ''}
+                              onChange={e => handleColumnChange(activeColIdx, { collate: e.target.value })}
+                              placeholder="e.g. utf8_general_ci"
+                              style={{ ...inputStyle, width: '100%' }}
+                            />
+                          </td>
+                        </tr>
+
+                        {/* 19. Column Comment */}
+                        <tr>
+                          <td className="win95-prop-name-col">Column Comment</td>
+                          <td className="win95-prop-val-col">
+                            <input
+                              type="text"
+                              className="win95-sunken"
+                              value={activeCol.comment ?? ''}
+                              onChange={e => handleColumnChange(activeColIdx, { comment: e.target.value })}
+                              placeholder="Column description..."
+                              style={{ ...inputStyle, width: '100%' }}
+                            />
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>

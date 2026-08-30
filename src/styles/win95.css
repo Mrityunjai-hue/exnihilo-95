@@ -879,3 +879,33 @@ html, body {
   background-color: var(--w95-title-active-bg, #000080);
   color: var(--w95-title-active-text, #ffffff);
 }
+
+/* Property Inspector Grid Styling (SSMS / Access 95 Style) */
+.win95-prop-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-family: var(--w95-font);
+  background: var(--w95-sunken-bg, #ffffff);
+}
+
+.win95-prop-table td {
+  padding: 3px 6px;
+  border-bottom: 1px solid var(--w95-gray, #e0e0e0);
+  border-right: 1px solid var(--w95-gray, #e0e0e0);
+  vertical-align: middle;
+}
+
+.win95-prop-name-col {
+  width: 220px;
+  background: var(--w95-light-gray, #f0f0f0);
+  color: var(--w95-text-color, #000000);
+  font-weight: bold;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.win95-prop-val-col {
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+}
