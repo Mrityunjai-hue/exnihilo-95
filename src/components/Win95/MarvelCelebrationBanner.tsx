@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getNextMarvelHero, MarvelCharacter } from '../../utils/marvelRoster';
+import { MarvelPixelSprite } from './MarvelPixelSprite';
 
 export interface MarvelCelebrationTrigger {
   type: 'SUCCESS' | 'FAILURE' | 'NONE';
@@ -76,25 +77,15 @@ export const MarvelCelebrationBanner: React.FC<MarvelCelebrationBannerProps> = (
             pointerEvents: 'auto',
           }}
         >
-          {/* Mini Character Bobbing Avatar */}
+          {/* Authentic Retro 8-bit Pixel-Art Chibi Character Sprite */}
           <div
             style={{
-              width: '46px',
-              height: '46px',
-              borderRadius: '50%',
-              background: hero.badgeColor,
-              border: '2px solid #ffd700',
-              boxShadow: '0 0 12px rgba(255, 215, 0, 0.8), 0 4px 10px rgba(0,0,0,0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '26px',
               animation: 'marvelBobbing 0.4s ease-in-out infinite',
               flexShrink: 0,
             }}
             title={hero.name}
           >
-            {hero.emoji}
+            <MarvelPixelSprite id={hero.id} size={48} />
           </div>
 
           {/* Comic Speech Bubble */}
@@ -144,7 +135,6 @@ export const MarvelCelebrationBanner: React.FC<MarvelCelebrationBannerProps> = (
             />
 
             <strong style={{ fontSize: '11px', color: '#000080', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>{hero.emoji}</span>
               <span>{hero.name} — SQL Hero!</span>
             </strong>
             <span style={{ fontWeight: 600, color: '#1b4332' }}>"{hero.victoryQuote}"</span>
@@ -164,24 +154,12 @@ export const MarvelCelebrationBanner: React.FC<MarvelCelebrationBannerProps> = (
             pointerEvents: 'auto',
           }}
         >
-          {/* Teaser Character Avatar */}
+          {/* Authentic Retro 8-bit Pixel-Art Chibi Character Sprite */}
           <div
-            style={{
-              width: '46px',
-              height: '46px',
-              borderRadius: '50%',
-              background: hero.badgeColor,
-              border: '2px solid #e63946',
-              boxShadow: '0 0 12px rgba(230, 57, 70, 0.8), 0 4px 10px rgba(0,0,0,0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '26px',
-              flexShrink: 0,
-            }}
+            style={{ flexShrink: 0 }}
             title={hero.name}
           >
-            {hero.emoji}
+            <MarvelPixelSprite id={hero.id} size={48} />
           </div>
 
           {/* Comic Speech Teaser Bubble */}
@@ -202,6 +180,7 @@ export const MarvelCelebrationBanner: React.FC<MarvelCelebrationBannerProps> = (
               gap: '2px',
             }}
           >
+
             <div
               style={{
                 position: 'absolute',
