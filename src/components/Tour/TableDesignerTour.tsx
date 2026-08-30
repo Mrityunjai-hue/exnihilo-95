@@ -176,20 +176,33 @@ export const TableDesignerTour: React.FC<TableDesignerTourProps> = ({
   };
 
   let arrowDirection: 'top' | 'bottom' | 'center' = 'center';
+  let arrowLeft = 24;
 
   if (targetRect) {
     const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
     const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
+    const balloonWidth = 420;
 
-    if (targetRect.top + targetRect.height + 240 < viewportHeight) {
-      balloonStyle.top = `${targetRect.top + targetRect.height + 12}px`;
-      balloonStyle.left = `${Math.max(16, Math.min(viewportWidth - 440, targetRect.left))}px`;
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+
+    // Center balloon horizontally over target, bounded by viewport margins
+    const balloonLeft = Math.max(16, Math.min(viewportWidth - balloonWidth - 16, targetCenterX - balloonWidth / 2));
+
+    // Calculate exact arrow position relative to balloon box to point precisely at target center X
+    arrowLeft = Math.max(20, Math.min(balloonWidth - 40, targetCenterX - balloonLeft - 10));
+
+    // Prefer positioning below the target if space permits, otherwise above
+    let balloonTop = 0;
+    if (targetRect.top + targetRect.height + 250 < viewportHeight) {
+      balloonTop = targetRect.top + targetRect.height + 12;
       arrowDirection = 'top';
     } else {
-      balloonStyle.top = `${Math.max(16, targetRect.top - 240)}px`;
-      balloonStyle.left = `${Math.max(16, Math.min(viewportWidth - 440, targetRect.left))}px`;
+      balloonTop = Math.max(16, targetRect.top - 240);
       arrowDirection = 'bottom';
     }
+
+    balloonStyle.top = `${balloonTop}px`;
+    balloonStyle.left = `${balloonLeft}px`;
   } else {
     balloonStyle.top = '50%';
     balloonStyle.left = '50%';
@@ -228,16 +241,18 @@ export const TableDesignerTour: React.FC<TableDesignerTourProps> = ({
           <div
             style={{
               position: 'absolute',
-              left: '24px',
+              left: `${arrowLeft}px`,
               ...(arrowDirection === 'top'
-                ? { top: '-10px', borderWidth: '0 10px 10px 10px', borderColor: 'transparent transparent #000080 transparent' }
-                : { bottom: '-10px', borderWidth: '10px 10px 0 10px', borderColor: '#c0c0c0 transparent transparent transparent' }),
+                ? { top: '-10px', borderWidth: '0 10px 10px 10px', borderColor: 'transparent transparent var(--w95-title-active-bg, #000080) transparent' }
+                : { bottom: '-10px', borderWidth: '10px 10px 0 10px', borderColor: 'var(--w95-gray, #c0c0c0) transparent transparent transparent' }),
               width: 0,
               height: 0,
               borderStyle: 'solid',
+              transition: 'left 0.2s ease',
             }}
           />
         )}
+
 
         {/* Titlebar */}
         <div className="win95-titlebar">
