@@ -1,7 +1,6 @@
 /**
  * TableDesignerTour.tsx — Interactive Win95 Guided Tour for Access 95 Table Design View
- * Highlights key wizard features with spotlight ring, balloon callout box, step navigation,
- * and an explicit Skip option.
+ * Dynamically switches wizard steps (Step 1 -> Step 2) so spotlight targets are always visible.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -9,15 +8,23 @@ import React, { useState, useEffect } from 'react';
 interface TableDesignerTourProps {
   isOpen: boolean;
   onClose: () => void;
+  wizardStep: number;
+  onEnsureStep: (step: number) => void;
 }
 
 interface TourStep {
   title: string;
   content: string;
   targetId?: string;
+  requiredWizardStep?: number;
 }
 
-export const TableDesignerTour: React.FC<TableDesignerTourProps> = ({ isOpen, onClose }) => {
+export const TableDesignerTour: React.FC<TableDesignerTourProps> = ({
+  isOpen,
+  onClose,
+  wizardStep,
+  onEnsureStep,
+}) => {
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
   const [targetRect, setTargetRect] = useState<{
     top: number;
@@ -26,55 +33,74 @@ export const TableDesignerTour: React.FC<TableDesignerTourProps> = ({ isOpen, on
     height: number;
   } | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentStepIdx(0);
-    }
-  }, [isOpen]);
-
   const tourSteps: TourStep[] = [
     {
       title: '✨ Welcome to Access 95 Table Designer',
       content:
         'This wizard lets you visually design SQL tables, configure 19 column constraints, inspect live DDL SQL, and auto-generate synthetic data rows without writing SQL manually. Let\'s walk through the key features!',
+      requiredWizardStep: 1,
     },
     {
       title: '1. Target Database & Table Name',
       content:
         'Choose which database schema namespace your new table belongs to (e.g. default, museum, sales), and enter a clean SQL table name.',
       targetId: 'tour-tbl-meta',
+      requiredWizardStep: 1,
     },
     {
       title: '2. Sunken Column Grid',
       content:
         'Add, remove, or reorder columns. Click on any column row to select it — the 👉 arrow indicator shows which column is actively selected for the Property Inspector below.',
       targetId: 'tour-col-grid',
+      requiredWizardStep: 2,
     },
     {
       title: '3. Win95 Property Inspector Grid',
       content:
         'Configure all 19 column properties! Toggle Primary Key, NOT NULL, UNIQUE, AUTO_INCREMENT, Default Values, CHECK expressions, Foreign Keys, and Computed Columns.',
       targetId: 'tour-prop-table',
+      requiredWizardStep: 2,
     },
     {
       title: '4. Dedicated ENUM & SET Inputs',
       content:
         'ENUM and SET have separate, dedicated value inputs! Simply type comma-separated values (e.g. active, pending, inactive or 0, 1) to auto-set the data type cleanly.',
       targetId: 'tour-enum-inputs',
+      requiredWizardStep: 2,
     },
     {
       title: '5. Live DDL Preview & Auto-Data Slider',
       content:
         'Watch your dialect-specific CREATE TABLE DDL SQL update in real time! Use the slider to set how many synthetic rows (1 to 25) will be generated automatically.',
       targetId: 'tour-ddl-preview',
+      requiredWizardStep: 2,
     },
     {
       title: '6. Materialize & Execute',
       content:
         'Click "🚀 Create & Populate Table" to run the DDL in memory, generate synthetic rows, and add the table to your Database Navigator pane!',
       targetId: 'tour-btn-create',
+      requiredWizardStep: 2,
     },
   ];
+
+  // Reset to step 0 when tour opens
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentStepIdx(0);
+      onEnsureStep(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // Synchronize wizard step with current tour step
+  useEffect(() => {
+    if (!isOpen) return;
+    const required = tourSteps[currentStepIdx]?.requiredWizardStep;
+    if (required && wizardStep !== required) {
+      onEnsureStep(required);
+    }
+  }, [currentStepIdx, isOpen, wizardStep, onEnsureStep, tourSteps]);
 
   // Track target DOM element position on screen
   useEffect(() => {
@@ -104,14 +130,14 @@ export const TableDesignerTour: React.FC<TableDesignerTourProps> = ({ isOpen, on
     };
 
     updatePosition();
-    const interval = setInterval(updatePosition, 300);
+    const interval = setInterval(updatePosition, 250);
     window.addEventListener('resize', updatePosition);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('resize', updatePosition);
     };
-  }, [currentStepIdx, isOpen]);
+  }, [currentStepIdx, isOpen, wizardStep]);
 
   if (!isOpen) return null;
 
@@ -122,8 +148,22 @@ export const TableDesignerTour: React.FC<TableDesignerTourProps> = ({ isOpen, on
     if (isLast) {
       onClose();
     } else {
-      setCurrentStepIdx((prev) => prev + 1);
+      const nextIdx = currentStepIdx + 1;
+      const nextReqStep = tourSteps[nextIdx]?.requiredWizardStep;
+      if (nextReqStep && wizardStep !== nextReqStep) {
+        onEnsureStep(nextReqStep);
+      }
+      setCurrentStepIdx(nextIdx);
     }
+  };
+
+  const handleBack = () => {
+    const prevIdx = Math.max(0, currentStepIdx - 1);
+    const prevReqStep = tourSteps[prevIdx]?.requiredWizardStep;
+    if (prevReqStep && wizardStep !== prevReqStep) {
+      onEnsureStep(prevReqStep);
+    }
+    setCurrentStepIdx(prevIdx);
   };
 
   // Position balloon window relative to target element
@@ -244,7 +284,7 @@ export const TableDesignerTour: React.FC<TableDesignerTourProps> = ({ isOpen, on
               <button
                 className="win95-button"
                 disabled={currentStepIdx === 0}
-                onClick={() => setCurrentStepIdx((prev) => Math.max(0, prev - 1))}
+                onClick={handleBack}
                 style={{ fontSize: '10px' }}
               >
                 &lt; Back

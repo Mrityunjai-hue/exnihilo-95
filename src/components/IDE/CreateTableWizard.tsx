@@ -191,6 +191,17 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
     boxSizing: 'border-box',
   };
 
+  const handleEnsureStep = (targetStep: number) => {
+    if (targetStep === 2 && step === 1) {
+      if (!tableName.trim()) {
+        setTableName('sample_table');
+      }
+      setStep(2);
+    } else if (targetStep === 1 && step === 2) {
+      setStep(1);
+    }
+  };
+
   return (
     <div
       style={{
@@ -201,7 +212,12 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
-      <TableDesignerTour isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
+      <TableDesignerTour
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        wizardStep={step}
+        onEnsureStep={handleEnsureStep}
+      />
       <div
         className="win95-raised"
         style={{
