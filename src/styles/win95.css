@@ -41,7 +41,7 @@ html, body {
   overflow: hidden;
   font-family: var(--w95-font);
   font-size: 12px;
-  background-color: var(--w95-desktop-bg, #008080);
+  background: var(--w95-desktop-bg, #008080);
   color: var(--w95-black, #000000);
   user-select: none;
   -webkit-font-smoothing: none;
@@ -60,7 +60,7 @@ html, body {
   position: relative;
   width: 100vw;
   height: calc(100vh - 30px);
-  background-color: var(--w95-desktop-bg, #008080);
+  background: var(--w95-desktop-bg, #008080);
   overflow: hidden;
 }
 
