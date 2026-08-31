@@ -13,7 +13,6 @@ const MAX_CACHE_SIZE = 100;
 interface CacheEntry {
   key: string;
   result: InferredSchemaMap;
-  timestamp: number;
 }
 
 class InferenceCache {
@@ -30,7 +29,7 @@ class InferenceCache {
 
     // Refresh LRU order (delete & re-insert)
     this.cache.delete(key);
-    this.cache.set(key, { ...entry, timestamp: Date.now() });
+    this.cache.set(key, entry);
     return entry.result;
   }
 
@@ -43,7 +42,7 @@ class InferenceCache {
       const oldestKey = this.cache.keys().next().value;
       if (oldestKey) this.cache.delete(oldestKey);
     }
-    this.cache.set(key, { key, result, timestamp: Date.now() });
+    this.cache.set(key, { key, result });
   }
 
   clear(): void {

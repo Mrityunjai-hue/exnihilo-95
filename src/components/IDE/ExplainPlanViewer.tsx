@@ -40,10 +40,9 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
 
     (async () => {
       try {
-        await executor.init();
         const db = (executor as any).db;
         if (!db) {
-          throw new Error('Database engine is not initialized.');
+          throw new Error('No active session database found. Please run your query first (F5) so tables and schema are generated in memory, then view the Execution Plan.');
         }
 
         // Clean query text (first executable SELECT query)

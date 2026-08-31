@@ -47,6 +47,9 @@ export async function getOrInitSqlJs(): Promise<SqlJsStatic> {
     _sqlJsModulePromise = initSqlJs(
       isBrowser ? { locateFile: () => '/sql-wasm.wasm' } : undefined
     );
+    _sqlJsModulePromise.catch(() => {
+      _sqlJsModulePromise = null; // Clear cached rejection to allow retry on next call
+    });
   }
   return _sqlJsModulePromise;
 }

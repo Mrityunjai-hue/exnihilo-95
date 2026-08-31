@@ -4,7 +4,7 @@
  * Persists user snippets in browser localStorage with IndexedDB mirroring.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Dialect } from '../engine/parser';
 
 export interface SavedSnippet {
@@ -59,17 +59,6 @@ export function useSnippetsStorage() {
     }
     return DEFAULT_SNIPPETS;
   });
-
-  const saveSnippetsToStorage = (list: SavedSnippet[]) => {
-    setSnippets(list);
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-      } catch {
-        // Ignore quota error
-      }
-    }
-  };
 
   const addSnippet = useCallback((name: string, sql: string, dialect: Dialect, tags: string[] = []): SavedSnippet => {
     const newSnip: SavedSnippet = {
