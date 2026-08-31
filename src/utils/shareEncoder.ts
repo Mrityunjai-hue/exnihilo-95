@@ -51,6 +51,8 @@ export function decodeSharePayload(hashOrSearch: string): SharePayload | null {
     let rawBase64 = '';
     if (hashOrSearch.includes('share=')) {
       rawBase64 = hashOrSearch.split('share=')[1].split('&')[0];
+    } else if (hashOrSearch.includes('q=')) {
+      rawBase64 = hashOrSearch.split('q=')[1].split('&')[0];
     } else if (hashOrSearch.startsWith('#') || hashOrSearch.startsWith('?')) {
       rawBase64 = hashOrSearch.slice(1);
     } else {

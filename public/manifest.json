@@ -1,0 +1,23 @@
+{
+  "name": "ExNihilo 95 — Windows 95 SQL IDE",
+  "short_name": "ExNihilo 95",
+  "description": "Zero-Config, Self-Synthesizing SQL Development Studio with authentic Windows 95 interface & in-browser WASM engine",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#008080",
+  "theme_color": "#000080",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

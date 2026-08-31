@@ -10,12 +10,18 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { EditorState } from '@codemirror/state';
-import { EditorView, keymap, lineNumbers, highlightActiveLineGutter, highlightActiveLine } from '@codemirror/view';
+import { EditorState, StateEffect, StateField } from '@codemirror/state';
+import { EditorView, keymap, lineNumbers, highlightActiveLineGutter, highlightActiveLine, Decoration, DecorationSet } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { sql, MySQL, PostgreSQL, SQLite, MSSQL } from '@codemirror/lang-sql';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags } from '@lezer/highlight';
+
+export interface SqlErrorLocation {
+  line: number;
+  col?: number;
+  message: string;
+}
 
 interface QueryEditorProps {
   value:              string;
@@ -25,6 +31,7 @@ interface QueryEditorProps {
   onSelectionChange?: (hasSelection: boolean, selectedText: string) => void;
   onCursorChange?:    (line: number, col: number) => void;
   schemaTables?:      Record<string, string[]>;
+  errorLocation?:     SqlErrorLocation | null;
 }
 
 // Custom Windows 95 IDE Syntax Theme
@@ -85,6 +92,39 @@ const win95SqlHighlightStyle = HighlightStyle.define([
   },
 ]);
 
+// Custom StateEffect & StateField for rendering inline SQL error squiggles
+const setErrorDecorationEffect = StateEffect.define<SqlErrorLocation | null>();
+
+const errorDecorationField = StateField.define<DecorationSet>({
+  create() {
+    return Decoration.none;
+  },
+  update(decorations, tr) {
+    decorations = decorations.map(tr.changes);
+    for (const e of tr.effects) {
+      if (e.is(setErrorDecorationEffect)) {
+        if (!e.value || e.value.line <= 0) {
+          return Decoration.none;
+        }
+        const { line: lineNum, col = 1, message } = e.value;
+        const doc = tr.state.doc;
+        const safeLineNum = Math.min(doc.lines, Math.max(1, lineNum));
+        const lineObj = doc.line(safeLineNum);
+        const from = Math.min(lineObj.to, lineObj.from + Math.max(0, col - 1));
+        const to = Math.max(from + 1, lineObj.to);
+
+        const mark = Decoration.mark({
+          class: 'cm-sql-error-squiggle',
+          attributes: { title: `Syntax Error: ${message}` },
+        });
+        return Decoration.set([mark.range(from, to)]);
+      }
+    }
+    return decorations;
+  },
+  provide: (f) => EditorView.decorations.from(f),
+});
+
 export const QueryEditor: React.FC<QueryEditorProps> = ({
   value,
   onChange,
@@ -93,6 +133,7 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
   onSelectionChange,
   onCursorChange,
   schemaTables,
+  errorLocation,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -174,6 +215,7 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
         history(),
         getSqlDialectExtension(dialect, schemaTables),
         syntaxHighlighting(win95SqlHighlightStyle),
+        errorDecorationField,
         customKeymap,
         updateListener,
         EditorView.theme({
@@ -183,6 +225,7 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
           '.cm-activeLine': { backgroundColor: 'rgba(0, 0, 128, 0.12)' },
           '.cm-activeLineGutter': { backgroundColor: 'var(--w95-gray, #d4d0c8)', fontWeight: 'bold' },
           '.cm-gutters': { backgroundColor: 'var(--w95-gray, #ece9d8)', borderRight: '1px solid var(--w95-dark-gray, #999)', color: 'var(--w95-dark-gray, #555)' },
+          '.cm-sql-error-squiggle': { textDecoration: 'underline wavy #d00000 2px', textDecorationSkipInk: 'none', backgroundColor: 'rgba(255, 0, 0, 0.12)' },
         }),
       ],
     });
@@ -199,6 +242,16 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
       viewRef.current = null;
     };
   }, [dialect, schemaTables]);
+
+  // Sync inline error squiggles on result/error changes
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+
+    view.dispatch({
+      effects: setErrorDecorationEffect.of(errorLocation || null),
+    });
+  }, [errorLocation]);
 
   // Update doc if changed externally
   useEffect(() => {

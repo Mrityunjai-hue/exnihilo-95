@@ -297,6 +297,61 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     showToast('✓ JSON file exported successfully.');
   };
 
+  const handleExportExcel = () => {
+    const rowsToExport = rawRows;
+    if (rowsToExport.length === 0) return;
+
+    let xml = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <Styles>
+  <Style ss:ID="Header">
+   <Font ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#000080" ss:Pattern="Solid"/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="QueryResult">
+  <Table>
+   <Row>`;
+
+    columns.forEach((col) => {
+      xml += `<Cell ss:StyleID="Header"><Data ss:Type="String">${String(col).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Data></Cell>`;
+    });
+    xml += `</Row>`;
+
+    rowsToExport.forEach((row) => {
+      xml += `<Row>`;
+      row.forEach((val) => {
+        if (val === null || val === undefined) {
+          xml += `<Cell><Data ss:Type="String"></Data></Cell>`;
+        } else if (typeof val === 'number') {
+          xml += `<Cell><Data ss:Type="Number">${val}</Data></Cell>`;
+        } else {
+          const safeStr = String(val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          xml += `<Cell><Data ss:Type="String">${safeStr}</Data></Cell>`;
+        }
+      });
+      xml += `</Row>`;
+    });
+
+    xml += `</Table>
+ </Worksheet>
+</Workbook>`;
+
+    const blob = new Blob([xml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `query_result_${Date.now()}.xls`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✓ Excel spreadsheet (.xls) exported successfully.');
+  };
+
   const handleExportSQL = () => {
     const rowsToExport = rawRows;
     if (rowsToExport.length === 0) return;
@@ -423,6 +478,13 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                   style={{ padding: '4px 8px', fontSize: '11px', cursor: 'pointer' }}
                 >
                   📄 Export as CSV File
+                </div>
+                <div
+                  className="win95-menu-item"
+                  onClick={() => { handleExportExcel(); setExportMenuOpen(false); }}
+                  style={{ padding: '4px 8px', fontSize: '11px', cursor: 'pointer' }}
+                >
+                  📗 Export as Excel Sheet (.xls)
                 </div>
                 <div
                   className="win95-menu-item"

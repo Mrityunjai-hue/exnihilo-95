@@ -20,6 +20,8 @@ import { ERDViewer } from './ERDViewer';
 import { ShareDialog } from '../Win95/ShareDialog';
 import { WindowControls } from '../Win95/WindowControls';
 import { KeyboardShortcutsDialog } from '../Win95/KeyboardShortcutsDialog';
+import { SnippetsPanel } from './SnippetsPanel';
+import { ExplainPlanViewer } from './ExplainPlanViewer';
 import { CreateDatabaseDialog } from './CreateDatabaseDialog';
 import { CreateTableWizard } from './CreateTableWizard';
 
@@ -124,6 +126,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isSnippetsOpen, setIsSnippetsOpen] = useState(false);
+  const [isExplainPlanOpen, setIsExplainPlanOpen] = useState(false);
 
   // Editor cursor tracking & dynamic catalog autocomplete
   const [cursorPos, setCursorPos] = useState<{ line: number; col: number }>({ line: 1, col: 1 });
@@ -189,6 +193,21 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     }
     return 'tab_1';
   });
+
+  const activeErrorLocation = React.useMemo(() => {
+    const active = tabs.find((t) => t.id === activeTabId);
+    if (!active || !active.result || (active.result as any).ok !== false) return null;
+    const msg = (active.result as any).message || '';
+    const match = msg.match(/line\s+(\d+)(?:,\s*(?:col|column)\s+(\d+))?/i);
+    if (match) {
+      return {
+        line: parseInt(match[1], 10),
+        col: match[2] ? parseInt(match[2], 10) : 1,
+        message: msg,
+      };
+    }
+    return null;
+  }, [tabs, activeTabId]);
 
   const [tabContextMenu, setTabContextMenu] = useState<{ x: number; y: number; tabId: string } | null>(null);
   const [isERDOpen, setIsERDOpen] = useState(false);
@@ -735,7 +754,14 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               <div className="win95-dropdown-item" onClick={handleExecute}>
                 <span>▶ Run All / Active (F5)</span>
               </div>
-              <div className="win95-dropdown-item" onClick={() => setIsHistoryOpen(true)}>
+              <div className="win95-dropdown-item" onClick={() => { setIsExplainPlanOpen(true); setActiveMenu(null); }}>
+                <span>⚡ Explain Query Plan...</span>
+              </div>
+              <div className="win95-dropdown-item" onClick={() => { setIsSnippetsOpen(true); setActiveMenu(null); }}>
+                <span>📚 SQL Snippets Library...</span>
+              </div>
+              <div className="win95-dropdown-divider" />
+              <div className="win95-dropdown-item" onClick={() => { setIsHistoryOpen(true); setActiveMenu(null); }}>
                 <span>🕒 View Query History</span>
               </div>
             </div>
@@ -792,15 +818,21 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               <div className="win95-dropdown-item" onClick={() => { setIsERDOpen(true); setActiveMenu(null); }}>
                 <span>🌐 Entity Relationship Diagram (ERD)</span>
               </div>
+              <div className="win95-dropdown-item" onClick={() => { setIsSnippetsOpen(true); setActiveMenu(null); }}>
+                <span>📚 Saved Queries & Snippets...</span>
+              </div>
+              <div className="win95-dropdown-item" onClick={() => { setIsExplainPlanOpen(true); setActiveMenu(null); }}>
+                <span>⚡ Query Plan Optimizer...</span>
+              </div>
               {onOpenChallenges && (
                 <div className="win95-dropdown-item" onClick={() => { onOpenChallenges(); setActiveMenu(null); }}>
                   <span>🏆 SQL Challenge Arena...</span>
                 </div>
               )}
+              <div className="win95-dropdown-divider" />
               <div className="win95-dropdown-item" onClick={() => { onReset(); setActiveMenu(null); }}>
                 <span>🔄 Reset Schema & Database</span>
               </div>
-              <div className="win95-dropdown-divider" />
               <div className="win95-dropdown-item" onClick={() => { onOpenSettings(); setActiveMenu(null); }}>
                 <span>⚙️ Control Panel Options...</span>
               </div>
@@ -987,6 +1019,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               }}
               onCursorChange={(line, col) => setCursorPos({ line, col })}
               schemaTables={catalogSchemaMap}
+              errorLocation={activeErrorLocation}
             />
           </div>
 
@@ -1335,6 +1368,32 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       <KeyboardShortcutsDialog
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
+      />
+
+      {/* SQL Snippets Library Modal */}
+      <SnippetsPanel
+        isOpen={isSnippetsOpen}
+        onClose={() => setIsSnippetsOpen(false)}
+        currentQueryText={activeTab.queryText}
+        currentDialect={dialect}
+        onLoadSnippet={(sql, targetDialect) => {
+          handleActiveQueryChange(sql);
+          if (targetDialect && targetDialect !== dialect) {
+            onDialectChange(targetDialect);
+          }
+        }}
+        onOpenSnippetInNewTab={(title, sql) => {
+          handleNewTab(title, sql);
+        }}
+      />
+
+      {/* Query Execution Plan Viewer Modal */}
+      <ExplainPlanViewer
+        isOpen={isExplainPlanOpen}
+        onClose={() => setIsExplainPlanOpen(false)}
+        queryText={activeTab.queryText}
+        dialect={dialect}
+        executor={executor}
       />
 
       {/* ── Visual Database Manager Modals ─────────────────────────────────── */}
