@@ -66,7 +66,9 @@ const ContextMenu: React.FC<{
         ]
       : [
           { label: '📊 SELECT * FROM', action: 'select_all' },
-          { label: '📋 View DDL', action: 'view_ddl' },
+          { label: '📝 Script INSERT Template', action: 'insert_template' },
+          { label: '📋 Copy Table Name', action: 'copy_name' },
+          { label: '📄 View DDL', action: 'view_ddl' },
           { label: '', action: '', separator: true },
           ...(menu.target.isUserDefined ? [{ label: '🗑️ Drop Table', action: 'drop_table' }] : []),
         ];
@@ -182,6 +184,31 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
 
     if (action === 'select_all' && target.kind === 'table') {
       onSelectTable(target.tableName, `SELECT * FROM ${target.tableName};`);
+      return;
+    }
+
+    if (action === 'insert_template' && target.kind === 'table') {
+      const entry = catalog.get(target.tableName, target.dbName);
+      if (entry) {
+        const colNames = entry.schema.columns.map(c => c.name);
+        const placeholders = entry.schema.columns.map(c => {
+          if (c.logicalType === 'INTEGER') return '1';
+          if (c.logicalType === 'NUMERIC') return '99.99';
+          if (c.logicalType === 'DATE') return "'2026-01-01'";
+          if (c.logicalType === 'BOOLEAN') return '1';
+          return `'Sample ${c.name}'`;
+        });
+        const sql = `INSERT INTO ${target.tableName} (${colNames.join(', ')})\nVALUES (${placeholders.join(', ')});`;
+        onSelectTable(target.tableName, sql);
+      }
+      return;
+    }
+
+    if (action === 'copy_name' && target.kind === 'table') {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        navigator.clipboard.writeText(target.tableName);
+        showNotif(`📋 Copied "${target.tableName}" to clipboard.`);
+      }
       return;
     }
 

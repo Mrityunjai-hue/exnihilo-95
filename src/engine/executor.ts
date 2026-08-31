@@ -32,10 +32,24 @@ import {
   extractRecursiveCtes,
 } from './parser';
 import { inferSchema, InferredSchemaMap, DEFAULT_COLUMNS, TableSchema, SQLITE_DDL } from './inference';
+import { inferSchemaCached } from './inferenceCache';
 
 import { buildTableGenerationPlan } from './relationships';
 import { generateSyntheticDataset, GeneratorOptions, generateCreateTableSql, generateInsertSql } from './generator';
 import { SessionCatalog, globalCatalog } from './catalog';
+
+// Module-level WASM binary loader singleton — avoids compiling WASM on each SQLExecutor instance
+let _sqlJsModulePromise: Promise<SqlJsStatic> | null = null;
+
+export async function getOrInitSqlJs(): Promise<SqlJsStatic> {
+  if (!_sqlJsModulePromise) {
+    const isBrowser = typeof window !== 'undefined';
+    _sqlJsModulePromise = initSqlJs(
+      isBrowser ? { locateFile: () => '/sql-wasm.wasm' } : undefined
+    );
+  }
+  return _sqlJsModulePromise;
+}
 
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -610,11 +624,7 @@ export class SQLExecutor {
 
     this.initPromise = (async () => {
       if (!this.SQL) {
-        // In browser (Next.js client-side), load WASM from /sql-wasm.wasm
-        const isBrowser = typeof window !== 'undefined';
-        this.SQL = await initSqlJs(
-          isBrowser ? { locateFile: () => '/sql-wasm.wasm' } : undefined
-        );
+        this.SQL = await getOrInitSqlJs();
       }
       this.db = new this.SQL.Database();
       this.registerCustomFunctions(this.db);
@@ -925,7 +935,7 @@ export class SQLExecutor {
     // ── 3. Infer & Materialize Missing Tables ─────────────────────────────────
     if (missingTables.length > 0) {
       try {
-        const inferredSchemas = inferSchema(trimmedQuery, dialect);
+        const inferredSchemas = inferSchemaCached(trimmedQuery, dialect);
         const plan = buildTableGenerationPlan(trimmedQuery, dialect, missingTables);
         const dataset = generateSyntheticDataset(inferredSchemas, plan, options);
 

@@ -23,6 +23,8 @@ interface QueryEditorProps {
   onRun:              (queryToRun?: string) => void;
   dialect:            string;
   onSelectionChange?: (hasSelection: boolean, selectedText: string) => void;
+  onCursorChange?:    (line: number, col: number) => void;
+  schemaTables?:      Record<string, string[]>;
 }
 
 // Custom Windows 95 IDE Syntax Theme
@@ -89,6 +91,8 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
   onRun,
   dialect,
   onSelectionChange,
+  onCursorChange,
+  schemaTables,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -100,19 +104,22 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
   onChangeRef.current = onChange;
   const onSelectionChangeRef = useRef(onSelectionChange);
   onSelectionChangeRef.current = onSelectionChange;
+  const onCursorChangeRef = useRef(onCursorChange);
+  onCursorChangeRef.current = onCursorChange;
 
-  const getSqlDialectExtension = (d: string) => {
+  const getSqlDialectExtension = (d: string, schema?: Record<string, string[]>) => {
+    const config = schema && Object.keys(schema).length > 0 ? { schema } : {};
     switch (d) {
       case 'PostgreSQL':
-        return sql({ dialect: PostgreSQL });
+        return sql({ dialect: PostgreSQL, ...config });
       case 'SQLite':
-        return sql({ dialect: SQLite });
+        return sql({ dialect: SQLite, ...config });
       case 'TransactSQL':
       case 'SSMS':
-        return sql({ dialect: MSSQL });
+        return sql({ dialect: MSSQL, ...config });
       case 'MySQL':
       default:
-        return sql({ dialect: MySQL });
+        return sql({ dialect: MySQL, ...config });
     }
   };
 
@@ -150,6 +157,11 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
         const isSelected = !sel.empty;
         const txt = isSelected ? update.state.sliceDoc(sel.from, sel.to).trim() : '';
         onSelectionChangeRef.current?.(Boolean(txt), txt);
+
+        const pos = sel.head;
+        const line = update.state.doc.lineAt(pos);
+        const col = pos - line.from + 1;
+        onCursorChangeRef.current?.(line.number, col);
       }
     });
 
@@ -160,7 +172,7 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
         highlightActiveLineGutter(),
         highlightActiveLine(),
         history(),
-        getSqlDialectExtension(dialect),
+        getSqlDialectExtension(dialect, schemaTables),
         syntaxHighlighting(win95SqlHighlightStyle),
         customKeymap,
         updateListener,
@@ -186,7 +198,7 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
       view.destroy();
       viewRef.current = null;
     };
-  }, [dialect]);
+  }, [dialect, schemaTables]);
 
   // Update doc if changed externally
   useEffect(() => {

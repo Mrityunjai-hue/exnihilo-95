@@ -19,6 +19,7 @@ import { Toolbar } from './Toolbar';
 import { ERDViewer } from './ERDViewer';
 import { ShareDialog } from '../Win95/ShareDialog';
 import { WindowControls } from '../Win95/WindowControls';
+import { KeyboardShortcutsDialog } from '../Win95/KeyboardShortcutsDialog';
 import { CreateDatabaseDialog } from './CreateDatabaseDialog';
 import { CreateTableWizard } from './CreateTableWizard';
 
@@ -119,8 +120,31 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
   // Query History State
   const [queryHistory, setQueryHistory] = useState<QueryHistoryItem[]>([]);
+  const [historySearch, setHistorySearch] = useState('');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+
+  // Editor cursor tracking & dynamic catalog autocomplete
+  const [cursorPos, setCursorPos] = useState<{ line: number; col: number }>({ line: 1, col: 1 });
+
+  const catalog = executor.getCatalog();
+  const catalogSchemaMap = React.useMemo(() => {
+    const map: Record<string, string[]> = {};
+    const entries = catalog.getAll();
+    for (const entry of entries) {
+      map[entry.tableName] = entry.schema.columns.map((c) => c.name);
+    }
+    return map;
+  }, [catalog, refreshKey, initialResult]);
+
+  const filteredHistory = React.useMemo(() => {
+    if (!historySearch.trim()) return queryHistory;
+    const q = historySearch.toLowerCase().trim();
+    return queryHistory.filter(
+      (item) => item.sql.toLowerCase().includes(q) || item.dialect.toLowerCase().includes(q)
+    );
+  }, [queryHistory, historySearch]);
 
   // Drag Resizing State
   const [isResizingSidebar, setIsResizingSidebar] = useState(false);
@@ -356,12 +380,22 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
   if (!isOpen) return null;
 
-  const catalog = executor.getCatalog();
   const activeTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
 
   // ── Tab Operations & Context Menu ─────────────────────────────────────────
 
+  const MAX_TABS = 12;
+
   const handleNewTab = (customTitle?: string, customSql?: string) => {
+    if (tabs.length >= MAX_TABS) {
+      setDbManagerNotif({
+        msg: `⚠️ Maximum tabs limit (${MAX_TABS}) reached. Please close an unused tab.`,
+        ok: false,
+      });
+      setTimeout(() => setDbManagerNotif(null), 4000);
+      return;
+    }
+
     const nextNum = tabs.length + 1;
     const newTabId = `tab_${Date.now()}`;
     const initialSql = customSql !== undefined ? customSql : `-- Query ${nextNum}.sql\n\n`;
@@ -792,6 +826,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               <div className="win95-dropdown-item" onClick={() => { onOpenHelp(); setActiveMenu(null); }}>
                 <span>📖 Open SQL Tutorial Guide (`winhlp32.exe`)</span>
               </div>
+              <div className="win95-dropdown-item" onClick={() => { setIsShortcutsOpen(true); setActiveMenu(null); }}>
+                <span>⌨️ Keyboard Shortcuts & Accelerators...</span>
+              </div>
               <div className="win95-dropdown-item" onClick={() => { onStartTour(); setActiveMenu(null); }}>
                 <span>💡 Start Guided Feature Tour</span>
               </div>
@@ -948,6 +985,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
                 setHasSelection(hasSel);
                 setSelectedText(selText);
               }}
+              onCursorChange={(line, col) => setCursorPos({ line, col })}
+              schemaTables={catalogSchemaMap}
             />
           </div>
 
@@ -1019,13 +1058,19 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       {/* Global Window Status Bar */}
       <div className="win95-statusbar">
         <div className="win95-statusbar-pane" style={{ flex: 1 }}>
-          {activeTab.isLoading ? 'Executing Query...' : 'Ready'} — Tab {tabs.findIndex((t) => t.id === activeTabId) + 1} of {tabs.length}
+          {activeTab.isLoading ? '⏳ Executing Query...' : '⚡ Ready'} — Tab {tabs.findIndex((t) => t.id === activeTabId) + 1} of {tabs.length}
+        </div>
+        <div className="win95-statusbar-pane">
+          Ln {cursorPos.line}, Col {cursorPos.col}
+        </div>
+        <div className="win95-statusbar-pane">
+          {activeTab.result ? `${activeTab.result.rowCount} rows (${activeTab.executionTimeMs?.toFixed(0) ?? 0}ms)` : '0 rows'}
         </div>
         <div className="win95-statusbar-pane">
           Dialect: <strong>{dialect}</strong>
         </div>
         <div className="win95-statusbar-pane">
-          Engine: <strong>In-Browser WASM Kernel</strong>
+          Tables: <strong>{catalog.getAll().length}</strong>
         </div>
         <div className="win95-statusbar-pane" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span>Storage: <strong>{storageEstimate.usedMb} MB / {storageEstimate.totalQuotaMb} MB</strong></span>
@@ -1146,17 +1191,41 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             </div>
 
             <div style={{ padding: '8px', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '6px' }}>
-                Recent Executed Queries:
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  placeholder="🔍 Search history by SQL snippet or dialect..."
+                  value={historySearch}
+                  onChange={(e) => setHistorySearch(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '3px 6px',
+                    fontSize: '11px',
+                    fontFamily: 'var(--w95-font)',
+                    border: '1px solid #808080',
+                    background: '#ffffff',
+                  }}
+                />
+                {historySearch && (
+                  <button
+                    className="win95-button"
+                    style={{ fontSize: '10px', padding: '1px 6px' }}
+                    onClick={() => setHistorySearch('')}
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
 
               <div className="win95-sunken" style={{ flex: 1, overflow: 'auto', background: '#ffffff', padding: '4px' }}>
-                {queryHistory.length === 0 ? (
+                {filteredHistory.length === 0 ? (
                   <div style={{ padding: '20px', color: '#888', textAlign: 'center', fontSize: '11px' }}>
-                    No execution history recorded in this session. Run queries to populate history!
+                    {queryHistory.length === 0
+                      ? 'No execution history recorded in this session. Run queries to populate history!'
+                      : 'No queries match your search filter.'}
                   </div>
                 ) : (
-                  queryHistory.map((item, idx) => (
+                  filteredHistory.map((item, idx) => (
                     <div
                       key={item.id}
                       style={{
@@ -1192,6 +1261,18 @@ export const IDEShell: React.FC<IDEShellProps> = ({
                       </pre>
 
                       <div style={{ display: 'flex', gap: '4px', marginTop: '4px', justifyContent: 'flex-end' }}>
+                        <button
+                          className="win95-button"
+                          style={{ fontSize: '9px', padding: '1px 6px', fontWeight: 'bold' }}
+                          onClick={() => {
+                            handleActiveQueryChange(item.sql);
+                            setIsHistoryOpen(false);
+                            onRun(item.sql);
+                          }}
+                          title="Execute this query immediately in active tab"
+                        >
+                          ▶️ Run
+                        </button>
                         <button
                           className="win95-button"
                           style={{ fontSize: '9px', padding: '1px 6px' }}
@@ -1248,6 +1329,12 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         tabTitle={activeTab.title}
         onClose={() => setIsShareOpen(false)}
         onFocus={() => {}}
+      />
+
+      {/* Keyboard Shortcuts Reference Dialog */}
+      <KeyboardShortcutsDialog
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
       />
 
       {/* ── Visual Database Manager Modals ─────────────────────────────────── */}

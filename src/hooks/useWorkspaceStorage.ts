@@ -298,6 +298,8 @@ export function useWorkspaceStorage(debounceMs = 500) {
   });
 
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isWritingRef = useRef<boolean>(false);
+  const pendingWriteRef = useRef<{ tabs: PersistedTabMeta[]; activeTabId: string } | null>(null);
 
   // Load from IndexedDB on mount
   useEffect(() => {
@@ -317,6 +319,75 @@ export function useWorkspaceStorage(debounceMs = 500) {
     };
   }, []);
 
+  const performWrite = async (tabs: PersistedTabMeta[], activeTabId: string) => {
+    if (isWritingRef.current) {
+      pendingWriteRef.current = { tabs, activeTabId };
+      return;
+    }
+
+    isWritingRef.current = true;
+    try {
+      const tabIds = tabs.map((t) => t.id);
+
+      // Fallback localStorage save
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          localStorage.setItem(INDEX_KEY, JSON.stringify(tabIds));
+          localStorage.setItem(ACTIVE_TAB_KEY, activeTabId);
+          tabs.forEach((tab) => {
+            const tabMeta = {
+              id: tab.id,
+              title: tab.title,
+              queryText: tab.queryText,
+              dialect: tab.dialect,
+              isPinned: Boolean(tab.isPinned),
+            };
+            localStorage.setItem(`${TAB_PREFIX}${tab.id}`, JSON.stringify(tabMeta));
+          });
+        } catch {
+          // Ignore fallback quota error
+        }
+      }
+
+      // Primary IndexedDB save
+      const db = await openIDB();
+      if (db) {
+        try {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          store.put(tabIds, INDEX_KEY);
+          store.put(activeTabId, ACTIVE_TAB_KEY);
+
+          tabs.forEach((tab) => {
+            const tabMeta = {
+              id: tab.id,
+              title: tab.title,
+              queryText: tab.queryText,
+              dialect: tab.dialect,
+              isPinned: Boolean(tab.isPinned),
+            };
+            store.put(tabMeta, `${TAB_PREFIX}${tab.id}`);
+          });
+        } catch (err) {
+          console.warn('Failed to save workspace to IndexedDB:', err);
+        }
+      }
+
+      setStoredWorkspace({ tabs, activeTabId });
+
+      // Update quota estimate
+      const est = await getStorageEstimate();
+      setStorageEstimate(est);
+    } finally {
+      isWritingRef.current = false;
+      if (pendingWriteRef.current) {
+        const next = pendingWriteRef.current;
+        pendingWriteRef.current = null;
+        performWrite(next.tabs, next.activeTabId);
+      }
+    }
+  };
+
   /**
    * Debounced save workspace to IndexedDB & fallback localStorage
    */
@@ -328,58 +399,8 @@ export function useWorkspaceStorage(debounceMs = 500) {
         clearTimeout(saveTimerRef.current);
       }
 
-      saveTimerRef.current = setTimeout(async () => {
-        const tabIds = tabs.map((t) => t.id);
-
-        // Fallback localStorage save
-        if (window.localStorage) {
-          try {
-            localStorage.setItem(INDEX_KEY, JSON.stringify(tabIds));
-            localStorage.setItem(ACTIVE_TAB_KEY, activeTabId);
-            tabs.forEach((tab) => {
-              const tabMeta = {
-                id: tab.id,
-                title: tab.title,
-                queryText: tab.queryText,
-                dialect: tab.dialect,
-                isPinned: Boolean(tab.isPinned),
-              };
-              localStorage.setItem(`${TAB_PREFIX}${tab.id}`, JSON.stringify(tabMeta));
-            });
-          } catch {
-            // Ignore fallback quota error
-          }
-        }
-
-        // Primary IndexedDB save
-        const db = await openIDB();
-        if (db) {
-          try {
-            const tx = db.transaction(STORE_NAME, 'readwrite');
-            const store = tx.objectStore(STORE_NAME);
-            store.put(tabIds, INDEX_KEY);
-            store.put(activeTabId, ACTIVE_TAB_KEY);
-
-            tabs.forEach((tab) => {
-              const tabMeta = {
-                id: tab.id,
-                title: tab.title,
-                queryText: tab.queryText,
-                dialect: tab.dialect,
-                isPinned: Boolean(tab.isPinned),
-              };
-              store.put(tabMeta, `${TAB_PREFIX}${tab.id}`);
-            });
-          } catch (err) {
-            console.warn('Failed to save workspace to IndexedDB:', err);
-          }
-        }
-
-        setStoredWorkspace({ tabs, activeTabId });
-
-        // Update quota estimate
-        const est = await getStorageEstimate();
-        setStorageEstimate(est);
+      saveTimerRef.current = setTimeout(() => {
+        performWrite(tabs, activeTabId);
       }, debounceMs);
     },
     [debounceMs]

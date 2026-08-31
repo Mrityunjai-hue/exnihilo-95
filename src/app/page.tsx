@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { ErrorBoundary } from '../components/Win95/ErrorBoundary';
 
 // Dynamically import Desktop with ssr: false so CodeMirror & sql.js initialize in browser
 const Desktop = dynamic(
@@ -9,5 +10,9 @@ const Desktop = dynamic(
 );
 
 export default function Home() {
-  return <Desktop />;
+  return (
+    <ErrorBoundary>
+      <Desktop />
+    </ErrorBoundary>
+  );
 }
