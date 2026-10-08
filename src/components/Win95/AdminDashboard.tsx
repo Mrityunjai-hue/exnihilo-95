@@ -1,13 +1,12 @@
 /**
  * AdminDashboard.tsx — Windows 95 Account & Admin Control Panel
- * Features 4 main tabs, complete 10-pillar Pro Tier roadmap, regional pricing, and session metrics.
+ * Fully free with all features unlocked, live session metrics, and account management.
  */
 
 import React, { useState, useEffect } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
 import { StoredUser, ActiveSession } from '../../hooks/useAuth';
-import { useRegionalPricing } from '../../hooks/useRegionalPricing';
-import { PRO_PRICING } from '../../config/pricing';
+import { detectRegion } from '../../hooks/useRegionalPricing';
 import { WindowControls } from './WindowControls';
 
 export interface SessionStats {
@@ -44,8 +43,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onChangePassword,
   onClearHistory,
 }) => {
-  const [activeTab, setActiveTab] = useState<'account' | 'pro' | 'usage' | 'logout'>('account');
-  const [proFilter, setProFilter] = useState<'all' | 'productivity' | 'ai' | 'cloud' | 'viz' | 'themes'>('all');
+  const [activeTab, setActiveTab] = useState<'account' | 'usage' | 'logout'>('account');
   const [modalNotice, setModalNotice] = useState<string | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -59,9 +57,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [passError, setPassError] = useState<string | null>(null);
   const [passSuccess, setPassSuccess] = useState<string | null>(null);
 
-  // Regional Pricing Hook
-  const { region, selectedCurrency, setCurrencyOverride, pricingTier, availableCurrencies } =
-    useRegionalPricing(currentUser ? currentUser.usernameNorm : null);
+  // Detected Region
+  const region = detectRegion();
 
   const { position, handleMouseDown } = useDraggable({ x: 160, y: 50 });
 
@@ -195,105 +192,6 @@ ${
     }
   };
 
-  // Complete 10 Pro Pillars Roadmap Data
-  const ALL_PRO_PILLARS = [
-    {
-      cat: 'productivity',
-      categoryTitle: '🗂️ 1. Unlimited Tabs & Workspaces',
-      feature: 'Unlimited Tabs & Named Workspaces',
-      free: '3 Tabs Max',
-      pro: 'Unlimited Tabs + Named Workspaces (E-Commerce, Analytics)',
-    },
-    {
-      cat: 'productivity',
-      categoryTitle: '🗂️ 1. Unlimited Tabs & Workspaces',
-      feature: 'Tab Grouping & Pinning',
-      free: '✕ None',
-      pro: 'Color-coded Tab Groups, Drag-reorder & Pin Critical Tabs',
-    },
-    {
-      cat: 'cloud',
-      categoryTitle: '💾 2. Persistent Sessions & Cloud Sync',
-      feature: 'Auto-Save & Cross-Device Cloud Sync',
-      free: 'Local Device Only',
-      pro: 'Auto-save to Cloud + Sync across GitHub/Google Logins',
-    },
-    {
-      cat: 'cloud',
-      categoryTitle: '💾 2. Persistent Sessions & Cloud Sync',
-      feature: 'Full Query History & Git-Style Versioning',
-      free: 'Last 10 Session Queries',
-      pro: 'Unlimited History Timeline + Tab Version Revert with Diff',
-    },
-    {
-      cat: 'ai',
-      categoryTitle: '🤖 3. AI SQL Assistant (Copilot)',
-      feature: 'Natural Language → SQL Generation',
-      free: '✕ None',
-      pro: 'Type "top 5 revenue customers" → Instant SQL',
-    },
-    {
-      cat: 'ai',
-      categoryTitle: '🤖 3. AI SQL Assistant (Copilot)',
-      feature: 'AI Error Fixer & Query Optimization',
-      free: '✕ None',
-      pro: 'Automatic error root cause fix + index performance hints',
-    },
-    {
-      cat: 'viz',
-      categoryTitle: '📊 4. Advanced Data Visualization',
-      feature: 'Built-in Chart Builder & Dashboard Mode',
-      free: 'Raw Result Grid Only',
-      pro: 'Bar/Line/Pie Charts, Pivot Tables & Printable Dashboards',
-    },
-    {
-      cat: 'cloud',
-      categoryTitle: '🎲 5. Advanced Synthetic Data Rules',
-      feature: 'High Capacity Data Generation',
-      free: '20 Rows / 25 Tables',
-      pro: 'Up to 10,000 Rows, Custom Data Profiles & Seed CSV Upload',
-    },
-    {
-      cat: 'cloud',
-      categoryTitle: '🔗 6. Real Live Database Connections',
-      feature: 'Live Database Proxy Connections',
-      free: 'In-Memory Synthetic Only',
-      pro: 'Connect live to MySQL, Postgres, SQL Server with Read-Safety',
-    },
-    {
-      cat: 'viz',
-      categoryTitle: '📤 7. Advanced Export & Sharing',
-      feature: 'Multi-Format Export & Embedded Queries',
-      free: 'CSV Only',
-      pro: 'Export JSON, DDL Scripts, Executable INSERTs & Embed Widgets',
-    },
-    {
-      cat: 'themes',
-      categoryTitle: '🎨 8. Themes & Retro Skins',
-      feature: 'Retro Theme Pack & Dark Mode Noir',
-      free: 'Win95 Teal Classic',
-      pro: 'Windows 98, XP Luna, Dark Mode Noir, Sound FX & CRT Filter',
-    },
-    {
-      cat: 'themes',
-      categoryTitle: '👥 9. Collaboration & Team Workspaces',
-      feature: 'Real-Time Team Query Library',
-      free: 'Single User Only',
-      pro: 'Shared Query Repositories, Live Multi-User Cursors & Role Access',
-    },
-    {
-      cat: 'themes',
-      categoryTitle: '🧪 10. Teaching & Challenge Mode',
-      feature: 'SQL Puzzles & Progress Certificates',
-      free: 'Help Guide Only',
-      pro: 'Interactive Challenges (Easy → Expert) & Classroom Mode',
-    },
-  ];
-
-  const filteredPillars = proFilter === 'all'
-    ? ALL_PRO_PILLARS
-    : ALL_PRO_PILLARS.filter((p) => p.cat === proFilter);
-
   return (
     <>
       <div
@@ -354,7 +252,7 @@ ${
 
             <div
               style={{
-                background: '#808080',
+                background: '#008000',
                 color: '#ffffff',
                 padding: '3px 8px',
                 fontSize: '11px',
@@ -362,7 +260,7 @@ ${
                 border: '1px outset #ffffff',
               }}
             >
-              [ FREE TIER ]
+              [ 100% FREE & UNLOCKED ]
             </div>
           </div>
 
@@ -373,12 +271,6 @@ ${
               onClick={() => setActiveTab('account')}
             >
               👤 My Account
-            </div>
-            <div
-              className={`win95-tab ${activeTab === 'pro' ? 'active' : ''}`}
-              onClick={() => setActiveTab('pro')}
-            >
-              ⭐ Upgrade to Pro
             </div>
             <div
               className={`win95-tab ${activeTab === 'usage' ? 'active' : ''}`}
@@ -431,10 +323,10 @@ ${
                         <td>{currentUser.joinDate}</td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Current Tier:</td>
+                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Access Level:</td>
                         <td>
-                          <span style={{ background: '#808080', color: '#fff', padding: '1px 6px', fontSize: '10px' }}>
-                            FREE
+                          <span style={{ background: '#008000', color: '#fff', padding: '1px 6px', fontSize: '10px', fontWeight: 'bold' }}>
+                            ✓ 100% FREE &amp; FULLY UNLOCKED
                           </span>
                         </td>
                       </tr>
@@ -445,29 +337,9 @@ ${
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Display Currency:</td>
+                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Feature Access:</td>
                         <td>
-                          <select
-                            value={selectedCurrency}
-                            onChange={(e) => setCurrencyOverride(e.target.value)}
-                            className="win95-sunken"
-                            style={{ padding: '2px 4px', fontSize: '11px' }}
-                          >
-                            {availableCurrencies.map((code) => (
-                              <option key={code} value={code}>
-                                {code} ({PRO_PRICING[code].symbol})
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Pro Reference Price:</td>
-                        <td>
-                          {pricingTier.label} {pricingTier.usdRef && <span style={{ color: '#555' }}>({pricingTier.usdRef})</span>}{' '}
-                          <span style={{ color: '#000080', fontSize: '9px', fontWeight: 'bold', background: '#ffffcc', border: '1px solid #999', padding: '1px 4px' }}>
-                            ℹ️ Subject to Update
-                          </span>
+                          <span style={{ color: '#000080', fontWeight: 'bold' }}>All Features &amp; Capabilities Unlocked</span>
                         </td>
                       </tr>
                       <tr>
@@ -498,14 +370,9 @@ ${
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <button
                     className="win95-button"
-                    onClick={() => setModalNotice('Edit Profile feature is coming soon in a future release.')}
-                  >
-                    ✏️ Edit Profile
-                  </button>
-                  <button
-                    className="win95-button"
+                    style={{ fontSize: '11px', padding: '4px 10px' }}
                     onClick={() => {
-                      setShowChangePassword(!showChangePassword);
+                      setShowChangePassword((prev) => !prev);
                       setPassError(null);
                       setPassSuccess(null);
                     }}
@@ -514,21 +381,40 @@ ${
                   </button>
                   <button
                     className="win95-button"
-                    style={{ color: '#800000', fontWeight: 'bold' }}
+                    style={{ fontSize: '11px', padding: '4px 10px' }}
+                    onClick={handleExportLogs}
+                  >
+                    📤 Export Live Logs (.json)
+                  </button>
+                  <button
+                    className="win95-button"
+                    style={{ fontSize: '11px', padding: '4px 10px' }}
+                    onClick={handleGenerateReport}
+                  >
+                    📄 Session Report (.txt)
+                  </button>
+                  <button
+                    className="win95-button"
+                    style={{ fontSize: '11px', padding: '4px 10px', color: '#800000', fontWeight: 'bold' }}
                     onClick={() => setShowConfirmDelete(true)}
                   >
-                    🗑️ Delete This Account
+                    🗑️ Delete Account
                   </button>
                 </div>
 
-                {/* Change Password Form Sub-Panel */}
+                {/* Change Password Sub-Panel */}
                 {showChangePassword && (
                   <div
-                    className="win95-inset"
-                    style={{ marginTop: '12px', padding: '10px', background: '#dfdfdf' }}
+                    className="win95-sunken"
+                    style={{
+                      marginTop: '12px',
+                      padding: '10px',
+                      background: '#dfdfdf',
+                      border: '1px solid #808080',
+                    }}
                   >
                     <div style={{ fontWeight: 'bold', fontSize: '11px', marginBottom: '8px' }}>
-                      Change Account Password
+                      🔑 Update Account Password
                     </div>
 
                     <form onSubmit={handleChangePasswordSubmit}>
@@ -607,164 +493,7 @@ ${
               </div>
             )}
 
-            {/* TAB 2: UPGRADE TO PRO (RICH 10-PILLAR PRESENTATION) */}
-            {activeTab === 'pro' && (
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <div style={{ fontSize: '11px' }}>
-                    Detected Region: <strong>{region.flag} {region.countryName}</strong>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
-                    <label>Display Currency:</label>
-                    <select
-                      value={selectedCurrency}
-                      onChange={(e) => setCurrencyOverride(e.target.value)}
-                      className="win95-sunken"
-                      style={{ padding: '2px 4px', fontSize: '11px' }}
-                    >
-                      {availableCurrencies.map((code) => (
-                        <option key={code} value={code}>
-                          {code} ({PRO_PRICING[code].symbol})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Hero Banner */}
-                <div
-                  style={{
-                    background: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
-                    color: '#ffffff',
-                    padding: '12px',
-                    textAlign: 'center',
-                    marginBottom: '10px',
-                    border: '2px outset #dfdfdf',
-                  }}
-                >
-                  <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '4px' }}>
-                    ExNihilo 95 Pro — {pricingTier.label} <span style={{ fontSize: '11px', color: '#ffb800' }}>(Pricing Subject to Update)</span>
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#dfdfdf' }}>
-                    Power-User Workflows, AI Intelligence, Persistence & Live Database Sync
-                  </div>
-                  <div style={{ fontSize: '10px', color: '#c0c0c0', marginTop: '4px' }}>
-                    {pricingTier.usdRef ? `Reference: ${pricingTier.usdRef} | ` : ''}Prices subject to change prior to production release.
-                  </div>
-                </div>
-
-                {/* Category Sub-Filter Tabs */}
-                <div style={{ display: 'flex', gap: '4px', marginBottom: '10px', flexWrap: 'wrap' }}>
-                  {[
-                    { id: 'all', label: 'All 10 Pillars' },
-                    { id: 'productivity', label: '🗂️ Workspace' },
-                    { id: 'ai', label: '🤖 AI Copilot' },
-                    { id: 'cloud', label: '💾 Cloud & Sync' },
-                    { id: 'viz', label: '📊 Visualizations' },
-                    { id: 'themes', label: '🎨 Themes & Extras' },
-                  ].map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setProFilter(cat.id as any)}
-                      className="win95-button"
-                      style={{
-                        fontSize: '10px',
-                        padding: '2px 6px',
-                        fontWeight: proFilter === cat.id ? 'bold' : 'normal',
-                        border: proFilter === cat.id ? '2px inset #000' : '2px outset #fff',
-                        background: proFilter === cat.id ? '#dfdfdf' : '#c0c0c0',
-                      }}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Comprehensive Feature Comparison Matrix */}
-                <div className="win95-sunken" style={{ background: '#ffffff', padding: '4px', marginBottom: '12px' }}>
-                  <table style={{ width: '100%', fontSize: '10px', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ background: '#000080', color: '#fff' }}>
-                        <th style={{ padding: '5px', textAlign: 'left' }}>Feature Pillar</th>
-                        <th style={{ padding: '5px', textAlign: 'center', width: '100px' }}>Free (Base)</th>
-                        <th style={{ padding: '5px', textAlign: 'center', width: '160px' }}>ExNihilo 95 Pro</th>
-                        <th style={{ padding: '5px', textAlign: 'center', width: '70px' }}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredPillars.map((p, idx) => (
-                        <tr
-                          key={idx}
-                          style={{
-                            background: idx % 2 === 0 ? '#f5f5f5' : '#ffffff',
-                            borderBottom: '1px solid #eeeeee',
-                          }}
-                        >
-                          <td style={{ padding: '5px', fontWeight: 'bold' }}>{p.feature}</td>
-                          <td style={{ padding: '5px', textAlign: 'center', color: '#666' }}>{p.free}</td>
-                          <td style={{ padding: '5px', textAlign: 'center', color: '#000080', fontWeight: 'bold' }}>
-                            {p.pro}
-                          </td>
-                          <td style={{ padding: '5px', textAlign: 'center' }}>
-                            <span style={{ background: '#ffffcc', border: '1px solid #999', padding: '1px 3px', fontSize: '9px' }}>
-                              🔜 Soon
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Audience Plan Overview Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '12px' }}>
-                  <div className="win95-sunken" style={{ padding: '6px', background: '#dfdfdf', fontSize: '10px', textAlign: 'center' }}>
-                    <div style={{ fontWeight: 'bold', color: '#000080' }}>🆓 Free</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.symbol}0</div>
-                    <div style={{ color: '#555', fontSize: '9px' }}>3 Tabs, Synthetic Data, 4 Dialects</div>
-                  </div>
-                  <div className="win95-sunken" style={{ padding: '6px', background: '#ffffcc', border: '2px solid #000080', fontSize: '10px', textAlign: 'center' }}>
-                    <div style={{ fontWeight: 'bold', color: '#000080' }}>⭐ Pro</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.label}*</div>
-                    <div style={{ color: '#555', fontSize: '8px' }}>*Subject to update</div>
-                  </div>
-                  <div className="win95-sunken" style={{ padding: '6px', background: '#dfdfdf', fontSize: '10px', textAlign: 'center' }}>
-                    <div style={{ fontWeight: 'bold', color: '#000080' }}>👥 Team</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.teamLabel}*</div>
-                    <div style={{ color: '#555', fontSize: '8px' }}>*Subject to update</div>
-                  </div>
-                  <div className="win95-sunken" style={{ padding: '6px', background: '#dfdfdf', fontSize: '10px', textAlign: 'center' }}>
-                    <div style={{ fontWeight: 'bold', color: '#000080' }}>🎓 Education</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', margin: '2px 0' }}>{pricingTier.eduLabel}*</div>
-                    <div style={{ color: '#555', fontSize: '8px' }}>*Subject to update</div>
-                  </div>
-                </div>
-
-                {/* Upgrade CTAs */}
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                  <button
-                    className="win95-button"
-                    style={{ fontWeight: 'bold', padding: '4px 14px' }}
-                    onClick={() => setModalNotice('Pro Tier upgrades are coming soon! Pricing subject to update.')}
-                  >
-                    🚀 Upgrade to Pro ({pricingTier.label})
-                  </button>
-                  <a
-                    href="https://github.com/MrityunjaiP/ExNihilo-95/discussions"
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <button className="win95-button" style={{ padding: '4px 14px' }}>
-                      💬 Join the Discussion on GitHub
-                    </button>
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 3: REAL-TIME LIVE USAGE STATISTICS DASHBOARD */}
+            {/* TAB 2: REAL-TIME LIVE USAGE STATISTICS DASHBOARD */}
             {activeTab === 'usage' && (
               <div>
                 <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '8px', color: '#000080', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1053,7 +782,7 @@ ${
               </div>
             )}
 
-            {/* TAB 4: LOG OUT */}
+            {/* TAB 3: LOG OUT */}
             {activeTab === 'logout' && (
               <div style={{ textAlign: 'center', padding: '16px 8px' }}>
                 <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🚪</span>
@@ -1113,7 +842,7 @@ ${
               ⚡ Token: Active (24h TTL)
             </div>
             <div className="win95-sunken" style={{ flex: 1, padding: '2px 6px', background: '#c0c0c0' }}>
-              {region.flag} Currency: {selectedCurrency}
+              ✨ Access: Full &amp; Free (Unlocked)
             </div>
           </div>
         </div>
@@ -1146,7 +875,7 @@ ${
             <div style={{ padding: '16px', fontSize: '11px', lineHeight: '1.4' }}>
               Are you sure you want to permanently delete account <strong>@{currentUser.usernameNorm}</strong> from this device?
               <br /><br />
-              This will remove all local credentials, currency preferences, and session tokens. <strong>This action cannot be undone.</strong>
+              This will remove all local credentials and session tokens. <strong>This action cannot be undone.</strong>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '0 16px 12px 16px' }}>

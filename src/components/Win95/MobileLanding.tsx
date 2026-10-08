@@ -319,7 +319,7 @@ export const MobileLanding: React.FC<MobileLandingProps> = ({ onForceDesktop }) 
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
               <a
-                href="https://github.com/Mrityunjai-hue/exnihilo-95/blob/main/PREMIUM_FEATURES.md"
+                href="https://github.com/Mrityunjai-hue/exnihilo-95/blob/main/CONTRIBUTING.md"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ textDecoration: 'none' }}

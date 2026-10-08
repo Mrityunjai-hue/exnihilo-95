@@ -13,7 +13,7 @@ export interface StoredUser {
   email:             string;
   joinDate:          string;
   avatar?:           string;
-  tier:              'free';
+  tier:              'unlocked' | 'free' | string;
   passwordRecord:    string; // "pbkdf2_hex:salt_hex"
   currentSessionId:  string | null;
   schemaVersion:     number;
@@ -309,7 +309,7 @@ export function useAuth() {
       email: emailNorm,
       joinDate: nowIso.split('T')[0],
       avatar: avatar || '💻',
-      tier: 'free',
+      tier: 'unlocked',
       passwordRecord,
       currentSessionId: sessionId,
       schemaVersion: SCHEMA_VERSION,

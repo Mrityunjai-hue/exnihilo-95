@@ -141,16 +141,18 @@ To ensure students write and compose their own SQL queries:
 
 ---
 
-## 🎨 Win95 Nostalgia Themes Engine & CRT Filter
+## 🎨 Win95 Nostalgia & Modern Glass Themes Engine
 
 ExNihilo 95 includes a multi-theme Engine ([`v1.5.0-themes`](https://github.com/Mrityunjai-hue/exnihilo-95/releases/tag/v1.5.0-themes)):
 
 | Theme Name | Visual Style |
 | :--- | :--- |
+| **🍎 macOS Modern (Nihilo Glass) [Default]** | Frosted glassmorphism (`backdrop-filter: blur(28px)`), continuous squircle corners, floating bottom dock, traffic lights (🔴🟡🟢), and Web Audio Mac startup chord. |
 | **💾 Win95 Classic** | Original 1995 teal desktop wallpaper, gray bevels, and classic navy titlebars. |
 | **🌙 Win95 Noir (Dark Mode)** | High-contrast midnight obsidian theme with vibrant cyan text and dark sunken grids. |
 | **🔵 Windows XP Luna** | Royal blue titlebar gradients, rounded button states, and olive accents. |
-| **🏢 Windows 2000 Corporate** | Clean enterprise corporate gray theme. |
+| **🏢 Windows 2000 Corporate** | Clean enterprise corporate steel blue and slate gray theme. |
+| **💎 Windows 7 Aero Glass** | Translucent cyan glass borders, specular highlights, and Superbar taskbar. |
 | **📺 CRT Monitor Scanline Filter** | Toggles retro phosphor glow, scanline overlays, and vintage monitor curvature effect. |
 
 ---
@@ -256,5 +258,4 @@ npm run build
 - **Creator:** [Mrityunjai](https://github.com/Mrityunjai-hue)
 - **Community:** [N8N Data Science Community](https://n8n-ds-community.netlify.app/)
 - **License:** MIT License
-- **Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md) — Read this to get started as a contributor
-- **Premium Roadmap:** [PREMIUM_FEATURES.md](PREMIUM_FEATURES.md) — Full feature plan for the next evolution of ExNihilo
+- **Feature Roadmap:** [PREMIUM_FEATURES.md](PREMIUM_FEATURES.md) — Technical architecture and open feature roadmap (100% Free & Open Source)

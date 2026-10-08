@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeId = 'win95-classic' | 'win95-noir' | 'winxp-luna' | 'win2000' | 'win7-aero';
+export type ThemeId = 'macos-glass' | 'win95-classic' | 'win7-aero' | 'win95-noir' | 'winxp-luna' | 'win2000';
 
 export interface ThemeMeta {
   id: ThemeId;
@@ -23,6 +23,15 @@ export interface ThemeMeta {
 }
 
 export const THEME_PRESETS: ThemeMeta[] = [
+  {
+    id: 'macos-glass',
+    name: 'macOS Modern (Nihilo Glass)',
+    badge: '🍎 Acrylic Glass & Aurora',
+    desktopBg: 'radial-gradient(circle at 20% 20%, rgba(30, 58, 138, 0.65) 0%, transparent 40%), radial-gradient(circle at 80% 80%, rgba(88, 28, 135, 0.55) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(15, 118, 110, 0.35) 0%, transparent 50%), #0b0f19',
+    windowBg: 'rgba(18, 24, 38, 0.72)',
+    titleGradient: 'linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)',
+    isDark: true,
+  },
   {
     id: 'win95-classic',
     name: 'Windows 95 Classic',
@@ -74,7 +83,7 @@ const THEME_STORAGE_KEY = 'exnihilo_active_theme';
 
 export function useTheme() {
   const [activeTheme, setActiveThemeState] = useState<ThemeId>(() => {
-    if (typeof window === 'undefined' || !window.localStorage) return 'win95-classic';
+    if (typeof window === 'undefined' || !window.localStorage) return 'macos-glass';
     try {
       const stored = localStorage.getItem(THEME_STORAGE_KEY) as ThemeId;
       if (stored && THEME_PRESETS.some((t) => t.id === stored)) {
@@ -83,7 +92,7 @@ export function useTheme() {
     } catch {
       // Fallback on error
     }
-    return 'win95-classic';
+    return 'macos-glass';
   });
 
   const applyThemeToDOM = useCallback((theme: ThemeId) => {

@@ -188,37 +188,40 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          padding: '6px 8px',
-                          border: isSelected ? '2px solid #000080' : '1px solid #808080',
-                          background: isSelected ? '#e0e0ff' : '#ffffff',
+                          padding: '8px 10px',
+                          border: isSelected ? '2px solid #38bdf8' : '1px solid var(--w95-dark-gray, #808080)',
+                          background: isSelected ? 'rgba(56, 189, 248, 0.15)' : 'var(--w95-sunken-bg, #ffffff)',
                           cursor: 'pointer',
-                          borderRadius: '2px',
+                          borderRadius: '6px',
+                          transition: 'all 0.15s ease',
                         }}
                       >
                         <div>
-                          <strong style={{ fontSize: '11px', color: '#000' }}>{t.name}</strong>
-                          <div style={{ fontSize: '10px', color: '#555' }}>{t.badge}</div>
+                          <strong style={{ fontSize: '11px', color: 'var(--w95-text-color, #000)' }}>{t.name}</strong>
+                          <div style={{ fontSize: '10px', color: 'var(--w95-dark-gray, #555)' }}>{t.badge}</div>
                         </div>
-                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                           <div
                             title="Desktop Background"
                             style={{
-                              width: '16px',
-                              height: '16px',
+                              width: '18px',
+                              height: '18px',
                               background: t.desktopBg,
-                              border: '1px solid #000',
+                              border: '1px solid rgba(255, 255, 255, 0.3)',
+                              borderRadius: '4px',
                             }}
                           />
                           <div
                             title="Window Titlebar"
                             style={{
-                              width: '24px',
-                              height: '16px',
+                              width: '26px',
+                              height: '18px',
                               background: t.titleGradient,
-                              border: '1px solid #000',
+                              border: '1px solid rgba(255, 255, 255, 0.3)',
+                              borderRadius: '4px',
                             }}
                           />
-                          {isSelected && <span style={{ color: '#006600', fontWeight: 'bold', fontSize: '12px' }}>✓</span>}
+                          {isSelected && <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '13px' }}>✓</span>}
                         </div>
                       </div>
                     );

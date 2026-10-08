@@ -9,16 +9,57 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { ThemeId } from '../../hooks/useTheme';
 
 interface BootAnimationProps {
+  theme?: ThemeId;
   onComplete: () => void;
 }
 
-export const BootAnimation: React.FC<BootAnimationProps> = ({ onComplete }) => {
+export const BootAnimation: React.FC<BootAnimationProps> = ({ theme = 'macos-glass', onComplete }) => {
+  const isMacTheme = theme === 'macos-glass';
   const [phase, setPhase] = useState<'bios' | 'splash' | 'done'>('bios');
   const [progress, setProgress] = useState(0);
-  const [statusLog, setStatusLog] = useState('Starting ExNihilo 95...');
+  const [statusLog, setStatusLog] = useState(isMacTheme ? 'Initializing Nihilo Glass...' : 'Starting ExNihilo 95...');
   const audioPlayedRef = useRef(false);
+
+  // Synthesize crystal Mac startup chord via Web Audio API
+  const playMacStartupSound = () => {
+    if (audioPlayedRef.current) return;
+    audioPlayedRef.current = true;
+
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      const now = ctx.currentTime;
+      // High-fidelity Mac startup chord (F# maj9 / C# resonance)
+      const freqs = [185.00, 277.18, 369.99, 466.16, 554.37, 739.99];
+
+      freqs.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.05 / (i + 1), now + 0.15 + i * 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.00001, now + 3.4);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + i * 0.04);
+        osc.stop(now + 3.6);
+      });
+    } catch {
+      // Autoplay safety
+    }
+  };
 
   // Synthesize classic Windows 95 startup chord via Web Audio API
   const playRetroStartupSound = () => {
@@ -54,24 +95,36 @@ export const BootAnimation: React.FC<BootAnimationProps> = ({ onComplete }) => {
         osc.stop(now + 3.5);
       });
     } catch {
-      // Audio context might be restricted by browser autoplay policy until user interaction
+      // Autoplay safety
     }
   };
 
   useEffect(() => {
-    // Phase 1: BIOS screen for 700ms
+    // Phase 1 timer
     const biosTimer = setTimeout(() => {
       setPhase('splash');
-      playRetroStartupSound();
-    }, 700);
+      if (isMacTheme) {
+        playMacStartupSound();
+      } else {
+        playRetroStartupSound();
+      }
+    }, isMacTheme ? 400 : 700);
 
     return () => clearTimeout(biosTimer);
-  }, []);
+  }, [isMacTheme]);
 
   useEffect(() => {
     if (phase !== 'splash') return;
 
-    const logs = [
+    const macLogs = [
+      'Loading AST Parser (MySQL, PostgreSQL, SQLite, SSMS)...',
+      'Mounting WebAssembly SQLite Kernel 3.49.1...',
+      'Initializing Referential Integrity DAG Synthesizer...',
+      'Starting Session Schema Catalog...',
+      'Launching Nihilo Glass Studio...',
+    ];
+
+    const retroLogs = [
       'Loading AST Parser (MySQL, PostgreSQL, SQLite, SSMS)...',
       'Mounting WebAssembly SQLite Kernel 3.49.1...',
       'Initializing Referential Integrity DAG Synthesizer...',
@@ -79,6 +132,7 @@ export const BootAnimation: React.FC<BootAnimationProps> = ({ onComplete }) => {
       'Launching Windows 95 Desktop Environment...',
     ];
 
+    const logs = isMacTheme ? macLogs : retroLogs;
     let currentLogIdx = 0;
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -97,10 +151,10 @@ export const BootAnimation: React.FC<BootAnimationProps> = ({ onComplete }) => {
         }
         return next;
       });
-    }, 85);
+    }, isMacTheme ? 75 : 85);
 
     return () => clearInterval(interval);
-  }, [phase, onComplete]);
+  }, [phase, isMacTheme, onComplete]);
 
   // Allow clicking anywhere or pressing any key to skip
   const handleSkip = () => {
@@ -115,6 +169,136 @@ export const BootAnimation: React.FC<BootAnimationProps> = ({ onComplete }) => {
   }, []);
 
   if (phase === 'done') return null;
+
+  if (isMacTheme) {
+    return (
+      <div
+        onClick={handleSkip}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 9999999,
+          cursor: 'pointer',
+          userSelect: 'none',
+          overflow: 'hidden',
+          background: 'radial-gradient(circle at 50% 40%, #111827 0%, #030712 100%)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '32px',
+          color: '#f8fafc',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif',
+          animation: 'fadeIn 0.3s ease-out',
+        }}
+      >
+        {/* Minimalist Glowing Mac/Glass Prism Monogram */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px',
+            transform: progress > 10 ? 'scale(1)' : 'scale(0.95)',
+            opacity: progress > 5 ? 1 : 0.6,
+            transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+          }}
+        >
+          <div
+            style={{
+              width: '72px',
+              height: '72px',
+              borderRadius: '20px',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6), 0 0 40px rgba(56, 189, 248, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '34px',
+            }}
+          >
+            💎
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: '28px',
+                fontWeight: 700,
+                letterSpacing: '-0.02em',
+                background: 'linear-gradient(180deg, #ffffff 0%, #94a3b8 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Nihilo Glass
+            </h1>
+            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 600 }}>
+              Zero-Config SQL Studio Pro
+            </div>
+          </div>
+        </div>
+
+        {/* Apple-style Smooth Pill Progress Bar & Status */}
+        <div
+          style={{
+            width: '240px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+          }}
+        >
+          {/* Track */}
+          <div
+            style={{
+              width: '100%',
+              height: '4px',
+              borderRadius: '9999px',
+              background: 'rgba(255, 255, 255, 0.12)',
+              overflow: 'hidden',
+              boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${progress}%`,
+                borderRadius: '9999px',
+                background: 'linear-gradient(90deg, #38bdf8 0%, #10b981 100%)',
+                boxShadow: '0 0 10px rgba(56, 189, 248, 0.6)',
+                transition: 'width 0.1s linear',
+              }}
+            />
+          </div>
+
+          {/* Status */}
+          <div
+            style={{
+              fontSize: '11px',
+              color: '#94a3b8',
+              fontWeight: 500,
+              textAlign: 'center',
+              letterSpacing: '0.01em',
+            }}
+          >
+            {statusLog}
+          </div>
+
+          <div style={{ fontSize: '10px', color: '#475569', marginTop: '8px' }}>
+            Click anywhere or press any key to skip
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

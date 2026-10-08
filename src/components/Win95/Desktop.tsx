@@ -48,6 +48,8 @@ import {
 
 
 
+import { useTheme } from '../../hooks/useTheme';
+
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
 
@@ -58,6 +60,7 @@ WHERE c.age > 25;`;
 
 export const Desktop: React.FC = () => {
   const [mounted, setMounted] = useState(false);
+  const { activeTheme } = useTheme();
   const executor = useMemo(() => new SQLExecutor(), []);
 
   // Auth Hook
@@ -571,7 +574,7 @@ export const Desktop: React.FC = () => {
 
       {/* Opening Boot Animation */}
       {showBootAnimation && (
-        <BootAnimation onComplete={() => setShowBootAnimation(false)} />
+        <BootAnimation theme={activeTheme} onComplete={() => setShowBootAnimation(false)} />
       )}
 
       {/* Landing / Welcome Information Dialog */}

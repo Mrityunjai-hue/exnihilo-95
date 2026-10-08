@@ -1,6 +1,6 @@
 /**
- * ContributorsWindow.tsx — "Join the Team" window showcasing premium features
- * roadmap and open call for contributors, styled as a classic Win95 window.
+ * ContributorsWindow.tsx — "Join the Team" window showcasing open roadmap,
+ * full features list, and open call for contributors, styled as a classic Win95 window.
  */
 
 'use client';
@@ -20,7 +20,7 @@ interface ContributorsWindowProps {
 
 type TabId = 'overview' | 'features' | 'roles' | 'getstarted';
 
-const PREMIUM_FEATURES = [
+const PROJECT_FEATURES = [
   { icon: '🤖', name: 'AI SQL Copilot',              desc: 'Natural language → SQL, query explanations, AI-powered error fix suggestions', skills: 'AI/ML, LLM APIs' },
   { icon: '💾', name: 'Cloud Sync & Persistence',     desc: 'Auto-save queries to cloud, cross-device sync, query version history', skills: 'Backend, Auth, DB' },
   { icon: '📊', name: 'Chart Builder & Dashboards',   desc: 'Bar, line, pie, scatter charts generated from query results + dashboard mode', skills: 'React, D3/Chart.js' },
@@ -62,7 +62,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'overview',    label: '🚀 Overview' },
-    { id: 'features',   label: '💎 Premium Features' },
+    { id: 'features',   label: '✨ Features & Roadmap' },
     { id: 'roles',      label: '🎯 Roles Needed' },
     { id: 'getstarted', label: '🛠️ Get Started' },
   ];
@@ -79,7 +79,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
       >
         <div className="win95-titlebar-text">
           <span>🤝</span>
-          <span>ExNihilo 95 — Join the Team</span>
+          <span>ExNihilo 95 — Join the Team (100% Free &amp; Open Source)</span>
         </div>
         <WindowControls
           onMinimize={onMinimize}
@@ -123,7 +123,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
                 Calling All Builders — Contributors Wanted!
               </h2>
               <p style={{ margin: 0, fontSize: '11px' }}>
-                ExNihilo 95 has proven its core concept. Now it&apos;s time to scale it into something massive.
+                ExNihilo 95 is completely free, open-source, and unrestricted for all users. Join us in building the ultimate SQL development playground!
               </p>
             </div>
 
@@ -140,13 +140,13 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
 
             <div className="win95-inset" style={{ padding: '12px', marginBottom: '12px', background: 'var(--w95-callout-blue-bg, #f0f8ff)', color: 'var(--w95-callout-blue-text, #000000)' }}>
               <p style={{ margin: '0 0 8px', fontWeight: 'bold', color: 'var(--w95-title-active-bg, #000080)' }}>
-                🏗️ What&apos;s Next? 10 Major Feature Categories
+                🏗️ Unlocked Roadmap: 10 Major Feature Categories
               </p>
               <p style={{ margin: '0 0 8px' }}>
-                We&apos;ve mapped out a comprehensive <strong>Premium Features Roadmap</strong> spanning:
+                Every feature is designed to be 100% free and accessible to all developers:
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px' }}>
-                {PREMIUM_FEATURES.map((f) => (
+                {PROJECT_FEATURES.map((f) => (
                   <div key={f.name} style={{ fontSize: '10px' }}>
                     {f.icon} <strong>{f.name}</strong>
                   </div>
@@ -170,7 +170,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
         {activeTab === 'features' && (
           <div>
             <h3 style={{ margin: '0 0 10px', fontSize: '13px', color: 'var(--w95-title-active-bg, #000080)' }}>
-              💎 Premium Features Roadmap
+              ✨ Open Feature Roadmap (100% Free &amp; Unlocked)
             </h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
               <thead>
@@ -181,7 +181,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {PREMIUM_FEATURES.map((f, i) => (
+                {PROJECT_FEATURES.map((f, i) => (
                   <tr key={f.name} style={{ background: i % 2 === 0 ? 'var(--w95-grid-even-bg, #f8f8ff)' : 'var(--w95-grid-odd-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>
                     <td style={{ padding: '5px 6px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                       {f.icon} {f.name}
@@ -197,9 +197,9 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
 
             <div className="win95-inset" style={{ padding: '10px', marginTop: '12px', background: '#ffffe0', border: '1px solid #808000' }}>
               <p style={{ margin: 0, fontSize: '10px' }}>
-                📄 Full roadmap with pricing tiers, Gantt timeline, and conversion strategies available at{' '}
-                <a href="https://github.com/Mrityunjai-hue/exnihilo-95/blob/main/PREMIUM_FEATURES.md" target="_blank" rel="noopener noreferrer" style={{ color: '#000080' }}>
-                  PREMIUM_FEATURES.md on GitHub
+                📄 Check out the open roadmap, architecture specs, and feature guides on GitHub:{' '}
+                <a href="https://github.com/Mrityunjai-hue/exnihilo-95" target="_blank" rel="noopener noreferrer" style={{ color: '#000080' }}>
+                  ExNihilo 95 Repository on GitHub
                 </a>
               </p>
             </div>
@@ -245,11 +245,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
             <div className="win95-inset" style={{ padding: '12px', marginBottom: '10px', background: '#f0f8ff' }}>
               <p style={{ margin: '0 0 8px', fontWeight: 'bold' }}>Step 2: Pick a Feature</p>
               <p style={{ margin: 0, fontSize: '10px' }}>
-                Check the <strong>💎 Premium Features</strong> tab or read the full{' '}
-                <a href="https://github.com/Mrityunjai-hue/exnihilo-95/blob/main/PREMIUM_FEATURES.md" target="_blank" rel="noopener noreferrer" style={{ color: '#000080' }}>
-                  PREMIUM_FEATURES.md
-                </a>{' '}
-                roadmap on GitHub.
+                Check the <strong>✨ Features &amp; Roadmap</strong> tab or explore the open issues and roadmap on GitHub.
               </p>
             </div>
 
@@ -259,7 +255,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
                 git checkout -b feature/your-feature-name
               </div>
               <p style={{ margin: '6px 0 0', fontSize: '10px' }}>
-                Include screenshots for UI changes, reference the feature from PREMIUM_FEATURES.md, and run <code>npm run build</code> to verify zero TypeScript errors.
+                Include screenshots for UI changes, describe your implementation in the PR, and run <code>npm run build</code> to verify zero TypeScript errors.
               </p>
             </div>
 

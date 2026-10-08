@@ -273,7 +273,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
 
           {/* Account Tray Icon */}
           <span
-            title={isLoggedIn ? `Logged in as @${currentUser?.usernameNorm} (Free Tier)` : 'Click to Log In / Register'}
+            title={isLoggedIn ? `Logged in as @${currentUser?.usernameNorm} (Full Access)` : 'Click to Log In / Register'}
             style={{ fontSize: '12px', cursor: 'pointer' }}
             onClick={() => onOpenWindow(isLoggedIn ? 'admin' : 'auth')}
           >

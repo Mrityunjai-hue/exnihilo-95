@@ -43,9 +43,11 @@ describe('Multi-Theme Engine Unit Tests', () => {
     localStorage.clear();
   });
 
-  it('contains 5 authentic nostalgia theme presets', () => {
-    expect(THEME_PRESETS).toHaveLength(5);
+  it('contains 6 theme presets with macos-glass as primary default', () => {
+    expect(THEME_PRESETS).toHaveLength(6);
     const themeIds = THEME_PRESETS.map((t) => t.id);
+    expect(themeIds[0]).toBe('macos-glass');
+    expect(themeIds).toContain('macos-glass');
     expect(themeIds).toContain('win95-classic');
     expect(themeIds).toContain('win7-aero');
     expect(themeIds).toContain('win95-noir');
@@ -63,9 +65,11 @@ describe('Multi-Theme Engine Unit Tests', () => {
   });
 
   it('correctly flags dark mode vs light mode themes', () => {
+    const macos = THEME_PRESETS.find((t) => t.id === 'macos-glass');
     const noir = THEME_PRESETS.find((t) => t.id === 'win95-noir');
     const classic = THEME_PRESETS.find((t) => t.id === 'win95-classic');
 
+    expect(macos?.isDark).toBe(true);
     expect(noir?.isDark).toBe(true);
     expect(classic?.isDark).toBe(false);
   });

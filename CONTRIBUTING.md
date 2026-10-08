@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to **ExNihilo 95** — the zero-configuration, in-browser SQL IDE built in the iconic Windows 95 aesthetic! 🗄️
 
-We're actively looking for contributors to help build **premium features** and expand ExNihilo into a robust, full-featured SQL development platform.
+We're actively looking for contributors to help build new features and expand ExNihilo into a robust, 100% free and open-source SQL development platform.
 
 ---
 
@@ -21,7 +21,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app running local
 
 ### 2. Pick a Feature
 
-Check out our **[Premium Features Roadmap](PREMIUM_FEATURES.md)** for the full list of planned features organized by priority phase:
+Check out our **[Feature Roadmap](PREMIUM_FEATURES.md)** for the full list of planned features organized by priority phase:
 
 | Phase | Features | Priority |
 |-------|----------|:--------:|
@@ -41,7 +41,7 @@ git checkout -b feature/your-feature-name
 - Write clear, descriptive commit messages
 - Include screenshots or recordings for UI changes
 - Add or update tests where applicable
-- Reference the relevant feature from [PREMIUM_FEATURES.md](PREMIUM_FEATURES.md) in your PR description
+- Reference the relevant feature in your PR description
 
 ---
 
@@ -64,7 +64,7 @@ exnihilo-95/
 │   ├── hooks/                # Custom React hooks (useDraggable, etc.)
 │   └── styles/               # Win95 CSS theme
 ├── public/                   # Static assets (wasm, icons)
-├── PREMIUM_FEATURES.md       # Full premium feature roadmap
+├── PREMIUM_FEATURES.md       # Technical architecture & open feature roadmap
 └── CONTRIBUTING.md           # This file
 ```
 
