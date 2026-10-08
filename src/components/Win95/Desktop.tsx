@@ -49,6 +49,7 @@ import {
 
 
 import { useTheme } from '../../hooks/useTheme';
+import { MacMenuBar } from '../Mac/MacMenuBar';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -358,35 +359,94 @@ export const Desktop: React.FC = () => {
   ];
 
   const activeWindowId = windowOrder[windowOrder.length - 1] || null;
+  const isMacTheme = activeTheme === 'macos-glass';
 
   return (
-    <div className="win95-desktop">
-      {/* 3D Desktop Wallpaper Centerpiece */}
-      <div className="win95-wallpaper-center">
-        <div className="win95-3d-logo-box">
-          <div className="win95-flag-container">
-            <div className="win95-flag-tile win95-flag-red" />
-            <div className="win95-flag-tile win95-flag-green" />
-            <div className="win95-flag-tile win95-flag-blue" />
-            <div className="win95-flag-tile win95-flag-yellow" />
+    <div className={`win95-desktop ${isMacTheme ? 'macos-desktop-layout' : ''}`}>
+      {/* Native macOS Top Menu Bar */}
+      {isMacTheme && (
+        <MacMenuBar
+          onOpenWindow={focusWindow}
+          activeWindowId={activeWindowId}
+          dialect={dialect}
+          onDialectChange={setDialect}
+          currentUser={currentUser}
+          isLoggedIn={isLoggedIn}
+          isSecureContext={isSecureContext}
+          crtEnabled={crtEnabled}
+          onToggleCrt={handleToggleCrt}
+          onResetSession={handleResetSession}
+          onLogout={handleLogout}
+          onRunQuery={() => handleRunQuery()}
+          onStartTour={handleStartGuidedTour}
+        />
+      )}
+
+      {/* Desktop Wallpaper Centerpiece */}
+      {isMacTheme ? (
+        <div className="mac-wallpaper-center">
+          <div className="mac-hero-emblem-box">
+            <div className="mac-hero-prism-logo">
+              <span style={{ fontSize: '32px', filter: 'drop-shadow(0 0 16px rgba(56, 189, 248, 0.7))' }}>⌥</span>
+            </div>
+            <h1 className="mac-hero-title">
+              ExNihilo <span className="mac-hero-title-accent">Studio</span>
+            </h1>
+            <p className="mac-hero-subtitle">
+              Intelligent Zero-Config In-Browser Relational SQL Studio
+            </p>
           </div>
-          <h1 className="win95-3d-title">
-            EXNIHILO<span className="win95-3d-edition">95</span>
-          </h1>
-        </div>
 
-        <div className="win95-3d-subtitle">
-          Intelligent Zero-Config SQL Development Environment
-        </div>
+          <div className="mac-hero-action-pills">
+            <button
+              type="button"
+              className="mac-pill-btn mac-pill-primary"
+              onClick={() => focusWindow('ide')}
+            >
+              <span>▶</span>
+              <strong>Open SQL Studio</strong>
+            </button>
+            <button
+              type="button"
+              className="mac-pill-btn"
+              onClick={() => focusWindow('challenges')}
+            >
+              <span>🏆</span>
+              <span>Challenge Arena</span>
+            </button>
+            <button
+              type="button"
+              className="mac-pill-btn"
+              onClick={() => focusWindow('sqlDictionary')}
+            >
+              <span>📖</span>
+              <span>SQL Dictionary</span>
+            </button>
+            <button
+              type="button"
+              className="mac-pill-btn"
+              onClick={() => focusWindow('help')}
+            >
+              <span>❓</span>
+              <span>Tutorial</span>
+            </button>
+            <button
+              type="button"
+              className="mac-pill-btn"
+              onClick={() => setTourOpen(true)}
+            >
+              <span>✦</span>
+              <span>Guided Tour</span>
+            </button>
+          </div>
 
-        <div className="win95-3d-badge">
-          <div className="win95-3d-badge-text" style={{ position: 'relative', zIndex: 10 }}>
+          <div className="mac-attribution-glass-badge">
             👨‍💻 <strong>Built by:</strong>{' '}
             <a
               href="https://github.com/Mrityunjai-hue"
               target="_blank"
               rel="noopener noreferrer"
-              className="win95-3d-badge-link"
+              className="mac-attribution-link"
               onClick={(e) => {
                 e.stopPropagation();
                 window.open('https://github.com/Mrityunjai-hue', '_blank');
@@ -399,7 +459,7 @@ export const Desktop: React.FC = () => {
               href="https://n8n-ds-community.netlify.app/"
               target="_blank"
               rel="noopener noreferrer"
-              className="win95-3d-badge-link"
+              className="mac-attribution-link"
               onClick={(e) => {
                 e.stopPropagation();
                 window.open('https://n8n-ds-community.netlify.app/', '_blank');
@@ -409,168 +469,221 @@ export const Desktop: React.FC = () => {
             </a>{' '}
             using AI
           </div>
+        </div>
+      ) : (
+        /* Retro 3D Windows 95 Wallpaper Centerpiece */
+        <div className="win95-wallpaper-center">
+          <div className="win95-3d-logo-box">
+            <div className="win95-flag-container">
+              <div className="win95-flag-tile win95-flag-red" />
+              <div className="win95-flag-tile win95-flag-green" />
+              <div className="win95-flag-tile win95-flag-blue" />
+              <div className="win95-flag-tile win95-flag-yellow" />
+            </div>
+            <h1 className="win95-3d-title">
+              EXNIHILO<span className="win95-3d-edition">95</span>
+            </h1>
+          </div>
 
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '6px' }}>
-            <button
-              className="win95-button"
-              style={{ fontSize: '11px', padding: '2px 8px' }}
-              onClick={() => focusWindow('ide')}
-            >
-              🗄️ Open SQL Studio
-            </button>
-            <button
-              className="win95-button"
-              style={{ fontSize: '11px', padding: '2px 8px' }}
-              onClick={() => focusWindow('sqlDictionary')}
-            >
-              📖 SQL Dictionary
-            </button>
-            <button
-              className="win95-button"
-              style={{ fontSize: '11px', padding: '2px 8px' }}
-              onClick={() => focusWindow('help')}
-            >
-              ❓ Query Tutorial
-            </button>
-            <button
-              className="win95-button"
-              style={{ fontSize: '11px', padding: '2px 8px' }}
-              onClick={() => setTourOpen(true)}
-            >
-              💡 Guided Tour
-            </button>
+          <div className="win95-3d-subtitle">
+            Intelligent Zero-Config SQL Development Environment
+          </div>
+
+          <div className="win95-3d-badge">
+            <div className="win95-3d-badge-text" style={{ position: 'relative', zIndex: 10 }}>
+              👨‍💻 <strong>Built by:</strong>{' '}
+              <a
+                href="https://github.com/Mrityunjai-hue"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="win95-3d-badge-link"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open('https://github.com/Mrityunjai-hue', '_blank');
+                }}
+              >
+                Mrityunjai
+              </a>
+              &nbsp;•&nbsp; 🌐 <strong>Powered by:</strong>{' '}
+              <a
+                href="https://n8n-ds-community.netlify.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="win95-3d-badge-link"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open('https://n8n-ds-community.netlify.app/', '_blank');
+                }}
+              >
+                N8N Data Science Community
+              </a>{' '}
+              using AI
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '6px' }}>
+              <button
+                className="win95-button"
+                style={{ fontSize: '11px', padding: '2px 8px' }}
+                onClick={() => focusWindow('ide')}
+              >
+                🗄️ Open SQL Studio
+              </button>
+              <button
+                className="win95-button"
+                style={{ fontSize: '11px', padding: '2px 8px' }}
+                onClick={() => focusWindow('sqlDictionary')}
+              >
+                📖 SQL Dictionary
+              </button>
+              <button
+                className="win95-button"
+                style={{ fontSize: '11px', padding: '2px 8px' }}
+                onClick={() => focusWindow('help')}
+              >
+                ❓ Query Tutorial
+              </button>
+              <button
+                className="win95-button"
+                style={{ fontSize: '11px', padding: '2px 8px' }}
+                onClick={() => setTourOpen(true)}
+              >
+                💡 Guided Tour
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Desktop Shortcut Icons */}
-      <div className="win95-icon-grid" style={{ position: 'relative', zIndex: 2 }}>
-        {/* Admin / Account Control Icon */}
-        <div
-          className="win95-desktop-icon"
-          onDoubleClick={() => focusWindow(isLoggedIn ? 'admin' : 'auth')}
-          onClick={() => focusWindow(isLoggedIn ? 'admin' : 'auth')}
-          title={isLoggedIn ? `Logged in as ${currentUser?.displayName}` : 'Log in or Register User Account'}
-        >
-          <img src="/icons/author_shield.png" alt="User Account" />
-          <span>{isLoggedIn ? currentUser?.displayName || 'User Account' : 'User Account'}</span>
-        </div>
+      {/* Desktop Shortcut Icons for Retro Themes */}
+      {!isMacTheme && (
+        <div className="win95-icon-grid" style={{ position: 'relative', zIndex: 2 }}>
+          {/* Admin / Account Control Icon */}
+          <div
+            className="win95-desktop-icon"
+            onDoubleClick={() => focusWindow(isLoggedIn ? 'admin' : 'auth')}
+            onClick={() => focusWindow(isLoggedIn ? 'admin' : 'auth')}
+            title={isLoggedIn ? `Logged in as ${currentUser?.displayName}` : 'Log in or Register User Account'}
+          >
+            <img src="/icons/author_shield.png" alt="User Account" />
+            <span>{isLoggedIn ? currentUser?.displayName || 'User Account' : 'User Account'}</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onDoubleClick={() => focusWindow('welcome')}
-          onClick={() => focusWindow('welcome')}
-        >
-          <img src="/icons/about_galaxy.png" alt="About ExNihilo" />
-          <span>About ExNihilo</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onDoubleClick={() => focusWindow('welcome')}
+            onClick={() => focusWindow('welcome')}
+          >
+            <img src="/icons/about_galaxy.png" alt="About ExNihilo" />
+            <span>About ExNihilo</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onDoubleClick={() => focusWindow('ide')}
-          onClick={() => focusWindow('ide')}
-        >
-          <img src="/icons/sql_ide.png" alt="ExNihilo SQL IDE" />
-          <span>ExNihilo SQL IDE</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onDoubleClick={() => focusWindow('ide')}
+            onClick={() => focusWindow('ide')}
+          >
+            <img src="/icons/sql_ide.png" alt="ExNihilo SQL IDE" />
+            <span>ExNihilo SQL IDE</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onDoubleClick={() => focusWindow('challenges')}
-          onClick={() => focusWindow('challenges')}
-          title="SQL Challenge Arena (126+ LeetCode Puzzles)"
-        >
-          <ChallengeIcon size={36} />
-          <span>SQL Challenges</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onDoubleClick={() => focusWindow('challenges')}
+            onClick={() => focusWindow('challenges')}
+            title="SQL Challenge Arena (130+ LeetCode Puzzles)"
+          >
+            <ChallengeIcon size={36} />
+            <span>SQL Challenges</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onDoubleClick={() => focusWindow('sqlDictionary')}
-          onClick={() => focusWindow('sqlDictionary')}
-          title="SQL Dictionary & Dialect Reference"
-        >
-          <img src="/icons/sql_dictionary.png" alt="SQL Dictionary" />
-          <span>SQL Dictionary</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onDoubleClick={() => focusWindow('sqlDictionary')}
+            onClick={() => focusWindow('sqlDictionary')}
+            title="SQL Dictionary & Dialect Reference"
+          >
+            <img src="/icons/sql_dictionary.png" alt="SQL Dictionary" />
+            <span>SQL Dictionary</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onDoubleClick={() => focusWindow('help')}
-          onClick={() => focusWindow('help')}
-        >
-          <img src="/icons/query_tutorial.png" alt="Query Tutorial" />
-          <span>Query Tutorial</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onDoubleClick={() => focusWindow('help')}
+            onClick={() => focusWindow('help')}
+          >
+            <img src="/icons/query_tutorial.png" alt="Query Tutorial" />
+            <span>Query Tutorial</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onDoubleClick={() => focusWindow('wizard')}
-          onClick={() => focusWindow('wizard')}
-        >
-          <img src="/icons/setup_wizard.png" alt="Setup Wizard" />
-          <span>Setup Wizard</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onDoubleClick={() => focusWindow('wizard')}
+            onClick={() => focusWindow('wizard')}
+          >
+            <img src="/icons/setup_wizard.png" alt="Setup Wizard" />
+            <span>Setup Wizard</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onDoubleClick={() => focusWindow('settings')}
-          onClick={() => focusWindow('settings')}
-        >
-          <img src="/icons/options_config.png" alt="Options & Config" />
-          <span>Options & Config</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onDoubleClick={() => focusWindow('settings')}
+            onClick={() => focusWindow('settings')}
+          >
+            <img src="/icons/options_config.png" alt="Options & Config" />
+            <span>Options & Config</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onClick={handleToggleCrt}
-          title="Toggle Retro CRT Monitor Scanline & Glow Overlay Effect"
-        >
-          <div style={{ fontSize: '32px', filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,0.5))' }}>📺</div>
-          <span>CRT Filter ({crtEnabled ? 'ON' : 'OFF'})</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onClick={handleToggleCrt}
+            title="Toggle Retro CRT Monitor Scanline & Glow Overlay Effect"
+          >
+            <div style={{ fontSize: '32px', filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,0.5))' }}>📺</div>
+            <span>CRT Filter ({crtEnabled ? 'ON' : 'OFF'})</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onClick={handleStartGuidedTour}
-        >
-          <img src="/icons/guided_tour.png" alt="Guided Tour" />
-          <span>Guided Tour</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onClick={handleStartGuidedTour}
+          >
+            <img src="/icons/guided_tour.png" alt="Guided Tour" />
+            <span>Guided Tour</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onClick={() => setShowBootAnimation(true)}
-          title="Play Windows 95 Opening Animation"
-        >
-          <img src="/icons/reboot.png" alt="Reboot 95" />
-          <span>Reboot 95</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onClick={() => setShowBootAnimation(true)}
+            title="Play Windows 95 Opening Animation"
+          >
+            <img src="/icons/reboot.png" alt="Reboot 95" />
+            <span>Reboot 95</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onClick={() => focusWindow('contributors')}
-        >
-          <img src="/icons/join_team.png" alt="Join the Team" />
-          <span>Join the Team</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onClick={() => focusWindow('contributors')}
+          >
+            <img src="/icons/join_team.png" alt="Join the Team" />
+            <span>Join the Team</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onClick={() => focusWindow('legal')}
-        >
-          <img src="/icons/legal_gavel.png" alt="Legal & IP Notice" />
-          <span>Legal & IP Notice</span>
-        </div>
+          <div
+            className="win95-desktop-icon"
+            onClick={() => focusWindow('legal')}
+          >
+            <img src="/icons/legal_gavel.png" alt="Legal & IP Notice" />
+            <span>Legal & IP Notice</span>
+          </div>
 
-        <div
-          className="win95-desktop-icon"
-          onClick={handleResetSession}
-        >
-          <img src="/icons/recycle_bin.png" alt="Recycle Bin" />
-          <span>Recycle Bin (Reset)</span>
+          <div
+            className="win95-desktop-icon"
+            onClick={handleResetSession}
+          >
+            <img src="/icons/recycle_bin.png" alt="Recycle Bin" />
+            <span>Recycle Bin (Reset)</span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Opening Boot Animation */}
       {showBootAnimation && (

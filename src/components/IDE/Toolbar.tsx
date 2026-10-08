@@ -82,6 +82,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
   return (
     <div
+      className="win95-toolbar"
       style={{
         display: 'flex',
         alignItems: 'center',

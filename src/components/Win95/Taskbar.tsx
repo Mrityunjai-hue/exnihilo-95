@@ -1,9 +1,6 @@
-/**
- * Taskbar.tsx — Windows 95 Taskbar, System Tray & Start Menu
- */
-
 import React, { useState, useEffect } from 'react';
 import { StoredUser } from '../../hooks/useAuth';
+import { useTheme } from '../../hooks/useTheme';
 
 export interface WindowMeta {
   id:          string;
@@ -43,7 +40,10 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   onResetSession,
   onLogout,
 }) => {
+  const { activeTheme } = useTheme();
+  const isMac = activeTheme === 'macos-glass';
   const [startMenuOpen, setStartMenuOpen] = useState(false);
+  const [hoveredDockId, setHoveredDockId] = useState<string | null>(null);
   const [timeStr, setTimeStr] = useState('');
 
   useEffect(() => {
@@ -58,6 +58,180 @@ export const Taskbar: React.FC<TaskbarProps> = ({
     return () => clearInterval(timer);
   }, []);
 
+  // Dock items configuration for macOS
+  const macDockItems = [
+    { id: 'welcome', label: 'About ExNihilo', icon: '✨', bg: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' },
+    { id: 'ide', label: 'ExNihilo SQL Studio', icon: '🗄️', bg: 'linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)' },
+    { id: 'challenges', label: 'SQL Challenges', icon: '🏆', bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' },
+    { id: 'sqlDictionary', label: 'SQL Dictionary', icon: '📖', bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' },
+    { id: 'help', label: 'Query Tutorial', icon: '❓', bg: 'linear-gradient(135deg, #10b981 0%, #047857 100%)' },
+    { id: 'wizard', label: 'Setup Wizard', icon: '🧙‍♂️', bg: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)' },
+    { id: 'settings', label: 'System Settings', icon: '⚙️', bg: 'linear-gradient(135deg, #64748b 0%, #334155 100%)' },
+    { id: 'admin', label: isLoggedIn ? `@${currentUser?.usernameNorm}` : 'User Account', icon: isLoggedIn ? (currentUser?.avatar || '👤') : '🔑', bg: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)' },
+  ];
+
+  if (isMac) {
+    return (
+      <nav
+        className="mac-dock-container"
+        style={{
+          position: 'fixed',
+          bottom: '12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 99999,
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: '8px',
+          background: 'rgba(15, 23, 42, 0.65)',
+          WebkitBackdropFilter: 'blur(36px) saturate(200%)',
+          backdropFilter: 'blur(36px) saturate(200%)',
+          border: '1px solid rgba(255, 255, 255, 0.18)',
+          borderRadius: '24px',
+          padding: '6px 12px',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
+        }}
+      >
+        {/* Launchpad Button */}
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {hoveredDockId === 'launchpad' && (
+            <div className="mac-dock-tooltip">Launchpad</div>
+          )}
+          <button
+            type="button"
+            className="mac-dock-icon-btn"
+            onMouseEnter={() => setHoveredDockId('launchpad')}
+            onMouseLeave={() => setHoveredDockId(null)}
+            onClick={() => onOpenWindow('welcome')}
+            title="Launchpad"
+            style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '22px',
+              cursor: 'pointer',
+              transition: 'transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s ease',
+            }}
+          >
+            🚀
+          </button>
+          <div style={{ height: '4px' }} />
+        </div>
+
+        {/* Separator */}
+        <div style={{ width: '1px', height: '36px', background: 'rgba(255, 255, 255, 0.15)', margin: '0 2px 4px' }} />
+
+        {/* Main Dock Items */}
+        {macDockItems.map((item) => {
+          const win = windows.find((w) => w.id === item.id);
+          const isOpen = Boolean(win?.isOpen);
+          const isActive = activeWindowId === item.id && !win?.isMinimized;
+
+          return (
+            <div
+              key={item.id}
+              style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            >
+              {hoveredDockId === item.id && (
+                <div className="mac-dock-tooltip">{item.label}</div>
+              )}
+              <button
+                type="button"
+                className="mac-dock-icon-btn"
+                onMouseEnter={() => setHoveredDockId(item.id)}
+                onMouseLeave={() => setHoveredDockId(null)}
+                onClick={() => {
+                  if (isOpen) {
+                    if (isActive) {
+                      onToggleMinimize(item.id);
+                    } else {
+                      onFocusWindow(item.id);
+                    }
+                  } else {
+                    onOpenWindow(item.id);
+                  }
+                }}
+                style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '12px',
+                  background: item.bg,
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '22px',
+                  cursor: 'pointer',
+                  transition: 'transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s ease',
+                  transform: hoveredDockId === item.id ? 'scale(1.18) translateY(-6px)' : 'none',
+                }}
+              >
+                {item.icon}
+              </button>
+
+              {/* Running App Glowing Dot */}
+              <div
+                style={{
+                  width: '4px',
+                  height: '4px',
+                  borderRadius: '50%',
+                  marginTop: '2px',
+                  background: isOpen ? '#38bdf8' : 'transparent',
+                  boxShadow: isOpen ? '0 0 6px #38bdf8' : 'none',
+                  transition: 'background 0.2s ease',
+                }}
+              />
+            </div>
+          );
+        })}
+
+        {/* Separator */}
+        <div style={{ width: '1px', height: '36px', background: 'rgba(255, 255, 255, 0.15)', margin: '0 2px 4px' }} />
+
+        {/* Trash / Reset Session Icon */}
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {hoveredDockId === 'trash' && (
+            <div className="mac-dock-tooltip">Trash / Reset Database</div>
+          )}
+          <button
+            type="button"
+            className="mac-dock-icon-btn"
+            onMouseEnter={() => setHoveredDockId('trash')}
+            onMouseLeave={() => setHoveredDockId(null)}
+            onClick={onResetSession}
+            title="Reset Database Memory"
+            style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #475569 0%, #1e293b 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '22px',
+              cursor: 'pointer',
+              transition: 'transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s ease',
+              transform: hoveredDockId === 'trash' ? 'scale(1.18) translateY(-6px)' : 'none',
+            }}
+          >
+            🗑️
+          </button>
+          <div style={{ height: '4px' }} />
+        </div>
+      </nav>
+    );
+  }
+
+  // Classic Windows 95 Taskbar for retro themes
   return (
     <>
       {/* Start Menu Dropup */}
@@ -133,7 +307,6 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               </div>
             </div>
 
-
             <div
               className="win95-start-item"
               onClick={() => { onOpenWindow('wizard'); setStartMenuOpen(false); }}
@@ -152,7 +325,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               <span style={{ fontSize: '16px' }}>🏆</span>
               <div>
                 <strong>SQL Challenge Arena</strong>
-                <div style={{ fontSize: '10px', color: '#555' }}>126+ LeetCode SQL Puzzles</div>
+                <div style={{ fontSize: '10px', color: '#555' }}>130+ LeetCode SQL Puzzles</div>
               </div>
             </div>
 
@@ -189,7 +362,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
 
             <div className="win95-start-divider" />
 
-            {/* Log Off Item (Classic Windows 95/98 Style) */}
+            {/* Log Off Item */}
             {isLoggedIn && (
               <div
                 className="win95-start-item"
@@ -288,3 +461,4 @@ export const Taskbar: React.FC<TaskbarProps> = ({
     </>
   );
 };
+

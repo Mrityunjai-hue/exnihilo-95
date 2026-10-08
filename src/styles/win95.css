@@ -44,6 +44,12 @@ html, body {
   background: var(--w95-desktop-bg, #008080);
   color: var(--w95-black, #000000);
   user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+[data-theme="win95-classic"] {
   -webkit-font-smoothing: none;
 }
 

@@ -662,9 +662,10 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         />
       </div>
 
-      {/* Menu Strip */}
+      {/* Menu Strip (Hidden in macOS Modern Theme because MacMenuBar provides native top bar) */}
       <div
         ref={menuBarRef}
+        className="win95-window-menu-strip"
         style={{
           display: 'flex',
           gap: '2px',

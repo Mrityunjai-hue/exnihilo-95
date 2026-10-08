@@ -22,6 +22,7 @@
   --w95-text-color: #f8fafc;
   --w95-sunken-bg: rgba(10, 14, 23, 0.85);
   --w95-sunken-text: #f8fafc;
+  --w95-titlebar-active: #38bdf8;
   --w95-title-active-bg: rgba(255, 255, 255, 0.08);
   --w95-title-active-text: #ffffff;
   --w95-title-active-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
@@ -37,8 +38,8 @@
   --w95-callout-yellow-text: #fef08a;
   --w95-callout-blue-bg: rgba(30, 41, 59, 0.8);
   --w95-callout-blue-text: #38bdf8;
-  --w95-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
-  --w95-mono: "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Monaco, "Courier New", monospace;
+  --w95-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Helvetica Neue", var(--font-inter), system-ui, sans-serif;
+  --w95-mono: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 [data-theme="win95-classic"] {
@@ -571,47 +572,386 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
- * NIHILO GLASS (MACOS MODERN) DESIGN ENGINE
+ * NIHILO GLASS (MACOS MODERN) DESIGN ENGINE — APPLE NATIVE AESTHETIC
  * ───────────────────────────────────────────────────────────────────────────── */
 
-/* Window Chrome & Modals */
+/* Universal Font Smoothing & Apple Typography */
+[data-theme="macos-glass"],
+[data-theme="macos-glass"] *,
+[data-theme="macos-glass"] body {
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+[data-theme="macos-glass"] body {
+  font-family: var(--w95-font) !important;
+  background: var(--w95-desktop-bg) !important;
+}
+
+/* macOS Desktop Layout container adjusted for fixed top Menu Bar */
+[data-theme="macos-glass"] .win95-desktop.macos-desktop-layout {
+  margin-top: 28px !important;
+  height: calc(100vh - 28px) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 1. NATIVE MACOS TOP MENU BAR & DROPDOWNS
+ * ───────────────────────────────────────────────────────────────────────────── */
+.mac-menubar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 28px !important;
+  background: rgba(15, 23, 42, 0.78) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 12px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #f8fafc !important;
+  z-index: 999999 !important;
+  font-family: var(--w95-font) !important;
+  user-select: none !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.mac-menu-trigger {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 4px !important;
+  color: #f8fafc !important;
+  padding: 2px 8px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  font-family: var(--w95-font) !important;
+  transition: background 0.1s ease !important;
+}
+
+.mac-menu-trigger:hover,
+.mac-menu-trigger.active {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.mac-dropdown-menu {
+  position: absolute !important;
+  top: 28px !important;
+  left: 0 !important;
+  background: rgba(18, 24, 38, 0.92) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(190%) !important;
+  backdrop-filter: blur(32px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+  padding: 4px !important;
+  min-width: 220px !important;
+  z-index: 9999999 !important;
+  animation: macMenuFadeIn 0.12s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes macMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.mac-dropdown-item {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 5px 10px !important;
+  border-radius: 6px !important;
+  font-size: 12.5px !important;
+  color: #f8fafc !important;
+  cursor: pointer !important;
+  transition: background 0.08s ease, color 0.08s ease !important;
+  margin: 1px 0 !important;
+}
+
+.mac-dropdown-item:hover {
+  background: #007aff !important; /* Apple System Blue highlight */
+  color: #ffffff !important;
+}
+
+.mac-dropdown-divider {
+  height: 1px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  margin: 4px 6px !important;
+}
+
+.mac-shortcut {
+  font-size: 11px !important;
+  opacity: 0.65 !important;
+  font-family: var(--w95-mono) !important;
+  margin-left: 16px !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 2. FLOATING MACOS DOCK
+ * ───────────────────────────────────────────────────────────────────────────── */
+.mac-dock-container {
+  position: fixed !important;
+  bottom: 12px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 8px !important;
+  background: rgba(15, 23, 42, 0.68) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(200%) !important;
+  backdrop-filter: blur(36px) saturate(200%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 24px !important;
+  padding: 6px 14px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+.mac-dock-icon-btn {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 22px !important;
+  cursor: pointer !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
+}
+
+.mac-dock-icon-btn:hover {
+  transform: scale(1.18) translateY(-6px) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+.mac-dock-tooltip {
+  position: absolute !important;
+  bottom: 60px !important;
+  background: rgba(15, 23, 42, 0.90) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(20px) !important;
+  color: #f8fafc !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4) !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  z-index: 100000 !important;
+  font-family: var(--w95-font) !important;
+}
+
+/* Hide legacy taskbar entirely when in macOS theme */
+[data-theme="macos-glass"] .win95-taskbar {
+  display: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 3. DESKTOP WALLPAPER CENTERPIECE & GLASS PILLS
+ * ───────────────────────────────────────────────────────────────────────────── */
+.mac-wallpaper-center {
+  position: absolute !important;
+  top: 48% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+  max-width: 700px !important;
+  width: 90% !important;
+  gap: 16px !important;
+}
+
+.mac-hero-emblem-box {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.mac-hero-prism-logo {
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(99, 102, 241, 0.25) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  backdrop-filter: blur(24px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  margin-bottom: 4px !important;
+}
+
+.mac-hero-title {
+  font-family: var(--w95-font) !important;
+  font-size: 38px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  letter-spacing: -0.03em !important;
+  margin: 0 !important;
+  line-height: 1.1 !important;
+  text-shadow: 0 2px 20px rgba(56, 189, 248, 0.3) !important;
+}
+
+.mac-hero-title-accent {
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.mac-hero-subtitle {
+  font-family: var(--w95-font) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: #94a3b8 !important;
+  margin: 0 !important;
+  max-width: 480px !important;
+  line-height: 1.4 !important;
+}
+
+.mac-hero-action-pills {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  justify-content: center !important;
+  margin-top: 4px !important;
+}
+
+.mac-pill-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 7px 14px !important;
+  border-radius: 20px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: #f8fafc !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(16px) !important;
+  cursor: pointer !important;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  font-family: var(--w95-font) !important;
+}
+
+.mac-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+.mac-pill-btn:active {
+  transform: scale(0.96) !important;
+}
+
+.mac-pill-primary {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  border-color: rgba(56, 189, 248, 0.5) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4) !important;
+}
+
+.mac-pill-primary:hover {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5) !important;
+}
+
+.mac-attribution-glass-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 14px !important;
+  border-radius: 20px !important;
+  font-size: 11px !important;
+  color: #cbd5e1 !important;
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(16px) !important;
+  margin-top: 4px !important;
+  font-family: var(--w95-font) !important;
+}
+
+.mac-attribution-link {
+  color: #38bdf8 !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  transition: color 0.15s ease !important;
+}
+
+.mac-attribution-link:hover {
+  color: #7dd3fc !important;
+  text-decoration: underline !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 4. WINDOW CHROME & APPLE TRAFFIC LIGHT CONTROLS
+ * ───────────────────────────────────────────────────────────────────────────── */
 [data-theme="macos-glass"] .win95-window,
 [data-theme="macos-glass"] .win95-dialog,
 [data-theme="macos-glass"] .win95-raised {
-  background-color: rgba(18, 24, 38, 0.78) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(105%) !important;
-  backdrop-filter: blur(28px) saturate(190%) contrast(105%) !important;
+  background-color: rgba(18, 24, 38, 0.82) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
+  backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
   border-radius: 14px !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.65), 
-              inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.65), 
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.20),
               0 0 0 1px rgba(255, 255, 255, 0.06) !important;
-  padding: 4px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
   transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, opacity 0.2s ease !important;
 }
 
 [data-theme="macos-glass"] .win95-window:hover {
-  box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.75), 
-              inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
+  box-shadow: 0 32px 72px -12px rgba(0, 0, 0, 0.75), 
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.24),
               0 0 24px 0 rgba(56, 189, 248, 0.12) !important;
 }
 
-/* Titlebars & Headers */
+/* Titlebars with left-aligned traffic lights */
 [data-theme="macos-glass"] .win95-titlebar {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
-  border-radius: 10px 10px 0 0 !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%) !important;
+  border-radius: 14px 14px 0 0 !important;
   color: #f8fafc !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-  padding: 6px 10px !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif !important;
+  padding: 8px 14px !important;
+  font-family: var(--w95-font) !important;
   letter-spacing: -0.01em !important;
   font-size: 13px !important;
-  min-height: 28px !important;
+  min-height: 32px !important;
   display: flex !important;
   flex-direction: row-reverse !important;
   justify-content: flex-end !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: 12px !important;
+  box-sizing: border-box !important;
 }
 
 [data-theme="macos-glass"] .win95-titlebar-text {
@@ -623,11 +963,12 @@
   display: flex !important;
   align-items: center !important;
   gap: 6px !important;
+  font-family: var(--w95-font) !important;
 }
 
-/* macOS Traffic Light Window Controls */
+/* Traffic Light Window Controls */
 [data-theme="macos-glass"] .win95-titlebar-controls {
-  gap: 6px !important;
+  gap: 8px !important;
   align-items: center !important;
   display: flex !important;
 }
@@ -636,7 +977,7 @@
   width: 12px !important;
   height: 12px !important;
   border-radius: 50% !important;
-  border: 1px solid rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(0, 0, 0, 0.3) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
   cursor: pointer !important;
   display: flex !important;
@@ -647,7 +988,15 @@
   line-height: 1 !important;
   padding: 0 !important;
   transition: transform 0.12s ease, filter 0.12s ease, opacity 0.12s ease !important;
-  color: transparent !important; /* Hide symbols until hovered */
+  color: transparent !important;
+}
+
+/* Close button -> Red */
+[data-theme="macos-glass"] .win95-btn-titlebar[title="Close"],
+[data-theme="macos-glass"] .win95-btn-titlebar[aria-label="Close Window"] {
+  background: #ff5f56 !important;
+  border-color: #e0443e !important;
+  order: 1 !important;
 }
 
 /* Minimize button -> Yellow */
@@ -668,18 +1017,9 @@
   order: 3 !important;
 }
 
-/* Close button -> Red */
-[data-theme="macos-glass"] .win95-btn-titlebar[title="Close"],
-[data-theme="macos-glass"] .win95-btn-titlebar[aria-label="Close Window"] {
-  background: #ff5f56 !important;
-  border-color: #e0443e !important;
-  order: 1 !important;
-}
-
-/* Show micro glyphs on titlebar hover */
 [data-theme="macos-glass"] .win95-titlebar:hover .win95-btn-titlebar,
 [data-theme="macos-glass"] .win95-btn-titlebar:hover {
-  color: rgba(0, 0, 0, 0.65) !important;
+  color: rgba(0, 0, 0, 0.7) !important;
 }
 
 [data-theme="macos-glass"] .win95-btn-titlebar:hover {
@@ -691,18 +1031,31 @@
   transform: scale(0.92) !important;
 }
 
-/* Sunken / Inset Panels (Code Editor, Results Grid, Schema Tree) */
-[data-theme="macos-glass"] .win95-inset,
-[data-theme="macos-glass"] .win95-sunken,
-[data-theme="macos-glass"] .win95-sunken-container {
-  background-color: rgba(10, 14, 23, 0.85) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 10px !important;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4) !important;
-  color: #f8fafc !important;
+/* Hide redundant in-window menu strip in macOS theme */
+[data-theme="macos-glass"] .win95-window-menu-strip {
+  display: none !important;
 }
 
-/* Buttons */
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 5. UNIFIED ACTION TOOLBAR
+ * ───────────────────────────────────────────────────────────────────────────── */
+[data-theme="macos-glass"] .win95-toolbar {
+  background: rgba(18, 24, 38, 0.82) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 6px 12px !important;
+  height: 38px !important;
+  border-radius: 0 !important;
+}
+
+[data-theme="macos-glass"] .win95-divider-v {
+  width: 1px !important;
+  height: 20px !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: none !important;
+  margin: 0 4px !important;
+}
+
+/* Buttons inside Toolbar & Dialogs */
 [data-theme="macos-glass"] .win95-button {
   border-radius: 8px !important;
   background: rgba(255, 255, 255, 0.08) !important;
@@ -710,11 +1063,15 @@
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   transition: all 0.14s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif !important;
+  font-family: var(--w95-font) !important;
   font-size: 12px !important;
   font-weight: 500 !important;
   min-height: 28px !important;
   padding: 4px 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
 }
 
 [data-theme="macos-glass"] .win95-button:hover:not(:disabled) {
@@ -736,7 +1093,7 @@
   cursor: not-allowed !important;
 }
 
-/* Primary Execution CTA Run Button (#btn-run) */
+/* Primary Execution CTA Run Button (#btn-run) -> Apple Emerald */
 [data-theme="macos-glass"] #btn-run {
   background: linear-gradient(180deg, #10b981 0%, #059669 100%) !important;
   color: #ffffff !important;
@@ -758,15 +1115,6 @@
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Vertical Dividers */
-[data-theme="macos-glass"] .win95-divider-v {
-  width: 1px !important;
-  height: 18px !important;
-  background: rgba(255, 255, 255, 0.12) !important;
-  border: none !important;
-  margin: 0 4px !important;
-}
-
 /* Form Controls (Inputs, Selects, Textareas) */
 [data-theme="macos-glass"] input,
 [data-theme="macos-glass"] select,
@@ -778,7 +1126,7 @@
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
   padding: 5px 10px !important;
   font-size: 12px !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif !important;
+  font-family: var(--w95-font) !important;
   transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
 }
 
@@ -795,126 +1143,51 @@
   color: #64748b !important;
 }
 
-/* macOS Floating Dock (Replacing Taskbar) */
-[data-theme="macos-glass"] .win95-taskbar {
-  position: fixed !important;
-  bottom: 12px !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: auto !important;
-  min-width: 420px !important;
-  max-width: 90vw !important;
-  height: 48px !important;
-  border-radius: 18px !important;
-  background: rgba(15, 23, 42, 0.70) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
-  backdrop-filter: blur(32px) saturate(200%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.2) !important;
-  z-index: 99999 !important;
-  padding: 4px 10px !important;
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 6. FINDER-STYLE SCHEMA NAVIGATOR (SIDEBAR)
+ * ───────────────────────────────────────────────────────────────────────────── */
+[data-theme="macos-glass"] .win95-inset,
+[data-theme="macos-glass"] .win95-sunken,
+[data-theme="macos-glass"] .win95-sunken-container {
+  background-color: rgba(10, 14, 23, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px !important;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="macos-glass"] .win95-tree-item {
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  color: #f8fafc !important;
+  font-family: var(--w95-font) !important;
+  font-size: 12px !important;
+  transition: background 0.12s ease, color 0.12s ease !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
-  gap: 8px !important;
-}
-
-[data-theme="macos-glass"] .win95-start-btn {
-  border-radius: 10px !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  color: #f8fafc !important;
-  height: 36px !important;
-  padding: 0 12px !important;
-  font-weight: 600 !important;
-}
-
-[data-theme="macos-glass"] .win95-taskbar-tasks {
   gap: 6px !important;
 }
 
-[data-theme="macos-glass"] .win95-task-tab {
-  border-radius: 10px !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: none !important;
-  color: #f8fafc !important;
-  height: 36px !important;
-  padding: 0 12px !important;
-  transition: all 0.16s ease !important;
-}
-
-[data-theme="macos-glass"] .win95-task-tab:hover {
-  background: rgba(255, 255, 255, 0.14) !important;
-  transform: translateY(-2px) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-[data-theme="macos-glass"] .win95-task-tab.active {
-  background: rgba(56, 189, 248, 0.18) !important;
-  border-color: rgba(56, 189, 248, 0.45) !important;
-  color: #38bdf8 !important;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2) !important;
-  font-weight: 600 !important;
-}
-
-[data-theme="macos-glass"] .win95-systray {
-  border-radius: 10px !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: #f8fafc !important;
-  padding: 4px 10px !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
-}
-
-/* App Launcher / Start Menu & Dropdowns */
-[data-theme="macos-glass"] .win95-start-menu,
-[data-theme="macos-glass"] .win95-dropdown-menu {
-  border-radius: 12px !important;
-  background: rgba(18, 24, 38, 0.90) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-  backdrop-filter: blur(28px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
-  padding: 6px !important;
-}
-
-[data-theme="macos-glass"] .win95-start-banner {
-  display: none !important; /* Replace retro vertical banner with clean macOS layout */
-}
-
-[data-theme="macos-glass"] .win95-start-item,
-[data-theme="macos-glass"] .win95-dropdown-item {
-  border-radius: 6px !important;
-  padding: 6px 10px !important;
-  color: #f8fafc !important;
-  font-size: 12px !important;
-  margin: 1px 0 !important;
-  transition: background 0.1s ease, color 0.1s ease !important;
-}
-
-[data-theme="macos-glass"] .win95-start-item:hover,
-[data-theme="macos-glass"] .win95-dropdown-item:hover {
-  background: rgba(56, 189, 248, 0.2) !important;
+[data-theme="macos-glass"] .win95-tree-item:hover {
+  background: rgba(56, 189, 248, 0.16) !important;
   color: #38bdf8 !important;
 }
 
-[data-theme="macos-glass"] .win95-start-divider,
-[data-theme="macos-glass"] .win95-dropdown-divider {
-  border: none !important;
-  height: 1px !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  margin: 4px 0 !important;
+[data-theme="macos-glass"] .win95-tree-item.selected,
+[data-theme="macos-glass"] .win95-tree-item:active {
+  background: #007aff !important;
+  color: #ffffff !important;
 }
 
-/* Tabs */
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 7. QUERY EDITOR TABS & CODEMIRROR 6 HIGH-CONTRAST SYNTAX
+ * ───────────────────────────────────────────────────────────────────────────── */
 [data-theme="macos-glass"] .win95-tabs,
 [data-theme="macos-glass"] .win95-editor-tabs {
   background: rgba(10, 14, 23, 0.6) !important;
   border-radius: 10px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-  padding: 3px !important;
+  padding: 4px !important;
   gap: 4px !important;
 }
 
@@ -927,6 +1200,7 @@
   padding: 5px 12px !important;
   font-weight: 500 !important;
   font-size: 12px !important;
+  font-family: var(--w95-font) !important;
   transition: all 0.14s ease !important;
 }
 
@@ -962,7 +1236,106 @@
   color: #94a3b8 !important;
 }
 
-/* Results Grid & Data Tables */
+/* CodeMirror 6 Dark Syntax Canvas */
+[data-theme="macos-glass"] .cm-editor {
+  background-color: rgba(10, 14, 23, 0.90) !important;
+  color: #f8fafc !important;
+  border-radius: 10px !important;
+  font-family: var(--w95-mono) !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+[data-theme="macos-glass"] .cm-scroller {
+  font-family: var(--w95-mono) !important;
+}
+
+[data-theme="macos-glass"] .cm-gutters {
+  background-color: rgba(15, 23, 42, 0.75) !important;
+  color: #64748b !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px 0 0 10px !important;
+}
+
+[data-theme="macos-glass"] .cm-activeLine {
+  background-color: rgba(56, 189, 248, 0.08) !important;
+}
+
+[data-theme="macos-glass"] .cm-activeLineGutter {
+  background-color: rgba(56, 189, 248, 0.16) !important;
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="macos-glass"] .cm-cursor {
+  border-left-color: #38bdf8 !important;
+  border-left-width: 2px !important;
+}
+
+[data-theme="macos-glass"] .cm-selectionBackground,
+[data-theme="macos-glass"] ::selection {
+  background-color: rgba(0, 122, 255, 0.35) !important;
+}
+
+/* CodeMirror Syntax Tokens Overrides */
+[data-theme="macos-glass"] .cm-editor span[style*="color: rgb(0, 0, 128)"],
+[data-theme="macos-glass"] .cm-editor span[style*="color: #000080"],
+[data-theme="macos-glass"] .cm-editor .tok-keyword,
+[data-theme="macos-glass"] .cm-editor .tok-typeName,
+[data-theme="macos-glass"] .cm-editor [class*="keyword"],
+[data-theme="macos-glass"] .cm-editor [class*="typeName"] {
+  color: #38bdf8 !important; /* Vibrant Sky Blue */
+  font-weight: 600 !important;
+}
+
+[data-theme="macos-glass"] .cm-editor span[style*="color: rgb(0, 90, 156)"],
+[data-theme="macos-glass"] .cm-editor span[style*="color: #005a9c"],
+[data-theme="macos-glass"] .cm-editor .tok-function,
+[data-theme="macos-glass"] .cm-editor [class*="function"] {
+  color: #818cf8 !important; /* Indigo/Purple */
+  font-weight: 600 !important;
+}
+
+[data-theme="macos-glass"] .cm-editor span[style*="color: rgb(0, 136, 0)"],
+[data-theme="macos-glass"] .cm-editor span[style*="color: #008800"],
+[data-theme="macos-glass"] .cm-editor .tok-string,
+[data-theme="macos-glass"] .cm-editor [class*="string"] {
+  color: #34d399 !important; /* Emerald */
+}
+
+[data-theme="macos-glass"] .cm-editor span[style*="color: rgb(128, 0, 128)"],
+[data-theme="macos-glass"] .cm-editor span[style*="color: #800080"],
+[data-theme="macos-glass"] .cm-editor .tok-number,
+[data-theme="macos-glass"] .cm-editor [class*="number"] {
+  color: #fbbf24 !important; /* Amber */
+}
+
+[data-theme="macos-glass"] .cm-editor span[style*="color: rgb(176, 0, 32)"],
+[data-theme="macos-glass"] .cm-editor span[style*="color: #b00020"],
+[data-theme="macos-glass"] .cm-editor .tok-operator,
+[data-theme="macos-glass"] .cm-editor [class*="operator"] {
+  color: #f43f5e !important; /* Rose / Coral */
+  font-weight: 600 !important;
+}
+
+[data-theme="macos-glass"] .cm-editor span[style*="color: rgb(106, 115, 125)"],
+[data-theme="macos-glass"] .cm-editor span[style*="color: #6a737d"],
+[data-theme="macos-glass"] .cm-editor .tok-comment,
+[data-theme="macos-glass"] .cm-editor [class*="comment"] {
+  color: #64748b !important; /* Slate */
+  font-style: italic !important;
+}
+
+[data-theme="macos-glass"] .cm-editor span[style*="color: rgb(36, 41, 46)"],
+[data-theme="macos-glass"] .cm-editor span[style*="color: #24292e"],
+[data-theme="macos-glass"] .cm-editor .tok-punctuation,
+[data-theme="macos-glass"] .cm-editor .tok-bracket {
+  color: #e2e8f0 !important; /* Light Slate */
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 8. RESULTS GRID & DATA TABLES
+ * ───────────────────────────────────────────────────────────────────────────── */
 [data-theme="macos-glass"] .win95-grid {
   font-family: var(--w95-mono) !important;
   font-size: 12px !important;
@@ -1005,13 +1378,16 @@
   color: #ffffff !important;
 }
 
-/* Status Bar & Explorer Trees */
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 9. STATUS BAR & SCROLLBARS
+ * ───────────────────────────────────────────────────────────────────────────── */
 [data-theme="macos-glass"] .win95-statusbar {
-  background: rgba(15, 23, 42, 0.7) !important;
+  background: rgba(15, 23, 42, 0.75) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 0 0 10px 10px !important;
+  border-radius: 0 0 14px 14px !important;
   color: #94a3b8 !important;
-  padding: 4px 8px !important;
+  padding: 4px 10px !important;
+  font-family: var(--w95-font) !important;
 }
 
 [data-theme="macos-glass"] .win95-statusbar-pane {
@@ -1022,53 +1398,7 @@
   padding: 2px 8px !important;
 }
 
-[data-theme="macos-glass"] .win95-tree-item {
-  border-radius: 6px !important;
-  padding: 3px 6px !important;
-  color: #f8fafc !important;
-  transition: background 0.1s ease !important;
-}
-
-[data-theme="macos-glass"] .win95-tree-item:hover {
-  background: rgba(56, 189, 248, 0.15) !important;
-  color: #38bdf8 !important;
-}
-
-/* CodeMirror 6 Modern Dark Syntax & Canvas */
-[data-theme="macos-glass"] .cm-editor {
-  background-color: rgba(10, 14, 23, 0.85) !important;
-  color: #f8fafc !important;
-  border-radius: 10px !important;
-  font-family: var(--w95-mono) !important;
-}
-
-[data-theme="macos-glass"] .cm-gutters {
-  background-color: rgba(15, 23, 42, 0.6) !important;
-  color: #64748b !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 10px 0 0 10px !important;
-}
-
-[data-theme="macos-glass"] .cm-activeLine {
-  background-color: rgba(56, 189, 248, 0.08) !important;
-}
-
-[data-theme="macos-glass"] .cm-activeLineGutter {
-  background-color: rgba(56, 189, 248, 0.15) !important;
-  color: #38bdf8 !important;
-  font-weight: bold !important;
-}
-
-[data-theme="macos-glass"] .cm-cursor {
-  border-left-color: #38bdf8 !important;
-}
-
-[data-theme="macos-glass"] .cm-selectionBackground,
-[data-theme="macos-glass"] ::selection {
-  background-color: rgba(56, 189, 248, 0.3) !important;
-}
-
-/* Modern Rounded Scrollbars */
+/* Sleek Rounded Trackless Scrollbars */
 [data-theme="macos-glass"] ::-webkit-scrollbar {
   width: 8px !important;
   height: 8px !important;
@@ -1093,86 +1423,9 @@
   display: none !important;
 }
 
-/* Desktop Wallpaper & Modern Logo */
-[data-theme="macos-glass"] .win95-3d-title {
-  color: #ffffff !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif !important;
-  font-weight: 800 !important;
-  letter-spacing: -0.02em !important;
-  text-shadow: 0 0 40px rgba(56, 189, 248, 0.35) !important;
-}
-
-[data-theme="macos-glass"] .win95-3d-subtitle {
-  color: #94a3b8 !important;
-  text-shadow: none !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.02em !important;
-}
-
-[data-theme="macos-glass"] .win95-3d-edition {
-  border-radius: 9999px !important;
-  background: rgba(56, 189, 248, 0.15) !important;
-  border: 1px solid rgba(56, 189, 248, 0.4) !important;
-  color: #38bdf8 !important;
-  backdrop-filter: blur(12px) !important;
-  font-size: 11px !important;
-  letter-spacing: 0.05em !important;
-  text-transform: uppercase !important;
-  transform: none !important;
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.25) !important;
-  text-shadow: none !important;
-}
-
-[data-theme="macos-glass"] .win95-3d-badge {
-  background: rgba(18, 24, 38, 0.65) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
-  color: #f8fafc !important;
-  padding: 12px 18px !important;
-}
-
-[data-theme="macos-glass"] .win95-3d-badge-link {
-  color: #38bdf8 !important;
-  text-decoration: none !important;
-  font-weight: 600 !important;
-  transition: color 0.15s ease !important;
-}
-
-[data-theme="macos-glass"] .win95-3d-badge-link:hover {
-  color: #7dd3fc !important;
-  text-decoration: underline !important;
-}
-
-[data-theme="macos-glass"] .win95-desktop-icon {
-  border-radius: 12px !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  padding: 8px 6px !important;
-}
-
-[data-theme="macos-glass"] .win95-desktop-icon:hover {
-  background: rgba(255, 255, 255, 0.12) !important;
-  backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  transform: translateY(-2px) scale(1.03) !important;
-}
-
-[data-theme="macos-glass"] .win95-desktop-icon.selected {
-  background: rgba(56, 189, 248, 0.25) !important;
-  border: 1px solid rgba(56, 189, 248, 0.6) !important;
-}
-
-[data-theme="macos-glass"] .win95-desktop-icon span {
-  color: #f8fafc !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif !important;
-  font-weight: 500 !important;
-  font-size: 11px !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
-}
-
-/* Master Dark Glass Surface Overrides for Hardcoded Light Inline Styles */
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 10. MASTER ACCENT COLOR & HARDCODED INLINE STYLE INVERSIONS
+ * ───────────────────────────────────────────────────────────────────────────── */
 [data-theme="macos-glass"] [style*="background: rgb(255, 255, 204)"],
 [data-theme="macos-glass"] [style*="background: #ffffcc"],
 [data-theme="macos-glass"] [style*="backgroundColor: #ffffcc"],
@@ -1193,7 +1446,6 @@
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Master Accent Color Inversion for Hardcoded Dark Navy / Gray Inline Styles */
 [data-theme="macos-glass"] [style*="color: #000080"],
 [data-theme="macos-glass"] [style*="color: rgb(0, 0, 128)"],
 [data-theme="macos-glass"] [style*="color: #0000ff"],
@@ -1211,7 +1463,8 @@
   [data-theme="macos-glass"] .win95-window,
   [data-theme="macos-glass"] .win95-button,
   [data-theme="macos-glass"] .win95-desktop-icon,
-  [data-theme="macos-glass"] .win95-task-tab {
+  [data-theme="macos-glass"] .mac-dock-icon-btn,
+  [data-theme="macos-glass"] .mac-pill-btn {
     transition: opacity 0.1s ease !important;
     transform: none !important;
   }
@@ -1220,13 +1473,15 @@
 @media (prefers-reduced-transparency: reduce) {
   [data-theme="macos-glass"] .win95-window,
   [data-theme="macos-glass"] .win95-dialog,
-  [data-theme="macos-glass"] .win95-taskbar,
-  [data-theme="macos-glass"] .win95-dropdown-menu {
+  [data-theme="macos-glass"] .mac-menubar,
+  [data-theme="macos-glass"] .mac-dock-container,
+  [data-theme="macos-glass"] .mac-dropdown-menu {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
     background-color: #0f172a !important;
   }
 }
+
 
 
 
