@@ -702,6 +702,37 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+ * 2B. MACOS LAUNCHPAD FULLSCREEN APP LAUNCHER
+ * ───────────────────────────────────────────────────────────────────────────── */
+@keyframes macLaunchpadIn {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.mac-launchpad-app-card {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.mac-launchpad-app-card:hover {
+  transform: scale(1.12) !important;
+}
+
+.mac-launchpad-app-card:hover > div {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+.mac-launchpad-app-card:active {
+  transform: scale(0.96) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
  * 3. DESKTOP WALLPAPER CENTERPIECE & GLASS PILLS
  * ───────────────────────────────────────────────────────────────────────────── */
 .mac-wallpaper-center {

@@ -24,6 +24,7 @@ interface MacMenuBarProps {
   onRunQuery?: () => void;
   onFormatSql?: () => void;
   onStartTour: () => void;
+  onToggleLaunchpad?: () => void;
 }
 
 export const MacMenuBar: React.FC<MacMenuBarProps> = ({
@@ -41,6 +42,7 @@ export const MacMenuBar: React.FC<MacMenuBarProps> = ({
   onRunQuery,
   onFormatSql,
   onStartTour,
+  onToggleLaunchpad,
 }) => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [timeStr, setTimeStr] = useState('');
@@ -133,13 +135,17 @@ export const MacMenuBar: React.FC<MacMenuBarProps> = ({
               <div className="mac-dropdown-item" onClick={() => { onOpenWindow('welcome'); setActiveMenu(null); }}>
                 <span>About ExNihilo Studio</span>
               </div>
+              <div className="mac-dropdown-item" onClick={() => { onToggleLaunchpad?.(); setActiveMenu(null); }}>
+                <span>Launchpad</span>
+                <span className="mac-shortcut">F4</span>
+              </div>
               <div className="mac-dropdown-divider" />
               <div className="mac-dropdown-item" onClick={() => { onOpenWindow('settings'); setActiveMenu(null); }}>
                 <span>System Settings...</span>
                 <span className="mac-shortcut">⌘,</span>
               </div>
-              <div className="mac-dropdown-item" onClick={() => { onOpenWindow('auth'); setActiveMenu(null); }}>
-                <span>User Accounts...</span>
+              <div className="mac-dropdown-item" onClick={() => { onOpenWindow(isLoggedIn ? 'admin' : 'auth'); setActiveMenu(null); }}>
+                <span>{isLoggedIn ? 'Account Control Panel...' : 'Sign In / Register...'}</span>
               </div>
               <div className="mac-dropdown-divider" />
               <div className="mac-dropdown-item" onClick={() => { onResetSession(); setActiveMenu(null); }}>

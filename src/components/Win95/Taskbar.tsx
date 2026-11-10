@@ -24,6 +24,8 @@ interface TaskbarProps {
   onOpenWindow:      (id: string) => void;
   onResetSession:    () => void;
   onLogout:          () => void;
+  onToggleLaunchpad?: () => void;
+  isLaunchpadOpen?:   boolean;
 }
 
 export const Taskbar: React.FC<TaskbarProps> = ({
@@ -39,6 +41,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   onOpenWindow,
   onResetSession,
   onLogout,
+  onToggleLaunchpad,
+  isLaunchpadOpen = false,
 }) => {
   const { activeTheme } = useTheme();
   const isMac = activeTheme === 'macos-glass';
@@ -58,6 +62,9 @@ export const Taskbar: React.FC<TaskbarProps> = ({
     return () => clearInterval(timer);
   }, []);
 
+  // Determine active account window target (auth for login/signup, admin for logged-in profile)
+  const accountWindowId = isLoggedIn ? 'admin' : 'auth';
+
   // Dock items configuration for macOS
   const macDockItems = [
     { id: 'welcome', label: 'About ExNihilo', icon: '✨', bg: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' },
@@ -67,7 +74,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
     { id: 'help', label: 'Query Tutorial', icon: '❓', bg: 'linear-gradient(135deg, #10b981 0%, #047857 100%)' },
     { id: 'wizard', label: 'Setup Wizard', icon: '🧙‍♂️', bg: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)' },
     { id: 'settings', label: 'System Settings', icon: '⚙️', bg: 'linear-gradient(135deg, #64748b 0%, #334155 100%)' },
-    { id: 'admin', label: isLoggedIn ? `@${currentUser?.usernameNorm}` : 'User Account', icon: isLoggedIn ? (currentUser?.avatar || '👤') : '🔑', bg: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)' },
+    { id: accountWindowId, label: isLoggedIn ? (currentUser?.displayName || `@${currentUser?.usernameNorm}`) : 'User Account / Sign In', icon: isLoggedIn ? (currentUser?.avatar || '👤') : '🔑', bg: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)' },
   ];
 
   if (isMac) {
@@ -102,26 +109,43 @@ export const Taskbar: React.FC<TaskbarProps> = ({
             className="mac-dock-icon-btn"
             onMouseEnter={() => setHoveredDockId('launchpad')}
             onMouseLeave={() => setHoveredDockId(null)}
-            onClick={() => onOpenWindow('welcome')}
+            onClick={() => {
+              if (onToggleLaunchpad) {
+                onToggleLaunchpad();
+              } else {
+                onOpenWindow('welcome');
+              }
+            }}
             title="Launchpad"
             style={{
               width: '46px',
               height: '46px',
               borderRadius: '12px',
               background: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
-              border: '1px solid rgba(255, 255, 255, 0.25)',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+              border: isLaunchpadOpen ? '1px solid #c084fc' : '1px solid rgba(255, 255, 255, 0.25)',
+              boxShadow: isLaunchpadOpen ? '0 0 18px rgba(168, 85, 247, 0.6)' : '0 4px 12px rgba(0,0,0,0.3)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '22px',
               cursor: 'pointer',
               transition: 'transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s ease',
+              transform: isLaunchpadOpen ? 'scale(1.12) translateY(-4px)' : (hoveredDockId === 'launchpad' ? 'scale(1.18) translateY(-6px)' : 'none'),
             }}
           >
             🚀
           </button>
-          <div style={{ height: '4px' }} />
+          <div
+            style={{
+              width: '4px',
+              height: '4px',
+              borderRadius: '50%',
+              marginTop: '2px',
+              background: isLaunchpadOpen ? '#a855f7' : 'transparent',
+              boxShadow: isLaunchpadOpen ? '0 0 6px #a855f7' : 'none',
+              transition: 'all 0.2s ease',
+            }}
+          />
         </div>
 
         {/* Separator */}

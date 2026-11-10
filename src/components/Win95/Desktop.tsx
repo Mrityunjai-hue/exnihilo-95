@@ -50,6 +50,7 @@ import {
 
 import { useTheme } from '../../hooks/useTheme';
 import { MacMenuBar } from '../Mac/MacMenuBar';
+import { MacLaunchpad } from '../Mac/MacLaunchpad';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -126,6 +127,9 @@ export const Desktop: React.FC = () => {
 
   // CRT Monitor Filter State
   const [crtEnabled, setCrtEnabled] = useState<boolean>(false);
+
+  // macOS Launchpad Overlay State
+  const [launchpadOpen, setLaunchpadOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -379,6 +383,7 @@ export const Desktop: React.FC = () => {
           onLogout={handleLogout}
           onRunQuery={() => handleRunQuery()}
           onStartTour={handleStartGuidedTour}
+          onToggleLaunchpad={() => setLaunchpadOpen((prev) => !prev)}
         />
       )}
 
@@ -951,6 +956,24 @@ export const Desktop: React.FC = () => {
         </div>
       )}
 
+      {/* Fullscreen macOS Launchpad App Drawer */}
+      {isMacTheme && (
+        <MacLaunchpad
+          isOpen={launchpadOpen}
+          onClose={() => setLaunchpadOpen(false)}
+          onOpenApp={(id) => {
+            setLaunchpadOpen(false);
+            focusWindow(id);
+          }}
+          onStartTour={() => {
+            setLaunchpadOpen(false);
+            handleStartGuidedTour();
+          }}
+          currentUser={currentUser}
+          isLoggedIn={isLoggedIn}
+        />
+      )}
+
       {/* Taskbar */}
       <Taskbar
         windows={windowsMeta}
@@ -965,6 +988,8 @@ export const Desktop: React.FC = () => {
         onOpenWindow={focusWindow}
         onResetSession={handleResetSession}
         onLogout={handleLogout}
+        onToggleLaunchpad={() => setLaunchpadOpen((prev) => !prev)}
+        isLaunchpadOpen={launchpadOpen}
       />
     </div>
   );
