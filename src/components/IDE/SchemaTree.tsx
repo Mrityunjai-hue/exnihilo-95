@@ -19,6 +19,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SessionCatalog, CatalogEntry } from '../../engine/catalog';
 import { SQLExecutor } from '../../engine/executor';
+import { useTheme } from '../../hooks/useTheme';
 
 interface SchemaTreeProps {
   catalog:           SessionCatalog;
@@ -136,6 +137,8 @@ const ConfirmDialog: React.FC<{
 export const SchemaTree: React.FC<SchemaTreeProps> = ({
   catalog, executor, onSelectTable, onRefresh, onNewDatabase, onNewTable,
 }) => {
+  const { activeTheme } = useTheme();
+  const isMac = activeTheme === 'macos-glass';
   const [expandedDbs, setExpandedDbs] = useState<Record<string, boolean>>({ default: true });
   const [expandedTables, setExpandedTables] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -264,42 +267,108 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
       style={{ width: '100%', height: '100%', background: 'var(--w95-sunken-bg,#fff)', color: 'var(--w95-sunken-text,#000)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
     >
       {/* Header */}
-      <div style={{ background: 'var(--w95-gray,#c0c0c0)', color: 'var(--w95-text-color,#000)', padding: '3px 5px', borderBottom: '1px solid var(--w95-dark-gray,#808080)', fontWeight: 'bold', fontSize: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>🗂️ DATABASE NAVIGATOR</span>
-        <div style={{ display: 'flex', gap: 3 }}>
-          <button className="win95-button" style={{ padding: '0 5px', fontSize: 9, minHeight: 18 }} onClick={onNewDatabase} title="Create new database">
+      <div
+        style={{
+          background: isMac ? 'rgba(255, 255, 255, 0.04)' : 'var(--w95-gray,#c0c0c0)',
+          color: isMac ? '#f8fafc' : 'var(--w95-text-color,#000)',
+          padding: isMac ? '6px 10px' : '3px 5px',
+          borderBottom: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid var(--w95-dark-gray,#808080)',
+          fontWeight: isMac ? 700 : 'bold',
+          fontSize: isMac ? 12 : 11,
+          letterSpacing: isMac ? '0.03em' : 'normal',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 6,
+          flexShrink: 0,
+        }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>🗂️ DATABASE NAVIGATOR</span>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button
+            className="win95-button"
+            style={{
+              padding: isMac ? '2px 8px' : '0 5px',
+              fontSize: isMac ? 11 : 9,
+              minHeight: isMac ? 22 : 18,
+              borderRadius: isMac ? 6 : 0,
+              cursor: 'pointer',
+            }}
+            onClick={onNewDatabase}
+            title="Create new database"
+          >
             🗄️ New DB
           </button>
-          <button className="win95-button" style={{ padding: '0 4px', fontSize: 9, minHeight: 18 }} onClick={onRefresh} title="Refresh">
+          <button
+            className="win95-button"
+            style={{
+              padding: isMac ? '2px 6px' : '0 4px',
+              fontSize: isMac ? 11 : 9,
+              minHeight: isMac ? 22 : 18,
+              borderRadius: isMac ? 6 : 0,
+              cursor: 'pointer',
+            }}
+            onClick={onRefresh}
+            title="Refresh"
+          >
             🔄
           </button>
         </div>
       </div>
 
       {/* Search */}
-      <div style={{ padding: '3px 4px', background: 'var(--w95-light-gray,#e0e0e0)', borderBottom: '1px solid var(--w95-gray,#c0c0c0)', flexShrink: 0 }}>
+      <div
+        style={{
+          padding: isMac ? '6px 8px' : '3px 4px',
+          background: isMac ? 'transparent' : 'var(--w95-light-gray,#e0e0e0)',
+          borderBottom: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid var(--w95-gray,#c0c0c0)',
+          flexShrink: 0,
+        }}
+      >
         <input
           type="text"
           className="win95-sunken"
           placeholder="🔍 Filter tables / columns..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          style={{ width: '100%', padding: '1px 4px', fontSize: 10, boxSizing: 'border-box', background: 'var(--w95-sunken-bg,#fff)', color: 'var(--w95-sunken-text,#000)' }}
+          style={{
+            width: '100%',
+            padding: isMac ? '5px 10px' : '1px 4px',
+            fontSize: isMac ? 12 : 10,
+            height: isMac ? 28 : 'auto',
+            borderRadius: isMac ? 8 : 0,
+            boxSizing: 'border-box',
+            background: isMac ? 'rgba(10, 15, 26, 0.85)' : 'var(--w95-sunken-bg,#fff)',
+            color: isMac ? '#f8fafc' : 'var(--w95-sunken-text,#000)',
+          }}
         />
       </div>
 
       {/* Notification bar */}
       {notification && (
-        <div style={{ padding: '3px 6px', fontSize: 10, background: notification.ok ? '#dfffdf' : '#ffe0e0', borderBottom: '1px solid #888', flexShrink: 0 }}>
+        <div style={{ padding: '3px 6px', fontSize: 11, background: notification.ok ? '#dfffdf' : '#ffe0e0', borderBottom: '1px solid #888', flexShrink: 0 }}>
           {notification.msg}
         </div>
       )}
 
       {/* Tree Content */}
-      <div style={{ flex: 1, overflow: 'auto', padding: '4px 2px' }}>
+      <div style={{ flex: 1, overflow: 'auto', padding: isMac ? '8px 6px' : '4px 2px' }}>
         {/* Server root node */}
-        <div style={{ padding: '2px 4px', fontWeight: 'bold', fontSize: 11, color: 'var(--w95-titlebar-active,#000080)', display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span>🖥️</span>
+        <div
+          style={{
+            padding: isMac ? '6px 8px' : '2px 4px',
+            fontWeight: isMac ? 700 : 'bold',
+            fontSize: isMac ? 13 : 11,
+            color: isMac ? '#38bdf8' : 'var(--w95-titlebar-active,#000080)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: isMac ? 8 : 4,
+            borderRadius: isMac ? 6 : 0,
+            background: isMac ? 'rgba(56, 189, 248, 0.08)' : 'transparent',
+            marginBottom: isMac ? 4 : 0,
+          }}
+        >
+          <span style={{ fontSize: isMac ? 16 : 13 }}>🖥️</span>
           <span>ExNihilo Session</span>
         </div>
 
@@ -311,39 +380,106 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
           const viewCount = db ? db.views.size : 0;
 
           return (
-            <div key={dbName} style={{ marginLeft: 8, borderLeft: '1px dotted var(--w95-dark-gray,#aaa)', paddingLeft: 4 }}>
+            <div
+              key={dbName}
+              style={{
+                marginLeft: isMac ? 10 : 8,
+                borderLeft: isMac ? '1px solid rgba(255, 255, 255, 0.12)' : '1px dotted var(--w95-dark-gray,#aaa)',
+                paddingLeft: isMac ? 6 : 4,
+                marginBottom: isMac ? 4 : 0,
+              }}
+            >
               {/* DB row */}
               <div
-                style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 3px', cursor: 'pointer', borderRadius: 1, userSelect: 'none' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: isMac ? 6 : 4,
+                  padding: isMac ? '5px 8px' : '2px 3px',
+                  cursor: 'pointer',
+                  borderRadius: isMac ? 6 : 1,
+                  userSelect: 'none',
+                  background: isMac ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
+                  transition: 'background 0.15s ease',
+                }}
                 onClick={() => setExpandedDbs(prev => ({ ...prev, [dbName]: !prev[dbName] }))}
                 onContextMenu={e => handleDbContextMenu(e, dbName)}
                 title={`Right-click for database options`}
               >
-                <span style={{ fontSize: 9, fontWeight: 'bold', color: 'var(--w95-dark-gray,#555)', minWidth: 10 }}>
+                <span
+                  style={{
+                    fontSize: isMac ? 10 : 9,
+                    fontWeight: 'bold',
+                    color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
+                    minWidth: 12,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   {isDbExpanded ? '▼' : '▶'}
                 </span>
-                <span>🗄️</span>
-                <span style={{ fontWeight: 'bold', fontSize: 11, flex: 1, color: 'var(--w95-sunken-text,#000)' }}>{dbName}</span>
-                <span style={{ fontSize: 9, color: 'var(--w95-dark-gray,#888)' }}>
+                <span style={{ fontSize: isMac ? 14 : 12 }}>🗄️</span>
+                <span
+                  style={{
+                    fontWeight: isMac ? 600 : 'bold',
+                    fontSize: isMac ? 13 : 11,
+                    flex: 1,
+                    color: isMac ? '#f8fafc' : 'var(--w95-sunken-text,#000)',
+                  }}
+                >
+                  {dbName}
+                </span>
+                <span
+                  style={{
+                    fontSize: isMac ? 11 : 9,
+                    color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#888)',
+                  }}
+                >
                   ({tables.length} tbl{tables.length !== 1 ? 's' : ''}{viewCount > 0 ? `, ${viewCount} views` : ''})
                 </span>
               </div>
 
               {/* Tables sub-tree */}
               {isDbExpanded && (
-                <div style={{ marginLeft: 12, borderLeft: '1px dotted #bbb', paddingLeft: 4 }}>
+                <div
+                  style={{
+                    marginLeft: isMac ? 14 : 12,
+                    borderLeft: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : '1px dotted #bbb',
+                    paddingLeft: isMac ? 6 : 4,
+                    marginTop: isMac ? 2 : 0,
+                  }}
+                >
                   {/* "New Table" shortcut */}
                   <div
-                    style={{ padding: '1px 3px', fontSize: 10, color: 'var(--w95-titlebar-active,#000080)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}
+                    style={{
+                      padding: isMac ? '4px 6px' : '1px 3px',
+                      fontSize: isMac ? 12 : 10,
+                      fontWeight: isMac ? 500 : 'normal',
+                      color: isMac ? '#38bdf8' : 'var(--w95-titlebar-active,#000080)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: isMac ? 5 : 3,
+                      borderRadius: isMac ? 4 : 0,
+                      transition: 'opacity 0.15s ease',
+                    }}
                     onClick={() => onNewTable(dbName)}
                     title="Create a new table in this database"
                   >
-                    <span>➕</span>
+                    <span style={{ fontSize: isMac ? 12 : 10 }}>➕</span>
                     <span style={{ textDecoration: 'underline' }}>New Table</span>
                   </div>
 
                   {tables.length === 0 ? (
-                    <div style={{ fontSize: 10, color: 'var(--w95-dark-gray,#aaa)', padding: '3px 4px', fontStyle: 'italic' }}>
+                    <div
+                      style={{
+                        fontSize: isMac ? 12 : 10,
+                        color: isMac ? '#64748b' : 'var(--w95-dark-gray,#aaa)',
+                        padding: isMac ? '6px 8px' : '3px 4px',
+                        fontStyle: 'italic',
+                      }}
+                    >
                       {searchQuery ? 'No matches.' : 'No tables yet.'}
                     </div>
                   ) : (
@@ -356,26 +492,65 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                           {/* Table row */}
                           <div
                             className="win95-tree-item"
-                            style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 3px', cursor: 'pointer' }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: isMac ? 6 : 3,
+                              padding: isMac ? '4px 6px' : '2px 3px',
+                              cursor: 'pointer',
+                              borderRadius: isMac ? 6 : 0,
+                            }}
                             onClick={() => onSelectTable(entry.tableName, `SELECT * FROM ${entry.tableName};`)}
                             onContextMenu={e => handleTableContextMenu(e, entry)}
                             title="Left-click to SELECT • Right-click for options"
                           >
                             <span
-                              style={{ fontSize: 9, minWidth: 10, textAlign: 'center', color: 'var(--w95-dark-gray,#555)', cursor: 'pointer' }}
+                              style={{
+                                fontSize: isMac ? 10 : 9,
+                                minWidth: 12,
+                                textAlign: 'center',
+                                color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
+                                cursor: 'pointer',
+                              }}
                               onClick={e => { e.stopPropagation(); setExpandedTables(prev => ({ ...prev, [key]: !prev[key] })); }}
                             >
                               {isTableExpanded ? '▼' : '▶'}
                             </span>
-                            <span>{entry.isUserDefined ? '📋' : '🗃️'}</span>
-                            <span style={{ flex: 1, fontWeight: 'bold', fontSize: 11, color: 'var(--w95-titlebar-active,#000080)' }}>
+                            <span style={{ fontSize: isMac ? 14 : 12 }}>{entry.isUserDefined ? '📋' : '🗃️'}</span>
+                            <span
+                              style={{
+                                flex: 1,
+                                fontWeight: isMac ? 600 : 'bold',
+                                fontSize: isMac ? 13 : 11,
+                                color: isMac ? '#f8fafc' : 'var(--w95-titlebar-active,#000080)',
+                              }}
+                            >
                               {entry.tableName}
                             </span>
-                            <span style={{ fontSize: 9, background: 'var(--w95-gray,#e0e0e0)', color: 'var(--w95-text-color,#333)', padding: '0 3px', border: '1px solid var(--w95-dark-gray,#aaa)' }}>
+                            <span
+                              style={{
+                                fontSize: isMac ? 11 : 9,
+                                background: isMac ? 'rgba(255, 255, 255, 0.08)' : 'var(--w95-gray,#e0e0e0)',
+                                color: isMac ? '#cbd5e1' : 'var(--w95-text-color,#333)',
+                                padding: isMac ? '1px 5px' : '0 3px',
+                                border: isMac ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid var(--w95-dark-gray,#aaa)',
+                                borderRadius: isMac ? 4 : 0,
+                              }}
+                            >
                               {entry.rowCount}r
                             </span>
                             {entry.isUserDefined && (
-                              <span style={{ fontSize: 9, background: '#ffe0a0', color: '#664400', padding: '0 3px', border: '1px solid #c8a000' }} title="User-defined table">
+                              <span
+                                style={{
+                                  fontSize: isMac ? 11 : 9,
+                                  background: isMac ? 'rgba(234, 179, 8, 0.2)' : '#ffe0a0',
+                                  color: isMac ? '#fde047' : '#664400',
+                                  padding: isMac ? '1px 5px' : '0 3px',
+                                  border: isMac ? '1px solid rgba(234, 179, 8, 0.4)' : '1px solid #c8a000',
+                                  borderRadius: isMac ? 4 : 0,
+                                }}
+                                title="User-defined table"
+                              >
                                 usr
                               </span>
                             )}
@@ -383,8 +558,23 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
 
                           {/* Columns sub-tree */}
                           {isTableExpanded && (
-                            <div style={{ marginLeft: 20, borderLeft: '1px dotted #bbb', paddingLeft: 5, marginBottom: 2 }}>
-                              <div style={{ fontSize: 9, fontWeight: 'bold', color: 'var(--w95-dark-gray,#555)', marginBottom: 1 }}>
+                            <div
+                              style={{
+                                marginLeft: isMac ? 20 : 20,
+                                borderLeft: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : '1px dotted #bbb',
+                                paddingLeft: isMac ? 6 : 5,
+                                marginBottom: isMac ? 4 : 2,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: isMac ? 11 : 9,
+                                  fontWeight: isMac ? 600 : 'bold',
+                                  color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
+                                  marginBottom: 2,
+                                  padding: isMac ? '2px 0' : 0,
+                                }}
+                              >
                                 📂 Columns ({entry.schema.columns.length})
                               </div>
                               {entry.schema.columns.map(col => {
@@ -393,24 +583,70 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                 return (
                                   <div
                                     key={col.name}
-                                    style={{ display: 'flex', justifyContent: 'space-between', padding: '1px 3px', fontSize: 10, cursor: 'pointer' }}
+                                    style={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      padding: isMac ? '2px 4px' : '1px 3px',
+                                      fontSize: isMac ? 12 : 10,
+                                      cursor: 'pointer',
+                                      borderRadius: isMac ? 4 : 0,
+                                    }}
                                     onClick={e => { e.stopPropagation(); onSelectTable(entry.tableName, `SELECT ${col.name} FROM ${entry.tableName};`); }}
                                     title={`SELECT ${col.name}`}
                                   >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                                      <span>{isPk ? '🔑' : isFk ? '🔗' : '📄'}</span>
-                                      <span style={{ fontWeight: isPk || isFk ? 'bold' : 'normal', color: 'var(--w95-sunken-text,#000)' }}>{col.name}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: isMac ? 5 : 3 }}>
+                                      <span style={{ fontSize: isMac ? 13 : 11 }}>{isPk ? '🔑' : isFk ? '🔗' : '📄'}</span>
+                                      <span
+                                        style={{
+                                          fontWeight: isPk || isFk ? (isMac ? 600 : 'bold') : 'normal',
+                                          color: isMac ? '#e2e8f0' : 'var(--w95-sunken-text,#000)',
+                                        }}
+                                      >
+                                        {col.name}
+                                      </span>
                                     </div>
-                                    <span style={{ fontSize: 9, color: 'var(--w95-dark-gray,#666)', fontStyle: 'italic' }}>{col.logicalType.toLowerCase()}</span>
+                                    <span
+                                      style={{
+                                        fontSize: isMac ? 11 : 9,
+                                        color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#666)',
+                                        fontStyle: 'italic',
+                                      }}
+                                    >
+                                      {col.logicalType.toLowerCase()}
+                                    </span>
                                   </div>
                                 );
                               })}
                               {/* Triggers */}
                               {entry.triggers && entry.triggers.length > 0 && (
-                                <div style={{ marginTop: 3, borderTop: '1px dotted #bbb', paddingTop: 2 }}>
-                                  <div style={{ fontSize: 9, fontWeight: 'bold', color: 'var(--w95-dark-gray,#555)', marginBottom: 1 }}>⚡ Triggers ({entry.triggers.length})</div>
+                                <div
+                                  style={{
+                                    marginTop: isMac ? 4 : 3,
+                                    borderTop: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : '1px dotted #bbb',
+                                    paddingTop: 2,
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      fontSize: isMac ? 11 : 9,
+                                      fontWeight: isMac ? 600 : 'bold',
+                                      color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
+                                      marginBottom: 1,
+                                    }}
+                                  >
+                                    ⚡ Triggers ({entry.triggers.length})
+                                  </div>
                                   {entry.triggers.map(tr => (
-                                    <div key={tr} style={{ fontSize: 10, padding: '1px 3px', color: 'var(--w95-dark-gray,#555)' }}>⚡ {tr}</div>
+                                    <div
+                                      key={tr}
+                                      style={{
+                                        fontSize: isMac ? 11 : 10,
+                                        padding: '1px 3px',
+                                        color: isMac ? '#cbd5e1' : 'var(--w95-dark-gray,#555)',
+                                      }}
+                                    >
+                                      ⚡ {tr}
+                                    </div>
                                   ))}
                                 </div>
                               )}
@@ -423,7 +659,14 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
 
                   {/* Views sub-tree */}
                   {viewCount > 0 && !searchQuery && (
-                    <div style={{ padding: '1px 3px', fontSize: 10, color: 'var(--w95-dark-gray,#555)', marginTop: 2 }}>
+                    <div
+                      style={{
+                        padding: isMac ? '3px 6px' : '1px 3px',
+                        fontSize: isMac ? 11 : 10,
+                        color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
+                        marginTop: 2,
+                      }}
+                    >
                       <span>👁️ {viewCount} view{viewCount !== 1 ? 's' : ''}</span>
                     </div>
                   )}
