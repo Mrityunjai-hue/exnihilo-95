@@ -931,7 +931,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                                     textOverflow: 'ellipsis',
                                     fontWeight: 'bold',
                                     textAlign: 'right',
-                                    color: 'var(--w95-text-color)',
+                                    color: 'var(--w95-sunken-text, #000000)',
                                   }}
                                   title={d.label}
                                 >
@@ -969,7 +969,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                                     fontFamily: 'var(--w95-mono)',
                                     fontSize: '11px',
                                     textAlign: 'right',
-                                    color: 'var(--w95-text-color)',
+                                    color: 'var(--w95-sunken-text, #000000)',
                                   }}
                                 >
                                   {d.value.toLocaleString()}
@@ -1052,7 +1052,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                                     <g key={idx}>
                                       <circle cx={x} cy={y} r="3.5" fill={isDark ? '#38bdf8' : '#000080'} />
                                       {chartData.length <= 15 && (
-                                        <text x={x} y={y - 7} textAnchor="middle" fontSize="8.5" fill="var(--w95-text-color)" fontWeight="bold">
+                                        <text x={x} y={y - 7} textAnchor="middle" fontSize="8.5" fill="var(--w95-sunken-text, #000000)" fontWeight="bold">
                                           {d.value}
                                         </text>
                                       )}

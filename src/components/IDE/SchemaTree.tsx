@@ -102,7 +102,7 @@ const ContextMenu: React.FC<{
             key={idx}
             style={{ padding: '3px 16px', cursor: 'pointer', color: 'var(--w95-text-color,#000)', whiteSpace: 'nowrap' }}
             onClick={() => { onAction(item.action, menu.target); onClose(); }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--w95-titlebar-active,#000080)', e.currentTarget.style.color = '#fff')}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--w95-title-active-bg,#000080)', e.currentTarget.style.color = '#fff')}
             onMouseLeave={e => (e.currentTarget.style.background = '', e.currentTarget.style.color = 'var(--w95-text-color,#000)')}
           >
             {item.label}
@@ -122,7 +122,7 @@ const ConfirmDialog: React.FC<{
 }> = ({ message, onConfirm, onCancel }) => (
   <div style={{ position: 'fixed', inset: 0, zIndex: 99998, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
     <div className="win95-raised" style={{ width: 340, background: 'var(--w95-gray,#c0c0c0)', boxShadow: '4px 4px 0 #000', fontFamily: 'var(--w95-font)', fontSize: 12 }}>
-      <div style={{ background: 'var(--w95-titlebar-active,#000080)', color: '#fff', padding: '3px 8px', fontWeight: 'bold', fontSize: 11 }}>⚠️ Confirm Action</div>
+      <div style={{ background: 'var(--w95-title-active-bg,#000080)', color: '#fff', padding: '3px 8px', fontWeight: 'bold', fontSize: 11 }}>⚠️ Confirm Action</div>
       <div style={{ padding: '16px 16px 12px' }}>
         <div style={{ marginBottom: 16 }}>{message}</div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
@@ -394,7 +394,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
             padding: isMac ? '6px 8px' : '2px 4px',
             fontWeight: isMac ? 700 : 'bold',
             fontSize: isMac ? 13 : 11,
-            color: isMac ? '#38bdf8' : 'var(--w95-titlebar-active,#000080)',
+            color: isMac ? '#38bdf8' : 'var(--w95-sunken-text, #000000)',
             display: 'flex',
             alignItems: 'center',
             gap: isMac ? 8 : 4,
@@ -490,8 +490,8 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                     style={{
                       padding: isMac ? '4px 6px' : '1px 3px',
                       fontSize: isMac ? 12 : 10,
-                      fontWeight: isMac ? 500 : 'normal',
-                      color: isMac ? '#38bdf8' : 'var(--w95-titlebar-active,#000080)',
+                      fontWeight: isMac ? 500 : 'bold',
+                      color: isMac ? '#38bdf8' : '#000080',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -557,7 +557,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                 flex: 1,
                                 fontWeight: isMac ? 600 : 'bold',
                                 fontSize: isMac ? 13 : 11,
-                                color: isMac ? '#f8fafc' : 'var(--w95-titlebar-active,#000080)',
+                                color: isMac ? '#f8fafc' : 'var(--w95-sunken-text, #000000)',
                               }}
                             >
                               {entry.tableName}
@@ -565,10 +565,10 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                             <span
                               style={{
                                 fontSize: isMac ? 11 : 9,
-                                background: isMac ? 'rgba(255, 255, 255, 0.08)' : 'var(--w95-gray,#e0e0e0)',
-                                color: isMac ? '#cbd5e1' : 'var(--w95-text-color,#333)',
+                                background: isMac ? 'rgba(255, 255, 255, 0.08)' : 'var(--w95-gray, #e0e0e0)',
+                                color: isMac ? '#cbd5e1' : 'var(--w95-sunken-text, #000000)',
                                 padding: isMac ? '1px 5px' : '0 3px',
-                                border: isMac ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid var(--w95-dark-gray,#aaa)',
+                                border: isMac ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid var(--w95-dark-gray, #808080)',
                                 borderRadius: isMac ? 4 : 0,
                               }}
                             >

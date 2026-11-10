@@ -73,8 +73,8 @@ export const CreateDatabaseDialog: React.FC<CreateDatabaseDialogProps> = ({
       >
         {/* Title Bar */}
         <div style={{
-          background: 'var(--w95-titlebar-active, #000080)',
-          color: '#ffffff',
+          background: 'var(--w95-title-active-bg, #000080)',
+          color: 'var(--w95-title-active-text, #ffffff)',
           padding: '4px 8px',
           display: 'flex',
           alignItems: 'center',

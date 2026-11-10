@@ -240,8 +240,8 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
       >
         {/* Window Title Bar */}
         <div style={{
-          background: 'var(--w95-titlebar-active, #000080)',
-          color: '#ffffff',
+          background: 'var(--w95-title-active-bg, #000080)',
+          color: 'var(--w95-title-active-text, #ffffff)',
           padding: '4px 8px',
           display: 'flex',
           alignItems: 'center',
@@ -274,8 +274,8 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
             flex: 1, padding: '5px 12px', textAlign: 'center', fontSize: 11,
             fontWeight: step === 1 ? 'bold' : 'normal',
             background: step === 1 ? 'var(--w95-light-gray,#e0e0e0)' : 'var(--w95-gray,#c0c0c0)',
-            color: step === 1 ? 'var(--w95-titlebar-active,#000080)' : 'var(--w95-text-color,#555)',
-            borderBottom: step === 1 ? '2px solid var(--w95-titlebar-active,#000080)' : 'none',
+            color: step === 1 ? 'var(--w95-titlebar-active, #000080)' : 'var(--w95-text-color,#555)',
+            borderBottom: step === 1 ? '2px solid var(--w95-titlebar-active, #000080)' : 'none',
           }}>
             Step 1: Table & Database Setup
           </div>
@@ -283,8 +283,8 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
             flex: 1, padding: '5px 12px', textAlign: 'center', fontSize: 11,
             fontWeight: step === 2 ? 'bold' : 'normal',
             background: step === 2 ? 'var(--w95-light-gray,#e0e0e0)' : 'var(--w95-gray,#c0c0c0)',
-            color: step === 2 ? 'var(--w95-titlebar-active,#000080)' : 'var(--w95-text-color,#555)',
-            borderBottom: step === 2 ? '2px solid var(--w95-titlebar-active,#000080)' : 'none',
+            color: step === 2 ? 'var(--w95-titlebar-active, #000080)' : 'var(--w95-text-color,#555)',
+            borderBottom: step === 2 ? '2px solid var(--w95-titlebar-active, #000080)' : 'none',
           }}>
             Step 2: Table Designer (Access 95 View)
           </div>
@@ -379,7 +379,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                     🔒 Add Table Constraint
                   </button>
                 </div>
-                <div style={{ fontSize: 11, fontWeight: 'bold', color: 'var(--w95-titlebar-active,#000080)' }}>
+                <div style={{ fontSize: 11, fontWeight: 'bold', color: 'var(--w95-titlebar-active, #000080)' }}>
                   Active Dialect: <span style={{ background: '#000080', color: '#fff', padding: '1px 6px', borderRadius: 2 }}>{dialect}</span>
                 </div>
               </div>
@@ -407,8 +407,8 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                         <tr
                           key={idx}
                           style={{
-                            background: isActive ? 'var(--w95-titlebar-active,#000080)' : (idx % 2 === 0 ? 'var(--w95-sunken-bg,#fff)' : 'var(--w95-light-gray,#f5f5f5)'),
-                            color: isActive ? '#ffffff' : 'var(--w95-sunken-text,#000000)',
+                            background: isActive ? 'var(--w95-title-active-bg, #000080)' : (idx % 2 === 0 ? 'var(--w95-sunken-bg,#fff)' : 'var(--w95-light-gray,#f5f5f5)'),
+                            color: isActive ? 'var(--w95-title-active-text, #ffffff)' : 'var(--w95-sunken-text,#000000)',
                             cursor: 'pointer',
                           }}
                           onClick={() => setActiveColIdx(idx)}
@@ -493,7 +493,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
 
               {/* Bottom Half: Win95 Property Inspector Grid for Active Column */}
               <div id="tour-prop-table" className="win95-fieldset" style={{ height: 180, overflowY: 'auto', margin: 0, padding: 6, flexShrink: 0 }}>
-                <legend style={{ fontWeight: 'bold', fontSize: 11, color: 'var(--w95-titlebar-active,#000080)' }}>
+                <legend style={{ fontWeight: 'bold', fontSize: 11, color: 'var(--w95-titlebar-active, #000080)' }}>
                   ⚙️ Property Inspector for Selected Column: <u>{activeCol?.name || `#${activeColIdx + 1}`}</u> [{activeCol?.type || 'INT'}]
                 </legend>
 
@@ -873,7 +873,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                           max={25}
                           value={rowsToGenerate}
                           onChange={e => setRowsToGenerate(Number(e.target.value))}
-                          style={{ accentColor: 'var(--w95-titlebar-active,#000080)', cursor: 'pointer', width: 100 }}
+                          style={{ accentColor: 'var(--w95-titlebar-active, #000080)', cursor: 'pointer', width: 100 }}
                         />
                         <span style={{ fontWeight: 'bold' }}>{rowsToGenerate}</span>
                         <span style={{ fontSize: 9, background: '#ffe0a0', color: '#664400', padding: '1px 4px', border: '1px solid #c8a000' }}>
@@ -889,7 +889,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                       </button>
                     </div>
 
-                    <div style={{ fontSize: 11, fontWeight: 'bold', color: 'var(--w95-titlebar-active,#000080)', marginTop: 2 }}>
+                    <div style={{ fontSize: 11, fontWeight: 'bold', color: 'var(--w95-titlebar-active, #000080)', marginTop: 2 }}>
                       📄 Generated DDL Syntax ({dialect}):
                     </div>
 
@@ -905,7 +905,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                         fontFamily: 'var(--w95-mono)',
                         fontSize: 11,
                         fontWeight: 'bold',
-                        color: 'var(--w95-titlebar-active,#000080)',
+                        color: 'var(--w95-sunken-text, #000000)',
                         padding: 6,
                         boxSizing: 'border-box',
                         background: 'var(--w95-sunken-bg,#fff)',

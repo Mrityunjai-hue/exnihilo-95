@@ -21,7 +21,7 @@
   --w95-text-color: #f5f5f7;
   --w95-sunken-bg: rgba(18, 18, 22, 0.90);
   --w95-sunken-text: #f5f5f7;
-  --w95-titlebar-active: #ffffff;
+  --w95-titlebar-active: #38bdf8;
   --w95-title-active-bg: rgba(255, 255, 255, 0.08);
   --w95-title-active-text: #ffffff;
   --w95-title-active-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
@@ -51,6 +51,7 @@
   --w95-text-color: #000000;
   --w95-sunken-bg: #ffffff;
   --w95-sunken-text: #000000;
+  --w95-titlebar-active: #000080;
   --w95-title-active-bg: #000080;
   --w95-title-active-text: #ffffff;
   --w95-title-active-gradient: linear-gradient(90deg, #000080 0%, #1084d0 100%);
@@ -83,6 +84,7 @@
   --w95-text-color: #f1f5f9;
   --w95-sunken-bg: #0f172a;
   --w95-sunken-text: #f8fafc;
+  --w95-titlebar-active: #0369a1;
   --w95-title-active-bg: #0f172a;
   --w95-title-active-text: #ffffff;
   --w95-title-active-gradient: linear-gradient(90deg, #0369a1 0%, #1e293b 100%);
@@ -260,6 +262,7 @@
   --w95-text-color: #000000;
   --w95-sunken-bg: #ffffff;
   --w95-sunken-text: #000000;
+  --w95-titlebar-active: #0055ea;
   --w95-title-active-bg: #0055ea;
   --w95-title-active-text: #ffffff;
   --w95-title-active-gradient: linear-gradient(90deg, #0055ea 0%, #3f8cff 100%);
@@ -287,6 +290,7 @@
   --w95-text-color: #000000;
   --w95-sunken-bg: #ffffff;
   --w95-sunken-text: #000000;
+  --w95-titlebar-active: #0a246a;
   --w95-title-active-bg: #0a246a;
   --w95-title-active-text: #ffffff;
   --w95-title-active-gradient: linear-gradient(90deg, #0a246a 0%, #a6caf0 100%);
@@ -318,6 +322,7 @@
   --w95-text-color: #1c2833;
   --w95-sunken-bg: #ffffff;
   --w95-sunken-text: #1c2833;
+  --w95-titlebar-active: #175e9b;
   --w95-title-active-bg: rgba(162, 206, 241, 0.85);
   --w95-title-active-text: #0c2340;
   --w95-title-active-gradient: linear-gradient(180deg, rgba(220, 240, 255, 0.95) 0%, rgba(165, 210, 250, 0.85) 45%, rgba(125, 185, 240, 0.9) 50%, rgba(175, 220, 255, 0.95) 100%);
@@ -1372,6 +1377,11 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
   background-color: #1a1a1e !important;
   color: #f8fafc !important;
   padding: 6px 10px !important;
+}
+
+select option {
+  background-color: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
