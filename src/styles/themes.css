@@ -595,6 +595,13 @@
   animation: macMenuFadeIn 0.12s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+.toolbar-dropdown-right {
+  top: 100% !important;
+  left: auto !important;
+  right: 0 !important;
+  margin-top: 4px !important;
+}
+
 @keyframes macMenuFadeIn {
   from {
     opacity: 0;
@@ -1170,6 +1177,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
   padding: 6px 12px !important;
   height: 38px !important;
   border-radius: 0 !important;
+  overflow: visible !important;
 }
 
 [data-theme="macos-glass"] .win95-divider-v {
@@ -1312,7 +1320,9 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 
 /* Custom Apple Select with chevron and guaranteed no-clipping */
 [data-theme="macos-glass"] select.toolbar-dialect-select,
-[data-theme="macos-glass"] .toolbar-dialect-select {
+[data-theme="macos-glass"] .toolbar-dialect-select,
+[data-theme="macos-glass"] select.toolbar-rows-select,
+[data-theme="macos-glass"] .toolbar-rows-select {
   height: 28px !important;
   min-height: 28px !important;
   max-height: 28px !important;
