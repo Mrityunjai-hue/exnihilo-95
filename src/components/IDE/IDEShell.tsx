@@ -80,6 +80,7 @@ interface IDEShellProps {
   onOpenHelp:              () => void;
   onOpenSettings:          () => void;
   onOpenChallenges?:       () => void;
+  onOpenERD?:              () => void;
   onStartTour:             () => void;
   crtEnabled?:             boolean;
   onToggleCrt?:            () => void;
@@ -110,6 +111,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   onOpenHelp,
   onOpenSettings,
   onOpenChallenges,
+  onOpenERD,
   onStartTour,
   crtEnabled,
   onToggleCrt,
@@ -123,6 +125,14 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const [editorHeightPercent, setEditorHeightPercent] = useState(42); // 42% height for editor
   const [hasSelection, setHasSelection] = useState(false);
   const [selectedText, setSelectedText] = useState('');
+
+  const handleOpenERD = () => {
+    if (onOpenERD) {
+      onOpenERD();
+    } else {
+      setIsERDOpen(true);
+    }
+  };
   const [refreshKey, setRefreshKey] = useState(0);
   const [internalMaximized, setInternalMaximized] = useState(false);
   const isMaximized = propIsMaximized !== undefined ? propIsMaximized : internalMaximized;
@@ -854,7 +864,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           </span>
           {activeMenu === 'tools' && (
             <div className="win95-dropdown-menu">
-              <div className="win95-dropdown-item" onClick={() => { setIsERDOpen(true); setActiveMenu(null); }}>
+              <div className="win95-dropdown-item" onClick={() => { handleOpenERD(); setActiveMenu(null); }}>
                 <span>🌐 Entity Relationship Diagram (ERD)</span>
               </div>
               <div className="win95-dropdown-item" onClick={() => { setIsSnippetsOpen(true); setActiveMenu(null); }}>
@@ -924,7 +934,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         onOpenExplainPlan={() => setIsExplainPlanOpen(true)}
         onInsertTemplate={handleInsertTemplate}
         onToggleHistory={() => setIsHistoryOpen(true)}
-        onOpenERD={() => setIsERDOpen(true)}
+        onOpenERD={handleOpenERD}
         onOpenHelp={onOpenHelp}
         onOpenSettings={onOpenSettings}
         onStartTour={onStartTour}
@@ -948,7 +958,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               onRefresh={handleRefresh}
               onNewDatabase={() => setShowCreateDbDialog(true)}
               onNewTable={(targetDb) => { setCreateTableTargetDb(targetDb); setShowCreateTableWizard(true); }}
-              onOpenERD={() => setIsERDOpen(true)}
+              onOpenERD={handleOpenERD}
               onToggleCollapse={() => setShowExplorer(false)}
             />
           </div>

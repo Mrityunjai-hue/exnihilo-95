@@ -28,6 +28,8 @@ interface ResultsGridProps {
 const ROW_HEIGHT = 26;
 const OVERSCAN = 5;
 
+export type VisualLayout = 'dashboard' | 'bars' | 'line' | 'kpis' | 'profiler';
+
 export const ResultsGrid: React.FC<ResultsGridProps> = ({
   result,
   error,
@@ -48,7 +50,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
 
   // Output View Mode ('data' for Grid, 'visual' for Instant Charting)
   const [viewMode, setViewMode] = useState<'data' | 'visual'>('data');
-  const [chartType, setChartType] = useState<'bar' | 'kpi' | 'line'>('bar');
+  const [chartType, setChartType] = useState<VisualLayout>('dashboard');
   const [selectedCatCol, setSelectedCatCol] = useState<number>(0);
   const [selectedNumCol, setSelectedNumCol] = useState<number>(0);
 
@@ -222,6 +224,11 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     return Math.max(...chartData.map(d => d.value), 0.0001);
   }, [chartData]);
 
+  const minChartVal = useMemo(() => {
+    if (chartData.length === 0) return 0;
+    return Math.min(...chartData.map(d => d.value));
+  }, [chartData]);
+
   const sumChartVal = useMemo(() => {
     return chartData.reduce((acc, d) => acc + d.value, 0);
   }, [chartData]);
@@ -229,6 +236,75 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   const avgChartVal = useMemo(() => {
     return chartData.length > 0 ? sumChartVal / chartData.length : 0;
   }, [chartData, sumChartVal]);
+
+  const peakItem = useMemo(() => {
+    if (chartData.length === 0) return null;
+    return chartData.reduce((prev, curr) => (curr.value > prev.value ? curr : prev), chartData[0]);
+  }, [chartData]);
+
+  const floorItem = useMemo(() => {
+    if (chartData.length === 0) return null;
+    return chartData.reduce((prev, curr) => (curr.value < prev.value ? curr : prev), chartData[0]);
+  }, [chartData]);
+
+  const trajectoryDelta = useMemo(() => {
+    if (chartData.length < 2) return null;
+    const first = chartData[0].value;
+    const last = chartData[chartData.length - 1].value;
+    if (first === 0) return last === 0 ? 0 : 100;
+    return ((last - first) / Math.abs(first)) * 100;
+  }, [chartData]);
+
+  // Column Profiling & Intelligence data (Top-Level Hook)
+  const columnProfiles = useMemo(() => {
+    if (!columns || columns.length === 0) return [];
+    return columns.map((col, idx) => {
+      let nonNullCount = 0;
+      let nullCount = 0;
+      const distinctSet = new Set<string>();
+      let numSum = 0;
+      let numCount = 0;
+      let minNum = Infinity;
+      let maxNum = -Infinity;
+      let sampleVal: any = null;
+
+      for (const r of rawRows) {
+        const v = r[idx];
+        if (v === null || v === undefined) {
+          nullCount++;
+        } else {
+          nonNullCount++;
+          distinctSet.add(typeof v === 'object' ? JSON.stringify(v) : String(v));
+          if (sampleVal === null) sampleVal = v;
+          if (typeof v === 'number') {
+            numSum += v;
+            numCount++;
+            if (v < minNum) minNum = v;
+            if (v > maxNum) maxNum = v;
+          }
+        }
+      }
+
+      const type = columnTypes[idx] || 'TEXT';
+      const fillRate = rawRows.length > 0 ? (nonNullCount / rawRows.length) * 100 : 0;
+      const isNumeric = numCount > 0;
+
+      return {
+        name: col,
+        type,
+        totalCount: rawRows.length,
+        nonNullCount,
+        nullCount,
+        fillRate,
+        distinctCount: distinctSet.size,
+        sampleVal,
+        isNumeric,
+        min: isNumeric && minNum !== Infinity ? minNum : null,
+        max: isNumeric && maxNum !== -Infinity ? maxNum : null,
+        avg: isNumeric && numCount > 0 ? numSum / numCount : null,
+      };
+    });
+  }, [columns, rawRows, columnTypes]);
 
   const showToast = (msg: string) => {
     setToastNotice(msg);
@@ -689,16 +765,18 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <strong>Chart:</strong>
+              <strong>View:</strong>
               <select
                 className="win95-sunken"
                 value={chartType}
                 onChange={(e) => setChartType(e.target.value as any)}
                 style={{ padding: '1px 4px', fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
               >
-                <option value="bar">📊 Proportional Bar Chart</option>
-                <option value="kpi">🎛️ Metric KPI Cards</option>
-                <option value="line">📈 Trend Polyline Chart</option>
+                <option value="dashboard">📊 Executive Dashboard (All-in-One)</option>
+                <option value="bars">📶 Proportional Distribution</option>
+                <option value="line">📈 Trajectory & Trend Area</option>
+                <option value="kpis">🎛️ Metric KPI Cards</option>
+                <option value="profiler">📋 Column Health & Profiler</option>
               </select>
             </div>
 
@@ -730,13 +808,13 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
               </select>
             </div>
 
-            <span style={{ marginLeft: 'auto', fontSize: '10px', opacity: 0.8 }}>
-              Total: <strong>{sumChartVal.toLocaleString()}</strong> │ Avg: <strong>{avgChartVal.toFixed(2)}</strong> │ Max: <strong>{maxChartVal.toLocaleString()}</strong>
+            <span style={{ marginLeft: 'auto', fontSize: '10px', opacity: 0.85, whiteSpace: 'nowrap' }}>
+              Total: <strong>{sumChartVal.toLocaleString()}</strong> │ Avg: <strong>{avgChartVal.toFixed(2)}</strong> │ Peak: <strong>{maxChartVal.toLocaleString()}</strong>
             </span>
           </div>
 
           {/* Visual Canvas Viewport */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {rawRows.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '36px 12px', opacity: 0.7 }}>
                 <div style={{ fontSize: '32px', marginBottom: '8px' }}>📊</div>
@@ -751,167 +829,320 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                   Include numeric fields (e.g. <code>COUNT()</code>, <code>SUM()</code>, <code>price</code>, <code>value</code>) in your query to render charts.
                 </p>
               </div>
-            ) : chartType === 'kpi' ? (
-              /* KPI Cards Mode */
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px', padding: '4px' }}>
-                <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
-                  <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
-                    TOTAL {columns[selectedNumCol]}
-                  </div>
-                  <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px', color: isDark ? '#38bdf8' : '#000080' }}>
-                    {sumChartVal.toLocaleString()}
-                  </div>
-                  <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px' }}>Cumulative across {chartData.length} records</div>
-                </div>
-
-                <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
-                  <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
-                    AVERAGE VALUE
-                  </div>
-                  <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px', color: isDark ? '#4ade80' : '#006600' }}>
-                    {avgChartVal.toFixed(2)}
-                  </div>
-                  <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px' }}>Mean per category item</div>
-                </div>
-
-                <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
-                  <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
-                    PEAK / MAXIMUM
-                  </div>
-                  <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px', color: isDark ? '#f43f5e' : '#800000' }}>
-                    {maxChartVal.toLocaleString()}
-                  </div>
-                  <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px' }}>Top recorded metric point</div>
-                </div>
-
-                <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
-                  <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
-                    SAMPLE VOLUME
-                  </div>
-                  <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px' }}>
-                    {chartData.length} rows
-                  </div>
-                  <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px' }}>Plotted from active result set</div>
-                </div>
-              </div>
-            ) : chartType === 'line' ? (
-              /* Trend Line Mode */
-              <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <svg viewBox="0 0 500 160" style={{ width: '100%', height: '160px', overflow: 'visible' }}>
-                  <line x1="0" y1="20" x2="500" y2="20" stroke="var(--w95-dark-gray)" strokeDasharray="3 3" opacity="0.3" />
-                  <line x1="0" y1="80" x2="500" y2="80" stroke="var(--w95-dark-gray)" strokeDasharray="3 3" opacity="0.3" />
-                  <line x1="0" y1="140" x2="500" y2="140" stroke="var(--w95-dark-gray)" strokeWidth="1" opacity="0.6" />
-
-                  {chartData.length > 1 && (
-                    <>
-                      <polygon
-                        points={`0,140 ${chartData.map((d, idx) => {
-                          const x = (idx / (chartData.length - 1)) * 500;
-                          const y = 140 - (d.value / maxChartVal) * 120;
-                          return `${x},${y}`;
-                        }).join(' ')} 500,140`}
-                        fill={isDark ? 'rgba(56, 189, 248, 0.15)' : 'rgba(0, 0, 128, 0.12)'}
-                      />
-                      <polyline
-                        points={chartData.map((d, idx) => {
-                          const x = (idx / (chartData.length - 1)) * 500;
-                          const y = 140 - (d.value / maxChartVal) * 120;
-                          return `${x},${y}`;
-                        }).join(' ')}
-                        fill="none"
-                        stroke={isDark ? '#38bdf8' : '#000080'}
-                        strokeWidth="2"
-                      />
-                      {chartData.map((d, idx) => {
-                        const x = (idx / (chartData.length - 1)) * 500;
-                        const y = 140 - (d.value / maxChartVal) * 120;
-                        return (
-                          <g key={idx}>
-                            <circle cx={x} cy={y} r="3" fill={isDark ? '#38bdf8' : '#000080'} />
-                            <text x={x} y={y - 6} textAnchor="middle" fontSize="8" fill="var(--w95-text-color)" fontWeight="bold">
-                              {d.value}
-                            </text>
-                          </g>
-                        );
-                      })}
-                    </>
-                  )}
-                </svg>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', opacity: 0.7, padding: '0 4px' }}>
-                  <span>{chartData[0]?.label}</span>
-                  <span>{chartData[Math.floor(chartData.length / 2)]?.label}</span>
-                  <span>{chartData[chartData.length - 1]?.label}</span>
-                </div>
-              </div>
             ) : (
-              /* Proportional Bar Chart Mode */
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {chartData.map((d, idx) => {
-                  const pct = Math.max(3, (d.value / maxChartVal) * 100);
-                  const retroPalette = ['#000080', '#008080', '#800080', '#808000', '#006600', '#800000', '#1084d0'];
-                  const barColor = isDark
-                    ? 'linear-gradient(90deg, #38bdf8, #818cf8)'
-                    : retroPalette[idx % retroPalette.length];
-
-                  return (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px' }}>
-                      <div
-                        style={{
-                          width: '130px',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          fontWeight: 'bold',
-                          textAlign: 'right',
-                          color: 'var(--w95-text-color)',
-                        }}
-                        title={d.label}
-                      >
-                        {d.label}
+              <>
+                {/* 1. Executive Metric KPI Row (Rendered in 'dashboard' or 'kpis' modes) */}
+                {(chartType === 'dashboard' || chartType === 'kpis') && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px' }}>
+                    <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
+                        TOTAL {columns[selectedNumCol]}
                       </div>
+                      <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px', color: isDark ? '#38bdf8' : '#000080' }}>
+                        {sumChartVal.toLocaleString()}
+                      </div>
+                      <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px' }}>Cumulative across {chartData.length} records</div>
+                    </div>
 
+                    <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
+                        MEAN AVERAGE
+                      </div>
+                      <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px', color: isDark ? '#4ade80' : '#006600' }}>
+                        {avgChartVal.toFixed(2)}
+                      </div>
+                      <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px' }}>Per category record</div>
+                    </div>
+
+                    <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
+                        PEAK MAXIMUM
+                      </div>
+                      <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px', color: isDark ? '#f43f5e' : '#800000' }}>
+                        {maxChartVal.toLocaleString()}
+                      </div>
+                      <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        Top: {peakItem?.label || 'N/A'}
+                      </div>
+                    </div>
+
+                    <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
+                        FLOOR MINIMUM
+                      </div>
+                      <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px', color: isDark ? '#a78bfa' : '#4b0082' }}>
+                        {minChartVal.toLocaleString()}
+                      </div>
+                      <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        Low: {floorItem?.label || 'N/A'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Dual-Panel Analytical Visuals (Bar Breakdown + Trajectory Area) */}
+                {(chartType === 'dashboard' || chartType === 'bars' || chartType === 'line') && (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: chartType === 'dashboard' ? 'repeat(auto-fit, minmax(360px, 1fr))' : '1fr',
+                      gap: '12px',
+                    }}
+                  >
+                    {/* Left Panel: Category Proportional Distribution */}
+                    {(chartType === 'dashboard' || chartType === 'bars') && (
                       <div
                         className="win95-sunken"
                         style={{
-                          flex: 1,
-                          height: '20px',
+                          padding: '12px',
                           background: 'var(--w95-sunken-bg, #ffffff)',
-                          position: 'relative',
-                          overflow: 'hidden',
+                          color: 'var(--w95-sunken-text, #000000)',
+                          borderRadius: isDark ? '6px' : '0',
                           display: 'flex',
-                          alignItems: 'center',
-                          borderRadius: isDark ? '4px' : '0',
+                          flexDirection: 'column',
+                          gap: '10px',
                         }}
                       >
-                        <div
-                          style={{
-                            width: `${pct}%`,
-                            height: '100%',
-                            background: barColor,
-                            transition: 'width 0.3s ease-out',
-                            borderRight: isDark ? 'none' : '1px solid #000000',
-                          }}
-                        />
-                      </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--w95-border-dark)', paddingBottom: '6px' }}>
+                          <span style={{ fontWeight: 'bold', fontSize: '12px' }}>
+                            📶 Category Distribution ({columns[selectedCatCol]})
+                          </span>
+                          <span style={{ fontSize: '10px', opacity: 0.7 }}>
+                            Top {Math.min(chartData.length, 15)} records
+                          </span>
+                        </div>
 
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: chartType === 'dashboard' ? '280px' : 'none', overflowY: 'auto' }}>
+                          {chartData.slice(0, 15).map((d, idx) => {
+                            const pct = Math.max(3, (d.value / maxChartVal) * 100);
+                            const retroPalette = ['#000080', '#008080', '#800080', '#808000', '#006600', '#800000', '#1084d0'];
+                            const barColor = isDark
+                              ? 'linear-gradient(90deg, #38bdf8, #818cf8)'
+                              : retroPalette[idx % retroPalette.length];
+
+                            return (
+                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
+                                <span style={{ width: '18px', textAlign: 'center', opacity: 0.6, fontSize: '10px' }}>#{idx + 1}</span>
+                                <div
+                                  style={{
+                                    width: '110px',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    fontWeight: 'bold',
+                                    textAlign: 'right',
+                                    color: 'var(--w95-text-color)',
+                                  }}
+                                  title={d.label}
+                                >
+                                  {d.label}
+                                </div>
+
+                                <div
+                                  className="win95-sunken"
+                                  style={{
+                                    flex: 1,
+                                    height: '18px',
+                                    background: 'var(--w95-sunken-bg, #ffffff)',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    borderRadius: isDark ? '4px' : '0',
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: `${pct}%`,
+                                      height: '100%',
+                                      background: barColor,
+                                      transition: 'width 0.3s ease-out',
+                                      borderRight: isDark ? 'none' : '1px solid #000000',
+                                    }}
+                                  />
+                                </div>
+
+                                <div
+                                  style={{
+                                    minWidth: '75px',
+                                    fontWeight: 'bold',
+                                    fontFamily: 'var(--w95-mono)',
+                                    fontSize: '11px',
+                                    textAlign: 'right',
+                                    color: 'var(--w95-text-color)',
+                                  }}
+                                >
+                                  {d.value.toLocaleString()}
+                                  <span style={{ fontSize: '9px', opacity: 0.65, marginLeft: '4px' }}>
+                                    ({sumChartVal > 0 ? ((d.value / sumChartVal) * 100).toFixed(0) : 0}%)
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Right Panel: Trajectory & Trend Polyline Area */}
+                    {(chartType === 'dashboard' || chartType === 'line') && (
                       <div
+                        className="win95-sunken"
                         style={{
-                          minWidth: '85px',
-                          fontWeight: 'bold',
-                          fontFamily: 'var(--w95-mono)',
-                          fontSize: '11px',
-                          color: 'var(--w95-text-color)',
+                          padding: '12px',
+                          background: 'var(--w95-sunken-bg, #ffffff)',
+                          color: 'var(--w95-sunken-text, #000000)',
+                          borderRadius: isDark ? '6px' : '0',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px',
                         }}
                       >
-                        {d.value.toLocaleString()}
-                        <span style={{ fontSize: '9px', opacity: 0.65, marginLeft: '4px' }}>
-                          ({sumChartVal > 0 ? ((d.value / sumChartVal) * 100).toFixed(0) : 0}%)
-                        </span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--w95-border-dark)', paddingBottom: '6px' }}>
+                          <span style={{ fontWeight: 'bold', fontSize: '12px' }}>
+                            📈 Value Trajectory & Trendline
+                          </span>
+                          {trajectoryDelta !== null && (
+                            <span
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: 'bold',
+                                padding: '1px 6px',
+                                borderRadius: '4px',
+                                background: trajectoryDelta >= 0 ? (isDark ? 'rgba(74, 222, 128, 0.2)' : '#e6f4ea') : (isDark ? 'rgba(244, 63, 94, 0.2)' : '#fce8e6'),
+                                color: trajectoryDelta >= 0 ? (isDark ? '#4ade80' : '#137333') : (isDark ? '#f43f5e' : '#c5221f'),
+                              }}
+                            >
+                              {trajectoryDelta >= 0 ? `▲ +${trajectoryDelta.toFixed(1)}%` : `▼ ${trajectoryDelta.toFixed(1)}%`}
+                            </span>
+                          )}
+                        </div>
+
+                        <div style={{ padding: '6px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <svg viewBox="0 0 500 170" style={{ width: '100%', height: '170px', overflow: 'visible' }}>
+                            {/* Gridlines */}
+                            <line x1="0" y1="20" x2="500" y2="20" stroke="var(--w95-dark-gray)" strokeDasharray="3 3" opacity="0.3" />
+                            <line x1="0" y1="80" x2="500" y2="80" stroke="var(--w95-dark-gray)" strokeDasharray="3 3" opacity="0.3" />
+                            <line x1="0" y1="140" x2="500" y2="140" stroke="var(--w95-dark-gray)" strokeWidth="1" opacity="0.6" />
+
+                            {chartData.length > 1 && (
+                              <>
+                                <polygon
+                                  points={`0,140 ${chartData.map((d, idx) => {
+                                    const x = (idx / (chartData.length - 1)) * 500;
+                                    const y = 140 - (d.value / maxChartVal) * 120;
+                                    return `${x},${y}`;
+                                  }).join(' ')} 500,140`}
+                                  fill={isDark ? 'rgba(56, 189, 248, 0.18)' : 'rgba(0, 0, 128, 0.12)'}
+                                />
+                                <polyline
+                                  points={chartData.map((d, idx) => {
+                                    const x = (idx / (chartData.length - 1)) * 500;
+                                    const y = 140 - (d.value / maxChartVal) * 120;
+                                    return `${x},${y}`;
+                                  }).join(' ')}
+                                  fill="none"
+                                  stroke={isDark ? '#38bdf8' : '#000080'}
+                                  strokeWidth="2.5"
+                                />
+                                {chartData.map((d, idx) => {
+                                  const x = (idx / (chartData.length - 1)) * 500;
+                                  const y = 140 - (d.value / maxChartVal) * 120;
+                                  return (
+                                    <g key={idx}>
+                                      <circle cx={x} cy={y} r="3.5" fill={isDark ? '#38bdf8' : '#000080'} />
+                                      {chartData.length <= 15 && (
+                                        <text x={x} y={y - 7} textAnchor="middle" fontSize="8.5" fill="var(--w95-text-color)" fontWeight="bold">
+                                          {d.value}
+                                        </text>
+                                      )}
+                                    </g>
+                                  );
+                                })}
+                              </>
+                            )}
+                          </svg>
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', opacity: 0.75, padding: '0 4px' }}>
+                            <span>Start: {chartData[0]?.label}</span>
+                            <span>Mid: {chartData[Math.floor(chartData.length / 2)]?.label}</span>
+                            <span>End: {chartData[chartData.length - 1]?.label}</span>
+                          </div>
+                        </div>
                       </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 3. Column Profiling & Intelligence Matrix (Rendered in 'dashboard' or 'profiler' modes) */}
+                {(chartType === 'dashboard' || chartType === 'profiler') && (
+                  <div
+                    className="win95-sunken"
+                    style={{
+                      padding: '12px',
+                      background: 'var(--w95-sunken-bg, #ffffff)',
+                      color: 'var(--w95-sunken-text, #000000)',
+                      borderRadius: isDark ? '6px' : '0',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--w95-border-dark)', paddingBottom: '6px' }}>
+                      <span style={{ fontWeight: 'bold', fontSize: '12px' }}>
+                        📋 Column Profiler & Health Matrix
+                      </span>
+                      <span style={{ fontSize: '10px', opacity: 0.7 }}>
+                        {columns.length} columns inspected across {rawRows.length} rows
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
+
+                    <div style={{ overflowX: 'auto' }}>
+                      <table className="win95-grid" style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr style={{ background: 'var(--w95-gray, #c0c0c0)' }}>
+                            <th style={{ textAlign: 'left', padding: '4px 8px' }}>Column</th>
+                            <th style={{ textAlign: 'center', padding: '4px 8px' }}>Type</th>
+                            <th style={{ textAlign: 'left', padding: '4px 8px' }}>Completeness</th>
+                            <th style={{ textAlign: 'center', padding: '4px 8px' }}>Distinct</th>
+                            <th style={{ textAlign: 'left', padding: '4px 8px' }}>Summary / Range</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {columnProfiles.map((p, idx) => (
+                            <tr key={idx} style={{ height: '24px' }}>
+                              <td style={{ fontWeight: 'bold', padding: '3px 8px' }}>{p.name}</td>
+                              <td style={{ textAlign: 'center', padding: '3px 8px' }}>
+                                <span style={{ fontSize: '9px', padding: '1px 4px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.1)' : '#e0e0e0', fontFamily: 'var(--w95-mono)' }}>
+                                  {p.type}
+                                </span>
+                              </td>
+                              <td style={{ padding: '3px 8px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <div style={{ width: '60px', height: '8px', background: isDark ? 'rgba(255,255,255,0.1)' : '#e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
+                                    <div style={{ width: `${p.fillRate}%`, height: '100%', background: p.fillRate === 100 ? '#22c55e' : '#eab308' }} />
+                                  </div>
+                                  <span>{p.fillRate.toFixed(0)}% ({p.nonNullCount}/{p.totalCount})</span>
+                                </div>
+                              </td>
+                              <td style={{ textAlign: 'center', padding: '3px 8px', fontFamily: 'var(--w95-mono)' }}>
+                                {p.distinctCount}
+                              </td>
+                              <td style={{ padding: '3px 8px', fontSize: '10px', opacity: 0.85, fontFamily: p.isNumeric ? 'var(--w95-mono)' : undefined }}>
+                                {p.isNumeric ? (
+                                  `Min: ${p.min?.toLocaleString()} │ Max: ${p.max?.toLocaleString()} │ Avg: ${p.avg?.toFixed(2)}`
+                                ) : (
+                                  `Sample: "${String(p.sampleVal || '').slice(0, 24)}"`
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

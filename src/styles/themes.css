@@ -10,34 +10,33 @@
 
 :root,
 [data-theme="macos-glass"] {
-  --w95-desktop-bg: radial-gradient(circle at 20% 20%, rgba(30, 58, 138, 0.65) 0%, transparent 40%),
-                   radial-gradient(circle at 80% 80%, rgba(88, 28, 135, 0.55) 0%, transparent 45%),
-                   radial-gradient(circle at 50% 50%, rgba(15, 118, 110, 0.35) 0%, transparent 50%),
-                   #0b0f19;
-  --w95-gray: rgba(18, 24, 38, 0.76);
-  --w95-light-gray: rgba(30, 41, 59, 0.8);
-  --w95-white: rgba(255, 255, 255, 0.12);
-  --w95-dark-gray: rgba(100, 116, 139, 0.5);
-  --w95-black: #f8fafc;
-  --w95-text-color: #f8fafc;
-  --w95-sunken-bg: rgba(10, 14, 23, 0.85);
-  --w95-sunken-text: #f8fafc;
-  --w95-titlebar-active: #38bdf8;
-  --w95-title-active-bg: #38bdf8;
+  --w95-desktop-bg: radial-gradient(circle at 50% 15%, rgba(65, 65, 75, 0.22) 0%, transparent 60%),
+                   radial-gradient(circle at 85% 85%, rgba(45, 45, 52, 0.32) 0%, transparent 55%),
+                   #121214;
+  --w95-gray: rgba(28, 28, 32, 0.86);
+  --w95-light-gray: rgba(38, 38, 44, 0.88);
+  --w95-white: rgba(255, 255, 255, 0.14);
+  --w95-dark-gray: rgba(161, 161, 170, 0.38);
+  --w95-black: #f5f5f7;
+  --w95-text-color: #f5f5f7;
+  --w95-sunken-bg: rgba(18, 18, 22, 0.90);
+  --w95-sunken-text: #f5f5f7;
+  --w95-titlebar-active: #ffffff;
+  --w95-title-active-bg: rgba(255, 255, 255, 0.08);
   --w95-title-active-text: #ffffff;
-  --w95-title-active-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-  --w95-title-inactive-bg: rgba(255, 255, 255, 0.03);
-  --w95-border-light: rgba(255, 255, 255, 0.14);
+  --w95-title-active-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
+  --w95-title-inactive-bg: rgba(255, 255, 255, 0.02);
+  --w95-border-light: rgba(255, 255, 255, 0.12);
   --w95-border-dark: rgba(255, 255, 255, 0.06);
-  --w95-border-darkest: rgba(0, 0, 0, 0.4);
-  --w95-grid-even-bg: rgba(15, 23, 42, 0.4);
-  --w95-grid-odd-bg: rgba(15, 23, 42, 0.7);
-  --w95-editor-bg: rgba(10, 14, 23, 0.85);
-  --w95-editor-text: #f8fafc;
-  --w95-callout-yellow-bg: rgba(30, 41, 59, 0.8);
+  --w95-border-darkest: rgba(0, 0, 0, 0.5);
+  --w95-grid-even-bg: rgba(24, 24, 28, 0.45);
+  --w95-grid-odd-bg: rgba(18, 18, 22, 0.75);
+  --w95-editor-bg: #141416;
+  --w95-editor-text: #f5f5f7;
+  --w95-callout-yellow-bg: rgba(38, 38, 42, 0.85);
   --w95-callout-yellow-text: #fef08a;
-  --w95-callout-blue-bg: rgba(30, 41, 59, 0.8);
-  --w95-callout-blue-text: #38bdf8;
+  --w95-callout-blue-bg: rgba(38, 38, 42, 0.85);
+  --w95-callout-blue-text: #e2e8f0;
   --w95-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Helvetica Neue", var(--font-inter), system-ui, sans-serif;
   --w95-mono: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
 }
@@ -545,7 +544,7 @@
   left: 0 !important;
   right: 0 !important;
   height: 28px !important;
-  background: rgba(15, 23, 42, 0.78) !important;
+  background: rgba(24, 24, 28, 0.82) !important;
   -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
   backdrop-filter: blur(28px) saturate(190%) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -583,7 +582,7 @@
   position: absolute !important;
   top: 28px !important;
   left: 0 !important;
-  background: rgba(18, 24, 38, 0.92) !important;
+  background: rgba(28, 28, 34, 0.94) !important;
   -webkit-backdrop-filter: blur(32px) saturate(190%) !important;
   backdrop-filter: blur(32px) saturate(190%) !important;
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
@@ -656,7 +655,7 @@
   display: flex !important;
   align-items: flex-end !important;
   gap: 8px !important;
-  background: rgba(15, 23, 42, 0.68) !important;
+  background: rgba(26, 26, 30, 0.75) !important;
   -webkit-backdrop-filter: blur(36px) saturate(200%) !important;
   backdrop-filter: blur(36px) saturate(200%) !important;
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
@@ -723,7 +722,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 .mac-dock-tooltip {
   position: absolute !important;
   bottom: 60px !important;
-  background: rgba(15, 23, 42, 0.90) !important;
+  background: rgba(28, 28, 34, 0.94) !important;
   -webkit-backdrop-filter: blur(20px) !important;
   backdrop-filter: blur(20px) !important;
   color: #f8fafc !important;
@@ -903,7 +902,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
   border-radius: 20px !important;
   font-size: 11px !important;
   color: #cbd5e1 !important;
-  background: rgba(15, 23, 42, 0.6) !important;
+  background: rgba(28, 28, 34, 0.75) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   -webkit-backdrop-filter: blur(16px) !important;
   backdrop-filter: blur(16px) !important;
@@ -912,14 +911,14 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 }
 
 .mac-attribution-link {
-  color: #38bdf8 !important;
+  color: #a1a1aa !important;
   text-decoration: none !important;
   font-weight: 600 !important;
   transition: color 0.15s ease !important;
 }
 
 .mac-attribution-link:hover {
-  color: #7dd3fc !important;
+  color: #f4f4f5 !important;
   text-decoration: underline !important;
 }
 
@@ -929,7 +928,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 [data-theme="macos-glass"] .win95-window,
 [data-theme="macos-glass"] .win95-dialog,
 [data-theme="macos-glass"] .win95-raised {
-  background-color: rgba(18, 24, 38, 0.82) !important;
+  background-color: rgba(24, 24, 28, 0.86) !important;
   -webkit-backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
   backdrop-filter: blur(32px) saturate(190%) contrast(105%) !important;
   border-radius: 14px !important;
@@ -1172,7 +1171,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
  * 5. UNIFIED ACTION TOOLBAR
  * ───────────────────────────────────────────────────────────────────────────── */
 [data-theme="macos-glass"] .win95-toolbar {
-  background: rgba(18, 24, 38, 0.82) !important;
+  background: rgba(28, 28, 32, 0.85) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   padding: 6px 12px !important;
   height: 38px !important;
@@ -1280,7 +1279,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 [data-theme="macos-glass"] select,
 [data-theme="macos-glass"] textarea {
   border-radius: 8px !important;
-  background: rgba(10, 15, 26, 0.8) !important;
+  background: rgba(18, 18, 22, 0.88) !important;
   color: #f8fafc !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
@@ -1338,7 +1337,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.75)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: right 8px center !important;
-  background-color: rgba(10, 15, 26, 0.85) !important;
+  background-color: rgba(22, 22, 26, 0.90) !important;
   color: #f8fafc !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 8px !important;
@@ -1370,7 +1369,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 }
 
 [data-theme="macos-glass"] select option {
-  background-color: #0f172a !important;
+  background-color: #1a1a1e !important;
   color: #f8fafc !important;
   padding: 6px 10px !important;
 }
@@ -1381,7 +1380,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 [data-theme="macos-glass"] .win95-inset,
 [data-theme="macos-glass"] .win95-sunken,
 [data-theme="macos-glass"] .win95-sunken-container {
-  background-color: rgba(10, 14, 23, 0.85) !important;
+  background-color: rgba(20, 20, 24, 0.88) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 10px !important;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4) !important;
@@ -1401,13 +1400,13 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 }
 
 [data-theme="macos-glass"] .win95-tree-item:hover {
-  background: rgba(56, 189, 248, 0.16) !important;
-  color: #38bdf8 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
 [data-theme="macos-glass"] .win95-tree-item.selected,
 [data-theme="macos-glass"] .win95-tree-item:active {
-  background: #007aff !important;
+  background: rgba(255, 255, 255, 0.16) !important;
   color: #ffffff !important;
 }
 
@@ -1416,7 +1415,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
  * ───────────────────────────────────────────────────────────────────────────── */
 [data-theme="macos-glass"] .win95-tabs,
 [data-theme="macos-glass"] .win95-editor-tabs {
-  background: rgba(10, 14, 23, 0.6) !important;
+  background: rgba(18, 18, 22, 0.7) !important;
   border-radius: 10px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   padding: 4px !important;
@@ -1444,7 +1443,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 
 [data-theme="macos-glass"] .win95-tab.active,
 [data-theme="macos-glass"] .win95-editor-tab.active {
-  background: rgba(30, 41, 59, 0.9) !important;
+  background: rgba(38, 38, 44, 0.92) !important;
   color: #f8fafc !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
@@ -1483,8 +1482,8 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 }
 
 [data-theme="macos-glass"] .cm-gutters {
-  background-color: rgba(15, 23, 42, 0.75) !important;
-  color: #64748b !important;
+  background-color: rgba(20, 20, 24, 0.85) !important;
+  color: #71717a !important;
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 10px 0 0 10px !important;
 }
@@ -1581,10 +1580,10 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 }
 
 [data-theme="macos-glass"] .win95-grid th {
-  background: rgba(30, 41, 59, 0.85) !important;
+  background: rgba(28, 28, 32, 0.90) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
-  color: #94a3b8 !important;
+  color: #a1a1aa !important;
   font-weight: 600 !important;
   border: none !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -1605,15 +1604,15 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 }
 
 [data-theme="macos-glass"] .win95-grid tr:nth-child(even) td {
-  background: rgba(15, 23, 42, 0.45) !important;
+  background: rgba(24, 24, 28, 0.45) !important;
 }
 
 [data-theme="macos-glass"] .win95-grid tr:nth-child(odd) td {
-  background: rgba(15, 23, 42, 0.75) !important;
+  background: rgba(18, 18, 22, 0.75) !important;
 }
 
 [data-theme="macos-glass"] .win95-grid tr:hover td {
-  background: rgba(56, 189, 248, 0.15) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
   color: #ffffff !important;
 }
 
@@ -1621,7 +1620,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
  * 9. STATUS BAR & SCROLLBARS
  * ───────────────────────────────────────────────────────────────────────────── */
 [data-theme="macos-glass"] .win95-statusbar {
-  background: rgba(15, 23, 42, 0.75) !important;
+  background: rgba(24, 24, 28, 0.82) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 0 0 14px 14px !important;
   color: #94a3b8 !important;
@@ -1725,7 +1724,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 [data-theme="macos-glass"] [style*="background: #ffe6e6"],
 [data-theme="macos-glass"] [style*="background: #fff0e6"],
 [data-theme="macos-glass"] [style*="background: #e6ffe6"] {
-  background-color: rgba(15, 23, 42, 0.75) !important;
+  background-color: rgba(28, 28, 34, 0.88) !important;
   color: #f8fafc !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
 }
@@ -1749,14 +1748,14 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
   color: #94a3b8 !important;
 }
 
-/* Invert all hardcoded navy/blue links and titles to neon sky blue */
+/* Invert all hardcoded navy/blue links and titles to clean Apple system blue */
 [data-theme="macos-glass"] [style*="color: #000080"],
 [data-theme="macos-glass"] [style*="color: rgb(0, 0, 128)"],
 [data-theme="macos-glass"] [style*="color: #0000ff"],
 [data-theme="macos-glass"] [style*="color: #0000ee"],
 [data-theme="macos-glass"] [style*="color: #005a9c"],
 [data-theme="macos-glass"] [style*="color: #004080"] {
-  color: #38bdf8 !important; /* Sky Blue */
+  color: #0a84ff !important; /* Apple System Blue */
 }
 
 /* Invert all greens to vibrant emerald / mint */
@@ -1765,27 +1764,27 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 [data-theme="macos-glass"] [style*="color: #006400"],
 [data-theme="macos-glass"] [style*="color: #155724"],
 [data-theme="macos-glass"] [style*="color: #137333"] {
-  color: #34d399 !important; /* Emerald */
+  color: #30d158 !important; /* Apple System Green */
 }
 
 /* Invert purples to electric violet */
 [data-theme="macos-glass"] [style*="color: #800080"],
 [data-theme="macos-glass"] [style*="color: rgb(128, 0, 128)"] {
-  color: #c084fc !important; /* Neon Violet */
+  color: #bf5af2 !important; /* Apple System Purple */
 }
 
 /* Invert ambers / browns */
 [data-theme="macos-glass"] [style*="color: #856404"],
 [data-theme="macos-glass"] [style*="color: #cc6600"],
 [data-theme="macos-glass"] [style*="color: #b06000"] {
-  color: #fbbf24 !important; /* Neon Gold */
+  color: #ffd60a !important; /* Apple System Yellow */
 }
 
 /* Invert reds / crimsons */
 [data-theme="macos-glass"] [style*="color: #721c24"],
 [data-theme="macos-glass"] [style*="color: #cc0000"],
 [data-theme="macos-glass"] [style*="color: #b00020"] {
-  color: #fb7185 !important; /* Neon Coral */
+  color: #ff453a !important; /* Apple System Red */
 }
 
 /* Ensure Headings, Fieldsets, Legends, Tables, Labels are always high contrast */
@@ -1801,11 +1800,11 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 [data-theme="macos-glass"] fieldset {
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   border-radius: 8px !important;
-  background: rgba(15, 23, 42, 0.35) !important;
+  background: rgba(24, 24, 28, 0.5) !important;
 }
 
 [data-theme="macos-glass"] legend {
-  color: #38bdf8 !important;
+  color: #f5f5f7 !important;
   font-weight: 600 !important;
   background: transparent !important;
 }
@@ -1815,12 +1814,12 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 }
 
 [data-theme="macos-glass"] a {
-  color: #38bdf8 !important;
+  color: #0a84ff !important;
   text-decoration: none !important;
 }
 
 [data-theme="macos-glass"] a:hover {
-  color: #7dd3fc !important;
+  color: #64d2ff !important;
   text-decoration: underline !important;
 }
 
@@ -1830,8 +1829,8 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 }
 
 [data-theme="macos-glass"] table th {
-  background-color: rgba(30, 41, 59, 0.8) !important;
-  color: #94a3b8 !important;
+  background-color: rgba(30, 30, 36, 0.9) !important;
+  color: #a1a1aa !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
@@ -1843,7 +1842,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
 [data-theme="macos-glass"] code,
 [data-theme="macos-glass"] pre {
   background-color: rgba(0, 0, 0, 0.5) !important;
-  color: #38bdf8 !important;
+  color: #e4e4e7 !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 6px !important;
 }
@@ -1871,7 +1870,7 @@ body:not([data-theme="macos-glass"]) .mac-dock-hotspot {
   [data-theme="macos-glass"] .mac-dropdown-menu {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
-    background-color: #0f172a !important;
+    background-color: #141416 !important;
   }
 }
 

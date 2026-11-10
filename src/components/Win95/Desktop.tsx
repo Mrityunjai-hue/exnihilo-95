@@ -793,6 +793,7 @@ export const Desktop: React.FC = () => {
             onOpenHelp={() => focusWindow('help')}
             onOpenSettings={() => focusWindow('settings')}
             onOpenChallenges={() => focusWindow('challenges')}
+            onOpenERD={() => focusWindow('erd')}
             onStartTour={handleStartGuidedTour}
             crtEnabled={crtEnabled}
             onToggleCrt={handleToggleCrt}

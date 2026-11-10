@@ -50,20 +50,49 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
   const canvasRef = useRef<HTMLDivElement>(null);
   const { position, handleMouseDown: handleHeaderDrag } = useDraggable({ x: 70, y: 35 });
 
-  // Refresh ERD nodes and links whenever catalog changes
+  // Refresh ERD nodes and links whenever catalog changes or window opens
   useEffect(() => {
+    if (!isOpen) return;
     const data = extractERDData(catalog);
     setErdData(data);
-    const initialPos: Record<string, { x: number; y: number }> = {};
-    data.nodes.forEach((n, idx) => {
-      // Stagger if not positioned
-      initialPos[n.id] = {
-        x: n.x || 40 + (idx % 3) * 310,
-        y: n.y || 40 + Math.floor(idx / 3) * 260,
-      };
+    setPositions((prev) => {
+      const next = { ...prev };
+      data.nodes.forEach((n, idx) => {
+        if (!next[n.id]) {
+          next[n.id] = {
+            x: n.x || 40 + (idx % 3) * 310,
+            y: n.y || 40 + Math.floor(idx / 3) * 260,
+          };
+        }
+      });
+      return next;
     });
-    setPositions(initialPos);
-  }, [catalog]);
+  }, [catalog, isOpen]);
+
+  // Window-level mouse move and mouse up listeners for smooth, glitch-free card dragging
+  useEffect(() => {
+    if (!draggingNode) return;
+    const handleWindowMouseMove = (e: MouseEvent) => {
+      const dx = (e.clientX - draggingNode.startX) / zoom;
+      const dy = (e.clientY - draggingNode.startY) / zoom;
+      setPositions((prev) => ({
+        ...prev,
+        [draggingNode.id]: {
+          x: Math.max(10, draggingNode.initialNodeX + dx),
+          y: Math.max(10, draggingNode.initialNodeY + dy),
+        },
+      }));
+    };
+    const handleWindowMouseUp = () => {
+      setDraggingNode(null);
+    };
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('mouseup', handleWindowMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+    };
+  }, [draggingNode, zoom]);
 
   if (!isOpen || isMinimized) return null;
 
@@ -79,23 +108,6 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
       initialNodeX: pos.x,
       initialNodeY: pos.y,
     });
-  };
-
-  const handleMouseMoveCanvas = (e: React.MouseEvent) => {
-    if (!draggingNode) return;
-    const dx = (e.clientX - draggingNode.startX) / zoom;
-    const dy = (e.clientY - draggingNode.startY) / zoom;
-    setPositions((prev) => ({
-      ...prev,
-      [draggingNode.id]: {
-        x: Math.max(10, draggingNode.initialNodeX + dx),
-        y: Math.max(10, draggingNode.initialNodeY + dy),
-      },
-    }));
-  };
-
-  const handleMouseUpCanvas = () => {
-    setDraggingNode(null);
   };
 
   // Seed instant multi-table relational schema (Users, Orders, Products, Order_Items)
@@ -299,14 +311,12 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
       {/* ERD Canvas Area */}
       <div
         ref={canvasRef}
-        onMouseMove={handleMouseMoveCanvas}
-        onMouseUp={handleMouseUpCanvas}
         className="win95-sunken"
         style={{
           flex: 1,
           position: 'relative',
           overflow: 'auto',
-          background: isMac ? 'rgba(15, 23, 42, 0.85)' : 'var(--w95-sunken-bg, #ece9d8)',
+          background: isMac ? 'rgba(18, 18, 22, 0.92)' : 'var(--w95-sunken-bg, #ece9d8)',
           color: 'var(--w95-sunken-text, #000000)',
           userSelect: 'none',
         }}
@@ -320,7 +330,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
               left: '50%',
               transform: 'translate(-50%, -50%)',
               textAlign: 'center',
-              background: isMac ? 'rgba(30, 41, 59, 0.85)' : '#c0c0c0',
+              background: isMac ? 'rgba(28, 28, 34, 0.92)' : '#c0c0c0',
               color: isMac ? '#ffffff' : '#000000',
               padding: '28px 36px',
               borderRadius: isMac ? '16px' : '0',
@@ -342,7 +352,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
                   padding: '6px 14px',
                   fontSize: '12px',
                   fontWeight: 'bold',
-                  background: '#0284c7',
+                  background: isMac ? 'rgba(255, 255, 255, 0.15)' : '#000080',
                   color: '#ffffff',
                   cursor: 'pointer',
                 }}
@@ -393,10 +403,10 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
             {erdData.links.map((link) => {
               const sourceNode = erdData.nodes.find((n) => n.id === link.sourceTable);
               const targetNode = erdData.nodes.find((n) => n.id === link.targetTable);
-              const sourcePos = positions[link.sourceTable];
-              const targetPos = positions[link.targetTable];
+              if (!sourceNode || !targetNode) return null;
 
-              if (!sourcePos || !targetPos || !sourceNode || !targetNode) return null;
+              const sourcePos = positions[link.sourceTable] || { x: sourceNode.x, y: sourceNode.y };
+              const targetPos = positions[link.targetTable] || { x: targetNode.x, y: targetNode.y };
 
               const sourceColIdx = sourceNode.columns.findIndex(
                 (c) => c.name.toLowerCase() === link.sourceColumn.toLowerCase()
@@ -483,7 +493,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
                 </div>
 
                 {/* Columns List */}
-                <div style={{ background: isMac ? 'rgba(30, 41, 59, 0.95)' : '#ffffff', padding: '4px', fontSize: '10px' }}>
+                <div style={{ background: isMac ? 'rgba(28, 28, 34, 0.96)' : '#ffffff', padding: '4px', fontSize: '10px' }}>
                   {node.columns.map((col, idx) => (
                     <div
                       key={idx}
@@ -494,9 +504,9 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
                         padding: '3px 4px',
                         borderBottom: isMac ? '1px solid rgba(255,255,255,0.06)' : '1px solid #f0f0f0',
                         background: col.isPrimaryKey
-                          ? isMac ? 'rgba(234, 179, 8, 0.15)' : '#fffae6'
+                          ? isMac ? 'rgba(234, 179, 8, 0.18)' : '#fffae6'
                           : col.isForeignKey
-                          ? isMac ? 'rgba(14, 165, 233, 0.15)' : '#e6f2ff'
+                          ? isMac ? 'rgba(255, 255, 255, 0.08)' : '#e6f2ff'
                           : 'transparent',
                       }}
                     >
