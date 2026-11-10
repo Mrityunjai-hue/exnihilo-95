@@ -28,6 +28,7 @@ interface SchemaTreeProps {
   onRefresh:         () => void;
   onNewDatabase:     () => void;
   onNewTable:        (targetDb: string) => void;
+  onOpenERD?:        () => void;
 }
 
 // ── Context Menu ───────────────────────────────────────────────────────────────
@@ -135,7 +136,7 @@ const ConfirmDialog: React.FC<{
 // ── Main SchemaTree Component ──────────────────────────────────────────────────
 
 export const SchemaTree: React.FC<SchemaTreeProps> = ({
-  catalog, executor, onSelectTable, onRefresh, onNewDatabase, onNewTable,
+  catalog, executor, onSelectTable, onRefresh, onNewDatabase, onNewTable, onOpenERD,
 }) => {
   const { activeTheme } = useTheme();
   const isMac = activeTheme === 'macos-glass';
@@ -299,6 +300,23 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
           >
             🗄️ New DB
           </button>
+          {onOpenERD && (
+            <button
+              className="win95-button"
+              style={{
+                padding: isMac ? '2px 8px' : '0 5px',
+                fontSize: isMac ? 11 : 9,
+                minHeight: isMac ? 22 : 18,
+                borderRadius: isMac ? 6 : 0,
+                cursor: 'pointer',
+                fontWeight: 'bold',
+              }}
+              onClick={onOpenERD}
+              title="Open Entity-Relationship Diagram (ERD) & Relation Visualizer"
+            >
+              🌐 ERD
+            </button>
+          )}
           <button
             className="win95-button"
             style={{

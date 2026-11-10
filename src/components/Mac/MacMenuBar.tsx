@@ -376,6 +376,9 @@ export const MacMenuBar: React.FC<MacMenuBarProps> = ({
               <div className="mac-dropdown-item" onClick={() => { onOpenWindow('sqlDictionary'); setActiveMenu(null); }}>
                 <span>📖 SQL Dialects & Syntax Reference</span>
               </div>
+              <div className="mac-dropdown-item" onClick={() => { onOpenWindow('erd'); setActiveMenu(null); }}>
+                <span>🌐 Database Relation Visualizer (ERD)</span>
+              </div>
               <div className="mac-dropdown-divider" />
               <div className="mac-dropdown-item" onClick={() => { onResetSession(); setActiveMenu(null); }}>
                 <span>Reset Database & Memory</span>

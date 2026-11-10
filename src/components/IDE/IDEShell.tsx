@@ -924,6 +924,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               onRefresh={handleRefresh}
               onNewDatabase={() => setShowCreateDbDialog(true)}
               onNewTable={(targetDb) => { setCreateTableTargetDb(targetDb); setShowCreateTableWizard(true); }}
+              onOpenERD={() => setIsERDOpen(true)}
             />
           </div>
         )}
@@ -1369,7 +1370,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       )}
 
       {/* Interactive ERD Diagram Viewer */}
-      {isERDOpen && <ERDViewer catalog={catalog} onClose={() => setIsERDOpen(false)} />}
+      {isERDOpen && <ERDViewer catalog={catalog} executor={executor} onClose={() => setIsERDOpen(false)} />}
 
       {/* Share SQL Query Playground Modal */}
       <ShareDialog

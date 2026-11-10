@@ -193,6 +193,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <span>History ({historyCount})</span>
         </button>
 
+        {onOpenERD && (
+          <button
+            id="btn-erd"
+            className="win95-button"
+            onClick={onOpenERD}
+            title="Open Interactive Entity Relationship Diagram (ERD) & Schema Visualizer"
+            style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 'bold' }}
+          >
+            <span>🌐</span>
+            <span>ERD</span>
+          </button>
+        )}
+
         {onOpenShare && (
           <button
             id="btn-share"

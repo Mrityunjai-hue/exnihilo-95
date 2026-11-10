@@ -84,6 +84,14 @@ export const MacLaunchpad: React.FC<MacLaunchpadProps> = ({
       action: () => { onOpenApp('challenges'); onClose(); },
     },
     {
+      id: 'erd',
+      name: 'Relation Visualizer (ERD)',
+      category: 'Data & Databases',
+      icon: '🌐',
+      bg: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+      action: () => { onOpenApp('erd'); onClose(); },
+    },
+    {
       id: 'help',
       name: 'Help & SQL Guide',
       category: 'Documentation',

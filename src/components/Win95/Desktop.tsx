@@ -27,6 +27,7 @@ import { AdminDashboard, SessionStats } from './AdminDashboard';
 import { ErrorBoundary } from './ErrorBoundary';
 import { SQLDictionaryWindow } from './SQLDictionaryWindow';
 import { ChallengeWindow } from './ChallengeWindow';
+import { ERDViewer } from '../IDE/ERDViewer';
 import { DialectName } from '../../data/dialectCommands';
 import { clearWorkspaceStorage } from '../../hooks/useWorkspaceStorage';
 import { decodeSharePayload } from '../../utils/shareEncoder';
@@ -104,6 +105,7 @@ export const Desktop: React.FC = () => {
     auth: false,
     admin: false,
     challenges: false,
+    erd: false,
   });
   const [minimizedWindows, setMinimizedWindows] = useState<Record<string, boolean>>({
     ide: false,
@@ -118,6 +120,7 @@ export const Desktop: React.FC = () => {
     auth: false,
     admin: false,
     challenges: false,
+    erd: false,
   });
 
   // Boot Animation State
@@ -371,6 +374,7 @@ export const Desktop: React.FC = () => {
     { id: 'settings', title: 'Options & Control Panel', icon: '⚙️', isOpen: openWindows.settings, isMinimized: false, zIndex: getZIndex('settings') },
     { id: 'contributors', title: 'Join the Team', icon: '🤝', isOpen: openWindows.contributors, isMinimized: minimizedWindows.contributors, zIndex: getZIndex('contributors') },
     { id: 'challenges', title: '🏆 SQL Challenge Arena', icon: '🏆', isOpen: openWindows.challenges, isMinimized: minimizedWindows.challenges, zIndex: getZIndex('challenges') },
+    { id: 'erd', title: '🌐 Relation Visualizer (ERD)', icon: '🌐', isOpen: openWindows.erd, isMinimized: minimizedWindows.erd, zIndex: getZIndex('erd') },
     { id: 'legal', title: 'Legal & IP Protection', icon: '⚖️', isOpen: openWindows.legal, isMinimized: minimizedWindows.legal, zIndex: getZIndex('legal') },
     { id: 'auth', title: 'Security Logon', icon: '🔑', isOpen: openWindows.auth, isMinimized: minimizedWindows.auth, zIndex: getZIndex('auth') },
     { id: 'admin', title: 'Admin Control Panel', icon: '🎛️', isOpen: openWindows.admin, isMinimized: minimizedWindows.admin, zIndex: getZIndex('admin') },
@@ -429,6 +433,14 @@ export const Desktop: React.FC = () => {
             >
               <span>🏆</span>
               <span>Challenge Arena</span>
+            </button>
+            <button
+              type="button"
+              className="mac-pill-btn"
+              onClick={() => focusWindow('erd')}
+            >
+              <span>🌐</span>
+              <span>Relation Visualizer</span>
             </button>
             <button
               type="button"
@@ -539,6 +551,20 @@ export const Desktop: React.FC = () => {
               <button
                 className="win95-button"
                 style={{ fontSize: '11px', padding: '2px 8px' }}
+                onClick={() => focusWindow('challenges')}
+              >
+                🏆 Challenge Arena
+              </button>
+              <button
+                className="win95-button"
+                style={{ fontSize: '11px', padding: '2px 8px' }}
+                onClick={() => focusWindow('erd')}
+              >
+                🌐 Relation Visualizer
+              </button>
+              <button
+                className="win95-button"
+                style={{ fontSize: '11px', padding: '2px 8px' }}
                 onClick={() => focusWindow('sqlDictionary')}
               >
                 📖 SQL Dictionary
@@ -602,6 +628,16 @@ export const Desktop: React.FC = () => {
           >
             <ChallengeIcon size={36} />
             <span>SQL Challenges</span>
+          </div>
+
+          <div
+            className="win95-desktop-icon"
+            onDoubleClick={() => focusWindow('erd')}
+            onClick={() => focusWindow('erd')}
+            title="Database Relation Visualizer & Entity-Relationship Diagrams (ERD)"
+          >
+            <div style={{ fontSize: '32px', filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,0.5))' }}>🌐</div>
+            <span>Relation Visualizer</span>
           </div>
 
           <div
@@ -914,6 +950,20 @@ export const Desktop: React.FC = () => {
           closeWindow('challenges');
           focusWindow('ide');
         }}
+      />
+
+      {/* Database Relation Visualizer (ERD) Window */}
+      <ERDViewer
+        isOpen={openWindows.erd}
+        isMinimized={minimizedWindows.erd}
+        isMaximized={Boolean(maximizedWindows.erd)}
+        onMaximize={() => handleToggleMaximize('erd')}
+        zIndex={getZIndex('erd')}
+        catalog={executor.getCatalog()}
+        executor={executor}
+        onClose={() => closeWindow('erd')}
+        onMinimize={() => toggleMinimize('erd')}
+        onFocus={() => focusWindow('erd')}
       />
 
       {/* Interactive Tour Balloon */}

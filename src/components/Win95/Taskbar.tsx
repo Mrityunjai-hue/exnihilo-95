@@ -106,6 +106,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
     { id: 'welcome', label: 'About ExNihilo', icon: '✨', bg: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' },
     { id: 'ide', label: 'ExNihilo SQL Studio', icon: '🗄️', bg: 'linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)' },
     { id: 'challenges', label: 'SQL Challenges', icon: '🏆', bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' },
+    { id: 'erd', label: 'Relation Visualizer (ERD)', icon: '🌐', bg: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' },
     { id: 'sqlDictionary', label: 'SQL Dictionary', icon: '📖', bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' },
     { id: 'help', label: 'Query Tutorial', icon: '❓', bg: 'linear-gradient(135deg, #10b981 0%, #047857 100%)' },
     { id: 'wizard', label: 'Setup Wizard', icon: '🧙‍♂️', bg: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)' },
@@ -379,6 +380,17 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               <div>
                 <strong>SQL IDE Shell</strong>
                 <div style={{ fontSize: '10px', color: '#555' }}>Query Editor & Results</div>
+              </div>
+            </div>
+
+            <div
+              className="win95-start-item"
+              onClick={() => { onOpenWindow('erd'); setStartMenuOpen(false); }}
+            >
+              <span style={{ fontSize: '16px' }}>🌐</span>
+              <div>
+                <strong>Relation Visualizer (ERD)</strong>
+                <div style={{ fontSize: '10px', color: '#555' }}>Interactive Entity-Relationship Diagrams</div>
               </div>
             </div>
 
