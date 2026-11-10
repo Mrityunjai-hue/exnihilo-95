@@ -98,3 +98,4 @@ describe('Cursor Settings & HUD Engine Unit Tests', () => {
     expect(avg).toBe(266.67);
   });
 });
+

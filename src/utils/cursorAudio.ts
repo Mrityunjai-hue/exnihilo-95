@@ -76,34 +76,6 @@ export function playWin95Click(volume = 0.1) {
 }
 
 /**
- * Magnetic Snapping High-Pitch Soft Tick
- */
-export function playMagneticSnap(volume = 0.06) {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-
-  try {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.012);
-
-    gain.gain.setValueAtTime(volume, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.012);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.015);
-  } catch {
-    // Audio safe fallback
-  }
-}
-
-/**
  * Query Success Pleasant Dual-Tone Chime
  */
 export function playSuccessChime(volume = 0.08) {
@@ -132,3 +104,4 @@ export function playSuccessChime(volume = 0.08) {
     // Audio safe fallback
   }
 }
+

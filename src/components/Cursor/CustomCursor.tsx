@@ -6,7 +6,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useCursorSettings } from '../../hooks/useCursorSettings';
-import { playMacHapticClick, playWin95Click, playMagneticSnap, playSuccessChime } from '../../utils/cursorAudio';
+import { playMacHapticClick, playWin95Click, playSuccessChime } from '../../utils/cursorAudio';
 
 interface CustomCursorProps {
   activeTheme: string;
@@ -118,10 +118,10 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({
 
       if (!isVisible) setIsVisible(true);
 
-      // 1. Magnetic Proximity Pull
+      // 1. Magnetic Proximity Pull (gently scoped to primary action targets)
       if (cursorSettings.magneticSnap) {
         const targetBtn = (e.target as HTMLElement)?.closest(
-          '.win95-button, #btn-run, .win95-btn-titlebar, .mac-dock-icon-btn'
+          '#btn-run, .mac-dock-icon-btn'
         ) as HTMLElement | null;
 
         if (targetBtn) {
@@ -130,15 +130,11 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({
           const centerY = rect.top + rect.height / 2;
           const dist = Math.hypot(centerX - e.clientX, centerY - e.clientY);
 
-          if (dist < 28) {
-            targetX = centerX;
-            targetY = centerY;
-            if (!isSnapping) {
-              isSnapping = true;
-              if (cursorSettings.audioHaptics) {
-                playMagneticSnap();
-              }
-            }
+          if (dist < 26) {
+            // Smooth gravitational attraction without visual collision or jarring jump
+            targetX = e.clientX + (centerX - e.clientX) * 0.42;
+            targetY = e.clientY + (centerY - e.clientY) * 0.42;
+            isSnapping = true;
           } else {
             isSnapping = false;
           }
@@ -169,10 +165,6 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({
           shakeHistoryRef.current = [];
           if (onShakeDismiss) {
             onShakeDismiss();
-          }
-          if (cursorSettings.audioHaptics) {
-            if (isMac) playMacHapticClick(0.18);
-            else playWin95Click(0.16);
           }
         }
       }
@@ -233,11 +225,13 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({
       selectedValuesRef.current = [];
       setLiveMath(null);
 
-      if (cursorSettings.audioHaptics) {
+      // Audio strictly limited to primary action: clicking Run Query
+      const isRunBtn = Boolean((e.target as HTMLElement)?.closest('#btn-run'));
+      if (cursorSettings.audioHaptics && isRunBtn) {
         if (isMac) {
-          playMacHapticClick();
+          playMacHapticClick(0.12);
         } else {
-          playWin95Click();
+          playWin95Click(0.1);
         }
       }
     };
@@ -317,9 +311,6 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({
         ref={pointerRef}
         className={`exnihilo-cursor-pointer ${cursorType === 'pointer' ? 'is-hovering' : ''} ${isMac ? 'macos' : ''}`}
       >
-        {/* Soft Magnetic Aura */}
-        <div className="cursor-aura" />
-
         {/* 1. Loading State: Rainbow Beachball or Retro Sand Hourglass */}
         {isLoading ? (
           isMac ? (
@@ -485,3 +476,4 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({
     </div>
   );
 };
+

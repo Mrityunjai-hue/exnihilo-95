@@ -79,3 +79,4 @@ export function useCursorSettings() {
     resetCursorSettings: resetSettings,
   };
 }
+

@@ -80,26 +80,11 @@ body.exnihilo-custom-cursor-active * {
   pointer-events: none;
   will-change: transform;
   transform: translate3d(0, 0, 0);
-  transition: filter 0.15s ease;
+  transition: filter 0.15s ease, opacity 0.15s ease;
 }
 
-/* Pointer Hover Dilation Aura for macOS */
-.exnihilo-cursor-pointer.is-hovering.macos .cursor-aura {
-  opacity: 1;
-  transform: scale(1.3);
-}
-
-.cursor-aura {
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(255, 255, 255, 0.1) 60%, transparent 80%);
-  opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: none;
+.exnihilo-cursor-pointer.is-snapped {
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
 }
 
 /* Spinning Beachball Animation */
@@ -312,3 +297,4 @@ body.exnihilo-custom-cursor-active * {
   animation: cursorSmokePouf 0.5s ease-out forwards;
   pointer-events: none;
 }
+
