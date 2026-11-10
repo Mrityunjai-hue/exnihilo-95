@@ -89,15 +89,22 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     return () => observer.disconnect();
   }, []);
 
-  // Extract raw active rows safely for useMemo hook at top level
-  const rawRows = useMemo(() => {
-    if (!result) return [];
+  // Extract active query result data safely for top-level hooks
+  const currentResult = useMemo(() => {
+    if (!result) return { columns: [] as string[], rows: [] as any[][], rowCount: 0 };
     const hasMultiple = Boolean(result.allResults && result.allResults.length > 1);
     if (hasMultiple && result.allResults && result.allResults[activeTab]) {
-      return result.allResults[activeTab].rows || [];
+      return result.allResults[activeTab];
     }
-    return result.rows || [];
+    return { columns: result.columns || [], rows: result.rows || [], rowCount: result.rowCount || 0 };
   }, [result, activeTab]);
+
+  const columns = useMemo(() => currentResult.columns || [], [currentResult]);
+  const rowCount = currentResult.rowCount || 0;
+
+  const rawRows = useMemo(() => {
+    return currentResult.rows || [];
+  }, [currentResult]);
 
   // Calculate memory byte size once when active raw rows change
   const dataSizeFormatted = useMemo(() => {
@@ -155,12 +162,80 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   const topSpacerHeight = visibleStartIndex * ROW_HEIGHT;
   const bottomSpacerHeight = Math.max(0, (processedRows.length - visibleEndIndex) * ROW_HEIGHT);
 
+  // Infer column data types from row values for clear header badges (Top-Level Hook)
+  const columnTypes = useMemo(() => {
+    return columns.map((_, colIdx) => {
+      for (const row of rawRows) {
+        const val = row[colIdx];
+        if (val !== null && val !== undefined) {
+          if (typeof val === 'number') {
+            return Number.isInteger(val) ? 'INT' : 'DEC';
+          }
+          if (typeof val === 'boolean') return 'BOOL';
+          if (typeof val === 'string') {
+            if (/^\d{4}-\d{2}-\d{2}/.test(val)) return 'DATE';
+            return 'TEXT';
+          }
+        }
+      }
+      return 'ANY';
+    });
+  }, [columns, rawRows]);
+
+  // Identify numeric & categorical column indices for instant zero-config charting (Top-Level Hook)
+  const numericColIndices = useMemo(() => {
+    const indices: number[] = [];
+    columns.forEach((_, idx) => {
+      const hasNum = rawRows.some(r => typeof r[idx] === 'number');
+      if (hasNum) indices.push(idx);
+    });
+    return indices;
+  }, [columns, rawRows]);
+
+  const categoricalColIndices = useMemo(() => {
+    const indices: number[] = [];
+    columns.forEach((_, idx) => {
+      if (!numericColIndices.includes(idx)) indices.push(idx);
+    });
+    return indices.length > 0 ? indices : columns.map((_, i) => i);
+  }, [columns, numericColIndices]);
+
+  useEffect(() => {
+    if (categoricalColIndices.length > 0) setSelectedCatCol(categoricalColIndices[0]);
+    if (numericColIndices.length > 0) setSelectedNumCol(numericColIndices[0]);
+    else if (columns.length > 1) setSelectedNumCol(1);
+    else setSelectedNumCol(0);
+  }, [columns, categoricalColIndices, numericColIndices]);
+
+  const chartData = useMemo(() => {
+    if (rawRows.length === 0) return [];
+    return rawRows.slice(0, 30).map((r, i) => {
+      const rawCat = r[selectedCatCol];
+      const label = rawCat !== null && rawCat !== undefined ? String(rawCat) : `Row ${i + 1}`;
+      const rawVal = r[selectedNumCol];
+      const value = typeof rawVal === 'number' ? rawVal : parseFloat(rawVal) || 0;
+      return { label, value };
+    });
+  }, [rawRows, selectedCatCol, selectedNumCol]);
+
+  const maxChartVal = useMemo(() => {
+    return Math.max(...chartData.map(d => d.value), 0.0001);
+  }, [chartData]);
+
+  const sumChartVal = useMemo(() => {
+    return chartData.reduce((acc, d) => acc + d.value, 0);
+  }, [chartData]);
+
+  const avgChartVal = useMemo(() => {
+    return chartData.length > 0 ? sumChartVal / chartData.length : 0;
+  }, [chartData, sumChartVal]);
+
   const showToast = (msg: string) => {
     setToastNotice(msg);
     setTimeout(() => setToastNotice(null), 2500);
   };
 
-  // Early returns AFTER all hooks have been declared unconditionally
+  // Early returns AFTER ALL hooks have been declared unconditionally (Rules of Hooks)
   if (isLoading) {
     return (
       <div
@@ -208,82 +283,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   }
 
   const { inferredTables, reusedTables, allResults } = result;
-
-  // Active query result data
   const hasMultipleResults = Boolean(allResults && allResults.length > 1);
-  const currentResult = (hasMultipleResults && allResults && allResults[activeTab])
-    ? allResults[activeTab]
-    : { columns: result.columns, rows: result.rows, rowCount: result.rowCount };
-
-  const { columns, rowCount } = currentResult;
-
-  // Infer column data types from row values for clear header badges
-  const columnTypes = useMemo(() => {
-    return columns.map((_, colIdx) => {
-      for (const row of rawRows) {
-        const val = row[colIdx];
-        if (val !== null && val !== undefined) {
-          if (typeof val === 'number') {
-            return Number.isInteger(val) ? 'INT' : 'DEC';
-          }
-          if (typeof val === 'boolean') return 'BOOL';
-          if (typeof val === 'string') {
-            if (/^\d{4}-\d{2}-\d{2}/.test(val)) return 'DATE';
-            return 'TEXT';
-          }
-        }
-      }
-      return 'ANY';
-    });
-  }, [columns, rawRows]);
-
-  // Identify numeric & categorical column indices for instant zero-config charting
-  const numericColIndices = useMemo(() => {
-    const indices: number[] = [];
-    columns.forEach((_, idx) => {
-      const hasNum = rawRows.some(r => typeof r[idx] === 'number');
-      if (hasNum) indices.push(idx);
-    });
-    return indices;
-  }, [columns, rawRows]);
-
-  const categoricalColIndices = useMemo(() => {
-    const indices: number[] = [];
-    columns.forEach((_, idx) => {
-      if (!numericColIndices.includes(idx)) indices.push(idx);
-    });
-    return indices.length > 0 ? indices : columns.map((_, i) => i);
-  }, [columns, numericColIndices]);
-
-  useEffect(() => {
-    if (categoricalColIndices.length > 0) setSelectedCatCol(categoricalColIndices[0]);
-    if (numericColIndices.length > 0) setSelectedNumCol(numericColIndices[0]);
-    else if (columns.length > 1) setSelectedNumCol(1);
-    else setSelectedNumCol(0);
-  }, [columns, categoricalColIndices, numericColIndices]);
-
-  const chartData = useMemo(() => {
-    if (rawRows.length === 0) return [];
-    return rawRows.slice(0, 30).map((r, i) => {
-      const rawCat = r[selectedCatCol];
-      const label = rawCat !== null && rawCat !== undefined ? String(rawCat) : `Row ${i + 1}`;
-      const rawVal = r[selectedNumCol];
-      const value = typeof rawVal === 'number' ? rawVal : parseFloat(rawVal) || 0;
-      return { label, value };
-    });
-  }, [rawRows, selectedCatCol, selectedNumCol]);
-
-  const maxChartVal = useMemo(() => {
-    return Math.max(...chartData.map(d => d.value), 0.0001);
-  }, [chartData]);
-
-  const sumChartVal = useMemo(() => {
-    return chartData.reduce((acc, d) => acc + d.value, 0);
-  }, [chartData]);
-
-  const avgChartVal = useMemo(() => {
-    return chartData.length > 0 ? sumChartVal / chartData.length : 0;
-  }, [chartData, sumChartVal]);
 
   // Handle column header click for sorting (ASC -> DESC -> Unsorted)
   const handleColumnSort = (colIdx: number) => {
