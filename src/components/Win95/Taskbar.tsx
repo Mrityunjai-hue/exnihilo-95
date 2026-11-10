@@ -241,7 +241,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
                           setTimeout(() => {
                             onToggleMinimize(item.id);
                             win.classList.remove('mac-window-minimizing');
-                          }, 220);
+                          }, 180);
                           return;
                         }
                       }

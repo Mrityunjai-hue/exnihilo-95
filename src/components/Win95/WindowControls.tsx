@@ -52,7 +52,7 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
           setTimeout(() => {
             onMinimize();
             win.classList.remove('mac-window-minimizing');
-          }, 240);
+          }, 180);
           return;
         }
       }
@@ -79,7 +79,7 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
           setTimeout(() => {
             onClose();
             win.classList.remove('mac-window-closing');
-          }, 180);
+          }, 140);
           return;
         }
       }
