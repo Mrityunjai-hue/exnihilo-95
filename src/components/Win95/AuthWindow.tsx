@@ -206,52 +206,129 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
         </div>
 
         {/* Dialog Body */}
-        <div style={{ padding: isMac ? '12px' : '8px' }}>
-          {/* Header Banner */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: isMac ? '10px 14px' : '8px 12px',
-              marginBottom: '10px',
-              background: isMac
-                ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.18) 0%, rgba(99, 102, 241, 0.18) 100%)'
-                : 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
-              color: '#ffffff',
-              border: isMac
-                ? '1px solid rgba(255, 255, 255, 0.16)'
-                : '2px inset #dfdfdf',
-              borderRadius: isMac ? '12px' : '0',
-              boxShadow: isMac
-                ? '0 8px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
-                : undefined,
-            }}
-          >
-            <div
-              style={{
-                width: isMac ? '42px' : 'auto',
-                height: isMac ? '42px' : 'auto',
-                borderRadius: isMac ? '12px' : '0',
-                background: isMac ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: isMac ? '24px' : '26px',
-                border: isMac ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
-              }}
-            >
-              {selectedAvatar || '💻'}
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: isMac ? '14px' : '13px', letterSpacing: isMac ? '-0.01em' : 'normal' }}>
-                {isMac ? 'ExNihilo User Security' : 'ExNihilo 95 Security Logon'}
+        <div style={{ padding: isMac ? '20px' : '8px' }}>
+          {isMac ? (
+            /* Apple ID Style Clean Profile Hero */
+            <div style={{ textAlign: 'center', marginBottom: '14px' }}>
+              <div
+                style={{
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '16px',
+                  background: 'rgba(56, 189, 248, 0.16)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                  boxShadow: '0 8px 24px rgba(56, 189, 248, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '28px',
+                  marginBottom: '8px',
+                }}
+              >
+                {selectedAvatar || '💻'}
               </div>
-              <div style={{ fontSize: '11px', color: isMac ? '#94a3b8' : '#dfdfdf' }}>
-                Single-Device PBKDF2 Local Keychain
+              <div style={{ fontWeight: 700, fontSize: '16px', color: '#f8fafc', letterSpacing: '-0.01em' }}>
+                {activeTab === 'login' ? 'Sign In to ExNihilo' : 'Create Local Account'}
+              </div>
+              <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                {activeTab === 'login'
+                  ? 'Enter your credentials to unlock local schemas'
+                  : 'Single-device local keychain with PBKDF2 encryption'}
+              </div>
+
+              {/* Apple Segmented Pill Switcher */}
+              <div
+                style={{
+                  display: 'flex',
+                  background: 'rgba(0, 0, 0, 0.35)',
+                  padding: '3px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  margin: '14px auto 0 auto',
+                  maxWidth: '320px',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('login')}
+                  style={{
+                    flex: 1,
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: activeTab === 'login' ? 600 : 500,
+                    color: activeTab === 'login' ? '#ffffff' : '#94a3b8',
+                    background: activeTab === 'login' ? 'rgba(255, 255, 255, 0.16)' : 'transparent',
+                    borderRadius: '7px',
+                    border: 'none',
+                    boxShadow: activeTab === 'login' ? '0 2px 6px rgba(0,0,0,0.3)' : 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  Log In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('signup')}
+                  style={{
+                    flex: 1,
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: activeTab === 'signup' ? 600 : 500,
+                    color: activeTab === 'signup' ? '#ffffff' : '#94a3b8',
+                    background: activeTab === 'signup' ? 'rgba(255, 255, 255, 0.16)' : 'transparent',
+                    borderRadius: '7px',
+                    border: 'none',
+                    boxShadow: activeTab === 'signup' ? '0 2px 6px rgba(0,0,0,0.3)' : 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  Create Account
+                </button>
               </div>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Header Banner */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '8px 12px',
+                  marginBottom: '8px',
+                  background: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
+                  color: '#ffffff',
+                  border: '2px inset #dfdfdf',
+                }}
+              >
+                <span style={{ fontSize: '26px' }}>{selectedAvatar || '💻'}</span>
+                <div>
+                  <div style={{ fontWeight: 'bold', fontSize: '13px' }}>ExNihilo 95 Security Logon</div>
+                  <div style={{ fontSize: '10px', color: '#dfdfdf' }}>
+                    Single-Device PBKDF2 Local Auth System
+                  </div>
+                </div>
+              </div>
+
+              {/* Tabs */}
+              <div className="win95-tabs">
+                <div
+                  className={`win95-tab ${activeTab === 'login' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('login')}
+                >
+                  Log In
+                </div>
+                <div
+                  className={`win95-tab ${activeTab === 'signup' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('signup')}
+                >
+                  Create Account
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Secure Context Warning if HTTP */}
           {!isSecureContext && (
@@ -271,30 +348,14 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
             </div>
           )}
 
-          {/* Tabs */}
-          <div className="win95-tabs">
-            <div
-              className={`win95-tab ${activeTab === 'login' ? 'active' : ''}`}
-              onClick={() => setActiveTab('login')}
-            >
-              Log In
-            </div>
-            <div
-              className={`win95-tab ${activeTab === 'signup' ? 'active' : ''}`}
-              onClick={() => setActiveTab('signup')}
-            >
-              Create Account
-            </div>
-          </div>
-
           {/* Tab Inset Content */}
           <div
-            className="win95-inset"
+            className={isMac ? '' : 'win95-inset'}
             style={{
-              padding: '16px',
-              background: 'var(--w95-sunken-bg, #c0c0c0)',
+              padding: isMac ? '4px 0' : '16px',
+              background: isMac ? 'transparent' : 'var(--w95-sunken-bg, #c0c0c0)',
               color: 'var(--w95-text-color, #000000)',
-              minHeight: '260px',
+              minHeight: isMac ? 'auto' : '260px',
               borderRadius: isMac ? '12px' : '0',
             }}
           >
@@ -368,16 +429,12 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
                   <button
                     type="submit"
-                    className="win95-button"
+                    className={`win95-button ${isMac ? 'mac-button-primary' : ''}`}
                     style={{
-                      minWidth: '90px',
+                      minWidth: isMac ? '100px' : '90px',
                       fontWeight: 600,
                       height: isMac ? '34px' : 'auto',
                       borderRadius: isMac ? '8px' : '0',
-                      background: isMac ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : undefined,
-                      color: isMac ? '#ffffff' : undefined,
-                      border: isMac ? '1px solid rgba(255, 255, 255, 0.2)' : undefined,
-                      boxShadow: isMac ? '0 2px 8px rgba(2, 132, 199, 0.4)' : undefined,
                       cursor: 'pointer',
                     }}
                     disabled={isSubmitting || isLoading || !isSecureContext}
@@ -405,9 +462,9 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
             ) : (
               <form onSubmit={handleSignUpSubmit} autoComplete="off">
                 {/* Avatar Choice */}
-                <div style={{ marginBottom: isMac ? '12px' : '8px' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontSize: isMac ? '11px' : '10px', fontWeight: 600, color: isMac ? '#94a3b8' : undefined }}>
-                    Choose Avatar Icon:
+                <div style={{ marginBottom: isMac ? '14px' : '8px' }}>
+                  <label style={{ display: 'block', marginBottom: '6px', fontSize: isMac ? '12px' : '10px', fontWeight: 600, color: isMac ? '#94a3b8' : undefined }}>
+                    Choose Avatar:
                   </label>
                   <div style={{ display: 'flex', gap: isMac ? '8px' : '6px', flexWrap: 'wrap' }}>
                     {AVATAR_OPTIONS.map((icon) => (
@@ -451,8 +508,8 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                   </div>
                 </div>
 
-                <div style={{ marginBottom: isMac ? '10px' : '6px' }}>
-                  <label htmlFor="signUpName" style={{ display: 'block', marginBottom: '3px', fontSize: isMac ? '11px' : '10px', fontWeight: 600 }}>
+                <div style={{ marginBottom: isMac ? '12px' : '6px' }}>
+                  <label htmlFor="signUpName" style={{ display: 'block', marginBottom: '4px', fontSize: isMac ? '12px' : '10px', fontWeight: 600 }}>
                     Full Name:
                   </label>
                   <input
@@ -464,9 +521,9 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                     className="win95-sunken"
                     style={{
                       width: '100%',
-                      padding: isMac ? '6px 10px' : '3px',
+                      padding: isMac ? '7px 12px' : '3px',
                       fontSize: isMac ? '12px' : '11px',
-                      height: isMac ? '32px' : 'auto',
+                      height: isMac ? '34px' : 'auto',
                       borderRadius: isMac ? '8px' : '0',
                       boxSizing: 'border-box',
                     }}
@@ -476,8 +533,8 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                   />
                 </div>
 
-                <div style={{ marginBottom: isMac ? '10px' : '6px' }}>
-                  <label htmlFor="signUpUser" style={{ display: 'block', marginBottom: '3px', fontSize: isMac ? '11px' : '10px', fontWeight: 600 }}>
+                <div style={{ marginBottom: isMac ? '12px' : '6px' }}>
+                  <label htmlFor="signUpUser" style={{ display: 'block', marginBottom: '4px', fontSize: isMac ? '12px' : '10px', fontWeight: 600 }}>
                     Username (3-20 chars, letters/numbers/_):
                   </label>
                   <input
@@ -489,9 +546,9 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                     className="win95-sunken"
                     style={{
                       width: '100%',
-                      padding: isMac ? '6px 10px' : '3px',
+                      padding: isMac ? '7px 12px' : '3px',
                       fontSize: isMac ? '12px' : '11px',
-                      height: isMac ? '32px' : 'auto',
+                      height: isMac ? '34px' : 'auto',
                       borderRadius: isMac ? '8px' : '0',
                       boxSizing: 'border-box',
                     }}
@@ -501,34 +558,40 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                   />
                 </div>
 
-                <div style={{ marginBottom: isMac ? '10px' : '6px' }}>
-                  <label htmlFor="signUpEmail" style={{ display: 'block', marginBottom: '3px', fontSize: isMac ? '11px' : '10px', fontWeight: 600 }}>
-                    Contact Email <span style={{ color: isMac ? '#94a3b8' : '#800000', fontSize: isMac ? '10px' : '9px', fontWeight: 'normal' }}>({isMac ? 'optional identity' : 'unverified string'})</span>:
+                <div style={{ marginBottom: isMac ? '12px' : '6px' }}>
+                  <label htmlFor="signUpContactEmail" style={{ display: 'block', marginBottom: '4px', fontSize: isMac ? '12px' : '10px', fontWeight: 600 }}>
+                    Contact Email <span style={{ color: isMac ? '#94a3b8' : '#800000', fontSize: isMac ? '11px' : '9px', fontWeight: 'normal' }}>({isMac ? 'optional' : 'unverified string'})</span>:
                   </label>
                   <input
-                    id="signUpEmail"
-                    type="email"
+                    id="signUpContactEmail"
+                    name="nihilo_contact_id_field"
+                    type="text"
+                    inputMode="email"
                     maxLength={255}
                     value={signUpEmail}
                     onChange={(e) => setSignUpEmail(e.target.value)}
                     className="win95-sunken"
                     style={{
                       width: '100%',
-                      padding: isMac ? '6px 10px' : '3px',
+                      padding: isMac ? '7px 12px' : '3px',
                       fontSize: isMac ? '12px' : '11px',
-                      height: isMac ? '32px' : 'auto',
+                      height: isMac ? '34px' : 'auto',
                       borderRadius: isMac ? '8px' : '0',
                       boxSizing: 'border-box',
                     }}
-                    placeholder="user@example.com"
-                    autoComplete="off"
+                    placeholder="name@example.com (optional)"
+                    autoComplete="new-password"
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-bwignore="true"
+                    data-form-type="other"
                     disabled={isSubmitting || isLoading}
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px', marginBottom: isMac ? '10px' : '6px' }}>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: isMac ? '12px' : '6px' }}>
                   <div style={{ flex: 1 }}>
-                    <label htmlFor="signUpPass" style={{ display: 'block', marginBottom: '3px', fontSize: isMac ? '11px' : '10px', fontWeight: 600 }}>
+                    <label htmlFor="signUpPass" style={{ display: 'block', marginBottom: '4px', fontSize: isMac ? '12px' : '10px', fontWeight: 600 }}>
                       Password:
                     </label>
                     <input
@@ -540,9 +603,9 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                       className="win95-sunken"
                       style={{
                         width: '100%',
-                        padding: isMac ? '6px 10px' : '3px',
+                        padding: isMac ? '7px 12px' : '3px',
                         fontSize: isMac ? '12px' : '11px',
-                        height: isMac ? '32px' : 'auto',
+                        height: isMac ? '34px' : 'auto',
                         borderRadius: isMac ? '8px' : '0',
                         boxSizing: 'border-box',
                       }}
@@ -552,7 +615,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label htmlFor="signUpConfirm" style={{ display: 'block', marginBottom: '3px', fontSize: isMac ? '11px' : '10px', fontWeight: 600 }}>
+                    <label htmlFor="signUpConfirm" style={{ display: 'block', marginBottom: '4px', fontSize: isMac ? '12px' : '10px', fontWeight: 600 }}>
                       Confirm:
                     </label>
                     <input
@@ -564,9 +627,9 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                       className="win95-sunken"
                       style={{
                         width: '100%',
-                        padding: isMac ? '6px 10px' : '3px',
+                        padding: isMac ? '7px 12px' : '3px',
                         fontSize: isMac ? '12px' : '11px',
-                        height: isMac ? '32px' : 'auto',
+                        height: isMac ? '34px' : 'auto',
                         borderRadius: isMac ? '8px' : '0',
                         boxSizing: 'border-box',
                       }}
@@ -578,7 +641,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
 
                 {/* Segmented Password Strength Bar */}
                 {signUpPass.length > 0 && (
-                  <div style={{ marginBottom: isMac ? '12px' : '10px', fontSize: isMac ? '11px' : '10px' }}>
+                  <div style={{ marginBottom: isMac ? '14px' : '10px', fontSize: isMac ? '11px' : '10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
                       <span style={{ color: isMac ? '#94a3b8' : undefined }}>Strength:</span>
                       <span style={{ fontWeight: 600, color: strength.color }}>{strength.label}</span>
@@ -616,19 +679,14 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                   </div>
                 )}
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '14px' }}>
                   <button
                     type="submit"
-                    className="win95-button"
+                    className={`win95-button ${isMac ? 'mac-button-primary' : ''}`}
                     style={{
-                      minWidth: '110px',
-                      fontWeight: 600,
+                      minWidth: isMac ? '120px' : '95px',
                       height: isMac ? '34px' : 'auto',
                       borderRadius: isMac ? '8px' : '0',
-                      background: isMac ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : undefined,
-                      color: isMac ? '#ffffff' : undefined,
-                      border: isMac ? '1px solid rgba(255, 255, 255, 0.2)' : undefined,
-                      boxShadow: isMac ? '0 2px 8px rgba(2, 132, 199, 0.4)' : undefined,
                       cursor: 'pointer',
                     }}
                     disabled={isSubmitting || isLoading || !isSecureContext}
@@ -656,57 +714,74 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
             )}
           </div>
 
-          {/* Footer Status Bar */}
-          <div
-            style={{
-              marginTop: '8px',
-              display: 'flex',
-              gap: '6px',
-              fontSize: '11px',
-            }}
-          >
+          {/* Footer Status / Security Bar */}
+          {isMac ? (
             <div
-              className="win95-sunken"
               style={{
-                flex: 1,
-                padding: isMac ? '4px 8px' : '2px 6px',
-                background: 'var(--w95-sunken-bg, #c0c0c0)',
-                color: 'var(--w95-text-color, #f8fafc)',
-                borderRadius: isMac ? '6px' : '0',
-                border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
+                marginTop: '16px',
+                paddingTop: '12px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '11px',
+                color: '#94a3b8',
               }}
             >
-              {isSecureContext ? '🔒 SSL Encrypted (Local)' : '⚠️ Plain HTTP'}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>🔒</span>
+                <span>PBKDF2 (600,000 iter) • Local Keychain Only</span>
+              </div>
+              {capsLockOn && (
+                <span style={{ color: '#f87171', fontWeight: 600 }}>⇪ CAPS LOCK ON</span>
+              )}
             </div>
+          ) : (
             <div
-              className="win95-sunken"
               style={{
-                flex: 1,
-                padding: isMac ? '4px 8px' : '2px 6px',
-                background: 'var(--w95-sunken-bg, #c0c0c0)',
-                color: 'var(--w95-text-color, #f8fafc)',
-                borderRadius: isMac ? '6px' : '0',
-                border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
+                marginTop: '8px',
+                display: 'flex',
+                gap: '6px',
+                fontSize: '11px',
               }}
             >
-              PBKDF2 (600,000 iter)
+              <div
+                className="win95-sunken"
+                style={{
+                  flex: 1,
+                  padding: '2px 6px',
+                  background: 'var(--w95-sunken-bg, #c0c0c0)',
+                  color: 'var(--w95-text-color, #f8fafc)',
+                }}
+              >
+                {isSecureContext ? '🔒 SSL Encrypted (Local)' : '⚠️ Plain HTTP'}
+              </div>
+              <div
+                className="win95-sunken"
+                style={{
+                  flex: 1,
+                  padding: '2px 6px',
+                  background: 'var(--w95-sunken-bg, #c0c0c0)',
+                  color: 'var(--w95-text-color, #f8fafc)',
+                }}
+              >
+                PBKDF2 (600,000 iter)
+              </div>
+              <div
+                className="win95-sunken"
+                style={{
+                  width: '65px',
+                  padding: '2px 6px',
+                  background: 'var(--w95-sunken-bg, #c0c0c0)',
+                  color: capsLockOn ? '#800000' : '#808080',
+                  textAlign: 'center',
+                  fontWeight: capsLockOn ? 'bold' : 'normal',
+                }}
+              >
+                {capsLockOn ? 'CAPS' : 'caps off'}
+              </div>
             </div>
-            <div
-              className="win95-sunken"
-              style={{
-                width: isMac ? '72px' : '65px',
-                padding: isMac ? '4px 8px' : '2px 6px',
-                background: 'var(--w95-sunken-bg, #c0c0c0)',
-                color: capsLockOn ? (isMac ? '#f87171' : '#800000') : (isMac ? '#94a3b8' : '#808080'),
-                textAlign: 'center',
-                fontWeight: capsLockOn ? 700 : 'normal',
-                borderRadius: isMac ? '6px' : '0',
-                border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
-              }}
-            >
-              {capsLockOn ? 'CAPS' : 'caps off'}
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
