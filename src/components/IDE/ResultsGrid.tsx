@@ -9,6 +9,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ExecutionSuccess } from '../../engine/executor';
 import { Dialect } from '../../engine/parser';
+import { useTheme } from '../../hooks/useTheme';
 import {
   generateInsertStatements,
   generateDDLStatement,
@@ -41,6 +42,15 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(300);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
+
+  const { activeTheme } = useTheme();
+  const isDark = activeTheme === 'macos-glass' || activeTheme === 'win95-noir';
+
+  // Output View Mode ('data' for Grid, 'visual' for Instant Charting)
+  const [viewMode, setViewMode] = useState<'data' | 'visual'>('data');
+  const [chartType, setChartType] = useState<'bar' | 'kpi' | 'line'>('bar');
+  const [selectedCatCol, setSelectedCatCol] = useState<number>(0);
+  const [selectedNumCol, setSelectedNumCol] = useState<number>(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -226,6 +236,54 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
       return 'ANY';
     });
   }, [columns, rawRows]);
+
+  // Identify numeric & categorical column indices for instant zero-config charting
+  const numericColIndices = useMemo(() => {
+    const indices: number[] = [];
+    columns.forEach((_, idx) => {
+      const hasNum = rawRows.some(r => typeof r[idx] === 'number');
+      if (hasNum) indices.push(idx);
+    });
+    return indices;
+  }, [columns, rawRows]);
+
+  const categoricalColIndices = useMemo(() => {
+    const indices: number[] = [];
+    columns.forEach((_, idx) => {
+      if (!numericColIndices.includes(idx)) indices.push(idx);
+    });
+    return indices.length > 0 ? indices : columns.map((_, i) => i);
+  }, [columns, numericColIndices]);
+
+  useEffect(() => {
+    if (categoricalColIndices.length > 0) setSelectedCatCol(categoricalColIndices[0]);
+    if (numericColIndices.length > 0) setSelectedNumCol(numericColIndices[0]);
+    else if (columns.length > 1) setSelectedNumCol(1);
+    else setSelectedNumCol(0);
+  }, [columns, categoricalColIndices, numericColIndices]);
+
+  const chartData = useMemo(() => {
+    if (rawRows.length === 0) return [];
+    return rawRows.slice(0, 30).map((r, i) => {
+      const rawCat = r[selectedCatCol];
+      const label = rawCat !== null && rawCat !== undefined ? String(rawCat) : `Row ${i + 1}`;
+      const rawVal = r[selectedNumCol];
+      const value = typeof rawVal === 'number' ? rawVal : parseFloat(rawVal) || 0;
+      return { label, value };
+    });
+  }, [rawRows, selectedCatCol, selectedNumCol]);
+
+  const maxChartVal = useMemo(() => {
+    return Math.max(...chartData.map(d => d.value), 0.0001);
+  }, [chartData]);
+
+  const sumChartVal = useMemo(() => {
+    return chartData.reduce((acc, d) => acc + d.value, 0);
+  }, [chartData]);
+
+  const avgChartVal = useMemo(() => {
+    return chartData.length > 0 ? sumChartVal / chartData.length : 0;
+  }, [chartData, sumChartVal]);
 
   // Handle column header click for sorting (ASC -> DESC -> Unsorted)
   const handleColumnSort = (colIdx: number) => {
@@ -438,7 +496,50 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           gap: '6px',
         }}
       >
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          {/* Output View Mode Toggles */}
+          <button
+            className={`win95-button ${viewMode === 'data' ? 'active' : ''}`}
+            style={{
+              fontSize: '11px',
+              padding: '1px 8px',
+              fontWeight: viewMode === 'data' ? 'bold' : 'normal',
+              background: viewMode === 'data' ? 'var(--w95-sunken-bg, #ffffff)' : undefined,
+              color: viewMode === 'data' ? 'var(--w95-sunken-text, #000000)' : undefined,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              cursor: 'pointer',
+            }}
+            onClick={() => setViewMode('data')}
+            title="View query results as tabular data grid"
+          >
+            <span>📊</span>
+            <span>Data</span>
+          </button>
+
+          <button
+            className={`win95-button ${viewMode === 'visual' ? 'active' : ''}`}
+            style={{
+              fontSize: '11px',
+              padding: '1px 8px',
+              fontWeight: viewMode === 'visual' ? 'bold' : 'normal',
+              background: viewMode === 'visual' ? 'var(--w95-sunken-bg, #ffffff)' : undefined,
+              color: viewMode === 'visual' ? 'var(--w95-sunken-text, #000000)' : undefined,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              cursor: 'pointer',
+            }}
+            onClick={() => setViewMode('visual')}
+            title="Visualize query results as interactive charts"
+          >
+            <span>📈</span>
+            <span>Visual</span>
+          </button>
+
+          <div className="win95-divider-v" style={{ margin: '0 2px' }} />
+
           {/* Consolidated Export Dropdown */}
           <div style={{ position: 'relative' }}>
             <button
@@ -572,7 +673,250 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
         </div>
       )}
 
-      {/* Virtualized Scrollable Grid Table */}
+      {viewMode === 'visual' ? (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>
+          {/* Visual Controls Strip */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '4px 8px',
+              background: 'var(--w95-gray, #c0c0c0)',
+              borderBottom: '1px solid var(--w95-dark-gray, #808080)',
+              fontSize: '11px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <strong>Chart:</strong>
+              <select
+                className="win95-sunken"
+                value={chartType}
+                onChange={(e) => setChartType(e.target.value as any)}
+                style={{ padding: '1px 4px', fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
+              >
+                <option value="bar">📊 Proportional Bar Chart</option>
+                <option value="kpi">🎛️ Metric KPI Cards</option>
+                <option value="line">📈 Trend Polyline Chart</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <strong>Category (X):</strong>
+              <select
+                className="win95-sunken"
+                value={selectedCatCol}
+                onChange={(e) => setSelectedCatCol(Number(e.target.value))}
+                style={{ padding: '1px 4px', fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
+              >
+                {columns.map((c, i) => (
+                  <option key={i} value={i}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <strong>Metric (Y):</strong>
+              <select
+                className="win95-sunken"
+                value={selectedNumCol}
+                onChange={(e) => setSelectedNumCol(Number(e.target.value))}
+                style={{ padding: '1px 4px', fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
+              >
+                {columns.map((c, i) => (
+                  <option key={i} value={i}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            <span style={{ marginLeft: 'auto', fontSize: '10px', opacity: 0.8 }}>
+              Total: <strong>{sumChartVal.toLocaleString()}</strong> │ Avg: <strong>{avgChartVal.toFixed(2)}</strong> │ Max: <strong>{maxChartVal.toLocaleString()}</strong>
+            </span>
+          </div>
+
+          {/* Visual Canvas Viewport */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+            {rawRows.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '36px 12px', opacity: 0.7 }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>📊</div>
+                <strong style={{ fontSize: '13px' }}>No query result data available</strong>
+                <p style={{ fontSize: '11px', marginTop: '4px' }}>Execute a query first to visualize results.</p>
+              </div>
+            ) : numericColIndices.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '36px 12px', opacity: 0.8 }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>💡</div>
+                <strong style={{ fontSize: '13px' }}>No numeric columns found in this result set</strong>
+                <p style={{ fontSize: '11px', marginTop: '4px' }}>
+                  Include numeric fields (e.g. <code>COUNT()</code>, <code>SUM()</code>, <code>price</code>, <code>value</code>) in your query to render charts.
+                </p>
+              </div>
+            ) : chartType === 'kpi' ? (
+              /* KPI Cards Mode */
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px', padding: '4px' }}>
+                <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
+                  <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
+                    TOTAL {columns[selectedNumCol]}
+                  </div>
+                  <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px', color: isDark ? '#38bdf8' : '#000080' }}>
+                    {sumChartVal.toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px' }}>Cumulative across {chartData.length} records</div>
+                </div>
+
+                <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
+                  <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
+                    AVERAGE VALUE
+                  </div>
+                  <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px', color: isDark ? '#4ade80' : '#006600' }}>
+                    {avgChartVal.toFixed(2)}
+                  </div>
+                  <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px' }}>Mean per category item</div>
+                </div>
+
+                <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
+                  <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
+                    PEAK / MAXIMUM
+                  </div>
+                  <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px', color: isDark ? '#f43f5e' : '#800000' }}>
+                    {maxChartVal.toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px' }}>Top recorded metric point</div>
+                </div>
+
+                <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
+                  <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
+                    SAMPLE VOLUME
+                  </div>
+                  <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px' }}>
+                    {chartData.length} rows
+                  </div>
+                  <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px' }}>Plotted from active result set</div>
+                </div>
+              </div>
+            ) : chartType === 'line' ? (
+              /* Trend Line Mode */
+              <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <svg viewBox="0 0 500 160" style={{ width: '100%', height: '160px', overflow: 'visible' }}>
+                  <line x1="0" y1="20" x2="500" y2="20" stroke="var(--w95-dark-gray)" strokeDasharray="3 3" opacity="0.3" />
+                  <line x1="0" y1="80" x2="500" y2="80" stroke="var(--w95-dark-gray)" strokeDasharray="3 3" opacity="0.3" />
+                  <line x1="0" y1="140" x2="500" y2="140" stroke="var(--w95-dark-gray)" strokeWidth="1" opacity="0.6" />
+
+                  {chartData.length > 1 && (
+                    <>
+                      <polygon
+                        points={`0,140 ${chartData.map((d, idx) => {
+                          const x = (idx / (chartData.length - 1)) * 500;
+                          const y = 140 - (d.value / maxChartVal) * 120;
+                          return `${x},${y}`;
+                        }).join(' ')} 500,140`}
+                        fill={isDark ? 'rgba(56, 189, 248, 0.15)' : 'rgba(0, 0, 128, 0.12)'}
+                      />
+                      <polyline
+                        points={chartData.map((d, idx) => {
+                          const x = (idx / (chartData.length - 1)) * 500;
+                          const y = 140 - (d.value / maxChartVal) * 120;
+                          return `${x},${y}`;
+                        }).join(' ')}
+                        fill="none"
+                        stroke={isDark ? '#38bdf8' : '#000080'}
+                        strokeWidth="2"
+                      />
+                      {chartData.map((d, idx) => {
+                        const x = (idx / (chartData.length - 1)) * 500;
+                        const y = 140 - (d.value / maxChartVal) * 120;
+                        return (
+                          <g key={idx}>
+                            <circle cx={x} cy={y} r="3" fill={isDark ? '#38bdf8' : '#000080'} />
+                            <text x={x} y={y - 6} textAnchor="middle" fontSize="8" fill="var(--w95-text-color)" fontWeight="bold">
+                              {d.value}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </>
+                  )}
+                </svg>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', opacity: 0.7, padding: '0 4px' }}>
+                  <span>{chartData[0]?.label}</span>
+                  <span>{chartData[Math.floor(chartData.length / 2)]?.label}</span>
+                  <span>{chartData[chartData.length - 1]?.label}</span>
+                </div>
+              </div>
+            ) : (
+              /* Proportional Bar Chart Mode */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {chartData.map((d, idx) => {
+                  const pct = Math.max(3, (d.value / maxChartVal) * 100);
+                  const retroPalette = ['#000080', '#008080', '#800080', '#808000', '#006600', '#800000', '#1084d0'];
+                  const barColor = isDark
+                    ? 'linear-gradient(90deg, #38bdf8, #818cf8)'
+                    : retroPalette[idx % retroPalette.length];
+
+                  return (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px' }}>
+                      <div
+                        style={{
+                          width: '130px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          fontWeight: 'bold',
+                          textAlign: 'right',
+                          color: 'var(--w95-text-color)',
+                        }}
+                        title={d.label}
+                      >
+                        {d.label}
+                      </div>
+
+                      <div
+                        className="win95-sunken"
+                        style={{
+                          flex: 1,
+                          height: '20px',
+                          background: 'var(--w95-sunken-bg, #ffffff)',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'center',
+                          borderRadius: isDark ? '4px' : '0',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${pct}%`,
+                            height: '100%',
+                            background: barColor,
+                            transition: 'width 0.3s ease-out',
+                            borderRight: isDark ? 'none' : '1px solid #000000',
+                          }}
+                        />
+                      </div>
+
+                      <div
+                        style={{
+                          minWidth: '85px',
+                          fontWeight: 'bold',
+                          fontFamily: 'var(--w95-mono)',
+                          fontSize: '11px',
+                          color: 'var(--w95-text-color)',
+                        }}
+                      >
+                        {d.value.toLocaleString()}
+                        <span style={{ fontSize: '9px', opacity: 0.65, marginLeft: '4px' }}>
+                          ({sumChartVal > 0 ? ((d.value / sumChartVal) * 100).toFixed(0) : 0}%)
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+      /* Virtualized Scrollable Grid Table */
       <div
         ref={containerRef}
         onScroll={(e) => setScrollTop((e.target as HTMLDivElement).scrollTop)}
@@ -673,6 +1017,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           </tbody>
         </table>
       </div>
+      )}
 
       {/* Grid Bottom Summary Bar */}
       <div className="win95-statusbar">

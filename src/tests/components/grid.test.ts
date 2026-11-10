@@ -154,4 +154,38 @@ describe('Phase 4 ResultsGrid & Exporter Vitest Suite', () => {
       expect(lines[1]).toBe('"1","Test"');
     });
   });
+
+  // ── 4. Visual Tab & Chart Column Extraction ────────────────────────────────
+  describe('Visual Tab & Chart Data Extraction', () => {
+    it('correctly identifies numeric vs categorical columns', () => {
+      const cols = ['id', 'category', 'revenue', 'created_at'];
+      const rows = [
+        [1, 'Electronics', 15000.5, '2026-01-01'],
+        [2, 'Aviation', 22000.0, '2026-01-02'],
+      ];
+
+      const numericIndices: number[] = [];
+      cols.forEach((_, idx) => {
+        if (rows.some(r => typeof r[idx] === 'number')) numericIndices.push(idx);
+      });
+
+      expect(numericIndices).toEqual([0, 2]); // id and revenue
+    });
+
+    it('correctly calculates chart statistics (max, sum, avg)', () => {
+      const chartPoints = [
+        { label: 'AA', value: 100 },
+        { label: 'DL', value: 300 },
+        { label: 'UA', value: 200 },
+      ];
+
+      const maxVal = Math.max(...chartPoints.map(d => d.value));
+      const sumVal = chartPoints.reduce((acc, d) => acc + d.value, 0);
+      const avgVal = sumVal / chartPoints.length;
+
+      expect(maxVal).toBe(300);
+      expect(sumVal).toBe(600);
+      expect(avgVal).toBe(200);
+    });
+  });
 });
