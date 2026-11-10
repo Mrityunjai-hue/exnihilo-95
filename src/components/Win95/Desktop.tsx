@@ -996,6 +996,10 @@ export const Desktop: React.FC = () => {
         onClose={() => setTourOpen(false)}
         onOpenHelp={() => focusWindow('help')}
         onEnsureIDEOpen={() => focusWindow('ide')}
+        onOpenSettings={() => focusWindow('settings')}
+        onOpenAuth={() => focusWindow('auth')}
+        onOpenERD={() => focusWindow('erd')}
+        onOpenChallenges={() => focusWindow('challenges')}
       />
 
       {/* Session Expired Win95 Notification Modal */}

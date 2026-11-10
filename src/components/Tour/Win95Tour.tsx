@@ -2,21 +2,28 @@
  * Win95Tour.tsx — Interactive Dynamic Target-Tracking Windows 95 Guided Tour
  * Dynamically tracks target DOM elements on screen, highlights them with a spotlight box,
  * and moves the balloon window with an arrow pointer directly pointing at each feature!
+ * Covers the IDE, Visual Analytics Dashboard, ERD Viewer, Query Execution Plan,
+ * SQL Challenge Arena, User Profile & Keyring, and Control Panel / Config sections.
  */
 
 import React, { useState, useEffect } from 'react';
 
 interface Win95TourProps {
-  isOpen:          boolean;
-  onClose:         () => void;
-  onOpenHelp:      () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onOpenHelp: () => void;
   onEnsureIDEOpen?: () => void;
+  onOpenSettings?: () => void;
+  onOpenAuth?: () => void;
+  onOpenERD?: () => void;
+  onOpenChallenges?: () => void;
 }
 
 interface TourStep {
-  title:       string;
-  content:     string;
-  targetId?:   string;
+  title: string;
+  content: string;
+  targetId?: string;
+  action?: 'ide' | 'erd' | 'challenges' | 'auth' | 'settings' | 'help';
   isHelpStep?: boolean;
 }
 
@@ -25,6 +32,10 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
   onClose,
   onOpenHelp,
   onEnsureIDEOpen,
+  onOpenSettings,
+  onOpenAuth,
+  onOpenERD,
+  onOpenChallenges,
 }) => {
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
 
@@ -32,12 +43,10 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
   useEffect(() => {
     if (isOpen) {
       setCurrentStepIdx(0);
-      if (onEnsureIDEOpen) {
-        onEnsureIDEOpen();
-      }
+      onEnsureIDEOpen?.();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
+
   const [targetRect, setTargetRect] = useState<{
     top: number;
     left: number;
@@ -49,80 +58,127 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
     {
       title: '✨ Welcome to ExNihilo 95',
       content:
-        'ExNihilo 95 is a zero-configuration SQL development environment. It parses your query AST, infers table schemas automatically, and generates synthetic data in-memory without a database connection! Let\'s take a dynamic guided tour of all features and tools.',
+        'ExNihilo ("out of nothing") is a zero-configuration SQL IDE and relational database studio. It parses query ASTs, deduces schemas automatically, and synthesizes realistic mock data in-memory without a database connection! Let\'s take a complete tour of the entire environment.',
+      action: 'ide',
     },
     {
       title: '1. Multi-Dialect Parser Engine',
       content:
-        'Switch effortlessly between MySQL, PostgreSQL, SQLite, and SSMS (Transact-SQL). ExNihilo adapts syntax parsing rules, quote delimiters, and column types to match your target dialect.',
+        'Switch effortlessly between MySQL, PostgreSQL, SQLite, and SSMS (Transact-SQL). ExNihilo adapts syntax parsing rules, quote delimiters, logical types, and clause formatting to match your target dialect.',
       targetId: 'dialect-select',
+      action: 'ide',
     },
     {
-      title: '2. Run All & Selection Execution',
+      title: '2. Synthetic Row Count Generator',
       content:
-        'Execute all statements or highlight a specific SQL query in the editor to run only your selection. Press F5 or Ctrl+Enter to execute instantly.',
+        'Configure how many mock data rows are generated per table! Choose between 20 (Default), 50, 100, or 500 rows on the fly. The engine scales data volume while preserving foreign key relational integrity.',
+      targetId: 'tb-rows-select',
+      action: 'ide',
+    },
+    {
+      title: '3. Run All & Selection Execution',
+      content:
+        'Execute all statements or highlight a specific SQL query in the editor to run only your selection. Press F5 or Ctrl+Enter to execute queries in sub-milliseconds via WebAssembly SQLite.',
       targetId: 'btn-run',
+      action: 'ide',
     },
     {
-      title: '3. 1-Click SQL Beautifier / Formatter',
+      title: '4. 1-Click SQL Beautifier / Formatter',
       content:
-        'Click "Format SQL" to automatically convert keywords (SELECT, FROM, WHERE, JOIN) to uppercase and format clause line breaks cleanly.',
+        'Click "Format" to automatically convert keywords (SELECT, FROM, WHERE, JOIN) to uppercase and format clause line breaks cleanly.',
       targetId: 'btn-format',
+      action: 'ide',
     },
     {
-      title: '4. Prebuilt SQL Query Templates',
+      title: '5. Prebuilt SQL Query Templates',
       content:
-        'Quickly insert complex SQL queries (JOINs, GROUP BY aggregations, LEFT JOIN NULL filters, CTEs, INSERT statements) directly into your editor.',
+        'Quickly insert complex SQL queries (multi-table JOINs, GROUP BY aggregations, LEFT JOIN NULL filters, CTEs, INSERT statements) directly into your editor.',
       targetId: 'btn-templates',
+      action: 'ide',
     },
     {
-      title: '5. Query Execution History Drawer',
+      title: '6. CodeMirror 6 Syntax Highlighting Editor',
       content:
-        'View your session execution log with execution time (ms), row count, and status. Reload any past query into your current tab or open in a new tab.',
-      targetId: 'btn-history',
-    },
-    {
-      title: '6. Schema Explorer & DDL Generator',
-      content:
-        'Explore materialized tables, column types, and foreign key badges. Filter table names with real-time search, run 1-click COUNT(*), and view generated CREATE TABLE DDL schemas.',
-      targetId: 'tour-schema-tree',
-    },
-    {
-      title: '7. Multi-Tab Workspace & Tab Management',
-      content:
-        'Manage multiple query scripts simultaneously! Click the [+] button to open clean new query tabs without overwriting your existing code.',
-      targetId: 'tour-query-tabs',
-    },
-    {
-      title: '8. CodeMirror 6 Syntax Highlighting Editor',
-      content:
-        'Enjoy high-contrast Win95 coding: Strings in Vibrant Green (#008800), Numbers in Purple (#800080), Operators in Crimson (#b00020), and Keywords in Bold Navy (#000080).',
+        'Write SQL with intelligent autocomplete, high-contrast syntax highlighting (Strings in Green, Numbers in Purple, Operators in Crimson, Keywords in Bold Navy), line numbers, and bracket matching.',
       targetId: 'tour-query-editor',
+      action: 'ide',
     },
     {
-      title: '9. ListView Results Grid & 1-Click Export',
+      title: '7. Results Grid & Visual Analytics Dashboard',
       content:
-        'Sort column headers ascending/descending, filter rows in real time, double-click any cell to inspect raw data in a modal, and export results to CSV, JSON, or SQL INSERTs.',
+        'Explore results in two views: the virtualized Data Grid (column sorting, row filtering, cell modal inspector, and CSV/JSON/XLS exports) and the new Visual Analytics Dashboard featuring KPI stat cards, proportional category distribution bars, value trajectory trendlines, and a column health profiler matrix!',
       targetId: 'tour-results-grid',
+      action: 'ide',
     },
     {
-      title: '10. Control Panel & Local Security',
+      title: '8. Visual Query Execution Plan & Optimizer',
       content:
-        'Access user account management, vintage avatar selection, PBKDF2 600k password security, regional currency detection (INR, USD, EUR, etc.), and system settings.',
-      targetId: 'btn-options',
+        'Analyze query performance with Tools ➔ ⚡ Explain Query Plan! View an interactive hierarchical execution tree with branch connectors, full table scan warnings, temp B-tree sort detection, and index recommendations.',
+      targetId: 'btn-explain',
+      action: 'ide',
     },
     {
-      title: '11. Help Manual & Interactive SQL Tutorial',
+      title: '9. Interactive ERD Relation Visualizer',
       content:
-        'Open the Windows 95 Help Manual (winhlp32) for in-depth SQL tutorials, syntax references, and runnable demo queries!',
+        'Click "ERD" on the toolbar or desktop to launch the Entity-Relationship Diagram studio! Explore draggable table cards, foreign key bezier connector lines, cardinality badges (1 ➔ ∞), zoom controls, and a 1-click relational schema seeder.',
+      targetId: 'btn-erd',
+      action: 'erd',
+    },
+    {
+      title: '10. Database Navigator & Schema Explorer',
+      content:
+        'Inspect all materialized tables, columns, logical types, and foreign key badges. Run 1-click COUNT(*) queries or view generated CREATE TABLE DDL schemas.',
+      targetId: 'tour-schema-tree',
+      action: 'ide',
+    },
+    {
+      title: '11. SQL Challenge Arena (130 LeetCode Questions)',
+      content:
+        'Practice real SQL interview questions! Features 130 authentic problems with ground-truth test data, automated WASM evaluation, side-by-side mismatch diff viewer, and canonical solution unlocks.',
+      action: 'challenges',
+    },
+    {
+      title: '12. User Profile & Local Security Keyring',
+      content:
+        'Manage your offline-first user account profile! Select vintage 8-bit avatars, view session statistics and badges, and enjoy single-device local keychain security powered by PBKDF2 encryption with 600,000 iterations.',
+      action: 'auth',
+    },
+    {
+      title: '13. Control Panel & Display Configuration',
+      content:
+        'Customize your workspace in the Control Panel (Settings): switch between nostalgic themes (Win95 Classic, Win95 Noir, Win2000 Corporate, XP Luna, and macOS Obsidian Glass), toggle retro CRT monitor scanlines and curved glass, or configure table caps.',
+      action: 'settings',
+    },
+    {
+      title: '14. Share & URL State Serialization',
+      content:
+        'Click "⋯ More ▾" ➔ "Share" on the toolbar to encode your complete query, target dialect, and IDE state into a compact Base64 shareable URL—no backend server or external storage needed!',
+      targetId: 'btn-more-tools',
+      action: 'ide',
+    },
+    {
+      title: '15. Help Manual & Interactive SQL Tutorial',
+      content:
+        'Open the Windows 95 Help Manual (winhlp32) for in-depth SQL lessons, runnable demo queries, dialect cheat sheets, and keyboard shortcuts!',
       targetId: 'btn-help',
+      action: 'help',
       isHelpStep: true,
     },
   ];
 
-  // Track target DOM element coordinates on screen
+  // Track target DOM element coordinates on screen and trigger relevant window actions
   useEffect(() => {
     if (!isOpen) return;
+
+    const step = tourSteps[currentStepIdx];
+    if (step) {
+      if (step.action === 'ide') onEnsureIDEOpen?.();
+      else if (step.action === 'erd') onOpenERD?.();
+      else if (step.action === 'challenges') onOpenChallenges?.();
+      else if (step.action === 'auth') onOpenAuth?.();
+      else if (step.action === 'settings') onOpenSettings?.();
+      else if (step.action === 'help') onOpenHelp?.();
+    }
 
     const updatePosition = () => {
       const targetId = tourSteps[currentStepIdx]?.targetId;
@@ -149,7 +205,7 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
     };
 
     updatePosition();
-    const interval = setInterval(updatePosition, 200);
+    const interval = setInterval(updatePosition, 250);
     window.addEventListener('resize', updatePosition);
     window.addEventListener('scroll', updatePosition, true);
 
@@ -178,7 +234,8 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
   let balloonStyle: React.CSSProperties = {
     position: 'fixed',
     zIndex: 999999,
-    width: '420px',
+    width: '430px',
+    maxWidth: '92vw',
     boxShadow: '4px 4px 20px rgba(0,0,0,0.7)',
     transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
   };
@@ -189,7 +246,7 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
   if (targetRect) {
     const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
     const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
-    const balloonWidth = 420;
+    const balloonWidth = 430;
 
     const targetCenterX = targetRect.left + targetRect.width / 2;
 
@@ -201,18 +258,18 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
 
     // Prefer positioning below the target if space permits, otherwise above
     let balloonTop = 0;
-    if (targetRect.top + targetRect.height + 250 < viewportHeight) {
-      balloonTop = targetRect.top + targetRect.height + 12;
+    if (targetRect.top + targetRect.height + 260 < viewportHeight) {
+      balloonTop = targetRect.top + targetRect.height + 14;
       arrowDirection = 'top';
     } else {
-      balloonTop = Math.max(16, targetRect.top - 240);
+      balloonTop = Math.max(16, targetRect.top - 250);
       arrowDirection = 'bottom';
     }
 
     balloonStyle.top = `${balloonTop}px`;
     balloonStyle.left = `${balloonLeft}px`;
   } else {
-    // Center modal fallback for step 1
+    // Center modal fallback for steps without target element
     balloonStyle.top = '50%';
     balloonStyle.left = '50%';
     balloonStyle.transform = 'translate(-50%, -50%)';
@@ -262,7 +319,6 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
           />
         )}
 
-
         {/* Titlebar */}
         <div className="win95-titlebar">
           <div className="win95-titlebar-text">
@@ -270,7 +326,7 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
             <span>ExNihilo 95 Guided Tour — ({currentStepIdx + 1} of {tourSteps.length})</span>
           </div>
           <div className="win95-titlebar-controls">
-            <button className="win95-btn-titlebar" onClick={onClose}>✕</button>
+            <button className="win95-btn-titlebar" onClick={onClose} title="Close">✕</button>
           </div>
         </div>
 
@@ -286,7 +342,7 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
               marginBottom: '12px',
             }}
           >
-            <h4 style={{ margin: '0 0 6px 0', fontSize: '12px', color: '#000080' }}>
+            <h4 style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#000080', fontWeight: 'bold' }}>
               {currentStep.title}
             </h4>
             <p style={{ margin: 0, fontSize: '11px', lineHeight: '1.5', color: '#000000' }}>
