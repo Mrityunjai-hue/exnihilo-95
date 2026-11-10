@@ -896,7 +896,55 @@
               0 0 0 1px rgba(255, 255, 255, 0.06) !important;
   padding: 0 !important;
   overflow: hidden !important;
-  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, opacity 0.2s ease !important;
+  animation: macWindowOpen 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: center center;
+  transition: box-shadow 0.2s ease, opacity 0.2s ease !important;
+}
+
+[data-theme="macos-glass"] .win95-window.mac-window-closing {
+  animation: macWindowClose 0.18s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+  pointer-events: none !important;
+}
+
+[data-theme="macos-glass"] .win95-window.mac-window-minimizing {
+  animation: macWindowMinimize 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+  pointer-events: none !important;
+  transform-origin: bottom center !important;
+}
+
+@keyframes macWindowOpen {
+  0% {
+    opacity: 0;
+    transform: scale(0.93) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes macWindowClose {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+}
+
+@keyframes macWindowMinimize {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.35) translateY(260px);
+    filter: blur(6px);
+  }
 }
 
 [data-theme="macos-glass"] .win95-window:hover {
@@ -1737,10 +1785,13 @@
 /* Accessibility: Reduced Motion & Reduced Transparency */
 @media (prefers-reduced-motion: reduce) {
   [data-theme="macos-glass"] .win95-window,
+  [data-theme="macos-glass"] .win95-window.mac-window-closing,
+  [data-theme="macos-glass"] .win95-window.mac-window-minimizing,
   [data-theme="macos-glass"] .win95-button,
   [data-theme="macos-glass"] .win95-desktop-icon,
   [data-theme="macos-glass"] .mac-dock-icon-btn,
   [data-theme="macos-glass"] .mac-pill-btn {
+    animation: none !important;
     transition: opacity 0.1s ease !important;
     transform: none !important;
   }

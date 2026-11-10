@@ -322,77 +322,120 @@ ${
           {/* Tab Content Area */}
           <div
             className="win95-inset"
-            style={{ padding: '14px', background: 'var(--w95-gray, #c0c0c0)', color: 'var(--w95-text-color, #000000)', minHeight: '320px', maxHeight: '440px', overflowY: 'auto' }}
+            style={{
+              padding: isMac ? '16px' : '14px',
+              background: isMac ? 'transparent' : 'var(--w95-gray, #c0c0c0)',
+              color: 'var(--w95-text-color, #000000)',
+              minHeight: '320px',
+              maxHeight: '440px',
+              overflowY: 'auto',
+            }}
           >
             {/* TAB 1: MY ACCOUNT */}
             {activeTab === 'account' && (
               <div>
-                <fieldset style={{ border: '1px solid #808080', padding: '12px', marginBottom: '12px' }}>
-                  <legend style={{ fontSize: '11px', fontWeight: 'bold', padding: '0 4px' }}>
+                <div
+                  style={{
+                    border: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #808080',
+                    background: isMac ? 'rgba(255, 255, 255, 0.03)' : 'transparent',
+                    borderRadius: isMac ? '12px' : '0',
+                    padding: isMac ? '14px' : '12px',
+                    marginBottom: '12px',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: isMac ? '12px' : '11px',
+                      fontWeight: 600,
+                      color: isMac ? '#94a3b8' : 'inherit',
+                      marginBottom: isMac ? '10px' : '4px',
+                    }}
+                  >
                     Account Profile Details
-                  </legend>
+                  </div>
 
-                  <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+                  <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', color: isMac ? '#cbd5e1' : 'inherit' }}>
                     <tbody>
                       <tr>
-                        <td style={{ fontWeight: 'bold', width: '130px', padding: '4px 0' }}>Avatar & Name:</td>
+                        <td style={{ fontWeight: 'bold', width: '130px', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Avatar & Name:</td>
                         <td>{currentUser.avatar || '💻'} {currentUser.displayName}</td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Username:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Username:</td>
                         <td>@{currentUser.usernameNorm}</td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Contact Email:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Contact Email:</td>
                         <td>
                           {currentUser.email}{' '}
-                          <span style={{ color: '#800000', fontSize: '10px' }} title="Contact string stored locally — not identity verified">
+                          <span
+                            style={{
+                              color: isMac ? '#fbbf24' : '#800000',
+                              background: isMac ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
+                              padding: isMac ? '2px 6px' : '0',
+                              borderRadius: isMac ? '4px' : '0',
+                              fontSize: '10px',
+                            }}
+                            title="Contact string stored locally — not identity verified"
+                          >
                             ⚠️ unverified
                           </span>
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Member Since:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Member Since:</td>
                         <td>{currentUser.joinDate}</td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Access Level:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Access Level:</td>
                         <td>
-                          <span style={{ background: '#008000', color: '#fff', padding: '1px 6px', fontSize: '10px', fontWeight: 'bold' }}>
+                          <span
+                            style={{
+                              background: isMac ? 'rgba(34, 197, 94, 0.16)' : '#008000',
+                              color: isMac ? '#4ade80' : '#fff',
+                              border: isMac ? '1px solid rgba(74, 222, 128, 0.3)' : 'none',
+                              padding: isMac ? '2px 8px' : '1px 6px',
+                              borderRadius: isMac ? '9999px' : '0',
+                              fontSize: '10px',
+                              fontWeight: 600,
+                            }}
+                          >
                             ✓ 100% FREE &amp; FULLY UNLOCKED
                           </span>
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Detected Region:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Detected Region:</td>
                         <td>
-                          {region.flag} {region.countryName} <span style={{ color: '#666', fontSize: '10px' }}>(read-only)</span>
+                          {region.flag} {region.countryName} <span style={{ color: isMac ? '#94a3b8' : '#666', fontSize: '10px' }}>(read-only)</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Feature Access:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Feature Access:</td>
                         <td>
-                          <span style={{ color: '#000080', fontWeight: 'bold' }}>All Features &amp; Capabilities Unlocked</span>
+                          <span style={{ color: isMac ? '#38bdf8' : '#000080', fontWeight: 'bold' }}>All Features &amp; Capabilities Unlocked</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '4px 0' }}>Session Activity:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Session Activity:</td>
                         <td>
                           {sessionStats.queriesRun} queries | {sessionStats.rowsGenerated} rows | {elapsedText} duration
                         </td>
                       </tr>
                     </tbody>
                   </table>
-                </fieldset>
+                </div>
 
                 {/* Storage Privacy Disclaimer */}
                 <div
                   style={{
-                    background: '#ffffcc',
-                    border: '1px solid #c0c000',
-                    padding: '8px',
+                    background: isMac ? 'rgba(245, 158, 11, 0.1)' : '#ffffcc',
+                    border: isMac ? '1px solid rgba(245, 158, 11, 0.25)' : '1px solid #c0c000',
+                    borderRadius: isMac ? '10px' : '0',
+                    color: isMac ? '#fbbf24' : '#000000',
+                    padding: isMac ? '10px 12px' : '8px',
                     marginBottom: '12px',
-                    fontSize: '10px',
+                    fontSize: isMac ? '11px' : '10px',
                     lineHeight: '1.4',
                   }}
                 >
@@ -403,7 +446,7 @@ ${
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <button
                     className="win95-button"
-                    style={{ fontSize: '11px', padding: '4px 10px' }}
+                    style={{ fontSize: '11px', padding: '5px 12px', borderRadius: isMac ? '8px' : undefined }}
                     onClick={() => {
                       setShowChangePassword((prev) => !prev);
                       setPassError(null);
@@ -414,21 +457,29 @@ ${
                   </button>
                   <button
                     className="win95-button"
-                    style={{ fontSize: '11px', padding: '4px 10px' }}
+                    style={{ fontSize: '11px', padding: '5px 12px', borderRadius: isMac ? '8px' : undefined }}
                     onClick={handleExportLogs}
                   >
                     📤 Export Live Logs (.json)
                   </button>
                   <button
                     className="win95-button"
-                    style={{ fontSize: '11px', padding: '4px 10px' }}
+                    style={{ fontSize: '11px', padding: '5px 12px', borderRadius: isMac ? '8px' : undefined }}
                     onClick={handleGenerateReport}
                   >
                     📄 Session Report (.txt)
                   </button>
                   <button
                     className="win95-button"
-                    style={{ fontSize: '11px', padding: '4px 10px', color: '#800000', fontWeight: 'bold' }}
+                    style={{
+                      fontSize: '11px',
+                      padding: '5px 12px',
+                      color: isMac ? '#ef4444' : '#800000',
+                      background: isMac ? 'rgba(239, 68, 68, 0.1)' : undefined,
+                      border: isMac ? '1px solid rgba(239, 68, 68, 0.3)' : undefined,
+                      borderRadius: isMac ? '8px' : undefined,
+                      fontWeight: 'bold',
+                    }}
                     onClick={() => setShowConfirmDelete(true)}
                   >
                     🗑️ Delete Account
@@ -441,18 +492,19 @@ ${
                     className="win95-sunken"
                     style={{
                       marginTop: '12px',
-                      padding: '10px',
-                      background: '#dfdfdf',
-                      border: '1px solid #808080',
+                      padding: isMac ? '14px' : '10px',
+                      background: isMac ? 'rgba(255, 255, 255, 0.04)' : '#dfdfdf',
+                      border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #808080',
+                      borderRadius: isMac ? '10px' : '0',
                     }}
                   >
-                    <div style={{ fontWeight: 'bold', fontSize: '11px', marginBottom: '8px' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '11px', marginBottom: '8px', color: isMac ? '#f8fafc' : undefined }}>
                       🔑 Update Account Password
                     </div>
 
                     <form onSubmit={handleChangePasswordSubmit}>
                       <div style={{ marginBottom: '6px' }}>
-                        <label style={{ display: 'block', fontSize: '10px', fontWeight: 'bold' }}>
+                        <label style={{ display: 'block', fontSize: '10px', fontWeight: 'bold', color: isMac ? '#94a3b8' : undefined }}>
                           Current Password:
                         </label>
                         <input
@@ -461,12 +513,21 @@ ${
                           value={currentPass}
                           onChange={(e) => setCurrentPass(e.target.value)}
                           className="win95-sunken"
-                          style={{ width: '100%', padding: '2px 4px', fontSize: '11px', boxSizing: 'border-box' }}
+                          style={{
+                            width: '100%',
+                            padding: isMac ? '6px 10px' : '2px 4px',
+                            fontSize: '11px',
+                            boxSizing: 'border-box',
+                            background: isMac ? 'rgba(0, 0, 0, 0.35)' : undefined,
+                            color: isMac ? '#f8fafc' : undefined,
+                            border: isMac ? '1px solid rgba(255, 255, 255, 0.15)' : undefined,
+                            borderRadius: isMac ? '6px' : undefined,
+                          }}
                         />
                       </div>
 
                       <div style={{ marginBottom: '6px' }}>
-                        <label style={{ display: 'block', fontSize: '10px', fontWeight: 'bold' }}>
+                        <label style={{ display: 'block', fontSize: '10px', fontWeight: 'bold', color: isMac ? '#94a3b8' : undefined }}>
                           New Password (≥10 chars, mixed case, number, symbol):
                         </label>
                         <input
@@ -475,12 +536,21 @@ ${
                           value={newPass}
                           onChange={(e) => setNewPass(e.target.value)}
                           className="win95-sunken"
-                          style={{ width: '100%', padding: '2px 4px', fontSize: '11px', boxSizing: 'border-box' }}
+                          style={{
+                            width: '100%',
+                            padding: isMac ? '6px 10px' : '2px 4px',
+                            fontSize: '11px',
+                            boxSizing: 'border-box',
+                            background: isMac ? 'rgba(0, 0, 0, 0.35)' : undefined,
+                            color: isMac ? '#f8fafc' : undefined,
+                            border: isMac ? '1px solid rgba(255, 255, 255, 0.15)' : undefined,
+                            borderRadius: isMac ? '6px' : undefined,
+                          }}
                         />
                       </div>
 
                       <div style={{ marginBottom: '8px' }}>
-                        <label style={{ display: 'block', fontSize: '10px', fontWeight: 'bold' }}>
+                        <label style={{ display: 'block', fontSize: '10px', fontWeight: 'bold', color: isMac ? '#94a3b8' : undefined }}>
                           Confirm New Password:
                         </label>
                         <input
@@ -489,17 +559,26 @@ ${
                           value={confirmNewPass}
                           onChange={(e) => setConfirmNewPass(e.target.value)}
                           className="win95-sunken"
-                          style={{ width: '100%', padding: '2px 4px', fontSize: '11px', boxSizing: 'border-box' }}
+                          style={{
+                            width: '100%',
+                            padding: isMac ? '6px 10px' : '2px 4px',
+                            fontSize: '11px',
+                            boxSizing: 'border-box',
+                            background: isMac ? 'rgba(0, 0, 0, 0.35)' : undefined,
+                            color: isMac ? '#f8fafc' : undefined,
+                            border: isMac ? '1px solid rgba(255, 255, 255, 0.15)' : undefined,
+                            borderRadius: isMac ? '6px' : undefined,
+                          }}
                         />
                       </div>
 
                       {passError && (
-                        <div style={{ color: '#990000', fontSize: '10px', marginBottom: '6px' }}>
+                        <div style={{ color: isMac ? '#f87171' : '#990000', fontSize: '10px', marginBottom: '6px' }}>
                           ⛔ {passError}
                         </div>
                       )}
                       {passSuccess && (
-                        <div style={{ color: '#006600', fontSize: '10px', marginBottom: '6px', fontWeight: 'bold' }}>
+                        <div style={{ color: isMac ? '#4ade80' : '#006600', fontSize: '10px', marginBottom: '6px', fontWeight: 'bold' }}>
                           {passSuccess}
                         </div>
                       )}
@@ -508,6 +587,7 @@ ${
                         <button
                           type="submit"
                           className="win95-button"
+                          style={{ borderRadius: isMac ? '6px' : undefined }}
                           disabled={isPassSubmitting || isPassLoading}
                         >
                           {isPassLoading ? 'Updating...' : 'Update Password'}
@@ -515,6 +595,7 @@ ${
                         <button
                           type="button"
                           className="win95-button"
+                          style={{ borderRadius: isMac ? '6px' : undefined }}
                           onClick={() => setShowChangePassword(false)}
                         >
                           Close
@@ -529,32 +610,72 @@ ${
             {/* TAB 2: REAL-TIME LIVE USAGE STATISTICS DASHBOARD */}
             {activeTab === 'usage' && (
               <div>
-                <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '8px', color: '#000080', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '8px', color: isMac ? '#38bdf8' : '#000080', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span>📈 Live Session Analytics Monitor</span>
-                  <span style={{ fontSize: '10px', fontWeight: 'normal', color: '#555' }}>Active Session: {elapsedText} duration</span>
+                  <span style={{ fontSize: '10px', fontWeight: 'normal', color: isMac ? '#94a3b8' : '#555' }}>Active Session: {elapsedText} duration</span>
                 </div>
 
                 {/* Real Live Session Summary Metric Badges */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '10px' }}>
-                  <div className="win95-sunken" style={{ padding: '6px', background: '#ffffff', fontSize: '10px', textAlign: 'center' }}>
-                    <div style={{ color: '#555', fontSize: '9px' }}>Total Queries</div>
-                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#000080', margin: '2px 0' }}>{liveQueriesCount}</div>
-                    <div style={{ fontSize: '8px', color: '#888' }}>Executed</div>
+                  <div
+                    className="win95-sunken"
+                    style={{
+                      padding: '6px',
+                      background: isMac ? 'rgba(255, 255, 255, 0.04)' : '#ffffff',
+                      border: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : undefined,
+                      borderRadius: isMac ? '8px' : '0',
+                      fontSize: '10px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ color: isMac ? '#94a3b8' : '#555', fontSize: '9px' }}>Total Queries</div>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: isMac ? '#38bdf8' : '#000080', margin: '2px 0' }}>{liveQueriesCount}</div>
+                    <div style={{ fontSize: '8px', color: isMac ? '#64748b' : '#888' }}>Executed</div>
                   </div>
-                  <div className="win95-sunken" style={{ padding: '6px', background: '#ffffff', fontSize: '10px', textAlign: 'center' }}>
-                    <div style={{ color: '#555', fontSize: '9px' }}>Rows Produced</div>
-                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#008000', margin: '2px 0' }}>{liveRowsCount}</div>
-                    <div style={{ fontSize: '8px', color: '#888' }}>Synthetic Rows</div>
+                  <div
+                    className="win95-sunken"
+                    style={{
+                      padding: '6px',
+                      background: isMac ? 'rgba(255, 255, 255, 0.04)' : '#ffffff',
+                      border: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : undefined,
+                      borderRadius: isMac ? '8px' : '0',
+                      fontSize: '10px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ color: isMac ? '#94a3b8' : '#555', fontSize: '9px' }}>Rows Produced</div>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: isMac ? '#4ade80' : '#008000', margin: '2px 0' }}>{liveRowsCount}</div>
+                    <div style={{ fontSize: '8px', color: isMac ? '#64748b' : '#888' }}>Synthetic Rows</div>
                   </div>
-                  <div className="win95-sunken" style={{ padding: '6px', background: '#ffffff', fontSize: '10px', textAlign: 'center' }}>
-                    <div style={{ color: '#555', fontSize: '9px' }}>Memory Footprint</div>
-                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#008080', margin: '2px 0' }}>{liveDataKb} KB</div>
-                    <div style={{ fontSize: '8px', color: '#888' }}>In-Memory WASM</div>
+                  <div
+                    className="win95-sunken"
+                    style={{
+                      padding: '6px',
+                      background: isMac ? 'rgba(255, 255, 255, 0.04)' : '#ffffff',
+                      border: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : undefined,
+                      borderRadius: isMac ? '8px' : '0',
+                      fontSize: '10px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ color: isMac ? '#94a3b8' : '#555', fontSize: '9px' }}>Memory Footprint</div>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: isMac ? '#2dd4bf' : '#008080', margin: '2px 0' }}>{liveDataKb} KB</div>
+                    <div style={{ fontSize: '8px', color: isMac ? '#64748b' : '#888' }}>In-Memory WASM</div>
                   </div>
-                  <div className="win95-sunken" style={{ padding: '6px', background: '#ffffff', fontSize: '10px', textAlign: 'center' }}>
-                    <div style={{ color: '#555', fontSize: '9px' }}>Avg Execution</div>
-                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#800080', margin: '2px 0' }}>{avgLatencyMs} ms</div>
-                    <div style={{ fontSize: '8px', color: '#888' }}>Engine Latency</div>
+                  <div
+                    className="win95-sunken"
+                    style={{
+                      padding: '6px',
+                      background: isMac ? 'rgba(255, 255, 255, 0.04)' : '#ffffff',
+                      border: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : undefined,
+                      borderRadius: isMac ? '8px' : '0',
+                      fontSize: '10px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ color: isMac ? '#94a3b8' : '#555', fontSize: '9px' }}>Avg Execution</div>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: isMac ? '#c084fc' : '#800080', margin: '2px 0' }}>{avgLatencyMs} ms</div>
+                    <div style={{ fontSize: '8px', color: isMac ? '#64748b' : '#888' }}>Engine Latency</div>
                   </div>
                 </div>
 
@@ -562,8 +683,10 @@ ${
                 {sessionStats.queryHistory.length === 0 ? (
                   <div
                     style={{
-                      background: '#ffffcc',
-                      border: '1px solid #c0c000',
+                      background: isMac ? 'rgba(56, 189, 248, 0.08)' : '#ffffcc',
+                      border: isMac ? '1px solid rgba(56, 189, 248, 0.22)' : '1px solid #c0c000',
+                      borderRadius: isMac ? '10px' : '0',
+                      color: isMac ? '#e2e8f0' : undefined,
                       padding: '12px',
                       fontSize: '11px',
                       lineHeight: '1.5',
@@ -575,15 +698,23 @@ ${
                     <br />
                     No SQL queries have been executed in this browser session yet.
                     <br />
-                    <span style={{ color: '#555', fontSize: '10px' }}>
+                    <span style={{ color: isMac ? '#94a3b8' : '#555', fontSize: '10px' }}>
                       Run queries in <strong>ExNihilo SQL IDE</strong> to record live execution latency curves, row generation counts, and data memory footprint.
                     </span>
                   </div>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
                     {/* Live Chart 1: Real Execution Latency (ms) per Query */}
-                    <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
-                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                    <div
+                      className="win95-sunken"
+                      style={{
+                        background: isMac ? 'rgba(15, 23, 42, 0.65)' : '#ffffff',
+                        border: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : undefined,
+                        borderRadius: isMac ? '8px' : '0',
+                        padding: '6px',
+                      }}
+                    >
+                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: isMac ? '#38bdf8' : '#000080' }}>
                         Live Query Latency (ms)
                       </div>
                       {(() => {
@@ -591,12 +722,12 @@ ${
                         const maxLat = Math.max(...history.map((q) => q.timeMs), 10);
                         return (
                           <svg width="100%" height="90" viewBox="0 0 240 90">
-                            <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
-                            <line x1="25" y1="40" x2="230" y2="40" stroke="#eee" strokeWidth="1" />
-                            <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
-                            <text x="2" y="14" font-size="8" fill="#555">{maxLat}ms</text>
-                            <text x="2" y="44" font-size="8" fill="#555">{Math.round(maxLat / 2)}ms</text>
-                            <text x="18" y="74" font-size="8" fill="#555">0</text>
+                            <line x1="25" y1="10" x2="230" y2="10" stroke={isMac ? 'rgba(255, 255, 255, 0.08)' : '#eee'} strokeWidth="1" />
+                            <line x1="25" y1="40" x2="230" y2="40" stroke={isMac ? 'rgba(255, 255, 255, 0.08)' : '#eee'} strokeWidth="1" />
+                            <line x1="25" y1="70" x2="230" y2="70" stroke={isMac ? 'rgba(255, 255, 255, 0.2)' : '#888'} strokeWidth="1" />
+                            <text x="2" y="14" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>{maxLat}ms</text>
+                            <text x="2" y="44" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>{Math.round(maxLat / 2)}ms</text>
+                            <text x="18" y="74" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>0</text>
                             {history.map((q, idx) => {
                               const barH = Math.max(4, Math.round((q.timeMs / maxLat) * 55));
                               return (
@@ -606,13 +737,14 @@ ${
                                     y={70 - barH}
                                     width="12"
                                     height={barH}
-                                    fill="#0000aa"
-                                    stroke="#000"
+                                    fill={isMac ? '#38bdf8' : '#0000aa'}
+                                    stroke={isMac ? 'rgba(255, 255, 255, 0.2)' : '#000'}
                                     strokeWidth="0.5"
+                                    rx={isMac ? 2 : 0}
                                   >
                                     <title>{`Query #${idx + 1}: ${q.timeMs}ms - ${q.sql}`}</title>
                                   </rect>
-                                  <text x={41 + idx * 18} y="82" font-size="6" fill="#333" text-anchor="middle">
+                                  <text x={41 + idx * 18} y="82" font-size="6" fill={isMac ? '#94a3b8' : '#333'} text-anchor="middle">
                                     #{idx + 1}
                                   </text>
                                 </g>
@@ -624,8 +756,16 @@ ${
                     </div>
 
                     {/* Live Chart 2: Real Rows Produced per Query */}
-                    <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
-                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                    <div
+                      className="win95-sunken"
+                      style={{
+                        background: isMac ? 'rgba(15, 23, 42, 0.65)' : '#ffffff',
+                        border: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : undefined,
+                        borderRadius: isMac ? '8px' : '0',
+                        padding: '6px',
+                      }}
+                    >
+                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: isMac ? '#34d399' : '#000080' }}>
                         Live Rows Generated per Query
                       </div>
                       {(() => {
@@ -633,12 +773,12 @@ ${
                         const maxRows = Math.max(...history.map((q) => q.rowCount || 1), 5);
                         return (
                           <svg width="100%" height="90" viewBox="0 0 240 90">
-                            <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
-                            <line x1="25" y1="40" x2="230" y2="40" stroke="#eee" strokeWidth="1" />
-                            <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
-                            <text x="2" y="14" font-size="8" fill="#555">{maxRows}</text>
-                            <text x="2" y="44" font-size="8" fill="#555">{Math.round(maxRows / 2)}</text>
-                            <text x="18" y="74" font-size="8" fill="#555">0</text>
+                            <line x1="25" y1="10" x2="230" y2="10" stroke={isMac ? 'rgba(255, 255, 255, 0.08)' : '#eee'} strokeWidth="1" />
+                            <line x1="25" y1="40" x2="230" y2="40" stroke={isMac ? 'rgba(255, 255, 255, 0.08)' : '#eee'} strokeWidth="1" />
+                            <line x1="25" y1="70" x2="230" y2="70" stroke={isMac ? 'rgba(255, 255, 255, 0.2)' : '#888'} strokeWidth="1" />
+                            <text x="2" y="14" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>{maxRows}</text>
+                            <text x="2" y="44" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>{Math.round(maxRows / 2)}</text>
+                            <text x="18" y="74" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>0</text>
                             {history.map((q, idx) => {
                               const rCount = q.rowCount || 0;
                               const barH = Math.max(4, Math.round((rCount / maxRows) * 55));
@@ -649,13 +789,14 @@ ${
                                     y={70 - barH}
                                     width="12"
                                     height={barH}
-                                    fill="#009999"
-                                    stroke="#000"
+                                    fill={isMac ? '#34d399' : '#009999'}
+                                    stroke={isMac ? 'rgba(255, 255, 255, 0.2)' : '#000'}
                                     strokeWidth="0.5"
+                                    rx={isMac ? 2 : 0}
                                   >
                                     <title>{`Query #${idx + 1}: ${rCount} rows - ${q.sql}`}</title>
                                   </rect>
-                                  <text x={41 + idx * 18} y="82" font-size="6" fill="#333" text-anchor="middle">
+                                  <text x={41 + idx * 18} y="82" font-size="6" fill={isMac ? '#94a3b8' : '#333'} text-anchor="middle">
                                     #{idx + 1}
                                   </text>
                                 </g>
@@ -667,8 +808,16 @@ ${
                     </div>
 
                     {/* Live Chart 3: Real Cumulative Memory Growth (KB) */}
-                    <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
-                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                    <div
+                      className="win95-sunken"
+                      style={{
+                        background: isMac ? 'rgba(15, 23, 42, 0.65)' : '#ffffff',
+                        border: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : undefined,
+                        borderRadius: isMac ? '8px' : '0',
+                        padding: '6px',
+                      }}
+                    >
+                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: isMac ? '#c084fc' : '#000080' }}>
                         Data Memory Growth (KB)
                       </div>
                       {(() => {
@@ -682,18 +831,25 @@ ${
 
                         return (
                           <svg width="100%" height="90" viewBox="0 0 240 90">
-                            <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
-                            <line x1="25" y1="40" x2="230" y2="40" stroke="#eee" strokeWidth="1" />
-                            <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
-                            <text x="2" y="14" font-size="8" fill="#555">{maxCum.toFixed(0)}KB</text>
-                            <text x="2" y="44" font-size="8" fill="#555">{(maxCum / 2).toFixed(0)}KB</text>
-                            <text x="18" y="74" font-size="8" fill="#555">0</text>
+                            <line x1="25" y1="10" x2="230" y2="10" stroke={isMac ? 'rgba(255, 255, 255, 0.08)' : '#eee'} strokeWidth="1" />
+                            <line x1="25" y1="40" x2="230" y2="40" stroke={isMac ? 'rgba(255, 255, 255, 0.08)' : '#eee'} strokeWidth="1" />
+                            <line x1="25" y1="70" x2="230" y2="70" stroke={isMac ? 'rgba(255, 255, 255, 0.2)' : '#888'} strokeWidth="1" />
+                            <text x="2" y="14" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>{maxCum.toFixed(0)}KB</text>
+                            <text x="2" y="44" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>{(maxCum / 2).toFixed(0)}KB</text>
+                            <text x="18" y="74" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>0</text>
                             {cumData.map((val, idx) => {
                               const barH = Math.max(4, Math.round((val / maxCum) * 55));
                               return (
                                 <g key={idx}>
-                                  <rect x={35 + idx * 18} y={70 - barH} width="12" height={barH} fill="#800080" />
-                                  <text x={41 + idx * 18} y="82" font-size="6" fill="#333" text-anchor="middle">
+                                  <rect
+                                    x={35 + idx * 18}
+                                    y={70 - barH}
+                                    width="12"
+                                    height={barH}
+                                    fill={isMac ? '#c084fc' : '#800080'}
+                                    rx={isMac ? 2 : 0}
+                                  />
+                                  <text x={41 + idx * 18} y="82" font-size="6" fill={isMac ? '#94a3b8' : '#333'} text-anchor="middle">
                                     #{idx + 1}
                                   </text>
                                 </g>
@@ -705,8 +861,16 @@ ${
                     </div>
 
                     {/* Live Chart 4: Live Latency Trend Polyline */}
-                    <div className="win95-sunken" style={{ background: '#ffffff', padding: '6px' }}>
-                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: '#000080' }}>
+                    <div
+                      className="win95-sunken"
+                      style={{
+                        background: isMac ? 'rgba(15, 23, 42, 0.65)' : '#ffffff',
+                        border: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : undefined,
+                        borderRadius: isMac ? '8px' : '0',
+                        padding: '6px',
+                      }}
+                    >
+                      <div style={{ fontSize: '10px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px', color: isMac ? '#38bdf8' : '#000080' }}>
                         Execution Latency Trend Curve (ms)
                       </div>
                       {(() => {
@@ -723,22 +887,29 @@ ${
 
                         return (
                           <svg width="100%" height="90" viewBox="0 0 240 90">
-                            <line x1="25" y1="10" x2="230" y2="10" stroke="#eee" strokeWidth="1" />
-                            <line x1="25" y1="40" x2="230" y2="40" stroke="#eee" strokeWidth="1" />
-                            <line x1="25" y1="70" x2="230" y2="70" stroke="#888" strokeWidth="1" />
-                            <text x="2" y="14" font-size="8" fill="#555">{maxLat}ms</text>
-                            <text x="2" y="44" font-size="8" fill="#555">{Math.round(maxLat / 2)}ms</text>
-                            <text x="18" y="74" font-size="8" fill="#555">0</text>
+                            <line x1="25" y1="10" x2="230" y2="10" stroke={isMac ? 'rgba(255, 255, 255, 0.08)' : '#eee'} strokeWidth="1" />
+                            <line x1="25" y1="40" x2="230" y2="40" stroke={isMac ? 'rgba(255, 255, 255, 0.08)' : '#eee'} strokeWidth="1" />
+                            <line x1="25" y1="70" x2="230" y2="70" stroke={isMac ? 'rgba(255, 255, 255, 0.2)' : '#888'} strokeWidth="1" />
+                            <text x="2" y="14" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>{maxLat}ms</text>
+                            <text x="2" y="44" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>{Math.round(maxLat / 2)}ms</text>
+                            <text x="18" y="74" font-size="8" fill={isMac ? '#94a3b8' : '#555'}>0</text>
                             {points.length > 0 && (
-                              <polyline points={points} fill="none" stroke="#0000aa" strokeWidth="2" />
+                              <polyline points={points} fill="none" stroke={isMac ? '#38bdf8' : '#0000aa'} strokeWidth="2" />
                             )}
                             {history.map((q, idx) => {
                               const x = 35 + idx * 18;
                               const y = 70 - Math.max(4, Math.round((q.timeMs / maxLat) * 55));
                               return (
                                 <g key={idx}>
-                                  <circle cx={x} cy={y} r="3" fill="#ffffff" stroke="#0000aa" strokeWidth="1.5" />
-                                  <text x={x} y="82" font-size="6" fill="#333" text-anchor="middle">
+                                  <circle
+                                    cx={x}
+                                    cy={y}
+                                    r="3"
+                                    fill={isMac ? '#0f172a' : '#ffffff'}
+                                    stroke={isMac ? '#38bdf8' : '#0000aa'}
+                                    strokeWidth="1.5"
+                                  />
+                                  <text x={x} y="82" font-size="6" fill={isMac ? '#94a3b8' : '#333'} text-anchor="middle">
                                     #{idx + 1}
                                   </text>
                                 </g>
@@ -752,10 +923,10 @@ ${
                 )}
 
                 {/* Dashboard Action Controls with Real Export / Report Functionality */}
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
                   <button
                     className="win95-button"
-                    style={{ fontSize: '10px', padding: '3px 10px' }}
+                    style={{ fontSize: '11px', padding: '4px 12px', borderRadius: isMac ? '8px' : undefined }}
                     onClick={() =>
                       setModalNotice(
                         `Active Session History: ${sessionStats.queryHistory.length} query records logged in memory.`
@@ -766,28 +937,31 @@ ${
                   </button>
                   <button
                     className="win95-button"
-                    style={{ fontSize: '10px', padding: '3px 10px' }}
+                    style={{ fontSize: '11px', padding: '4px 12px', borderRadius: isMac ? '8px' : undefined }}
                     onClick={handleExportLogs}
                   >
                     📤 Export Logs (.json)
                   </button>
                   <button
                     className="win95-button"
-                    style={{ fontSize: '10px', padding: '3px 10px' }}
+                    style={{ fontSize: '11px', padding: '4px 12px', borderRadius: isMac ? '8px' : undefined }}
                     onClick={handleGenerateReport}
                   >
                     📄 Generate Report (.txt)
                   </button>
                 </div>
 
-                <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '4px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '4px', color: isMac ? '#94a3b8' : undefined }}>
                   Recent Queries (Last 10):
                 </div>
 
                 <div
                   className="win95-sunken"
                   style={{
-                    background: '#ffffff',
+                    background: isMac ? 'rgba(0, 0, 0, 0.35)' : '#ffffff',
+                    color: isMac ? '#f8fafc' : undefined,
+                    border: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : undefined,
+                    borderRadius: isMac ? '8px' : '0',
                     padding: '6px',
                     height: '100px',
                     overflowY: 'auto',
@@ -797,19 +971,23 @@ ${
                   }}
                 >
                   {sessionStats.queryHistory.length === 0 ? (
-                    <div style={{ color: '#808080', fontStyle: 'italic' }}>No queries executed yet this session.</div>
+                    <div style={{ color: isMac ? '#64748b' : '#808080', fontStyle: 'italic' }}>No queries executed yet this session.</div>
                   ) : (
                     sessionStats.queryHistory.map((q, idx) => (
-                      <div key={idx} style={{ marginBottom: '4px', borderBottom: '1px solid #eee', paddingBottom: '2px' }}>
-                        <span style={{ color: '#000080' }}>[{q.timestamp}]</span>{' '}
+                      <div key={idx} style={{ marginBottom: '4px', borderBottom: isMac ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid #eee', paddingBottom: '2px' }}>
+                        <span style={{ color: isMac ? '#38bdf8' : '#000080' }}>[{q.timestamp}]</span>{' '}
                         <span>{q.sql}</span>{' '}
-                        <span style={{ color: '#008000' }}>({q.timeMs}ms)</span>
+                        <span style={{ color: isMac ? '#4ade80' : '#008000' }}>({q.timeMs}ms)</span>
                       </div>
                     ))
                   )}
                 </div>
 
-                <button className="win95-button" onClick={onClearHistory}>
+                <button
+                  className="win95-button"
+                  style={{ borderRadius: isMac ? '8px' : undefined, fontSize: '11px', padding: '4px 10px' }}
+                  onClick={onClearHistory}
+                >
                   🗑️ Clear Session History
                 </button>
               </div>
@@ -817,21 +995,23 @@ ${
 
             {/* TAB 3: LOG OUT */}
             {activeTab === 'logout' && (
-              <div style={{ textAlign: 'center', padding: '16px 8px' }}>
+              <div style={{ textAlign: 'center', padding: isMac ? '20px 12px' : '16px 8px' }}>
                 <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🚪</span>
-                <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '8px' }}>
+                <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: isMac ? '#f8fafc' : undefined }}>
                   Log Out of @{currentUser.usernameNorm}?
                 </div>
 
                 <div
                   style={{
-                    background: '#dfdfdf',
-                    border: '1px solid #808080',
-                    padding: '10px',
+                    background: isMac ? 'rgba(255, 255, 255, 0.05)' : '#dfdfdf',
+                    border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #808080',
+                    borderRadius: isMac ? '10px' : '0',
+                    color: isMac ? '#cbd5e1' : '#000000',
+                    padding: isMac ? '12px 16px' : '10px',
                     fontSize: '11px',
-                    lineHeight: '1.5',
+                    lineHeight: '1.6',
                     textAlign: 'left',
-                    marginBottom: '16px',
+                    marginBottom: '18px',
                   }}
                 >
                   <div>• Your account remains saved on this browser/device.</div>
@@ -842,14 +1022,27 @@ ${
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                   <button
                     className="win95-button"
-                    style={{ fontWeight: 'bold', minWidth: '100px' }}
+                    style={{
+                      fontWeight: 'bold',
+                      minWidth: '110px',
+                      color: isMac ? '#ffffff' : undefined,
+                      background: isMac ? 'linear-gradient(180deg, #ef4444 0%, #dc2626 100%)' : undefined,
+                      border: isMac ? '1px solid rgba(255, 255, 255, 0.2)' : undefined,
+                      borderRadius: isMac ? '8px' : undefined,
+                      boxShadow: isMac ? '0 4px 12px rgba(239, 68, 68, 0.35)' : undefined,
+                      padding: isMac ? '6px 14px' : undefined,
+                    }}
                     onClick={onLogout}
                   >
                     🚪 Yes, Log Out
                   </button>
                   <button
                     className="win95-button"
-                    style={{ minWidth: '100px' }}
+                    style={{
+                      minWidth: '110px',
+                      borderRadius: isMac ? '8px' : undefined,
+                      padding: isMac ? '6px 14px' : undefined,
+                    }}
                     onClick={() => setActiveTab('account')}
                   >
                     ← Stay Logged In
@@ -860,54 +1053,72 @@ ${
           </div>
 
           {/* Footer Status Bar */}
-          <div
-            style={{
-              marginTop: '8px',
-              display: 'flex',
-              gap: '6px',
-              fontSize: '11px',
-            }}
-          >
+          {isMac ? (
             <div
-              className="win95-sunken"
               style={{
-                flex: 1,
-                padding: isMac ? '4px 8px' : '2px 6px',
-                background: 'var(--w95-sunken-bg, #c0c0c0)',
-                color: 'var(--w95-text-color, #f8fafc)',
-                borderRadius: isMac ? '6px' : '0',
-                border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
+                marginTop: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                fontSize: '11px',
+                color: '#94a3b8',
+                padding: '6px 12px',
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              🔒 Security: PBKDF2 (600k iter)
+              <span>🔒 PBKDF2 (600k iter)</span>
+              <span style={{ opacity: 0.3 }}>•</span>
+              <span>⚡ Session Active (24h)</span>
+              <span style={{ opacity: 0.3 }}>•</span>
+              <span>✨ Full &amp; Free Access</span>
             </div>
+          ) : (
             <div
-              className="win95-sunken"
               style={{
-                flex: 1,
-                padding: isMac ? '4px 8px' : '2px 6px',
-                background: 'var(--w95-sunken-bg, #c0c0c0)',
-                color: 'var(--w95-text-color, #f8fafc)',
-                borderRadius: isMac ? '6px' : '0',
-                border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
+                marginTop: '8px',
+                display: 'flex',
+                gap: '6px',
+                fontSize: '11px',
               }}
             >
-              ⚡ Token: Active (24h TTL)
+              <div
+                className="win95-sunken"
+                style={{
+                  flex: 1,
+                  padding: '2px 6px',
+                  background: 'var(--w95-sunken-bg, #c0c0c0)',
+                  color: 'var(--w95-text-color, #000000)',
+                }}
+              >
+                🔒 Security: PBKDF2 (600k iter)
+              </div>
+              <div
+                className="win95-sunken"
+                style={{
+                  flex: 1,
+                  padding: '2px 6px',
+                  background: 'var(--w95-sunken-bg, #c0c0c0)',
+                  color: 'var(--w95-text-color, #000000)',
+                }}
+              >
+                ⚡ Token: Active (24h TTL)
+              </div>
+              <div
+                className="win95-sunken"
+                style={{
+                  flex: 1,
+                  padding: '2px 6px',
+                  background: 'var(--w95-sunken-bg, #c0c0c0)',
+                  color: 'var(--w95-text-color, #000000)',
+                }}
+              >
+                ✨ Access: Full &amp; Free (Unlocked)
+              </div>
             </div>
-            <div
-              className="win95-sunken"
-              style={{
-                flex: 1,
-                padding: isMac ? '4px 8px' : '2px 6px',
-                background: 'var(--w95-sunken-bg, #c0c0c0)',
-                color: 'var(--w95-text-color, #f8fafc)',
-                borderRadius: isMac ? '6px' : '0',
-                border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
-              }}
-            >
-              ✨ Access: Full &amp; Free (Unlocked)
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -920,7 +1131,9 @@ ${
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0,0,0,0.4)',
+            background: 'rgba(0,0,0,0.5)',
+            backdropFilter: isMac ? 'blur(8px)' : undefined,
+            WebkitBackdropFilter: isMac ? 'blur(8px)' : undefined,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -928,24 +1141,50 @@ ${
           }}
         >
           <div className="win95-window" style={{ width: '380px', boxShadow: '4px 4px 10px rgba(0,0,0,0.5)' }}>
-            <div className="win95-titlebar" style={{ background: '#800000' }}>
+            <div
+              className="win95-titlebar"
+              style={{
+                background: isMac
+                  ? 'linear-gradient(180deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.2) 100%)'
+                  : '#800000',
+              }}
+            >
               <div className="win95-titlebar-text">
                 <span>⚠️</span>
                 <span>Confirm Account Deletion</span>
               </div>
             </div>
 
-            <div style={{ padding: '16px', fontSize: '11px', lineHeight: '1.4' }}>
+            <div style={{ padding: '16px', fontSize: '11px', lineHeight: '1.4', color: isMac ? '#cbd5e1' : undefined }}>
               Are you sure you want to permanently delete account <strong>@{currentUser.usernameNorm}</strong> from this device?
               <br /><br />
               This will remove all local credentials and session tokens. <strong>This action cannot be undone.</strong>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '0 16px 12px 16px' }}>
-              <button className="win95-button" style={{ color: '#800000', fontWeight: 'bold' }} onClick={handleDeleteConfirm}>
+              <button
+                className="win95-button"
+                style={{
+                  color: isMac ? '#ffffff' : '#800000',
+                  background: isMac ? 'linear-gradient(180deg, #ef4444 0%, #dc2626 100%)' : undefined,
+                  border: isMac ? '1px solid rgba(255, 255, 255, 0.2)' : undefined,
+                  borderRadius: isMac ? '8px' : undefined,
+                  boxShadow: isMac ? '0 4px 12px rgba(239, 68, 68, 0.35)' : undefined,
+                  padding: isMac ? '6px 14px' : undefined,
+                  fontWeight: 'bold',
+                }}
+                onClick={handleDeleteConfirm}
+              >
                 Yes, Delete Account
               </button>
-              <button className="win95-button" onClick={() => setShowConfirmDelete(false)}>
+              <button
+                className="win95-button"
+                style={{
+                  borderRadius: isMac ? '8px' : undefined,
+                  padding: isMac ? '6px 14px' : undefined,
+                }}
+                onClick={() => setShowConfirmDelete(false)}
+              >
                 Cancel
               </button>
             </div>
@@ -962,7 +1201,9 @@ ${
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0,0,0,0.3)',
+            background: 'rgba(0,0,0,0.4)',
+            backdropFilter: isMac ? 'blur(8px)' : undefined,
+            WebkitBackdropFilter: isMac ? 'blur(8px)' : undefined,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -977,12 +1218,16 @@ ${
               </div>
             </div>
 
-            <div style={{ padding: '16px', fontSize: '11px', lineHeight: '1.4' }}>
+            <div style={{ padding: '16px', fontSize: '11px', lineHeight: '1.4', color: isMac ? '#cbd5e1' : undefined }}>
               {modalNotice}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '12px' }}>
-              <button className="win95-button" style={{ minWidth: '80px', fontWeight: 'bold' }} onClick={() => setModalNotice(null)}>
+              <button
+                className="win95-button"
+                style={{ minWidth: '80px', fontWeight: 'bold', borderRadius: isMac ? '8px' : undefined, padding: isMac ? '6px 16px' : undefined }}
+                onClick={() => setModalNotice(null)}
+              >
                 OK
               </button>
             </div>

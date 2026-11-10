@@ -41,6 +41,17 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
     e.stopPropagation();
     e.preventDefault();
     if (!disabled && onMinimize) {
+      if (isMac) {
+        const win = (e.currentTarget as HTMLElement).closest('.win95-window') as HTMLElement | null;
+        if (win) {
+          win.classList.add('mac-window-minimizing');
+          setTimeout(() => {
+            onMinimize();
+            win.classList.remove('mac-window-minimizing');
+          }, 220);
+          return;
+        }
+      }
       onMinimize();
     }
   };
@@ -57,6 +68,17 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
     e.stopPropagation();
     e.preventDefault();
     if (!disabled && onClose) {
+      if (isMac) {
+        const win = (e.currentTarget as HTMLElement).closest('.win95-window') as HTMLElement | null;
+        if (win) {
+          win.classList.add('mac-window-closing');
+          setTimeout(() => {
+            onClose();
+            win.classList.remove('mac-window-closing');
+          }, 180);
+          return;
+        }
+      }
       onClose();
     }
   };

@@ -173,6 +173,20 @@ export const Taskbar: React.FC<TaskbarProps> = ({
                 onClick={() => {
                   if (isOpen) {
                     if (isActive) {
+                      if (isMac) {
+                        const win =
+                          document.getElementById(`${item.id}-window`) ||
+                          (item.id === 'ide' ? document.getElementById('ide-window') : null) ||
+                          (document.querySelector('.win95-window') as HTMLElement | null);
+                        if (win) {
+                          win.classList.add('mac-window-minimizing');
+                          setTimeout(() => {
+                            onToggleMinimize(item.id);
+                            win.classList.remove('mac-window-minimizing');
+                          }, 220);
+                          return;
+                        }
+                      }
                       onToggleMinimize(item.id);
                     } else {
                       onFocusWindow(item.id);
