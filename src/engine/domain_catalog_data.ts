@@ -508,3 +508,4 @@ export const EXPANDED_DOMAIN_CATALOG: Record<string, DomainTableSpec> = {
     ]
   }
 };
+

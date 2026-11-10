@@ -63,6 +63,8 @@ interface IDEShellProps {
   isMaximized?:            boolean;
   onMaximize?:             () => void;
   dialect:                 Dialect;
+  rowsPerTable?:           number;
+  onRowsPerTableChange?:   (count: number) => void;
   initialQueryText:        string;
   initialResult:           ExecutionSuccess | null;
   initialIsLoading:        boolean;
@@ -91,6 +93,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   isMaximized: propIsMaximized,
   onMaximize: propOnMaximize,
   dialect,
+  rowsPerTable = 20,
+  onRowsPerTableChange,
   initialQueryText,
   initialResult,
   initialIsLoading,
@@ -517,6 +521,23 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     setTabContextMenu({ x: e.clientX, y: e.clientY, tabId });
   };
 
+  const [editingTabId, setEditingTabId] = useState<string | null>(null);
+  const [editingTabTitle, setEditingTabTitle] = useState('');
+
+  const handleStartRenameTab = (tabId: string, currentTitle: string) => {
+    setEditingTabId(tabId);
+    setEditingTabTitle(currentTitle);
+    setTabContextMenu(null);
+  };
+
+  const handleCommitRenameTab = (tabId: string, rawTitle: string) => {
+    let clean = rawTitle.trim();
+    if (!clean) clean = 'Query.sql';
+    if (!clean.endsWith('.sql')) clean += '.sql';
+    setTabs((prev) => prev.map((t) => (t.id === tabId ? { ...t, title: clean } : t)));
+    setEditingTabId(null);
+  };
+
 
   const handleSelectTab = (tabId: string) => {
     setActiveTabId(tabId);
@@ -895,9 +916,12 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       <Toolbar
         dialect={dialect}
         onDialectChange={onDialectChange}
+        rowsPerTable={rowsPerTable}
+        onRowsPerTableChange={onRowsPerTableChange}
         onRun={handleExecute}
         onReset={handleReset}
         onFormatSql={handleFormatSql}
+        onOpenExplainPlan={() => setIsExplainPlanOpen(true)}
         onInsertTemplate={handleInsertTemplate}
         onToggleHistory={() => setIsHistoryOpen(true)}
         onOpenERD={() => setIsERDOpen(true)}
@@ -925,6 +949,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               onNewDatabase={() => setShowCreateDbDialog(true)}
               onNewTable={(targetDb) => { setCreateTableTargetDb(targetDb); setShowCreateTableWizard(true); }}
               onOpenERD={() => setIsERDOpen(true)}
+              onToggleCollapse={() => setShowExplorer(false)}
             />
           </div>
         )}
@@ -944,6 +969,33 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           />
         )}
 
+        {/* Collapsed Sidebar Restore Button */}
+        {!showExplorer && (
+          <button
+            className="win95-button"
+            onClick={() => setShowExplorer(true)}
+            title="Expand Database Navigator"
+            style={{
+              width: '20px',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              padding: '8px 2px',
+              fontSize: '10px',
+              cursor: 'pointer',
+              gap: '6px',
+              flexShrink: 0,
+            }}
+          >
+            <span>▶</span>
+            <span style={{ writingMode: 'vertical-rl', letterSpacing: '2px', fontSize: '9px', fontWeight: 'bold' }}>
+              NAVIGATOR
+            </span>
+          </button>
+        )}
+
         {/* Right Work Area */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px', height: '100%', overflow: 'hidden' }}>
           {/* Query Editor Multi-Tab Bar */}
@@ -952,13 +1004,18 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               .sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0))
               .map((tab) => {
                 const isActive = tab.id === activeTabId;
+                const isEditing = editingTabId === tab.id;
                 return (
                   <div
                     key={tab.id}
                     className={`win95-editor-tab ${isActive ? 'active' : ''}`}
                     onClick={() => handleSelectTab(tab.id)}
                     onContextMenu={(e) => handleTabContextMenu(e, tab.id)}
-                    title={tab.title}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      handleStartRenameTab(tab.id, tab.title);
+                    }}
+                    title={isEditing ? '' : `${tab.title} (Double-click to rename)`}
                   >
                     <button
                       type="button"
@@ -971,8 +1028,30 @@ export const IDEShell: React.FC<IDEShellProps> = ({
                     >
                       {tab.isPinned ? '📌' : '📄'}
                     </button>
-                    <span>{tab.title}</span>
-                    {!tab.isPinned && (
+                    {isEditing ? (
+                      <input
+                        autoFocus
+                        className="win95-sunken"
+                        style={{
+                          fontSize: '11px',
+                          padding: '0 2px',
+                          width: '110px',
+                          background: 'var(--w95-sunken-bg, #ffffff)',
+                          color: 'var(--w95-sunken-text, #000000)',
+                        }}
+                        value={editingTabTitle}
+                        onChange={(e) => setEditingTabTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleCommitRenameTab(tab.id, editingTabTitle);
+                          if (e.key === 'Escape') setEditingTabId(null);
+                        }}
+                        onBlur={() => handleCommitRenameTab(tab.id, editingTabTitle)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <span>{tab.title}</span>
+                    )}
+                    {!tab.isPinned && !isEditing && (
                       <button
                         className="win95-editor-tab-close"
                         onClick={(e) => handleCloseTab(e, tab.id)}
@@ -997,8 +1076,20 @@ export const IDEShell: React.FC<IDEShellProps> = ({
                   boxShadow: '2px 2px 5px rgba(0,0,0,0.5)',
                 }}
               >
+                <div
+                  className="win95-dropdown-item"
+                  onClick={() => {
+                    const t = tabs.find((x) => x.id === tabContextMenu.tabId);
+                    if (t) handleStartRenameTab(t.id, t.title);
+                  }}
+                >
+                  <span>✏️ Rename Tab</span>
+                </div>
                 <div className="win95-dropdown-item" onClick={() => handleDuplicateTab(tabContextMenu.tabId)}>
                   <span>📋 Duplicate Tab</span>
+                </div>
+                <div className="win95-dropdown-item" onClick={() => handleCloseTab(null, tabContextMenu.tabId)}>
+                  <span>✕ Close Tab</span>
                 </div>
                 <div className="win95-dropdown-item" onClick={() => handleCloseOtherTabs(tabContextMenu.tabId)}>
                   <span>❌ Close Other Tabs</span>
@@ -1013,15 +1104,6 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               title="Open New Query Tab"
             >
               +
-            </button>
-
-            <button
-              className="win95-button"
-              style={{ fontSize: '9px', padding: '1px 6px', marginLeft: 'auto' }}
-              onClick={() => setShowExplorer(!showExplorer)}
-              title="Toggle Schema Explorer Sidebar"
-            >
-              {showExplorer ? '◀ Hide Sidebar' : '▶ Show Sidebar'}
             </button>
           </div>
 
@@ -1059,9 +1141,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               fontSize: '9px',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.75 }}>
-              <span>⋯</span>
-              <span>DRAG TO RESIZE</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.8 }}>
+              <span style={{ letterSpacing: '1px', fontWeight: 'bold' }}>:::</span>
+              <span style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Splitter</span>
             </div>
 
             {/* Split View Quick Controls */}
@@ -1072,7 +1154,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
                 onClick={(e) => { e.stopPropagation(); setEditorHeightPercent(75); }}
                 title="Expand Query Editor Pane (75% Editor / 25% Results)"
               >
-                ▲ Max Editor
+                ▲ 75% Editor
               </button>
               <button
                 className="win95-button"
@@ -1088,7 +1170,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
                 onClick={(e) => { e.stopPropagation(); setEditorHeightPercent(25); }}
                 title="Expand Results Grid Pane (25% Editor / 75% Results)"
               >
-                ▼ Max Results
+                ▼ 75% Results
               </button>
             </div>
           </div>
@@ -1456,6 +1538,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           dialect={dialect}
           catalog={catalog}
           defaultDb={createTableTargetDb}
+          initialRows={rowsPerTable}
           onConfirm={async (tableName, ddlSql, columns, dbName, rowsToGenerate) => {
             setShowCreateTableWizard(false);
             const result = await executor.createUserTable(tableName, ddlSql, columns, dbName, rowsToGenerate);

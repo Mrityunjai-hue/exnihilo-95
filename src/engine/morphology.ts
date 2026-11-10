@@ -138,3 +138,4 @@ export function normalizeTableName(rawTableName: string): NormalizedTableInfo {
     qualifiers,
   };
 }
+

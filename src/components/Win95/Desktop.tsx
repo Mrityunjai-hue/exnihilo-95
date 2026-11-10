@@ -154,8 +154,29 @@ export const Desktop: React.FC = () => {
     });
   };
 
-  // Settings State
-  const [rowsPerTable, setRowsPerTable] = useState(20);
+  // Settings State with LocalStorage Persistence
+  const [rowsPerTable, setRowsPerTableState] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('exnihilo_rows_per_table');
+        if (stored) {
+          const parsed = parseInt(stored, 10);
+          if (!isNaN(parsed) && parsed > 0) return parsed;
+        }
+      } catch {}
+    }
+    return 20;
+  });
+
+  const setRowsPerTable = (val: number) => {
+    const safeVal = Math.max(1, Math.min(1000, Number(val) || 20));
+    setRowsPerTableState(safeVal);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('exnihilo_rows_per_table', String(safeVal));
+      } catch {}
+    }
+  };
   const [tableCap, setTableCap] = useState(25);
   const [dialect, setDialect] = useState<Dialect>('MySQL');
 
@@ -756,6 +777,8 @@ export const Desktop: React.FC = () => {
             zIndex={getZIndex('ide')}
             executor={executor}
             dialect={dialect}
+            rowsPerTable={rowsPerTable}
+            onRowsPerTableChange={setRowsPerTable}
             initialQueryText={queryText}
             initialResult={result}
             initialIsLoading={isLoading}

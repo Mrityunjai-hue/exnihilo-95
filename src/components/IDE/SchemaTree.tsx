@@ -29,6 +29,7 @@ interface SchemaTreeProps {
   onNewDatabase:     () => void;
   onNewTable:        (targetDb: string) => void;
   onOpenERD?:        () => void;
+  onToggleCollapse?: () => void;
 }
 
 // ── Context Menu ───────────────────────────────────────────────────────────────
@@ -136,7 +137,7 @@ const ConfirmDialog: React.FC<{
 // ── Main SchemaTree Component ──────────────────────────────────────────────────
 
 export const SchemaTree: React.FC<SchemaTreeProps> = ({
-  catalog, executor, onSelectTable, onRefresh, onNewDatabase, onNewTable, onOpenERD,
+  catalog, executor, onSelectTable, onRefresh, onNewDatabase, onNewTable, onOpenERD, onToggleCollapse,
 }) => {
   const { activeTheme } = useTheme();
   const isMac = activeTheme === 'macos-glass';
@@ -331,6 +332,22 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
           >
             🔄
           </button>
+          {onToggleCollapse && (
+            <button
+              className="win95-button"
+              style={{
+                padding: isMac ? '2px 6px' : '0 4px',
+                fontSize: isMac ? 11 : 9,
+                minHeight: isMac ? 22 : 18,
+                borderRadius: isMac ? 6 : 0,
+                cursor: 'pointer',
+              }}
+              onClick={onToggleCollapse}
+              title="Collapse Database Navigator"
+            >
+              ◀
+            </button>
+          )}
         </div>
       </div>
 
@@ -555,7 +572,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                 borderRadius: isMac ? 4 : 0,
                               }}
                             >
-                              {entry.rowCount}r
+                              {entry.rowCount} rows
                             </span>
                             {entry.isUserDefined && (
                               <span

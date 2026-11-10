@@ -72,6 +72,7 @@ interface CreateTableWizardProps {
   dialect: Dialect;
   catalog: SessionCatalog;
   defaultDb: string;
+  initialRows?: number;
   onConfirm: (
     tableName: string,
     ddlSql: string,
@@ -83,7 +84,7 @@ interface CreateTableWizardProps {
 }
 
 export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
-  dialect, catalog, defaultDb, onConfirm, onCancel,
+  dialect, catalog, defaultDb, initialRows = 20, onConfirm, onCancel,
 }) => {
   const [step, setStep] = useState(1);
 
@@ -97,7 +98,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
   const [columns, setColumns] = useState<ColumnFormRow[]>([freshColumn(0), freshColumn(1)]);
   const [activeColIdx, setActiveColIdx] = useState(0);
   const [tableConstraints, setTableConstraints] = useState<TableConstraintForm[]>([]);
-  const [rowsToGenerate, setRowsToGenerate] = useState(20);
+  const [rowsToGenerate, setRowsToGenerate] = useState(initialRows);
   const [bottomTab, setBottomTab] = useState<'ddl' | 'table_constraints'>('ddl');
   const [step2Error, setStep2Error] = useState('');
   const [isCreating, setIsCreating] = useState(false);

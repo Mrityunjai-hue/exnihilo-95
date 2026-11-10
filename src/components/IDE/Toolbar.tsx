@@ -1,39 +1,46 @@
 /**
  * Toolbar.tsx — Enhanced Windows 95 IDE Action Toolbar
- * Includes SQL Beautifier/Formatter, Template Snippet Selector, History Toggle,
- * Dialect Selector, and Action Controls.
+ * Includes SQL Beautifier/Formatter, Execution Plan trigger, Template Snippet Selector,
+ * Inline Synthetic Rows/Table Selector, History Toggle, Dialect Selector, and Action Controls.
  */
 
 import React, { useState } from 'react';
 import { Dialect } from '../../engine/parser';
+import { useTheme } from '../../hooks/useTheme';
 
 interface ToolbarProps {
-  dialect:           Dialect;
-  onDialectChange:   (dialect: Dialect) => void;
-  onRun:             () => void;
-  onReset:           () => void;
-  onFormatSql?:      () => void;
-  onInsertTemplate?: (templateSql: string) => void;
-  onToggleHistory?:  () => void;
-  onOpenWorkspaces?: () => void;
-  onOpenERD?:        () => void;
-  onOpenHelp:        () => void;
-  onOpenSettings:    () => void;
-  onStartTour:       () => void;
-  onOpenShare?:      () => void;
-  crtEnabled?:       boolean;
-  onToggleCrt?:      () => void;
-  isLoading:         boolean;
-  hasSelection?:     boolean;
-  historyCount?:     number;
+  dialect:              Dialect;
+  onDialectChange:      (dialect: Dialect) => void;
+  rowsPerTable?:        number;
+  onRowsPerTableChange?: (count: number) => void;
+  onRun:                () => void;
+  onReset:              () => void;
+  onFormatSql?:         () => void;
+  onOpenExplainPlan?:   () => void;
+  onInsertTemplate?:    (templateSql: string) => void;
+  onToggleHistory?:     () => void;
+  onOpenWorkspaces?:    () => void;
+  onOpenERD?:           () => void;
+  onOpenHelp:           () => void;
+  onOpenSettings:       () => void;
+  onStartTour:          () => void;
+  onOpenShare?:         () => void;
+  crtEnabled?:          boolean;
+  onToggleCrt?:         () => void;
+  isLoading:            boolean;
+  hasSelection?:        boolean;
+  historyCount?:        number;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
   dialect,
   onDialectChange,
+  rowsPerTable = 20,
+  onRowsPerTableChange,
   onRun,
   onReset,
   onFormatSql,
+  onOpenExplainPlan,
   onInsertTemplate,
   onToggleHistory,
   onOpenWorkspaces,
@@ -48,6 +55,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   hasSelection = false,
   historyCount = 0,
 }) => {
+  const { activeTheme } = useTheme();
+  const isDark = activeTheme === 'macos-glass' || activeTheme === 'win95-noir';
   const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
 
   const templates = [
@@ -88,7 +97,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '2px 6px',
-        height: '28px',
+        height: '30px',
         background: 'var(--w95-gray, #c0c0c0)',
         color: 'var(--w95-text-color, #000000)',
         borderBottom: '1px solid var(--w95-dark-gray, #808080)',
@@ -96,27 +105,32 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         boxSizing: 'border-box',
         position: 'relative',
         zIndex: 10,
+        overflowX: 'auto',
       }}
     >
-      {/* Left Core Execution Group */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+      {/* Left Core Execution & Tooling Group */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
         {/* Primary Run Button */}
         <button
           id="btn-run"
           className="win95-button"
           style={{
             fontWeight: 'bold',
-            color: hasSelection ? '#800080' : '#006600',
-            background: hasSelection ? '#f0e6f6' : undefined,
+            color: hasSelection
+              ? (isDark ? '#c084fc' : '#800080')
+              : (isDark ? '#4ade80' : '#006600'),
             padding: '2px 10px',
             fontSize: '11px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
           }}
           onClick={onRun}
           disabled={isLoading}
           title={hasSelection ? 'Execute Selected Query (F5 or Ctrl+Enter)' : 'Execute All Queries (F5 or Ctrl+Enter)'}
         >
-          <span>▶</span>
-          <span>{hasSelection ? 'Run Selection (F5)' : 'Run (F5)'}</span>
+          <span>{isLoading ? '⏳' : '▶'}</span>
+          <span>{isLoading ? 'Running...' : hasSelection ? 'Run Selection (F5)' : 'Run (F5)'}</span>
         </button>
 
         {/* Format SQL Button */}
@@ -126,11 +140,77 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           onClick={onFormatSql}
           disabled={isLoading}
           title="Format & Beautify SQL Query (Ctrl+Shift+F)"
-          style={{ padding: '2px 8px', fontSize: '11px' }}
+          style={{ padding: '2px 8px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
         >
           <span>⚡</span>
           <span>Format</span>
         </button>
+
+        {/* Explain Plan Button */}
+        {onOpenExplainPlan && (
+          <button
+            id="btn-explain"
+            className="win95-button"
+            onClick={onOpenExplainPlan}
+            disabled={isLoading}
+            title="View Query Execution Plan & Cost Tree (Ctrl+E)"
+            style={{ padding: '2px 8px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+          >
+            <span>🔍</span>
+            <span>Explain</span>
+          </button>
+        )}
+
+        <div className="win95-divider-v" />
+
+        {/* Data Points / Synthetic Row Generator Control */}
+        {onRowsPerTableChange && (
+          <div
+            className="win95-rows-control"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+            title="Set how many synthetic rows our domain inference engine generates per new table"
+          >
+            <label
+              htmlFor="tb-rows-select"
+              style={{
+                fontSize: '11px',
+                fontWeight: 'bold',
+                whiteSpace: 'nowrap',
+                color: 'var(--w95-text-color, inherit)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '2px',
+                cursor: 'pointer',
+              }}
+            >
+              <span>🎲</span>
+              <span>Rows:</span>
+            </label>
+            <select
+              id="tb-rows-select"
+              className="win95-sunken"
+              value={rowsPerTable}
+              onChange={(e) => onRowsPerTableChange(Number(e.target.value))}
+              title="Configures synthetic row count per table generated by ExNihilo engine"
+              style={{
+                fontSize: '11px',
+                padding: '1px 4px',
+                height: '20px',
+                background: 'var(--w95-sunken-bg, #ffffff)',
+                color: 'var(--w95-sunken-text, #000000)',
+                cursor: 'pointer',
+              }}
+            >
+              <option value={5}>5 rows (Fast)</option>
+              <option value={10}>10 rows</option>
+              <option value={20}>20 rows (Default)</option>
+              <option value={50}>50 rows</option>
+              <option value={100}>100 rows</option>
+              <option value={250}>250 rows</option>
+              <option value={500}>500 rows</option>
+            </select>
+          </div>
+        )}
 
         <div className="win95-divider-v" />
 
@@ -141,7 +221,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             className="win95-button"
             onClick={() => setTemplateMenuOpen((prev) => !prev)}
             title="Insert Prebuilt SQL Query Templates"
-            style={{ padding: '2px 8px', fontSize: '11px' }}
+            style={{ padding: '2px 8px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
           >
             <span>📋</span>
             <span>Templates ▾</span>
@@ -187,7 +267,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           className="win95-button"
           onClick={onToggleHistory}
           title="View Query Execution History Log (Ctrl+H)"
-          style={{ padding: '2px 8px', fontSize: '11px' }}
+          style={{ padding: '2px 8px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
         >
           <span>🕒</span>
           <span>History ({historyCount})</span>
@@ -199,7 +279,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             className="win95-button"
             onClick={onOpenERD}
             title="Open Interactive Entity Relationship Diagram (ERD) & Schema Visualizer"
-            style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 'bold' }}
+            style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
           >
             <span>🌐</span>
             <span>ERD</span>
@@ -212,7 +292,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             className="win95-button"
             onClick={onOpenShare}
             title="Share SQL Query & Playground URL"
-            style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 'bold' }}
+            style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
           >
             <span>🔗</span>
             <span>Share</span>
@@ -220,9 +300,17 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         )}
       </div>
 
-      {/* Right Dialect & Engine Selector Group */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <label htmlFor="dialect-select" style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--w95-text-color, #000000)' }}>
+      {/* Right Dialect Selector Group */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+        <label
+          htmlFor="dialect-select"
+          style={{
+            fontSize: '11px',
+            fontWeight: 'bold',
+            color: 'var(--w95-text-color, #000000)',
+            whiteSpace: 'nowrap',
+          }}
+        >
           Dialect:
         </label>
         <select
@@ -230,12 +318,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           className="win95-sunken toolbar-dialect-select"
           value={dialect}
           onChange={(e) => onDialectChange(e.target.value as Dialect)}
-          style={{ fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
+          style={{
+            fontSize: '11px',
+            padding: '1px 4px',
+            height: '20px',
+            background: 'var(--w95-sunken-bg, #ffffff)',
+            color: 'var(--w95-sunken-text, #000000)',
+            cursor: 'pointer',
+          }}
         >
-          <option value="MySQL" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>MySQL</option>
-          <option value="PostgreSQL" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>PostgreSQL</option>
-          <option value="SQLite" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>SQLite</option>
-          <option value="SSMS" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>SSMS (Transact-SQL)</option>
+          <option value="MySQL">🐬 MySQL</option>
+          <option value="PostgreSQL">🐘 PostgreSQL</option>
+          <option value="SQLite">🪶 SQLite</option>
+          <option value="SSMS">🏢 SSMS (T-SQL)</option>
         </select>
       </div>
     </div>

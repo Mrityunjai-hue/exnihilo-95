@@ -207,6 +207,26 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
 
   const { columns, rowCount } = currentResult;
 
+  // Infer column data types from row values for clear header badges
+  const columnTypes = useMemo(() => {
+    return columns.map((_, colIdx) => {
+      for (const row of rawRows) {
+        const val = row[colIdx];
+        if (val !== null && val !== undefined) {
+          if (typeof val === 'number') {
+            return Number.isInteger(val) ? 'INT' : 'DEC';
+          }
+          if (typeof val === 'boolean') return 'BOOL';
+          if (typeof val === 'string') {
+            if (/^\d{4}-\d{2}-\d{2}/.test(val)) return 'DATE';
+            return 'TEXT';
+          }
+        }
+      }
+      return 'ANY';
+    });
+  }, [columns, rawRows]);
+
   // Handle column header click for sorting (ASC -> DESC -> Unsorted)
   const handleColumnSort = (colIdx: number) => {
     if (sortColIdx === colIdx) {
@@ -564,14 +584,18 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
               <th style={{ width: '40px', textAlign: 'center' }}>#</th>
               {columns.map((col, idx) => {
                 const isSorted = sortColIdx === idx;
+                const colType = columnTypes[idx] || 'ANY';
                 return (
                   <th
                     key={idx}
                     onClick={() => handleColumnSort(idx)}
-                    style={{ cursor: 'pointer', userSelect: 'none' }}
-                    title="Click to sort column (ASC -> DESC -> Unsorted)"
+                    style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', padding: '3px 8px' }}
+                    title={`Click to sort ${col} (${colType}) (ASC -> DESC -> Unsorted)`}
                   >
-                    <span>{col}</span>
+                    <span style={{ fontWeight: 'bold' }}>{col}</span>
+                    <span style={{ marginLeft: '4px', fontSize: '9px', opacity: 0.65, fontWeight: 'normal', fontFamily: 'var(--w95-mono)' }}>
+                      [{colType}]
+                    </span>
                     {isSorted && (
                       <span style={{ marginLeft: '4px', fontSize: '9px', color: 'var(--w95-text-color, #000080)' }}>
                         {sortDir === 'asc' ? '▲' : '▼'}
@@ -601,25 +625,40 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                 {/* Visible Virtual Window Rows */}
                 {visibleRows.map(({ row, originalIndex }) => (
                   <tr key={originalIndex} style={{ height: `${ROW_HEIGHT}px` }}>
-                    <td style={{ textAlign: 'center', color: 'var(--w95-text-color, #888)', background: 'var(--w95-gray, #f5f5f5)', fontWeight: 'bold' }}>
+                    <td style={{ textAlign: 'center', color: 'var(--w95-text-color, #888)', background: 'var(--w95-gray, #f5f5f5)', fontWeight: 'bold', fontSize: '10px' }}>
                       {originalIndex + 1}
                     </td>
-                    {row.map((val, colIdx) => (
-                      <td
-                        key={colIdx}
-                        onDoubleClick={() => setInspectedCell({ val, colName: columns[colIdx], rowIdx: originalIndex + 1 })}
-                        title="Double-click to inspect cell value"
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {val === null || val === undefined ? (
-                          <span style={{ color: 'var(--w95-dark-gray, #999999)', fontStyle: 'italic' }}>&lt;NULL&gt;</span>
-                        ) : typeof val === 'object' ? (
-                          JSON.stringify(val)
-                        ) : (
-                          String(val)
-                        )}
-                      </td>
-                    ))}
+                    {row.map((val, colIdx) => {
+                      const isNum = typeof val === 'number';
+                      return (
+                        <td
+                          key={colIdx}
+                          onDoubleClick={() => setInspectedCell({ val, colName: columns[colIdx], rowIdx: originalIndex + 1 })}
+                          onClick={() => {
+                            if (val !== null && val !== undefined && typeof navigator !== 'undefined' && navigator.clipboard) {
+                              navigator.clipboard.writeText(typeof val === 'object' ? JSON.stringify(val) : String(val));
+                              showToast(`📋 Copied: ${String(val).slice(0, 24)}`);
+                            }
+                          }}
+                          title="Click to copy, double-click to inspect cell value"
+                          style={{
+                            cursor: 'pointer',
+                            textAlign: isNum ? 'right' : 'left',
+                            fontVariantNumeric: isNum ? 'tabular-nums' : undefined,
+                            fontFamily: isNum ? 'var(--w95-mono)' : undefined,
+                            padding: '2px 8px',
+                          }}
+                        >
+                          {val === null || val === undefined ? (
+                            <span style={{ color: 'var(--w95-dark-gray, #999999)', fontStyle: 'italic', opacity: 0.6 }}>&lt;NULL&gt;</span>
+                          ) : typeof val === 'object' ? (
+                            JSON.stringify(val)
+                          ) : (
+                            String(val)
+                          )}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
 
