@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StoredUser } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
+import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
 
 export interface WindowMeta {
   id:          string;
@@ -17,6 +18,8 @@ interface TaskbarProps {
   currentUser:       StoredUser | null;
   isLoggedIn:        boolean;
   isSecureContext:   boolean;
+  activeTheme?:      string;
+  isAnyMaximized?:   boolean;
   crtEnabled?:       boolean;
   onToggleCrt?:      () => void;
   onFocusWindow:     (id: string) => void;
@@ -34,6 +37,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   currentUser,
   isLoggedIn,
   isSecureContext,
+  activeTheme: propTheme,
+  isAnyMaximized = false,
   crtEnabled,
   onToggleCrt,
   onFocusWindow,
@@ -44,7 +49,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   onToggleLaunchpad,
   isLaunchpadOpen = false,
 }) => {
-  const { activeTheme } = useTheme();
+  const { activeTheme: hookTheme } = useTheme();
+  const activeTheme = propTheme || hookTheme;
   const isMac = activeTheme === 'macos-glass';
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [hoveredDockId, setHoveredDockId] = useState<string | null>(null);
@@ -80,13 +86,15 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   if (isMac) {
     return (
       <nav
-        className="mac-dock-container"
+        className={`mac-dock-container ${isAnyMaximized ? 'is-fullscreen-hidden' : ''}`}
         style={{
           position: 'fixed',
           bottom: '12px',
           left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 99999,
+          transform: isAnyMaximized ? 'translateX(-50%) translateY(140%)' : 'translateX(-50%)',
+          opacity: isAnyMaximized ? 0 : 1,
+          pointerEvents: isAnyMaximized ? 'none' : 'auto',
+          zIndex: 45,
           display: 'flex',
           alignItems: 'flex-end',
           gap: '8px',
@@ -97,6 +105,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           borderRadius: '24px',
           padding: '6px 12px',
           boxShadow: '0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
+          transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease',
         }}
       >
         {/* Launchpad Button */}
@@ -279,7 +288,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="win95-start-banner">
-            Windows<span style={{ fontWeight: 'normal', opacity: 0.9 }}>95</span>
+            ExNihilo<span style={{ fontWeight: 'normal', opacity: 0.9 }}>95</span>
           </div>
           <div className="win95-start-items">
             {/* Account Item */}
@@ -438,12 +447,13 @@ export const Taskbar: React.FC<TaskbarProps> = ({
       >
         <button
           className={`win95-button win95-start-btn ${startMenuOpen ? 'pressed' : ''}`}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
           onClick={(e) => {
             e.stopPropagation();
             setStartMenuOpen(!startMenuOpen);
           }}
         >
-          <span style={{ fontSize: '14px' }}>📺</span>
+          <ExNihiloLogo size={16} showText={false} />
           <strong>Start</strong>
         </button>
 

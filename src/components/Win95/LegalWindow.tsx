@@ -70,7 +70,7 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
               boxSizing: 'border-box',
             }
           : isMaximized
-          ? { position: 'fixed', top: 0, left: 0, width: '100vw', height: 'calc(100vh - 36px)', zIndex, display: isMinimized ? 'none' : 'flex', flexDirection: 'column' }
+          ? { position: 'fixed', top: 0, left: 0, width: '100vw', height: 'calc(100vh - 36px)', zIndex: 1000, display: isMinimized ? 'none' : 'flex', flexDirection: 'column' }
           : { position: 'absolute', top: position.y, left: position.x, width: '660px', height: '520px', zIndex, display: isMinimized ? 'none' : 'flex', flexDirection: 'column' }
       }
       onMouseDown={onFocus}

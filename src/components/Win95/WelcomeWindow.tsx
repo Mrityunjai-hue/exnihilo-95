@@ -9,6 +9,7 @@
 import React from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from './WindowControls';
+import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
 
 interface WelcomeWindowProps {
   isOpen:       boolean;
@@ -58,7 +59,7 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
         style={{ cursor: 'move' }}
       >
         <div className="win95-titlebar-text">
-          <span>✨</span>
+          <ExNihiloLogo size={16} showText={false} />
           <span>Welcome to ExNihilo 95 — Zero-Config SQL IDE</span>
         </div>
         <WindowControls
@@ -82,8 +83,8 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
             gap: '16px',
           }}
         >
-          <div style={{ fontSize: '42px', filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.5))' }}>
-            🗄️
+          <div style={{ filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.5))' }}>
+            <ExNihiloLogo size={42} showText={false} />
           </div>
           <div>
             <h2 style={{ margin: 0, fontSize: '18px', letterSpacing: '0.5px' }}>

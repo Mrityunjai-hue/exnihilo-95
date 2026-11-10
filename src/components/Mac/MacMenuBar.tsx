@@ -8,6 +8,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StoredUser } from '../../hooks/useAuth';
 import { Dialect } from '../../engine/parser';
+import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
 
 interface MacMenuBarProps {
   onOpenWindow: (id: string) => void;
@@ -127,8 +128,9 @@ export const MacMenuBar: React.FC<MacMenuBarProps> = ({
               alignItems: 'center',
               lineHeight: 1,
             }}
+            title="ExNihilo System Menu"
           >
-            
+            <ExNihiloLogo size={15} showText={false} />
           </button>
           {activeMenu === 'apple' && (
             <div className="mac-dropdown-menu">

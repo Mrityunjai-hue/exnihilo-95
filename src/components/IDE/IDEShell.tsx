@@ -24,6 +24,8 @@ import { SnippetsPanel } from './SnippetsPanel';
 import { ExplainPlanViewer } from './ExplainPlanViewer';
 import { CreateDatabaseDialog } from './CreateDatabaseDialog';
 import { CreateTableWizard } from './CreateTableWizard';
+import { useTheme } from '../../hooks/useTheme';
+import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
 
 import {
   useWorkspaceStorage,
@@ -58,6 +60,8 @@ interface IDEShellProps {
   isMinimized:             boolean;
   zIndex:                  number;
   position?:               { x: number; y: number };
+  isMaximized?:            boolean;
+  onMaximize?:             () => void;
   dialect:                 Dialect;
   initialQueryText:        string;
   initialResult:           ExecutionSuccess | null;
@@ -84,6 +88,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   isMinimized,
   zIndex,
   position: propPosition,
+  isMaximized: propIsMaximized,
+  onMaximize: propOnMaximize,
   dialect,
   initialQueryText,
   initialResult,
@@ -104,6 +110,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   crtEnabled,
   onToggleCrt,
 }) => {
+  const { activeTheme } = useTheme();
+  const isMac = activeTheme === 'macos-glass';
   const { position, handleMouseDown: handleHeaderDrag } = useDraggable(propPosition || { x: 40, y: 30 });
   const [activeMenu, setActiveMenu] = useState<'file' | 'edit' | 'query' | 'view' | 'tools' | 'help' | null>(null);
   const [showExplorer, setShowExplorer] = useState(true);
@@ -112,7 +120,15 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const [hasSelection, setHasSelection] = useState(false);
   const [selectedText, setSelectedText] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
-  const [isMaximized, setIsMaximized] = useState(false);
+  const [internalMaximized, setInternalMaximized] = useState(false);
+  const isMaximized = propIsMaximized !== undefined ? propIsMaximized : internalMaximized;
+  const toggleMaximize = () => {
+    if (propOnMaximize) {
+      propOnMaximize();
+    } else {
+      setInternalMaximized((prev) => !prev);
+    }
+  };
 
   // Visual Database Manager state
   const [showCreateDbDialog, setShowCreateDbDialog] = useState(false);
@@ -614,13 +630,13 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         isMaximized
           ? {
               position: 'fixed',
-              top: 0,
+              top: isMac ? '28px' : 0,
               left: 0,
               width: '100vw',
-              height: 'calc(100vh - 32px)',
+              height: isMac ? 'calc(100vh - 28px)' : 'calc(100vh - 32px)',
               maxWidth: '100vw',
-              maxHeight: 'calc(100vh - 32px)',
-              zIndex,
+              maxHeight: isMac ? 'calc(100vh - 28px)' : 'calc(100vh - 32px)',
+              zIndex: 1000,
               display: isMinimized ? 'none' : 'flex',
               flexDirection: 'column',
               borderRadius: 0,
@@ -648,16 +664,16 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           onFocus();
           if (!isMaximized) handleHeaderDrag(e);
         }}
-        onDoubleClick={() => setIsMaximized((prev) => !prev)}
+        onDoubleClick={toggleMaximize}
         style={{ cursor: isMaximized ? 'default' : 'move' }}
       >
         <div className="win95-titlebar-text">
-          <span>🗄️</span>
+          <ExNihiloLogo size={16} showText={false} />
           <span>ExNihilo SQL Studio — [{dialect}] — {activeTab.title}</span>
         </div>
         <WindowControls
           onMinimize={onMinimize}
-          onMaximize={() => setIsMaximized((prev) => !prev)}
+          onMaximize={toggleMaximize}
           isMaximized={isMaximized}
           onClose={onClose}
         />

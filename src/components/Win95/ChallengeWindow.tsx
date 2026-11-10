@@ -14,11 +14,15 @@ import { evaluateChallengeSubmission, EvaluationResult } from '../../utils/chall
 import { WindowControls } from './WindowControls';
 import { QueryEditor } from '../IDE/QueryEditor';
 import { Dialect } from '../../engine/parser';
+import { useTheme } from '../../hooks/useTheme';
+import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
 
 interface ChallengeWindowProps {
   isOpen:        boolean;
   isMinimized?:  boolean;
   zIndex:        number;
+  isMaximized?:  boolean;
+  onMaximize?:   () => void;
   onClose:       () => void;
   onMinimize?:   () => void;
   onFocus:       () => void;
@@ -31,17 +35,29 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
   isOpen,
   isMinimized = false,
   zIndex,
+  isMaximized: propIsMaximized,
+  onMaximize: propOnMaximize,
   onClose,
   onMinimize,
   onFocus,
   onTryInStudio,
 }) => {
+  const { activeTheme } = useTheme();
+  const isMac = activeTheme === 'macos-glass';
+  const [internalMaximized, setInternalMaximized] = useState(false);
+  const isMaximized = propIsMaximized !== undefined ? propIsMaximized : internalMaximized;
+  const toggleMaximize = () => {
+    if (propOnMaximize) {
+      propOnMaximize();
+    } else {
+      setInternalMaximized((prev) => !prev);
+    }
+  };
   const [solvedIds, setSolvedIds] = useState<number[]>([]);
   const [selectedChallenge, setSelectedChallenge] = useState<SQLChallenge>(SQL_CHALLENGES[0]);
   const [userSql, setUserSql] = useState<string>(SQL_CHALLENGES[0].starterSql);
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
-  const [isMaximized, setIsMaximized] = useState(false);
 
   // Filter States
   const [diffFilter, setDiffFilter] = useState<string>('All');
@@ -141,15 +157,15 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
         isMaximized
           ? {
               position: 'fixed',
-              top: 0,
+              top: isMac ? '28px' : 0,
               left: 0,
               right: 0,
-              bottom: '30px',
+              bottom: isMac ? 0 : '30px',
               width: '100vw',
-              height: 'calc(100vh - 30px)',
+              height: isMac ? 'calc(100vh - 28px)' : 'calc(100vh - 30px)',
               maxWidth: '100vw',
               maxHeight: '100vh',
-              zIndex,
+              zIndex: 1000,
               display: 'flex',
               flexDirection: 'column',
               boxShadow: 'none',
@@ -174,14 +190,18 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
       onMouseDown={onFocus}
     >
       {/* Titlebar */}
-      <div className="win95-titlebar" style={{ background: 'var(--w95-title-active-bg, #000080)' }}>
+      <div
+        className="win95-titlebar"
+        style={{ background: 'var(--w95-title-active-bg, #000080)', cursor: isMaximized ? 'default' : 'move' }}
+        onDoubleClick={toggleMaximize}
+      >
         <div className="win95-titlebar-text">
-          <span>🏆</span>
+          <ExNihiloLogo size={16} showText={false} />
           <span>ExNihilo SQL Challenge Arena — #{selectedChallenge.id}. {selectedChallenge.title}</span>
         </div>
         <WindowControls
           onMinimize={onMinimize}
-          onMaximize={() => setIsMaximized((prev) => !prev)}
+          onMaximize={toggleMaximize}
           isMaximized={isMaximized}
           onClose={onClose}
         />

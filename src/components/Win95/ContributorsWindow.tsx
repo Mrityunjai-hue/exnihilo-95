@@ -57,7 +57,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
   if (!isOpen) return null;
 
   const windowStyle: React.CSSProperties = isMaximized
-    ? { position: 'fixed', top: 0, left: 0, width: '100vw', height: 'calc(100vh - 36px)', zIndex, display: isMinimized ? 'none' : 'flex', flexDirection: 'column' }
+    ? { position: 'fixed', top: 0, left: 0, width: '100vw', height: 'calc(100vh - 36px)', zIndex: 1000, display: isMinimized ? 'none' : 'flex', flexDirection: 'column' }
     : { position: 'absolute', top: position.y, left: position.x, width: '680px', height: '520px', zIndex, display: isMinimized ? 'none' : 'flex', flexDirection: 'column' };
 
   const tabs: { id: TabId; label: string }[] = [

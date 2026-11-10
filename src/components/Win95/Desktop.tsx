@@ -52,6 +52,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { MacMenuBar } from '../Mac/MacMenuBar';
 import { MacLaunchpad } from '../Mac/MacLaunchpad';
 import { CustomCursor } from '../Cursor/CustomCursor';
+import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -221,6 +222,7 @@ export const Desktop: React.FC = () => {
 
   const closeWindow = (id: string) => {
     setOpenWindows((prev) => ({ ...prev, [id]: false }));
+    setMaximizedWindows((prev) => ({ ...prev, [id]: false }));
     if (id === 'ide') {
       setTourOpen(false);
     }
@@ -229,6 +231,18 @@ export const Desktop: React.FC = () => {
   const toggleMinimize = (id: string) => {
     setMinimizedWindows((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+
+  // Maximized Windows State (Tracks fullscreen windows)
+  const [maximizedWindows, setMaximizedWindows] = useState<Record<string, boolean>>({});
+  const handleToggleMaximize = (id: string) => {
+    setMaximizedWindows((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const isAnyMaximized = Boolean(
+    Object.entries(maximizedWindows).some(
+      ([id, isMax]) => isMax && openWindows[id] && !minimizedWindows[id]
+    )
+  );
 
   const getZIndex = (id: string) => {
     const idx = windowOrder.indexOf(id);
@@ -392,13 +406,10 @@ export const Desktop: React.FC = () => {
       {isMacTheme ? (
         <div className="mac-wallpaper-center">
           <div className="mac-hero-emblem-box">
-            <div className="mac-hero-prism-logo">
-              <span style={{ fontSize: '32px', filter: 'drop-shadow(0 0 16px rgba(56, 189, 248, 0.7))' }}>⌥</span>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+              <ExNihiloLogo size={62} showText={true} />
             </div>
-            <h1 className="mac-hero-title">
-              ExNihilo <span className="mac-hero-title-accent">Studio</span>
-            </h1>
-            <p className="mac-hero-subtitle">
+            <p className="mac-hero-subtitle" style={{ marginTop: '8px' }}>
               Intelligent Zero-Config In-Browser Relational SQL Studio
             </p>
           </div>
@@ -477,18 +488,10 @@ export const Desktop: React.FC = () => {
           </div>
         </div>
       ) : (
-        /* Retro 3D Windows 95 Wallpaper Centerpiece */
+        /* Retro Windows Wallpaper Centerpiece (Adapts dynamically to theme) */
         <div className="win95-wallpaper-center">
-          <div className="win95-3d-logo-box">
-            <div className="win95-flag-container">
-              <div className="win95-flag-tile win95-flag-red" />
-              <div className="win95-flag-tile win95-flag-green" />
-              <div className="win95-flag-tile win95-flag-blue" />
-              <div className="win95-flag-tile win95-flag-yellow" />
-            </div>
-            <h1 className="win95-3d-title">
-              EXNIHILO<span className="win95-3d-edition">95</span>
-            </h1>
+          <div className="win95-3d-logo-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <ExNihiloLogo size={56} showText={true} />
           </div>
 
           <div className="win95-3d-subtitle">
@@ -713,6 +716,8 @@ export const Desktop: React.FC = () => {
           <IDEShell
             isOpen={openWindows.ide}
             isMinimized={minimizedWindows.ide}
+            isMaximized={Boolean(maximizedWindows.ide)}
+            onMaximize={() => handleToggleMaximize('ide')}
             zIndex={getZIndex('ide')}
             executor={executor}
             dialect={dialect}
@@ -785,6 +790,8 @@ export const Desktop: React.FC = () => {
       <SQLDictionaryWindow
         isOpen={openWindows.sqlDictionary}
         isMinimized={minimizedWindows.sqlDictionary}
+        isMaximized={Boolean(maximizedWindows.sqlDictionary)}
+        onMaximize={() => handleToggleMaximize('sqlDictionary')}
         zIndex={getZIndex('sqlDictionary')}
         onClose={() => closeWindow('sqlDictionary')}
         onMinimize={() => toggleMinimize('sqlDictionary')}
@@ -896,6 +903,8 @@ export const Desktop: React.FC = () => {
       <ChallengeWindow
         isOpen={openWindows.challenges}
         isMinimized={minimizedWindows.challenges}
+        isMaximized={Boolean(maximizedWindows.challenges)}
+        onMaximize={() => handleToggleMaximize('challenges')}
         zIndex={getZIndex('challenges')}
         onClose={() => closeWindow('challenges')}
         onMinimize={() => toggleMinimize('challenges')}
@@ -986,6 +995,8 @@ export const Desktop: React.FC = () => {
         currentUser={currentUser}
         isLoggedIn={isLoggedIn}
         isSecureContext={isSecureContext}
+        activeTheme={activeTheme}
+        isAnyMaximized={isAnyMaximized}
         crtEnabled={crtEnabled}
         onToggleCrt={handleToggleCrt}
         onFocusWindow={focusWindow}

@@ -13,11 +13,15 @@ import {
   CommandCategory,
   SQLDictionaryItem,
 } from '../../data/dialectCommands';
+import { useTheme } from '../../hooks/useTheme';
+import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
 
 interface SQLDictionaryWindowProps {
   isOpen: boolean;
   isMinimized: boolean;
   zIndex: number;
+  isMaximized?: boolean;
+  onMaximize?: () => void;
   onClose: () => void;
   onMinimize: () => void;
   onFocus: () => void;
@@ -28,13 +32,25 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
   isOpen,
   isMinimized,
   zIndex,
+  isMaximized: propIsMaximized,
+  onMaximize: propOnMaximize,
   onClose,
   onMinimize,
   onFocus,
   onTryInIde,
 }) => {
+  const { activeTheme } = useTheme();
+  const isMac = activeTheme === 'macos-glass';
   const { position, handleMouseDown } = useDraggable({ x: 70, y: 35 });
-  const [isMaximized, setIsMaximized] = useState(false);
+  const [internalMaximized, setInternalMaximized] = useState(false);
+  const isMaximized = propIsMaximized !== undefined ? propIsMaximized : internalMaximized;
+  const toggleMaximize = () => {
+    if (propOnMaximize) {
+      propOnMaximize();
+    } else {
+      setInternalMaximized((prev) => !prev);
+    }
+  };
   const [selectedDialect, setSelectedDialect] = useState<DialectName | 'ALL'>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'supported' | 'coming_soon'>('ALL');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
@@ -106,11 +122,11 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
   const windowStyle: React.CSSProperties = isMaximized
     ? {
         position: 'fixed',
-        top: 0,
+        top: isMac ? '28px' : 0,
         left: 0,
         width: '100vw',
-        height: 'calc(100vh - 36px)',
-        zIndex,
+        height: isMac ? 'calc(100vh - 28px)' : 'calc(100vh - 36px)',
+        zIndex: 1000,
         display: isMinimized ? 'none' : 'flex',
         flexDirection: 'column',
       }
@@ -136,15 +152,16 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
           onFocus();
           handleMouseDown(e);
         }}
-        style={{ cursor: 'move' }}
+        onDoubleClick={toggleMaximize}
+        style={{ cursor: isMaximized ? 'default' : 'move' }}
       >
         <div className="win95-titlebar-text">
-          <span>📖</span>
+          <ExNihiloLogo size={16} showText={false} />
           <span>SQL Dictionary & Dialect Reference (Windows 95)</span>
         </div>
         <WindowControls
           onMinimize={onMinimize}
-          onMaximize={() => setIsMaximized((prev) => !prev)}
+          onMaximize={toggleMaximize}
           isMaximized={isMaximized}
           onClose={onClose}
         />
