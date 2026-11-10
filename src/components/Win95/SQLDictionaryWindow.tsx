@@ -128,7 +128,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
       };
 
   return (
-    <div className="win95-window" style={windowStyle} onMouseDown={onFocus}>
+    <div id="sqlDictionary-window" className="win95-window" style={windowStyle} onMouseDown={onFocus}>
       {/* ── Title Bar ────────────────────────────────────────────────────── */}
       <div
         className="win95-titlebar"

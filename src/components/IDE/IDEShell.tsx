@@ -608,6 +608,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
   return (
     <div
+      id="ide-window"
       className="win95-window"
       style={
         isMaximized

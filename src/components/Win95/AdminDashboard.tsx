@@ -48,8 +48,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onChangePassword,
   onClearHistory,
 }) => {
-  const { activeTheme } = useTheme();
-  const isMac = activeTheme === 'macos-glass';
+  const { activeTheme, currentThemeMeta } = useTheme();
+  const isMac =
+    activeTheme === 'macos-glass' ||
+    (typeof document !== 'undefined' &&
+      (document.documentElement.getAttribute('data-theme') === 'macos-glass' ||
+        document.body.getAttribute('data-theme') === 'macos-glass'));
+  const isDark = currentThemeMeta?.isDark || isMac;
   const [activeTab, setActiveTab] = useState<'account' | 'usage' | 'logout'>('account');
   const [modalNotice, setModalNotice] = useState<string | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -202,6 +207,7 @@ ${
   return (
     <>
       <div
+        id="admin-window"
         className="win95-window"
         style={{
           position: 'absolute',
@@ -298,21 +304,90 @@ ${
           </div>
 
           {/* Tabs */}
-          <div className="win95-tabs">
+          <div
+            className="win95-tabs"
+            style={
+              isMac
+                ? {
+                    display: 'flex',
+                    gap: '4px',
+                    background: 'rgba(0, 0, 0, 0.28)',
+                    padding: '4px',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    marginBottom: '10px',
+                  }
+                : undefined
+            }
+          >
             <div
               className={`win95-tab ${activeTab === 'account' ? 'active' : ''}`}
+              style={
+                isMac
+                  ? {
+                      flex: 1,
+                      textAlign: 'center',
+                      borderRadius: '8px',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      fontWeight: activeTab === 'account' ? 600 : 400,
+                      background: activeTab === 'account' ? 'rgba(255, 255, 255, 0.14)' : 'transparent',
+                      color: activeTab === 'account' ? '#ffffff' : '#94a3b8',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      border: activeTab === 'account' ? '1px solid rgba(255, 255, 255, 0.16)' : '1px solid transparent',
+                      boxShadow: activeTab === 'account' ? '0 2px 8px rgba(0, 0, 0, 0.25)' : 'none',
+                    }
+                  : undefined
+              }
               onClick={() => setActiveTab('account')}
             >
               👤 My Account
             </div>
             <div
               className={`win95-tab ${activeTab === 'usage' ? 'active' : ''}`}
+              style={
+                isMac
+                  ? {
+                      flex: 1,
+                      textAlign: 'center',
+                      borderRadius: '8px',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      fontWeight: activeTab === 'usage' ? 600 : 400,
+                      background: activeTab === 'usage' ? 'rgba(255, 255, 255, 0.14)' : 'transparent',
+                      color: activeTab === 'usage' ? '#ffffff' : '#94a3b8',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      border: activeTab === 'usage' ? '1px solid rgba(255, 255, 255, 0.16)' : '1px solid transparent',
+                      boxShadow: activeTab === 'usage' ? '0 2px 8px rgba(0, 0, 0, 0.25)' : 'none',
+                    }
+                  : undefined
+              }
               onClick={() => setActiveTab('usage')}
             >
               📊 Usage
             </div>
             <div
               className={`win95-tab ${activeTab === 'logout' ? 'active' : ''}`}
+              style={
+                isMac
+                  ? {
+                      flex: 1,
+                      textAlign: 'center',
+                      borderRadius: '8px',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      fontWeight: activeTab === 'logout' ? 600 : 400,
+                      background: activeTab === 'logout' ? 'rgba(239, 68, 68, 0.2)' : 'transparent',
+                      color: activeTab === 'logout' ? '#fca5a5' : '#94a3b8',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      border: activeTab === 'logout' ? '1px solid rgba(239, 68, 68, 0.35)' : '1px solid transparent',
+                      boxShadow: activeTab === 'logout' ? '0 2px 8px rgba(239, 68, 68, 0.25)' : 'none',
+                    }
+                  : undefined
+              }
               onClick={() => setActiveTab('logout')}
             >
               🚪 Log Out
@@ -324,8 +399,8 @@ ${
             className="win95-inset"
             style={{
               padding: isMac ? '16px' : '14px',
-              background: isMac ? 'transparent' : 'var(--w95-gray, #c0c0c0)',
-              color: 'var(--w95-text-color, #000000)',
+              background: isDark ? 'transparent' : 'var(--w95-gray, #c0c0c0)',
+              color: isDark ? '#f8fafc' : 'var(--w95-text-color, #000000)',
               minHeight: '320px',
               maxHeight: '440px',
               overflowY: 'auto',
@@ -336,8 +411,8 @@ ${
               <div>
                 <div
                   style={{
-                    border: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #808080',
-                    background: isMac ? 'rgba(255, 255, 255, 0.03)' : 'transparent',
+                    border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #808080',
+                    background: isDark ? 'rgba(255, 255, 255, 0.03)' : 'transparent',
                     borderRadius: isMac ? '12px' : '0',
                     padding: isMac ? '14px' : '12px',
                     marginBottom: '12px',
@@ -347,34 +422,36 @@ ${
                     style={{
                       fontSize: isMac ? '12px' : '11px',
                       fontWeight: 600,
-                      color: isMac ? '#94a3b8' : 'inherit',
+                      color: isDark ? '#94a3b8' : 'inherit',
                       marginBottom: isMac ? '10px' : '4px',
                     }}
                   >
                     Account Profile Details
                   </div>
 
-                  <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', color: isMac ? '#cbd5e1' : 'inherit' }}>
+                  <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', color: isDark ? '#cbd5e1' : 'inherit' }}>
                     <tbody>
                       <tr>
-                        <td style={{ fontWeight: 'bold', width: '130px', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Avatar & Name:</td>
+                        <td style={{ fontWeight: 'bold', width: '130px', padding: '5px 0', color: isDark ? '#94a3b8' : 'inherit' }}>Avatar & Name:</td>
                         <td>{currentUser.avatar || '💻'} {currentUser.displayName}</td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Username:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isDark ? '#94a3b8' : 'inherit' }}>Username:</td>
                         <td>@{currentUser.usernameNorm}</td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Contact Email:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isDark ? '#94a3b8' : 'inherit' }}>Contact Email:</td>
                         <td>
                           {currentUser.email}{' '}
                           <span
                             style={{
-                              color: isMac ? '#fbbf24' : '#800000',
-                              background: isMac ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
-                              padding: isMac ? '2px 6px' : '0',
-                              borderRadius: isMac ? '4px' : '0',
+                              color: isDark ? '#fbbf24' : '#800000',
+                              background: isDark ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
+                              border: isDark ? '1px solid rgba(245, 158, 11, 0.3)' : 'none',
+                              padding: isMac ? '2px 7px' : '0',
+                              borderRadius: isMac ? '6px' : '0',
                               fontSize: '10px',
+                              fontWeight: 600,
                             }}
                             title="Contact string stored locally — not identity verified"
                           >
@@ -383,17 +460,17 @@ ${
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Member Since:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isDark ? '#94a3b8' : 'inherit' }}>Member Since:</td>
                         <td>{currentUser.joinDate}</td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Access Level:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isDark ? '#94a3b8' : 'inherit' }}>Access Level:</td>
                         <td>
                           <span
                             style={{
-                              background: isMac ? 'rgba(34, 197, 94, 0.16)' : '#008000',
-                              color: isMac ? '#4ade80' : '#fff',
-                              border: isMac ? '1px solid rgba(74, 222, 128, 0.3)' : 'none',
+                              background: isDark ? 'rgba(34, 197, 94, 0.16)' : '#008000',
+                              color: isDark ? '#4ade80' : '#fff',
+                              border: isDark ? '1px solid rgba(74, 222, 128, 0.3)' : 'none',
                               padding: isMac ? '2px 8px' : '1px 6px',
                               borderRadius: isMac ? '9999px' : '0',
                               fontSize: '10px',
@@ -405,19 +482,19 @@ ${
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Detected Region:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isDark ? '#94a3b8' : 'inherit' }}>Detected Region:</td>
                         <td>
-                          {region.flag} {region.countryName} <span style={{ color: isMac ? '#94a3b8' : '#666', fontSize: '10px' }}>(read-only)</span>
+                          {region.flag} {region.countryName} <span style={{ color: isDark ? '#94a3b8' : '#666', fontSize: '10px' }}>(read-only)</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Feature Access:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isDark ? '#94a3b8' : 'inherit' }}>Feature Access:</td>
                         <td>
-                          <span style={{ color: isMac ? '#38bdf8' : '#000080', fontWeight: 'bold' }}>All Features &amp; Capabilities Unlocked</span>
+                          <span style={{ color: isDark ? '#38bdf8' : '#000080', fontWeight: 'bold' }}>All Features &amp; Capabilities Unlocked</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isMac ? '#94a3b8' : 'inherit' }}>Session Activity:</td>
+                        <td style={{ fontWeight: 'bold', padding: '5px 0', color: isDark ? '#94a3b8' : 'inherit' }}>Session Activity:</td>
                         <td>
                           {sessionStats.queriesRun} queries | {sessionStats.rowsGenerated} rows | {elapsedText} duration
                         </td>
@@ -429,11 +506,11 @@ ${
                 {/* Storage Privacy Disclaimer */}
                 <div
                   style={{
-                    background: isMac ? 'rgba(245, 158, 11, 0.1)' : '#ffffcc',
-                    border: isMac ? '1px solid rgba(245, 158, 11, 0.25)' : '1px solid #c0c000',
+                    background: isDark ? 'rgba(245, 158, 11, 0.08)' : '#ffffcc',
+                    border: isDark ? '1px solid rgba(245, 158, 11, 0.22)' : '1px solid #c0c000',
                     borderRadius: isMac ? '10px' : '0',
-                    color: isMac ? '#fbbf24' : '#000000',
-                    padding: isMac ? '10px 12px' : '8px',
+                    color: isDark ? '#fde68a' : '#000000',
+                    padding: isMac ? '10px 14px' : '8px',
                     marginBottom: '12px',
                     fontSize: isMac ? '11px' : '10px',
                     lineHeight: '1.4',
@@ -446,7 +523,14 @@ ${
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <button
                     className="win95-button"
-                    style={{ fontSize: '11px', padding: '5px 12px', borderRadius: isMac ? '8px' : undefined }}
+                    style={{
+                      fontSize: '11px',
+                      padding: isMac ? '6px 14px' : '5px 12px',
+                      borderRadius: isMac ? '8px' : undefined,
+                      background: isDark ? 'rgba(255, 255, 255, 0.06)' : undefined,
+                      border: isDark ? '1px solid rgba(255, 255, 255, 0.12)' : undefined,
+                      color: isDark ? '#f8fafc' : undefined,
+                    }}
                     onClick={() => {
                       setShowChangePassword((prev) => !prev);
                       setPassError(null);
@@ -457,14 +541,28 @@ ${
                   </button>
                   <button
                     className="win95-button"
-                    style={{ fontSize: '11px', padding: '5px 12px', borderRadius: isMac ? '8px' : undefined }}
+                    style={{
+                      fontSize: '11px',
+                      padding: isMac ? '6px 14px' : '5px 12px',
+                      borderRadius: isMac ? '8px' : undefined,
+                      background: isDark ? 'rgba(255, 255, 255, 0.06)' : undefined,
+                      border: isDark ? '1px solid rgba(255, 255, 255, 0.12)' : undefined,
+                      color: isDark ? '#f8fafc' : undefined,
+                    }}
                     onClick={handleExportLogs}
                   >
                     📤 Export Live Logs (.json)
                   </button>
                   <button
                     className="win95-button"
-                    style={{ fontSize: '11px', padding: '5px 12px', borderRadius: isMac ? '8px' : undefined }}
+                    style={{
+                      fontSize: '11px',
+                      padding: isMac ? '6px 14px' : '5px 12px',
+                      borderRadius: isMac ? '8px' : undefined,
+                      background: isDark ? 'rgba(255, 255, 255, 0.06)' : undefined,
+                      border: isDark ? '1px solid rgba(255, 255, 255, 0.12)' : undefined,
+                      color: isDark ? '#f8fafc' : undefined,
+                    }}
                     onClick={handleGenerateReport}
                   >
                     📄 Session Report (.txt)
@@ -473,10 +571,10 @@ ${
                     className="win95-button"
                     style={{
                       fontSize: '11px',
-                      padding: '5px 12px',
-                      color: isMac ? '#ef4444' : '#800000',
-                      background: isMac ? 'rgba(239, 68, 68, 0.1)' : undefined,
-                      border: isMac ? '1px solid rgba(239, 68, 68, 0.3)' : undefined,
+                      padding: isMac ? '6px 14px' : '5px 12px',
+                      color: isDark ? '#f87171' : '#800000',
+                      background: isDark ? 'rgba(239, 68, 68, 0.12)' : undefined,
+                      border: isDark ? '1px solid rgba(239, 68, 68, 0.3)' : undefined,
                       borderRadius: isMac ? '8px' : undefined,
                       fontWeight: 'bold',
                     }}
@@ -995,42 +1093,53 @@ ${
 
             {/* TAB 3: LOG OUT */}
             {activeTab === 'logout' && (
-              <div style={{ textAlign: 'center', padding: isMac ? '20px 12px' : '16px 8px' }}>
-                <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🚪</span>
-                <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: isMac ? '#f8fafc' : undefined }}>
+              <div style={{ textAlign: 'center', padding: isMac ? '28px 16px' : '16px 8px' }}>
+                <span style={{ fontSize: '42px', display: 'block', marginBottom: '12px' }}>🚪</span>
+                <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '12px', color: isDark ? '#f8fafc' : undefined }}>
                   Log Out of @{currentUser.usernameNorm}?
                 </div>
 
                 <div
                   style={{
-                    background: isMac ? 'rgba(255, 255, 255, 0.05)' : '#dfdfdf',
-                    border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #808080',
-                    borderRadius: isMac ? '10px' : '0',
-                    color: isMac ? '#cbd5e1' : '#000000',
-                    padding: isMac ? '12px 16px' : '10px',
-                    fontSize: '11px',
-                    lineHeight: '1.6',
+                    background: isDark ? 'rgba(255, 255, 255, 0.04)' : '#dfdfdf',
+                    border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #808080',
+                    borderRadius: isMac ? '12px' : '0',
+                    color: isDark ? '#e2e8f0' : '#000000',
+                    padding: isMac ? '16px 20px' : '10px',
+                    fontSize: isMac ? '12px' : '11px',
+                    lineHeight: '1.7',
                     textAlign: 'left',
-                    marginBottom: '18px',
+                    marginBottom: '20px',
+                    boxShadow: isMac ? '0 4px 16px rgba(0, 0, 0, 0.25)' : undefined,
                   }}
                 >
-                  <div>• Your account remains saved on this browser/device.</div>
-                  <div>• You can log back in from this browser at any time.</div>
-                  <div>• Note: Accounts are stored locally and are not synced across devices.</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ color: '#38bdf8' }}>•</span>
+                    <span>Your account remains saved on this browser/device.</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ color: '#38bdf8' }}>•</span>
+                    <span>You can log back in from this browser at any time.</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: '#fbbf24' }}>•</span>
+                    <span>Note: Accounts are stored locally and are not synced across devices.</span>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: '14px', justifyContent: 'center' }}>
                   <button
                     className="win95-button"
                     style={{
-                      fontWeight: 'bold',
-                      minWidth: '110px',
-                      color: isMac ? '#ffffff' : undefined,
-                      background: isMac ? 'linear-gradient(180deg, #ef4444 0%, #dc2626 100%)' : undefined,
-                      border: isMac ? '1px solid rgba(255, 255, 255, 0.2)' : undefined,
+                      fontWeight: 600,
+                      minWidth: '130px',
+                      color: '#ffffff',
+                      background: isMac ? 'linear-gradient(180deg, #ef4444 0%, #dc2626 100%)' : '#cc0000',
+                      border: isMac ? '1px solid rgba(255, 255, 255, 0.2)' : '2px outset #ffffff',
                       borderRadius: isMac ? '8px' : undefined,
-                      boxShadow: isMac ? '0 4px 12px rgba(239, 68, 68, 0.35)' : undefined,
-                      padding: isMac ? '6px 14px' : undefined,
+                      boxShadow: isMac ? '0 4px 14px rgba(239, 68, 68, 0.4)' : undefined,
+                      padding: isMac ? '7px 16px' : '4px 12px',
+                      fontSize: '12px',
                     }}
                     onClick={onLogout}
                   >
@@ -1039,9 +1148,13 @@ ${
                   <button
                     className="win95-button"
                     style={{
-                      minWidth: '110px',
+                      minWidth: '130px',
                       borderRadius: isMac ? '8px' : undefined,
-                      padding: isMac ? '6px 14px' : undefined,
+                      padding: isMac ? '7px 16px' : '4px 12px',
+                      fontSize: '12px',
+                      background: isMac ? 'rgba(255, 255, 255, 0.08)' : undefined,
+                      color: isMac ? '#f8fafc' : undefined,
+                      border: isMac ? '1px solid rgba(255, 255, 255, 0.15)' : undefined,
                     }}
                     onClick={() => setActiveTab('account')}
                   >
@@ -1053,27 +1166,26 @@ ${
           </div>
 
           {/* Footer Status Bar */}
-          {isMac ? (
+          {isDark ? (
             <div
               style={{
                 marginTop: '10px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                gap: '12px',
+                justifyContent: 'space-around',
                 fontSize: '11px',
                 color: '#94a3b8',
-                padding: '6px 12px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                borderRadius: '8px',
+                padding: '7px 14px',
+                background: 'rgba(0, 0, 0, 0.28)',
+                borderRadius: isMac ? '10px' : '0',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              <span>🔒 PBKDF2 (600k iter)</span>
+              <span>🔒 Security: PBKDF2 (600k iter)</span>
               <span style={{ opacity: 0.3 }}>•</span>
-              <span>⚡ Session Active (24h)</span>
+              <span>⚡ Token: Active (24h TTL)</span>
               <span style={{ opacity: 0.3 }}>•</span>
-              <span>✨ Full &amp; Free Access</span>
+              <span>✨ Access: Full &amp; Free (Unlocked)</span>
             </div>
           ) : (
             <div

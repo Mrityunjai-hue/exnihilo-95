@@ -438,6 +438,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
 
   return (
     <div
+      id="help-window"
       className="win95-window"
       style={{
         position: 'absolute',

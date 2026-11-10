@@ -135,6 +135,7 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
 
   return (
     <div
+      id="challenges-window"
       className="win95-window"
       style={
         isMaximized

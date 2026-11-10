@@ -31,7 +31,11 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
   className = '',
 }) => {
   const { activeTheme } = useTheme();
-  const isMac = activeTheme === 'macos-glass';
+  const isMac =
+    activeTheme === 'macos-glass' ||
+    (typeof document !== 'undefined' &&
+      (document.documentElement.getAttribute('data-theme') === 'macos-glass' ||
+        document.body.getAttribute('data-theme') === 'macos-glass'));
 
   const handleStopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -48,7 +52,7 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
           setTimeout(() => {
             onMinimize();
             win.classList.remove('mac-window-minimizing');
-          }, 220);
+          }, 240);
           return;
         }
       }

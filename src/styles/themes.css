@@ -902,24 +902,31 @@
 }
 
 [data-theme="macos-glass"] .win95-window.mac-window-closing {
-  animation: macWindowClose 0.18s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+  animation: macWindowClose 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   pointer-events: none !important;
 }
 
 [data-theme="macos-glass"] .win95-window.mac-window-minimizing {
-  animation: macWindowMinimize 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+  animation: macWindowMinimize 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   pointer-events: none !important;
-  transform-origin: bottom center !important;
+  transform-origin: center bottom !important;
+}
+
+[data-theme="macos-glass"] .win95-window.mac-window-restoring {
+  animation: macWindowRestore 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  transform-origin: center bottom !important;
 }
 
 @keyframes macWindowOpen {
   0% {
     opacity: 0;
-    transform: scale(0.93) translateY(12px);
+    transform: scale(0.93) translateY(16px);
+    filter: blur(4px);
   }
   100% {
     opacity: 1;
-    transform: none;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
   }
 }
 
@@ -927,10 +934,12 @@
   0% {
     opacity: 1;
     transform: scale(1);
+    filter: blur(0px);
   }
   100% {
     opacity: 0;
     transform: scale(0.88);
+    filter: blur(5px);
   }
 }
 
@@ -940,10 +949,33 @@
     transform: scale(1) translateY(0);
     filter: blur(0px);
   }
+  40% {
+    opacity: 0.95;
+    transform: scale(0.68, 0.72) translateY(110px);
+    filter: blur(1px);
+  }
   100% {
     opacity: 0;
-    transform: scale(0.35) translateY(260px);
-    filter: blur(6px);
+    transform: scale(0.12, 0.04) translateY(340px);
+    filter: blur(8px);
+  }
+}
+
+@keyframes macWindowRestore {
+  0% {
+    opacity: 0;
+    transform: scale(0.14, 0.04) translateY(340px);
+    filter: blur(8px);
+  }
+  65% {
+    opacity: 0.95;
+    transform: scale(1.02, 1.01) translateY(-8px);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
   }
 }
 

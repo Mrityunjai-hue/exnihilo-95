@@ -35,6 +35,7 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
 
   return (
     <div
+      id="welcome-window"
       className="win95-window"
       style={{
         position: 'absolute',

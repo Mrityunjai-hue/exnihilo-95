@@ -83,11 +83,19 @@ const THEME_STORAGE_KEY = 'exnihilo_active_theme';
 
 export function useTheme() {
   const [activeTheme, setActiveThemeState] = useState<ThemeId>(() => {
-    if (typeof window === 'undefined' || !window.localStorage) return 'macos-glass';
+    if (typeof window === 'undefined') return 'macos-glass';
     try {
-      const stored = localStorage.getItem(THEME_STORAGE_KEY) as ThemeId;
-      if (stored && THEME_PRESETS.some((t) => t.id === stored)) {
-        return stored;
+      if (typeof document !== 'undefined') {
+        const domTheme = document.documentElement.getAttribute('data-theme') as ThemeId;
+        if (domTheme && THEME_PRESETS.some((t) => t.id === domTheme)) {
+          return domTheme;
+        }
+      }
+      if (window.localStorage) {
+        const stored = localStorage.getItem(THEME_STORAGE_KEY) as ThemeId;
+        if (stored && THEME_PRESETS.some((t) => t.id === stored)) {
+          return stored;
+        }
       }
     } catch {
       // Fallback on error
@@ -105,9 +113,12 @@ export function useTheme() {
     (newTheme: ThemeId) => {
       setActiveThemeState(newTheme);
       applyThemeToDOM(newTheme);
-      if (typeof window !== 'undefined' && window.localStorage) {
+      if (typeof window !== 'undefined') {
         try {
-          localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+          if (window.localStorage) {
+            localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+          }
+          window.dispatchEvent(new CustomEvent('exnihilo-theme-change', { detail: newTheme }));
         } catch {
           // Ignore quota error
         }
@@ -119,6 +130,22 @@ export function useTheme() {
   useEffect(() => {
     applyThemeToDOM(activeTheme);
   }, [activeTheme, applyThemeToDOM]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleSync = (e: Event) => {
+      const custom = e as CustomEvent<ThemeId>;
+      if (custom.detail && THEME_PRESETS.some((t) => t.id === custom.detail)) {
+        setActiveThemeState(custom.detail);
+      }
+    };
+    window.addEventListener('exnihilo-theme-change', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('exnihilo-theme-change', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
 
   const currentThemeMeta = THEME_PRESETS.find((t) => t.id === activeTheme) || THEME_PRESETS[0];
 

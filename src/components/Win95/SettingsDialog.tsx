@@ -55,6 +55,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
   return (
     <div
+      id="settings-window"
       className="win95-window"
       style={{
         position: 'absolute',

@@ -173,6 +173,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
   return (
     <>
       <div
+        id="auth-window"
         className="win95-window"
         style={{
           position: 'absolute',
