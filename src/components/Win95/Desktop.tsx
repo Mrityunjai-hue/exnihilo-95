@@ -358,8 +358,8 @@ export const Desktop: React.FC = () => {
     { id: 'contributors', title: 'Join the Team', icon: '🤝', isOpen: openWindows.contributors, isMinimized: minimizedWindows.contributors, zIndex: getZIndex('contributors') },
     { id: 'challenges', title: '🏆 SQL Challenge Arena', icon: '🏆', isOpen: openWindows.challenges, isMinimized: minimizedWindows.challenges, zIndex: getZIndex('challenges') },
     { id: 'legal', title: 'Legal & IP Protection', icon: '⚖️', isOpen: openWindows.legal, isMinimized: minimizedWindows.legal, zIndex: getZIndex('legal') },
-    { id: 'auth', title: 'Security Logon', icon: '🔑', isOpen: openWindows.auth, isMinimized: false, zIndex: getZIndex('auth') },
-    { id: 'admin', title: 'Admin Control Panel', icon: '🎛️', isOpen: openWindows.admin, isMinimized: false, zIndex: getZIndex('admin') },
+    { id: 'auth', title: 'Security Logon', icon: '🔑', isOpen: openWindows.auth, isMinimized: minimizedWindows.auth, zIndex: getZIndex('auth') },
+    { id: 'admin', title: 'Admin Control Panel', icon: '🎛️', isOpen: openWindows.admin, isMinimized: minimizedWindows.admin, zIndex: getZIndex('admin') },
   ];
 
   const activeWindowId = windowOrder[windowOrder.length - 1] || null;
@@ -739,9 +739,11 @@ export const Desktop: React.FC = () => {
       {/* Auth Window (Log In & Create Account) */}
       <AuthWindow
         isOpen={openWindows.auth}
+        isMinimized={minimizedWindows.auth}
         zIndex={getZIndex('auth')}
         isSecureContext={isSecureContext}
         onClose={() => closeWindow('auth')}
+        onMinimize={() => toggleMinimize('auth')}
         onFocus={() => focusWindow('auth')}
         onSignUp={signUp}
         onLogin={async (user, pass) => {
@@ -758,11 +760,13 @@ export const Desktop: React.FC = () => {
       {/* Admin Dashboard Window */}
       <AdminDashboard
         isOpen={openWindows.admin}
+        isMinimized={minimizedWindows.admin}
         zIndex={getZIndex('admin')}
         currentUser={currentUser}
         activeSession={activeSession}
         sessionStats={sessionStats}
         onClose={() => closeWindow('admin')}
+        onMinimize={() => toggleMinimize('admin')}
         onFocus={() => focusWindow('admin')}
         onLogout={handleLogout}
         onDeleteAccount={async () => {

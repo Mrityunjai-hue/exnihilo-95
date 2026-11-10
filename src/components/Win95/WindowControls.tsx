@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { useTheme } from '../../hooks/useTheme';
 
 export interface WindowControlsProps {
   onMinimize?: () => void;
@@ -29,6 +30,9 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
   disabled = false,
   className = '',
 }) => {
+  const { activeTheme } = useTheme();
+  const isMac = activeTheme === 'macos-glass';
+
   const handleStopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
@@ -57,6 +61,10 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
     }
   };
 
+  const canMinimize = showMinimize && !!onMinimize;
+  const canMaximize = showMaximize && !!onMaximize;
+  const canClose = showClose && !!onClose;
+
   return (
     <div
       className={`win95-titlebar-controls ${className}`.trim()}
@@ -65,45 +73,45 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
       onClick={handleStopPropagation}
       style={{ display: 'flex', gap: '2px', alignItems: 'center', flexShrink: 0 }}
     >
-      {showMinimize && onMinimize && (
+      {(canMinimize || isMac) && (
         <button
           type="button"
           className="win95-btn-titlebar"
           onMouseDown={handleStopPropagation}
-          onClick={handleMinimize}
-          title="Minimize"
+          onClick={canMinimize ? handleMinimize : undefined}
+          title={canMinimize ? 'Minimize' : 'Minimize (Unavailable)'}
           aria-label="Minimize Window"
-          disabled={disabled}
+          disabled={disabled || !canMinimize}
         >
           <span className="win95-control-glyph">_</span>
           <span className="mac-control-glyph">−</span>
         </button>
       )}
 
-      {showMaximize && onMaximize && (
+      {(canMaximize || isMac) && (
         <button
           type="button"
           className="win95-btn-titlebar"
           onMouseDown={handleStopPropagation}
-          onClick={handleMaximize}
-          title={isMaximized ? 'Restore Window' : 'Maximize Window'}
+          onClick={canMaximize ? handleMaximize : undefined}
+          title={canMaximize ? (isMaximized ? 'Restore Window' : 'Maximize Window') : 'Zoom (Unavailable)'}
           aria-label={isMaximized ? 'Restore Window' : 'Maximize Window'}
-          disabled={disabled}
+          disabled={disabled || !canMaximize}
         >
           <span className="win95-control-glyph">{isMaximized ? '🗗' : '🗖'}</span>
           <span className="mac-control-glyph">⤢</span>
         </button>
       )}
 
-      {showClose && onClose && (
+      {(canClose || isMac) && (
         <button
           type="button"
           className="win95-btn-titlebar"
           onMouseDown={handleStopPropagation}
-          onClick={handleClose}
+          onClick={canClose ? handleClose : undefined}
           title="Close"
           aria-label="Close Window"
-          disabled={disabled}
+          disabled={disabled || !canClose}
         >
           <span className="win95-control-glyph">✕</span>
           <span className="mac-control-glyph">✕</span>

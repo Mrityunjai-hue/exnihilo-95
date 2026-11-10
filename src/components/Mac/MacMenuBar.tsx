@@ -428,33 +428,23 @@ export const MacMenuBar: React.FC<MacMenuBarProps> = ({
         {/* Active Dialect Selector Pill */}
         <div
           style={{
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: '4px',
+            gap: '6px',
             background: 'rgba(255, 255, 255, 0.08)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
+            border: '1px solid rgba(255, 255, 255, 0.16)',
             borderRadius: '12px',
-            padding: '2px 8px',
-            fontSize: '11px',
-            fontWeight: 600,
+            padding: '0 8px',
+            height: '24px',
+            boxSizing: 'border-box',
           }}
         >
-          <span style={{ opacity: 0.6 }}>Dialect:</span>
+          <span style={{ color: '#94a3b8', fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap' }}>Dialect:</span>
           <select
             className="mac-menubar-select"
             value={dialect}
             onChange={(e) => onDialectChange(e.target.value as Dialect)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#38bdf8',
-              fontSize: '11px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              outline: 'none',
-              padding: '0 4px',
-              lineHeight: '1.4',
-            }}
+            title="Active SQL Engine Dialect"
           >
             <option value="MySQL" style={{ background: '#0f172a', color: '#f8fafc' }}>MySQL</option>
             <option value="PostgreSQL" style={{ background: '#0f172a', color: '#f8fafc' }}>PostgreSQL</option>

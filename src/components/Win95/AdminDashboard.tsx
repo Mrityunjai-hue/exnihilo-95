@@ -8,6 +8,7 @@ import { useDraggable } from '../../hooks/useDraggable';
 import { StoredUser, ActiveSession } from '../../hooks/useAuth';
 import { detectRegion } from '../../hooks/useRegionalPricing';
 import { WindowControls } from './WindowControls';
+import { useTheme } from '../../hooks/useTheme';
 
 export interface SessionStats {
   queriesRun: number;
@@ -24,6 +25,8 @@ interface AdminDashboardProps {
   sessionStats: SessionStats;
   onClose: () => void;
   onFocus: () => void;
+  isMinimized?: boolean;
+  onMinimize?: () => void;
   onLogout: () => void;
   onDeleteAccount: () => Promise<{ success: boolean; error?: string }>;
   onChangePassword: (current: string, newPass: string) => Promise<{ success: boolean; error?: string }>;
@@ -38,11 +41,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   sessionStats,
   onClose,
   onFocus,
+  isMinimized = false,
+  onMinimize,
   onLogout,
   onDeleteAccount,
   onChangePassword,
   onClearHistory,
 }) => {
+  const { activeTheme } = useTheme();
+  const isMac = activeTheme === 'macos-glass';
   const [activeTab, setActiveTab] = useState<'account' | 'usage' | 'logout'>('account');
   const [modalNotice, setModalNotice] = useState<string | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -149,7 +156,7 @@ ${
     URL.revokeObjectURL(url);
   };
 
-  if (!isOpen || !currentUser) return null;
+  if (!isOpen || !currentUser || isMinimized) return null;
 
   const handleChangePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,32 +226,57 @@ ${
             <span>ExNihilo Control Panel — @{currentUser.usernameNorm}</span>
           </div>
           <WindowControls
-            showMinimize={false}
+            showMinimize={true}
             showMaximize={false}
+            onMinimize={onMinimize}
             onClose={onClose}
           />
         </div>
 
         {/* Dialog Body */}
-        <div style={{ padding: '8px' }}>
+        <div style={{ padding: isMac ? '12px' : '8px' }}>
           {/* Header Banner */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '8px 12px',
-              marginBottom: '8px',
-              background: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
+              padding: isMac ? '12px 16px' : '8px 12px',
+              marginBottom: isMac ? '10px' : '8px',
+              background: isMac
+                ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.18) 0%, rgba(99, 102, 241, 0.18) 100%)'
+                : 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
               color: '#ffffff',
-              border: '2px inset #dfdfdf',
+              border: isMac
+                ? '1px solid rgba(255, 255, 255, 0.16)'
+                : '2px inset #dfdfdf',
+              borderRadius: isMac ? '12px' : '0',
+              boxShadow: isMac
+                ? '0 8px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                : undefined,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '26px' }}>{currentUser.avatar || '👤'}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMac ? '12px' : '10px' }}>
+              <div
+                style={{
+                  width: isMac ? '42px' : 'auto',
+                  height: isMac ? '42px' : 'auto',
+                  borderRadius: isMac ? '12px' : '0',
+                  background: isMac ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: isMac ? '24px' : '26px',
+                  border: isMac ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
+                }}
+              >
+                {currentUser.avatar || '👤'}
+              </div>
               <div>
-                <div style={{ fontWeight: 'bold', fontSize: '13px' }}>{currentUser.displayName}</div>
-                <div style={{ fontSize: '10px', color: '#dfdfdf' }}>
+                <div style={{ fontWeight: 700, fontSize: isMac ? '14px' : '13px', letterSpacing: isMac ? '-0.01em' : 'normal' }}>
+                  {currentUser.displayName}
+                </div>
+                <div style={{ fontSize: '11px', color: isMac ? '#94a3b8' : '#dfdfdf' }}>
                   Member since {currentUser.joinDate} | Device Account
                 </div>
               </div>
@@ -252,15 +284,16 @@ ${
 
             <div
               style={{
-                background: '#008000',
-                color: '#ffffff',
-                padding: '3px 8px',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                border: '1px outset #ffffff',
+                background: isMac ? 'rgba(34, 197, 94, 0.2)' : '#008000',
+                color: isMac ? '#4ade80' : '#ffffff',
+                padding: isMac ? '4px 10px' : '3px 8px',
+                fontSize: isMac ? '11px' : '11px',
+                fontWeight: 600,
+                border: isMac ? '1px solid rgba(74, 222, 128, 0.35)' : '1px outset #ffffff',
+                borderRadius: isMac ? '10px' : '0',
               }}
             >
-              [ 100% FREE & UNLOCKED ]
+              {isMac ? 'Full & Unlocked' : '[ 100% FREE & UNLOCKED ]'}
             </div>
           </div>
 
@@ -826,22 +859,52 @@ ${
             )}
           </div>
 
-          {/* Win95 Footer Status Bar */}
+          {/* Footer Status Bar */}
           <div
             style={{
-              marginTop: '6px',
+              marginTop: '8px',
               display: 'flex',
-              gap: '4px',
-              fontSize: '10px',
+              gap: '6px',
+              fontSize: '11px',
             }}
           >
-            <div className="win95-sunken" style={{ flex: 1, padding: '2px 6px', background: '#c0c0c0' }}>
+            <div
+              className="win95-sunken"
+              style={{
+                flex: 1,
+                padding: isMac ? '4px 8px' : '2px 6px',
+                background: 'var(--w95-sunken-bg, #c0c0c0)',
+                color: 'var(--w95-text-color, #f8fafc)',
+                borderRadius: isMac ? '6px' : '0',
+                border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
+              }}
+            >
               🔒 Security: PBKDF2 (600k iter)
             </div>
-            <div className="win95-sunken" style={{ flex: 1, padding: '2px 6px', background: '#c0c0c0' }}>
+            <div
+              className="win95-sunken"
+              style={{
+                flex: 1,
+                padding: isMac ? '4px 8px' : '2px 6px',
+                background: 'var(--w95-sunken-bg, #c0c0c0)',
+                color: 'var(--w95-text-color, #f8fafc)',
+                borderRadius: isMac ? '6px' : '0',
+                border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
+              }}
+            >
               ⚡ Token: Active (24h TTL)
             </div>
-            <div className="win95-sunken" style={{ flex: 1, padding: '2px 6px', background: '#c0c0c0' }}>
+            <div
+              className="win95-sunken"
+              style={{
+                flex: 1,
+                padding: isMac ? '4px 8px' : '2px 6px',
+                background: 'var(--w95-sunken-bg, #c0c0c0)',
+                color: 'var(--w95-text-color, #f8fafc)',
+                borderRadius: isMac ? '6px' : '0',
+                border: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : undefined,
+              }}
+            >
               ✨ Access: Full &amp; Free (Unlocked)
             </div>
           </div>
