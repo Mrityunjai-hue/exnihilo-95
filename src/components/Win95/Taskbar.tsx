@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StoredUser } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
 import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
@@ -54,7 +54,37 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   const isMac = activeTheme === 'macos-glass';
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [hoveredDockId, setHoveredDockId] = useState<string | null>(null);
+  const [isDockHovered, setIsDockHovered] = useState(false);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [timeStr, setTimeStr] = useState('');
+
+  // Determine if any window is actively open or maximized
+  const hasActiveWindows = Boolean(
+    isAnyMaximized || windows.some((w) => w.isOpen && !w.isMinimized)
+  );
+
+  // Auto-hide rule:
+  // - When hovered (or cursor touches bottom hotspot), dock reveals (isDockVisible = true).
+  // - When unhovered, if any window is in use (open/maximized), dock auto-hides.
+  // - On empty desktop (no open windows), dock sits comfortably visible.
+  const isDockVisible = isDockHovered || !hasActiveWindows;
+
+  const handleMouseEnter = () => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+    setIsDockHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+    }
+    hideTimeoutRef.current = setTimeout(() => {
+      setIsDockHovered(false);
+    }, 350);
+  };
 
   useEffect(() => {
     const updateTime = () => {
@@ -85,29 +115,48 @@ export const Taskbar: React.FC<TaskbarProps> = ({
 
   if (isMac) {
     return (
-      <nav
-        className={`mac-dock-container ${isAnyMaximized ? 'is-fullscreen-hidden' : ''}`}
-        style={{
-          position: 'fixed',
-          bottom: '12px',
-          left: '50%',
-          transform: isAnyMaximized ? 'translateX(-50%) translateY(140%)' : 'translateX(-50%)',
-          opacity: isAnyMaximized ? 0 : 1,
-          pointerEvents: isAnyMaximized ? 'none' : 'auto',
-          zIndex: 45,
-          display: 'flex',
-          alignItems: 'flex-end',
-          gap: '8px',
-          background: 'rgba(15, 23, 42, 0.65)',
-          WebkitBackdropFilter: 'blur(36px) saturate(200%)',
-          backdropFilter: 'blur(36px) saturate(200%)',
-          border: '1px solid rgba(255, 255, 255, 0.18)',
-          borderRadius: '24px',
-          padding: '6px 12px',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
-          transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease',
-        }}
-      >
+      <>
+        {/* Invisible Bottom Hotspot to trigger auto-reveal when cursor moves to the bottom of the screen */}
+        <div
+          className="mac-dock-hotspot"
+          onMouseEnter={handleMouseEnter}
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '24px',
+            zIndex: 99998,
+            pointerEvents: 'auto',
+          }}
+          aria-hidden="true"
+        />
+
+        <nav
+          className={`mac-dock-container ${!isDockVisible ? 'is-auto-hidden' : ''}`}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          style={{
+            position: 'fixed',
+            bottom: '12px',
+            left: '50%',
+            transform: isDockVisible ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(140%)',
+            opacity: isDockVisible ? 1 : 0,
+            pointerEvents: isDockVisible ? 'auto' : 'none',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'flex-end',
+            gap: '8px',
+            background: 'rgba(15, 23, 42, 0.65)',
+            WebkitBackdropFilter: 'blur(36px) saturate(200%)',
+            backdropFilter: 'blur(36px) saturate(200%)',
+            border: '1px solid rgba(255, 255, 255, 0.18)',
+            borderRadius: '24px',
+            padding: '6px 12px',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
+            transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease',
+          }}
+        >
         {/* Launchpad Button */}
         <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {hoveredDockId === 'launchpad' && (
@@ -275,8 +324,9 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           <div style={{ height: '4px' }} />
         </div>
       </nav>
-    );
-  }
+    </>
+  );
+}
 
   // Classic Windows 95 Taskbar for retro themes
   return (
