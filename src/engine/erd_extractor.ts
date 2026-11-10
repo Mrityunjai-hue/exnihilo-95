@@ -5,6 +5,7 @@
  */
 
 import { SessionCatalog, CatalogEntry } from './catalog';
+import { EXPANDED_DOMAIN_CATALOG } from './domain_catalog_data';
 
 export interface ERDColumn {
   name: string;
@@ -21,6 +22,8 @@ export interface ERDNode {
   id: string; // tableName (lowercased)
   tableName: string;
   rowCount: number;
+  dbName?: string;
+  isUserDefined?: boolean;
   columns: ERDColumn[];
   x: number;
   y: number;
@@ -32,6 +35,7 @@ export interface ERDLink {
   sourceColumn: string;
   targetTable: string;
   targetColumn: string;
+  cardinality?: '1:1' | '1:N' | 'N:1' | 'N:M';
 }
 
 export interface ERDGraphData {
@@ -48,28 +52,49 @@ export function extractERDData(catalog: SessionCatalog): ERDGraphData {
   // 1. First pass: Build ERD Nodes and identify Primary Keys
   catalogEntries.forEach((entry, idx) => {
     const tableName = entry.tableName.toLowerCase();
+
+    // Check if table matches any domain catalog entry for known PKs/FKs
+    const domainSpec = Object.entries(EXPANDED_DOMAIN_CATALOG).find(
+      ([key, val]) => key.toLowerCase() === tableName || val.aliases?.some((a) => a.toLowerCase() === tableName)
+    )?.[1];
+
     const columns: ERDColumn[] = entry.schema.columns.map((col) => {
       const colNameLower = col.name.toLowerCase();
-      const isPk = colNameLower === 'id' || colNameLower === `${tableName}_id`;
+      const domainCol = domainSpec?.columns.find((c) => c.name.toLowerCase() === colNameLower);
+
+      const isPk =
+        (col as any).isPrimaryKey === true ||
+        domainCol?.isPrimaryKey === true ||
+        colNameLower === 'id' ||
+        colNameLower === `${tableName}_id` ||
+        colNameLower === `${tableName}id`;
+
+      const explicitFk = (col as any).references || domainCol?.references;
+
       return {
         name: col.name,
         type: col.logicalType,
-        isPrimaryKey: isPk,
-        isForeignKey: false,
+        isPrimaryKey: Boolean(isPk),
+        isForeignKey: Boolean(explicitFk),
+        foreignKeyTarget: explicitFk
+          ? { table: explicitFk.table.toLowerCase(), column: explicitFk.column || 'id' }
+          : undefined,
       };
     });
 
-    // Auto-layout initial coordinates grid calculation
-    const colCount = 3;
+    // Auto-layout initial coordinates grid calculation with generous collision-free spacing
+    const colCount = Math.max(1, Math.min(3, Math.ceil(Math.sqrt(catalogEntries.length || 1))));
     const row = Math.floor(idx / colCount);
     const col = idx % colCount;
-    const x = 40 + col * 340;
-    const y = 40 + row * 280;
+    const x = 50 + col * 360;
+    const y = 50 + row * 380;
 
     nodes.push({
       id: tableName,
       tableName: entry.tableName,
       rowCount: entry.rowCount,
+      dbName: entry.dbName,
+      isUserDefined: entry.isUserDefined,
       columns,
       x,
       y,
@@ -78,21 +103,36 @@ export function extractERDData(catalog: SessionCatalog): ERDGraphData {
 
   // 2. Second pass: Infer Foreign Key Relationships
   const SYNONYM_GROUPS: Record<string, string[]> = {
-    user: ['customers', 'users', 'clients', 'accounts', 'members'],
-    customer: ['customers', 'users', 'clients', 'accounts', 'members'],
-    client: ['customers', 'users', 'clients', 'accounts'],
-    account: ['accounts', 'users', 'customers'],
-    product: ['products', 'items', 'inventory'],
-    item: ['products', 'items'],
+    user: ['users', 'user', 'customers', 'accounts', 'members', 'clients'],
+    customer: ['customers', 'customer', 'users', 'clients', 'accounts'],
+    client: ['clients', 'client', 'customers', 'users'],
+    account: ['accounts', 'account', 'users', 'customers'],
+    product: ['products', 'product', 'items', 'item', 'inventory'],
+    item: ['items', 'item', 'products', 'product'],
+    order: ['orders', 'order'],
+    invoice: ['invoices', 'invoice', 'bills'],
     category: ['categories', 'category'],
-    author: ['authors', 'writers'],
+    author: ['authors', 'author', 'writers', 'users'],
+    dept: ['departments', 'department'],
+    department: ['departments', 'department'],
+    employee: ['employees', 'employee', 'staff'],
+    post: ['posts', 'post'],
+    article: ['articles', 'article', 'posts'],
+    airline: ['airlines', 'airline'],
+    airport: ['airports', 'airport'],
+    flight: ['flights', 'flight'],
+    patient: ['patients', 'patient'],
+    doctor: ['doctors', 'doctor'],
+    course: ['courses', 'course'],
+    student: ['students', 'student'],
   };
 
-  const findMatchingTargetTable = (colName: string, currentNodeId: string): string | null => {
-    const colLower = colName.toLowerCase();
-    if (!colLower.endsWith('_id') || colLower === 'id') return null;
+  const findMatchingTargetTable = (colName: string, currentNodeId: string): { targetTable: string; targetColumn: string } | null => {
+    // 1. Convert snake_case or camelCase: 'customerId' -> 'customer_id'
+    const normalized = colName.replace(/([A-Z])/g, '_$1').toLowerCase();
+    if (!normalized.endsWith('_id') || normalized === 'id') return null;
 
-    const base = colLower.replace(/_id$/, '');
+    const base = normalized.replace(/_id$/, '');
     const candidates = [base, `${base}s`, `${base}es`].map((c) => c.toLowerCase());
 
     if (SYNONYM_GROUPS[base]) {
@@ -101,7 +141,10 @@ export function extractERDData(catalog: SessionCatalog): ERDGraphData {
 
     for (const cand of candidates) {
       if (tableNames.has(cand) && cand !== currentNodeId) {
-        return cand;
+        // Find target table's primary key (defaults to 'id')
+        const targetNode = nodes.find((n) => n.id === cand);
+        const pkCol = targetNode?.columns.find((c) => c.isPrimaryKey)?.name || 'id';
+        return { targetTable: cand, targetColumn: pkCol };
       }
     }
     return null;
@@ -109,21 +152,43 @@ export function extractERDData(catalog: SessionCatalog): ERDGraphData {
 
   nodes.forEach((node) => {
     node.columns.forEach((col) => {
-      const targetTable = findMatchingTargetTable(col.name, node.id);
-      if (targetTable) {
+      // If already has explicit target
+      if (col.foreignKeyTarget && tableNames.has(col.foreignKeyTarget.table) && col.foreignKeyTarget.table !== node.id) {
+        col.isForeignKey = true;
+        const linkId = `${node.id}.${col.name}->${col.foreignKeyTarget.table}.${col.foreignKeyTarget.column}`;
+        if (!links.some((l) => l.id === linkId)) {
+          links.push({
+            id: linkId,
+            sourceTable: node.id,
+            sourceColumn: col.name,
+            targetTable: col.foreignKeyTarget.table,
+            targetColumn: col.foreignKeyTarget.column,
+            cardinality: 'N:1',
+          });
+        }
+        return;
+      }
+
+      // Infer through name matching
+      const match = findMatchingTargetTable(col.name, node.id);
+      if (match) {
         col.isForeignKey = true;
         col.foreignKeyTarget = {
-          table: targetTable,
-          column: 'id',
+          table: match.targetTable,
+          column: match.targetColumn,
         };
 
-        links.push({
-          id: `${node.id}.${col.name}->${targetTable}.id`,
-          sourceTable: node.id,
-          sourceColumn: col.name,
-          targetTable: targetTable,
-          targetColumn: 'id',
-        });
+        const linkId = `${node.id}.${col.name}->${match.targetTable}.${match.targetColumn}`;
+        if (!links.some((l) => l.id === linkId)) {
+          links.push({
+            id: linkId,
+            sourceTable: node.id,
+            sourceColumn: col.name,
+            targetTable: match.targetTable,
+            targetColumn: match.targetColumn,
+            cardinality: 'N:1',
+          });
+        }
       }
     });
   });

@@ -53,4 +53,31 @@ describe('ERD Extractor Engine', () => {
     expect(erd.links[0].targetTable).toBe('customers');
     expect(erd.links[0].targetColumn).toBe('id');
   });
+
+  it('runs sampleQuery through SQLExecutor and extracts links', async () => {
+    const { SQLExecutor } = await import('../../engine/executor');
+    const executor = new SQLExecutor();
+    const sampleQuery = `
+      SELECT 
+        users.id as user_id, 
+        users.name, 
+        users.email,
+        orders.id as order_id, 
+        orders.total, 
+        orders.created_at,
+        products.id as product_id,
+        products.title, 
+        products.price,
+        order_items.quantity
+      FROM users
+      JOIN orders ON users.id = orders.user_id
+      JOIN order_items ON orders.id = order_items.order_id
+      JOIN products ON order_items.product_id = products.id;
+    `;
+    const res = await executor.execute(sampleQuery, 'PostgreSQL');
+    expect(res.ok).toBe(true);
+    const erd = extractERDData(executor.getCatalog());
+    expect(erd.nodes.length).toBeGreaterThanOrEqual(4);
+    expect(erd.links.length).toBeGreaterThanOrEqual(2);
+  });
 });
