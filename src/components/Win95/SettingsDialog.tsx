@@ -7,6 +7,7 @@ import { Dialect } from '../../engine/parser';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from './WindowControls';
 import { useTheme, ThemeId, THEME_PRESETS } from '../../hooks/useTheme';
+import { useCursorSettings } from '../../hooks/useCursorSettings';
 
 interface SettingsDialogProps {
   isOpen:         boolean;
@@ -39,6 +40,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const [localDialect, setLocalDialect] = useState<Dialect>(currentDialect);
   const { position, handleMouseDown } = useDraggable({ x: 220, y: 110 });
   const { activeTheme, setTheme } = useTheme();
+  const { cursorSettings, updateCursorSetting } = useCursorSettings();
 
   if (!isOpen) return null;
 
@@ -257,6 +259,72 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                   </p>
                 </fieldset>
               )}
+
+              {/* Dynamic Themed Super-Cursor Settings */}
+              <fieldset style={{ border: '1px solid var(--w95-dark-gray, #808080)', padding: '10px', marginTop: '12px' }}>
+                <legend style={{ padding: '0 4px', fontSize: '11px', fontWeight: 'bold' }}>
+                  🖱️ Dynamic Themed Super-Cursor
+                </legend>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', cursor: 'pointer', userSelect: 'none' }}>
+                    <input
+                      type="checkbox"
+                      checked={cursorSettings.enabled}
+                      onChange={(e) => updateCursorSetting('enabled', e.target.checked)}
+                    />
+                    <strong>Enable Themed Custom Cursor HUD</strong>
+                  </label>
+
+                  {cursorSettings.enabled && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', paddingLeft: '20px', marginTop: '4px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', cursor: 'pointer', userSelect: 'none' }}>
+                        <input
+                          type="checkbox"
+                          checked={cursorSettings.ambientSpotlight}
+                          onChange={(e) => updateCursorSetting('ambientSpotlight', e.target.checked)}
+                        />
+                        <span>💡 Ambient Glass Torch</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', cursor: 'pointer', userSelect: 'none' }}>
+                        <input
+                          type="checkbox"
+                          checked={cursorSettings.liveMath}
+                          onChange={(e) => updateCursorSetting('liveMath', e.target.checked)}
+                        />
+                        <span>⚡ Live Math on Cell Drag</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', cursor: 'pointer', userSelect: 'none' }}>
+                        <input
+                          type="checkbox"
+                          checked={cursorSettings.magneticSnap}
+                          onChange={(e) => updateCursorSetting('magneticSnap', e.target.checked)}
+                        />
+                        <span>🧲 Magnetic Button Pull</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', cursor: 'pointer', userSelect: 'none' }}>
+                        <input
+                          type="checkbox"
+                          checked={cursorSettings.mascotEnabled}
+                          onChange={(e) => updateCursorSetting('mascotEnabled', e.target.checked)}
+                        />
+                        <span>🧙‍♂️ Theme Mascot (Orb/Wizard)</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', cursor: 'pointer', userSelect: 'none' }}>
+                        <input
+                          type="checkbox"
+                          checked={cursorSettings.audioHaptics}
+                          onChange={(e) => updateCursorSetting('audioHaptics', e.target.checked)}
+                        />
+                        <span>🔊 Haptic Audio Clicks</span>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </fieldset>
             </div>
           )}
 

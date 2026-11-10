@@ -502,7 +502,12 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                             }}
                             onClick={() => onSelectTable(entry.tableName, `SELECT * FROM ${entry.tableName};`)}
                             onContextMenu={e => handleTableContextMenu(e, entry)}
-                            title="Left-click to SELECT • Right-click for options"
+                            draggable={true}
+                            onDragStart={e => {
+                              e.dataTransfer.setData('text/plain', `SELECT * FROM ${entry.tableName};\n`);
+                            }}
+                            data-cursor={`📊 Table: ${entry.tableName} (${entry.rowCount} rows)`}
+                            title="Left-click to SELECT • Drag to insert SQL"
                           >
                             <span
                               style={{
@@ -592,7 +597,12 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                       borderRadius: isMac ? 4 : 0,
                                     }}
                                     onClick={e => { e.stopPropagation(); onSelectTable(entry.tableName, `SELECT ${col.name} FROM ${entry.tableName};`); }}
-                                    title={`SELECT ${col.name}`}
+                                    draggable={true}
+                                    onDragStart={e => {
+                                      e.dataTransfer.setData('text/plain', col.name);
+                                    }}
+                                    data-cursor={`Column: ${col.name} (${col.logicalType.toLowerCase()}${isPk ? ' PK' : ''})`}
+                                    title={`SELECT ${col.name} • Drag column name`}
                                   >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: isMac ? 5 : 3 }}>
                                       <span style={{ fontSize: isMac ? 13 : 11 }}>{isPk ? '🔑' : isFk ? '🔗' : '📄'}</span>

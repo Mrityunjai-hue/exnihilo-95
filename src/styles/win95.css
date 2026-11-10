@@ -16,6 +16,7 @@
 
 @import './themes.css';
 @import './crt.css';
+@import './cursor.css';
 
 @font-face {
   font-family: 'Windows 95';

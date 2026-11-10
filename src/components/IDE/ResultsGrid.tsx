@@ -604,22 +604,27 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                     <td style={{ textAlign: 'center', color: 'var(--w95-text-color, #888)', background: 'var(--w95-gray, #f5f5f5)', fontWeight: 'bold' }}>
                       {originalIndex + 1}
                     </td>
-                    {row.map((val, colIdx) => (
-                      <td
-                        key={colIdx}
-                        onDoubleClick={() => setInspectedCell({ val, colName: columns[colIdx], rowIdx: originalIndex + 1 })}
-                        title="Double-click to inspect cell value"
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {val === null || val === undefined ? (
-                          <span style={{ color: 'var(--w95-dark-gray, #999999)', fontStyle: 'italic' }}>&lt;NULL&gt;</span>
-                        ) : typeof val === 'object' ? (
-                          JSON.stringify(val)
-                        ) : (
-                          String(val)
-                        )}
-                      </td>
-                    ))}
+                    {row.map((val, colIdx) => {
+                      const valStr = val === null || val === undefined ? '<NULL>' : typeof val === 'object' ? JSON.stringify(val) : String(val);
+                      const isLongOrObject = valStr.length > 18 || typeof val === 'object';
+                      return (
+                        <td
+                          key={colIdx}
+                          onDoubleClick={() => setInspectedCell({ val, colName: columns[colIdx], rowIdx: originalIndex + 1 })}
+                          data-cursor={isLongOrObject ? `${columns[colIdx]}: ${valStr.slice(0, 60)}${valStr.length > 60 ? '...' : ''}` : undefined}
+                          title="Double-click to inspect cell value"
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {val === null || val === undefined ? (
+                            <span style={{ color: 'var(--w95-dark-gray, #999999)', fontStyle: 'italic' }}>&lt;NULL&gt;</span>
+                          ) : typeof val === 'object' ? (
+                            JSON.stringify(val)
+                          ) : (
+                            String(val)
+                          )}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
 

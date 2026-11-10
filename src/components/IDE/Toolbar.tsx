@@ -113,6 +113,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           }}
           onClick={onRun}
           disabled={isLoading}
+          data-cursor="⚡ Execute SQL (F5)"
           title={hasSelection ? 'Execute Selected Query (F5 or Ctrl+Enter)' : 'Execute All Queries (F5 or Ctrl+Enter)'}
         >
           <span>▶</span>
@@ -125,6 +126,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           className="win95-button"
           onClick={onFormatSql}
           disabled={isLoading}
+          data-cursor="🧹 Format SQL (Ctrl+Shift+F)"
           title="Format & Beautify SQL Query (Ctrl+Shift+F)"
           style={{ padding: '2px 8px', fontSize: '11px' }}
         >
@@ -140,6 +142,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             id="btn-templates"
             className="win95-button"
             onClick={() => setTemplateMenuOpen((prev) => !prev)}
+            data-cursor="📋 SQL Query Templates"
             title="Insert Prebuilt SQL Query Templates"
             style={{ padding: '2px 8px', fontSize: '11px' }}
           >
@@ -217,6 +220,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           className="win95-sunken toolbar-dialect-select"
           value={dialect}
           onChange={(e) => onDialectChange(e.target.value as Dialect)}
+          data-cursor={`SQL Engine: ${dialect} (WASM)`}
           style={{ fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
         >
           <option value="MySQL" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>MySQL</option>

@@ -51,6 +51,7 @@ import {
 import { useTheme } from '../../hooks/useTheme';
 import { MacMenuBar } from '../Mac/MacMenuBar';
 import { MacLaunchpad } from '../Mac/MacLaunchpad';
+import { CustomCursor } from '../Cursor/CustomCursor';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
 -- Try querying any table below (even if it doesn't exist yet):
@@ -994,6 +995,18 @@ export const Desktop: React.FC = () => {
         onLogout={handleLogout}
         onToggleLaunchpad={() => setLaunchpadOpen((prev) => !prev)}
         isLaunchpadOpen={launchpadOpen}
+      />
+
+      {/* Dynamic Themed Super-Cursor HUD */}
+      <CustomCursor
+        activeTheme={activeTheme}
+        isLoading={isLoading}
+        hasError={Boolean(activeError)}
+        onShakeDismiss={() => {
+          if (activeError) setActiveError(null);
+          if (tourOpen) setTourOpen(false);
+          if (launchpadOpen) setLaunchpadOpen(false);
+        }}
       />
     </div>
   );
