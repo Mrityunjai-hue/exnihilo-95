@@ -99,4 +99,73 @@ describe('Phase 1: Semantic Matching, Schema Augmentation & Domain Inference', (
       }
     }
   });
+
+  it('infers authentic aviation schema for flights and airports', () => {
+    const flightCols = resolveDomainSchema('flights');
+    expect(flightCols).not.toBeNull();
+    const flightNames = flightCols!.map(c => c.name);
+    expect(flightNames).toContain('flight_number');
+    expect(flightNames).toContain('airline');
+    expect(flightNames).toContain('departure_airport');
+    expect(flightNames).toContain('arrival_airport');
+
+    const schemaMap = inferSchema('SELECT * FROM dim_flights;', 'PostgreSQL');
+    const schema = schemaMap.get('dim_flights');
+    expect(schema).toBeDefined();
+    expect(schema?.columns.some(c => c.name === 'flight_number')).toBe(true);
+  });
+
+  it('infers authentic crypto & web3 schema for crypto_wallets and transactions', () => {
+    const walletCols = resolveDomainSchema('crypto_wallets');
+    expect(walletCols).not.toBeNull();
+    const walletNames = walletCols!.map(c => c.name);
+    expect(walletNames).toContain('wallet_address');
+    expect(walletNames).toContain('blockchain');
+    expect(walletNames).toContain('balance');
+  });
+
+  it('infers authentic sports & racing schema for f1_drivers', () => {
+    const driverCols = resolveDomainSchema('f1_drivers');
+    expect(driverCols).not.toBeNull();
+    const driverNames = driverCols!.map(c => c.name);
+    expect(driverNames).toContain('driver_name');
+    expect(driverNames).toContain('racing_team');
+    expect(driverNames).toContain('car_number');
+  });
+
+  it('procedurally synthesizes an authentic contextual schema for arbitrary unknown tables', () => {
+    // When given an unknown entity like 'dinosaur_fossils'
+    const fossilCols = resolveDomainSchema('dinosaur_fossils');
+    expect(fossilCols).not.toBeNull();
+    const names = fossilCols!.map(c => c.name);
+    // Should NOT have boring fallback uuid or value
+    expect(names).not.toContain('uuid');
+    expect(names).toContain('id');
+    expect(names).toContain('category');
+    expect(names).toContain('status');
+  });
+
+  it('supports continual on-device learning from user created custom tables', async () => {
+    const { continualLearner } = await import('../../engine/continual_learner');
+    continualLearner.clearExperience();
+
+    // User creates a novel domain table that has never existed in training catalogs
+    continualLearner.recordTableExperience('quantum_processors', [
+      { name: 'qubit_count', logicalType: 'INTEGER' },
+      { name: 'coherence_time_us', logicalType: 'NUMERIC' },
+      { name: 'gate_fidelity', logicalType: 'NUMERIC' },
+      { name: 'cryo_status', logicalType: 'VARCHAR' },
+    ]);
+
+    // Subsequent query on this domain instantly recalls the learned schema
+    const learnedCols = resolveDomainSchema('quantum_processors');
+    expect(learnedCols).not.toBeNull();
+    const names = learnedCols!.map(c => c.name);
+    expect(names).toContain('qubit_count');
+    expect(names).toContain('coherence_time_us');
+    expect(names).toContain('gate_fidelity');
+
+    // Clean up
+    continualLearner.clearExperience();
+  });
 });

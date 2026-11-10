@@ -37,6 +37,7 @@ import { inferSchemaCached } from './inferenceCache';
 import { buildTableGenerationPlan } from './relationships';
 import { generateSyntheticDataset, GeneratorOptions, generateCreateTableSql, generateInsertSql } from './generator';
 import { SessionCatalog, globalCatalog } from './catalog';
+import { continualLearner } from './continual_learner';
 
 // Module-level WASM binary loader singleton — avoids compiling WASM on each SQLExecutor instance
 let _sqlJsModulePromise: Promise<SqlJsStatic> | null = null;
@@ -874,6 +875,10 @@ export class SQLExecutor {
               0,
               true
             );
+            continualLearner.recordTableExperience(
+              String(rawName),
+              cols.map(c => ({ name: c.name, logicalType: c.logicalType as any }))
+            );
           }
         }
         for (const k of Object.keys(node)) {
@@ -1297,6 +1302,10 @@ export class SQLExecutor {
 
     // ── 4. Register in catalog & persist to storage ────────────────────────────
     this.catalog.set(safeTable, tableSchema, insertedRows, true, dbName);
+    continualLearner.recordTableExperience(
+      safeTable,
+      tableSchema.columns.map(c => ({ name: c.name, logicalType: c.logicalType as any }))
+    );
     const key = `${dbName.toLowerCase()}.${safeTable}`;
     this.userTableDefs.set(key, { ddlSql, columns });
     await this.syncUserCatalogToStorage();
