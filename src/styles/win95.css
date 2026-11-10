@@ -27,7 +27,8 @@
   font-display: swap;
 }
 
-:root {
+/* Retro Font Fallbacks */
+[data-theme="win95-classic"] {
   --w95-font: 'Windows 95', 'MS Sans Serif', Tahoma, Arial, sans-serif;
   --w95-mono: 'Lucida Console', 'Courier New', Courier, monospace;
 }
@@ -51,6 +52,10 @@ html, body {
 
 [data-theme="win95-classic"] {
   -webkit-font-smoothing: none;
+}
+
+.mac-control-glyph {
+  display: none;
 }
 
 @media (max-width: 1023px) {

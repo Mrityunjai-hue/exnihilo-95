@@ -16,8 +16,6 @@ import {
   ColumnType,
 } from '../../engine/sql_exporter';
 
-import { MarvelCelebrationBanner, MarvelCelebrationTrigger } from '../Win95/MarvelCelebrationBanner';
-
 interface ResultsGridProps {
   result:          ExecutionSuccess | null;
   error?:          any;
@@ -46,12 +44,6 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Marvel Celebration & Teaser Trigger State
-  const [celebrationTrigger, setCelebrationTrigger] = useState<MarvelCelebrationTrigger>({
-    type: 'NONE',
-    timestamp: 0,
-  });
-
   // Cell inspector modal state
   const [inspectedCell, setInspectedCell] = useState<{
     val: any;
@@ -60,23 +52,6 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   } | null>(null);
 
   const [toastNotice, setToastNotice] = useState<string | null>(null);
-
-  // Trigger celebration on success or teaser on error result
-  useEffect(() => {
-    if (!result) return;
-
-    if ((result as any).error) {
-      setCelebrationTrigger({
-        type: 'FAILURE',
-        timestamp: Date.now(),
-      });
-    } else {
-      setCelebrationTrigger({
-        type: 'SUCCESS',
-        timestamp: Date.now(),
-      });
-    }
-  }, [result]);
 
 
   // Reset state when new query result arrives
@@ -427,8 +402,6 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
         position: 'relative',
       }}
     >
-      <MarvelCelebrationBanner trigger={celebrationTrigger} />
-
       {/* Action & Export Bar */}
       <div
         style={{

@@ -23,7 +23,7 @@
   --w95-sunken-bg: rgba(10, 14, 23, 0.85);
   --w95-sunken-text: #f8fafc;
   --w95-titlebar-active: #38bdf8;
-  --w95-title-active-bg: rgba(255, 255, 255, 0.08);
+  --w95-title-active-bg: #38bdf8;
   --w95-title-active-text: #ffffff;
   --w95-title-active-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
   --w95-title-inactive-bg: rgba(255, 255, 255, 0.03);
@@ -511,67 +511,6 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
- * MARVEL COMICS CELEBRATION & TEASER KEYFRAME ANIMATIONS
- * ───────────────────────────────────────────────────────────────────────────── */
-@keyframes marvelParadeAcross {
-  0% {
-    transform: translateX(-140px);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(calc(100% + 140px));
-    opacity: 0;
-  }
-}
-
-@keyframes marvelBobbing {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes marvelPopUp {
-  0% {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  15% {
-    transform: translateY(-6px);
-    opacity: 1;
-  }
-  25% {
-    transform: translateY(0px);
-    opacity: 1;
-  }
-  85% {
-    transform: translateY(0px);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-}
-
-@keyframes marvelPulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.9), 0 0 30px rgba(255, 105, 180, 0.6);
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
  * NIHILO GLASS (MACOS MODERN) DESIGN ENGINE — APPLE NATIVE AESTHETIC
  * ───────────────────────────────────────────────────────────────────────────── */
 
@@ -966,29 +905,78 @@
   font-family: var(--w95-font) !important;
 }
 
-/* Traffic Light Window Controls */
+/* Traffic Light Window Controls — Dynamic Apple Expand-on-Hover Cluster */
 [data-theme="macos-glass"] .win95-titlebar-controls {
-  gap: 8px !important;
-  align-items: center !important;
   display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 3px 6px !important;
+  border-radius: 16px !important;
+  cursor: pointer !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              gap 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.2s ease !important;
+  transform-origin: left center !important;
+}
+
+[data-theme="macos-glass"] .win95-titlebar-controls:hover {
+  transform: scale(1.18) !important;
+  gap: 9px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme="macos-glass"] .win95-control-glyph {
+  display: none !important;
+}
+
+[data-theme="macos-glass"] .mac-control-glyph {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 8px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  opacity: 0;
+  color: rgba(0, 0, 0, 0.75) !important;
+  transition: opacity 0.15s ease !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+[data-theme="macos-glass"] .win95-titlebar-controls:hover .mac-control-glyph {
+  opacity: 1 !important;
 }
 
 [data-theme="macos-glass"] .win95-btn-titlebar {
   width: 12px !important;
   height: 12px !important;
+  min-width: 12px !important;
+  min-height: 12px !important;
   border-radius: 50% !important;
-  border: 1px solid rgba(0, 0, 0, 0.3) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(0, 0, 0, 0.25) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
   cursor: pointer !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 9px !important;
-  font-weight: 900 !important;
-  line-height: 1 !important;
   padding: 0 !important;
-  transition: transform 0.12s ease, filter 0.12s ease, opacity 0.12s ease !important;
-  color: transparent !important;
+  margin: 0 !important;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), filter 0.15s ease !important;
+}
+
+[data-theme="macos-glass"] .win95-btn-titlebar:hover {
+  transform: scale(1.15) !important;
+  filter: brightness(1.1) !important;
+}
+
+[data-theme="macos-glass"] .win95-btn-titlebar:active {
+  transform: scale(0.92) !important;
 }
 
 /* Close button -> Red */
@@ -1015,20 +1003,6 @@
   background: #27c93f !important;
   border-color: #1aab29 !important;
   order: 3 !important;
-}
-
-[data-theme="macos-glass"] .win95-titlebar:hover .win95-btn-titlebar,
-[data-theme="macos-glass"] .win95-btn-titlebar:hover {
-  color: rgba(0, 0, 0, 0.7) !important;
-}
-
-[data-theme="macos-glass"] .win95-btn-titlebar:hover {
-  filter: brightness(1.1) !important;
-  transform: scale(1.1) !important;
-}
-
-[data-theme="macos-glass"] .win95-btn-titlebar:active {
-  transform: scale(0.92) !important;
 }
 
 /* Hide redundant in-window menu strip in macOS theme */
@@ -1141,6 +1115,51 @@
 [data-theme="macos-glass"] input::placeholder,
 [data-theme="macos-glass"] textarea::placeholder {
   color: #64748b !important;
+}
+
+/* Custom Apple Select with chevron and guaranteed no-clipping */
+[data-theme="macos-glass"] .toolbar-dialect-select {
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  line-height: 24px !important;
+  padding: 2px 26px 2px 10px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.75)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  background-color: rgba(10, 15, 26, 0.85) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+}
+
+[data-theme="macos-glass"] .mac-menubar-select {
+  height: 22px !important;
+  min-height: 22px !important;
+  max-height: 22px !important;
+  line-height: 20px !important;
+  padding: 0 4px !important;
+  font-size: 11px !important;
+  box-sizing: border-box !important;
+  border-radius: 6px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  cursor: pointer !important;
+}
+
+[data-theme="macos-glass"] select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  padding: 6px 10px !important;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -1277,14 +1296,19 @@
   background-color: rgba(0, 122, 255, 0.35) !important;
 }
 
-/* CodeMirror Syntax Tokens Overrides */
+/* CodeMirror Syntax Tokens Overrides — Electric Neon Palette */
 [data-theme="macos-glass"] .cm-editor span[style*="color: rgb(0, 0, 128)"],
 [data-theme="macos-glass"] .cm-editor span[style*="color: #000080"],
 [data-theme="macos-glass"] .cm-editor .tok-keyword,
+[data-theme="macos-glass"] .cm-editor [class*="keyword"] {
+  color: #00f0ff !important; /* Electric Neon Cyan */
+  font-weight: 700 !important;
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.45) !important;
+}
+
 [data-theme="macos-glass"] .cm-editor .tok-typeName,
-[data-theme="macos-glass"] .cm-editor [class*="keyword"],
 [data-theme="macos-glass"] .cm-editor [class*="typeName"] {
-  color: #38bdf8 !important; /* Vibrant Sky Blue */
+  color: #38bdf8 !important; /* Neon Sky Blue */
   font-weight: 600 !important;
 }
 
@@ -1292,37 +1316,39 @@
 [data-theme="macos-glass"] .cm-editor span[style*="color: #005a9c"],
 [data-theme="macos-glass"] .cm-editor .tok-function,
 [data-theme="macos-glass"] .cm-editor [class*="function"] {
-  color: #818cf8 !important; /* Indigo/Purple */
+  color: #c084fc !important; /* Electric Neon Violet */
   font-weight: 600 !important;
+  text-shadow: 0 0 10px rgba(192, 132, 252, 0.4) !important;
 }
 
 [data-theme="macos-glass"] .cm-editor span[style*="color: rgb(0, 136, 0)"],
 [data-theme="macos-glass"] .cm-editor span[style*="color: #008800"],
 [data-theme="macos-glass"] .cm-editor .tok-string,
 [data-theme="macos-glass"] .cm-editor [class*="string"] {
-  color: #34d399 !important; /* Emerald */
+  color: #34d399 !important; /* Vibrant Neon Mint */
 }
 
 [data-theme="macos-glass"] .cm-editor span[style*="color: rgb(128, 0, 128)"],
 [data-theme="macos-glass"] .cm-editor span[style*="color: #800080"],
 [data-theme="macos-glass"] .cm-editor .tok-number,
 [data-theme="macos-glass"] .cm-editor [class*="number"] {
-  color: #fbbf24 !important; /* Amber */
+  color: #facc15 !important; /* Electric Neon Gold */
+  font-weight: 600 !important;
 }
 
 [data-theme="macos-glass"] .cm-editor span[style*="color: rgb(176, 0, 32)"],
 [data-theme="macos-glass"] .cm-editor span[style*="color: #b00020"],
 [data-theme="macos-glass"] .cm-editor .tok-operator,
 [data-theme="macos-glass"] .cm-editor [class*="operator"] {
-  color: #f43f5e !important; /* Rose / Coral */
-  font-weight: 600 !important;
+  color: #fb7185 !important; /* Electric Neon Coral */
+  font-weight: 700 !important;
 }
 
 [data-theme="macos-glass"] .cm-editor span[style*="color: rgb(106, 115, 125)"],
 [data-theme="macos-glass"] .cm-editor span[style*="color: #6a737d"],
 [data-theme="macos-glass"] .cm-editor .tok-comment,
 [data-theme="macos-glass"] .cm-editor [class*="comment"] {
-  color: #64748b !important; /* Slate */
+  color: #94a3b8 !important; /* High contrast slate */
   font-style: italic !important;
 }
 
@@ -1330,7 +1356,7 @@
 [data-theme="macos-glass"] .cm-editor span[style*="color: #24292e"],
 [data-theme="macos-glass"] .cm-editor .tok-punctuation,
 [data-theme="macos-glass"] .cm-editor .tok-bracket {
-  color: #e2e8f0 !important; /* Light Slate */
+  color: #f1f5f9 !important; /* Light Ice White */
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -1426,10 +1452,39 @@
 /* ─────────────────────────────────────────────────────────────────────────────
  * 10. MASTER ACCENT COLOR & HARDCODED INLINE STYLE INVERSIONS
  * ───────────────────────────────────────────────────────────────────────────── */
+/* Universal Apple Typography Stack */
+[data-theme="macos-glass"],
+[data-theme="macos-glass"] body,
+[data-theme="macos-glass"] button,
+[data-theme="macos-glass"] input,
+[data-theme="macos-glass"] select,
+[data-theme="macos-glass"] textarea,
+[data-theme="macos-glass"] label,
+[data-theme="macos-glass"] fieldset,
+[data-theme="macos-glass"] legend,
+[data-theme="macos-glass"] table,
+[data-theme="macos-glass"] th,
+[data-theme="macos-glass"] td {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "SF Pro Icons", "Helvetica Neue", var(--font-inter), system-ui, sans-serif !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+[data-theme="macos-glass"] code,
+[data-theme="macos-glass"] pre,
+[data-theme="macos-glass"] .cm-editor,
+[data-theme="macos-glass"] .cm-scroller,
+[data-theme="macos-glass"] .mac-shortcut,
+[data-theme="macos-glass"] .win95-grid {
+  font-family: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace !important;
+}
+
+/* Invert all light cards/containers to translucent dark glass */
 [data-theme="macos-glass"] [style*="background: rgb(255, 255, 204)"],
 [data-theme="macos-glass"] [style*="background: #ffffcc"],
 [data-theme="macos-glass"] [style*="backgroundColor: #ffffcc"],
 [data-theme="macos-glass"] [style*="background: #ffffe0"],
+[data-theme="macos-glass"] [style*="background: #fff8e1"],
 [data-theme="macos-glass"] [style*="background: #f5f5f5"],
 [data-theme="macos-glass"] [style*="background: #f0f8ff"],
 [data-theme="macos-glass"] [style*="background: #f0fff0"],
@@ -1437,25 +1492,147 @@
 [data-theme="macos-glass"] [style*="background: rgb(230, 240, 250)"],
 [data-theme="macos-glass"] [style*="background: #e6f0fa"],
 [data-theme="macos-glass"] [style*="background: #ffffff"],
+[data-theme="macos-glass"] [style*="background: #fff"],
 [data-theme="macos-glass"] [style*="background: rgb(255, 255, 255)"],
 [data-theme="macos-glass"] [style*="backgroundColor: #ffffff"],
 [data-theme="macos-glass"] [style*="background: #f8f9fa"],
-[data-theme="macos-glass"] [style*="background: #f7f7f7"] {
+[data-theme="macos-glass"] [style*="background: #f7f7f7"],
+[data-theme="macos-glass"] [style*="background: #f9f9f9"],
+[data-theme="macos-glass"] [style*="background: #f4f4f4"],
+[data-theme="macos-glass"] [style*="background: #f0f0f0"],
+[data-theme="macos-glass"] [style*="background: #c0c0c0"],
+[data-theme="macos-glass"] [style*="background: #d4d0c8"],
+[data-theme="macos-glass"] [style*="background: #e0e0e0"],
+[data-theme="macos-glass"] [style*="background: #d0e0f0"],
+[data-theme="macos-glass"] [style*="background: #d4edda"],
+[data-theme="macos-glass"] [style*="background: #e6f4ea"],
+[data-theme="macos-glass"] [style*="background: #fef7e0"],
+[data-theme="macos-glass"] [style*="background: #fff3cd"],
+[data-theme="macos-glass"] [style*="background: #f8d7da"],
+[data-theme="macos-glass"] [style*="background: #ffe6e6"],
+[data-theme="macos-glass"] [style*="background: #fff0e6"],
+[data-theme="macos-glass"] [style*="background: #e6ffe6"] {
   background-color: rgba(15, 23, 42, 0.75) !important;
   color: #f8fafc !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
+/* Invert all hardcoded black and dark-gray text to high-contrast snow & slate */
+[data-theme="macos-glass"] [style*="color: #000"],
+[data-theme="macos-glass"] [style*="color: #000000"],
+[data-theme="macos-glass"] [style*="color: rgb(0, 0, 0)"],
+[data-theme="macos-glass"] [style*="color: #111"],
+[data-theme="macos-glass"] [style*="color: #222"] {
+  color: #f8fafc !important;
+}
+
+[data-theme="macos-glass"] [style*="color: #333"],
+[data-theme="macos-glass"] [style*="color: #444"],
+[data-theme="macos-glass"] [style*="color: #555"],
+[data-theme="macos-glass"] [style*="color: #666"],
+[data-theme="macos-glass"] [style*="color: #777"],
+[data-theme="macos-glass"] [style*="color: #888"],
+[data-theme="macos-glass"] [style*="color: #808080"] {
+  color: #94a3b8 !important;
+}
+
+/* Invert all hardcoded navy/blue links and titles to neon sky blue */
 [data-theme="macos-glass"] [style*="color: #000080"],
 [data-theme="macos-glass"] [style*="color: rgb(0, 0, 128)"],
 [data-theme="macos-glass"] [style*="color: #0000ff"],
-[data-theme="macos-glass"] [style*="color: #0000ee"] {
+[data-theme="macos-glass"] [style*="color: #0000ee"],
+[data-theme="macos-glass"] [style*="color: #005a9c"],
+[data-theme="macos-glass"] [style*="color: #004080"] {
   color: #38bdf8 !important; /* Sky Blue */
 }
 
+/* Invert all greens to vibrant emerald / mint */
 [data-theme="macos-glass"] [style*="color: #006600"],
-[data-theme="macos-glass"] [style*="color: #008000"] {
+[data-theme="macos-glass"] [style*="color: #008000"],
+[data-theme="macos-glass"] [style*="color: #006400"],
+[data-theme="macos-glass"] [style*="color: #155724"],
+[data-theme="macos-glass"] [style*="color: #137333"] {
   color: #34d399 !important; /* Emerald */
+}
+
+/* Invert purples to electric violet */
+[data-theme="macos-glass"] [style*="color: #800080"],
+[data-theme="macos-glass"] [style*="color: rgb(128, 0, 128)"] {
+  color: #c084fc !important; /* Neon Violet */
+}
+
+/* Invert ambers / browns */
+[data-theme="macos-glass"] [style*="color: #856404"],
+[data-theme="macos-glass"] [style*="color: #cc6600"],
+[data-theme="macos-glass"] [style*="color: #b06000"] {
+  color: #fbbf24 !important; /* Neon Gold */
+}
+
+/* Invert reds / crimsons */
+[data-theme="macos-glass"] [style*="color: #721c24"],
+[data-theme="macos-glass"] [style*="color: #cc0000"],
+[data-theme="macos-glass"] [style*="color: #b00020"] {
+  color: #fb7185 !important; /* Neon Coral */
+}
+
+/* Ensure Headings, Fieldsets, Legends, Tables, Labels are always high contrast */
+[data-theme="macos-glass"] h1,
+[data-theme="macos-glass"] h2,
+[data-theme="macos-glass"] h3,
+[data-theme="macos-glass"] h4,
+[data-theme="macos-glass"] h5,
+[data-theme="macos-glass"] h6 {
+  color: #f8fafc !important;
+}
+
+[data-theme="macos-glass"] fieldset {
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 8px !important;
+  background: rgba(15, 23, 42, 0.35) !important;
+}
+
+[data-theme="macos-glass"] legend {
+  color: #38bdf8 !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+}
+
+[data-theme="macos-glass"] label {
+  color: #f8fafc !important;
+}
+
+[data-theme="macos-glass"] a {
+  color: #38bdf8 !important;
+  text-decoration: none !important;
+}
+
+[data-theme="macos-glass"] a:hover {
+  color: #7dd3fc !important;
+  text-decoration: underline !important;
+}
+
+[data-theme="macos-glass"] table {
+  color: #f8fafc !important;
+  border-collapse: collapse !important;
+}
+
+[data-theme="macos-glass"] table th {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  color: #94a3b8 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="macos-glass"] table td {
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-theme="macos-glass"] code,
+[data-theme="macos-glass"] pre {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
 }
 
 /* Accessibility: Reduced Motion & Reduced Transparency */

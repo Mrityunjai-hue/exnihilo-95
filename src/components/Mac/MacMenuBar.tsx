@@ -435,6 +435,7 @@ export const MacMenuBar: React.FC<MacMenuBarProps> = ({
         >
           <span style={{ opacity: 0.6 }}>Dialect:</span>
           <select
+            className="mac-menubar-select"
             value={dialect}
             onChange={(e) => onDialectChange(e.target.value as Dialect)}
             style={{
@@ -445,7 +446,8 @@ export const MacMenuBar: React.FC<MacMenuBarProps> = ({
               fontWeight: 600,
               cursor: 'pointer',
               outline: 'none',
-              padding: 0,
+              padding: '0 4px',
+              lineHeight: '1.4',
             }}
           >
             <option value="MySQL" style={{ background: '#0f172a', color: '#f8fafc' }}>MySQL</option>

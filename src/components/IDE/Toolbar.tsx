@@ -214,10 +214,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </label>
         <select
           id="dialect-select"
-          className="win95-sunken"
+          className="win95-sunken toolbar-dialect-select"
           value={dialect}
           onChange={(e) => onDialectChange(e.target.value as Dialect)}
-          style={{ padding: '1px 6px', fontSize: '11px', height: '20px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
+          style={{ fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
         >
           <option value="MySQL" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>MySQL</option>
           <option value="PostgreSQL" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>PostgreSQL</option>

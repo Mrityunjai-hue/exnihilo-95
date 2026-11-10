@@ -75,7 +75,8 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
           aria-label="Minimize Window"
           disabled={disabled}
         >
-          _
+          <span className="win95-control-glyph">_</span>
+          <span className="mac-control-glyph">−</span>
         </button>
       )}
 
@@ -89,7 +90,8 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
           aria-label={isMaximized ? 'Restore Window' : 'Maximize Window'}
           disabled={disabled}
         >
-          {isMaximized ? '🗗' : '🗖'}
+          <span className="win95-control-glyph">{isMaximized ? '🗗' : '🗖'}</span>
+          <span className="mac-control-glyph">⤢</span>
         </button>
       )}
 
@@ -103,7 +105,8 @@ export const WindowControls: React.FC<WindowControlsProps> = ({
           aria-label="Close Window"
           disabled={disabled}
         >
-          ✕
+          <span className="win95-control-glyph">✕</span>
+          <span className="mac-control-glyph">✕</span>
         </button>
       )}
     </div>

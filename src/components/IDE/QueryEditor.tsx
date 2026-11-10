@@ -16,6 +16,7 @@ import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { sql, MySQL, PostgreSQL, SQLite, MSSQL } from '@codemirror/lang-sql';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags } from '@lezer/highlight';
+import { useTheme } from '../../hooks/useTheme';
 
 export interface SqlErrorLocation {
   line: number;
@@ -92,6 +93,70 @@ const win95SqlHighlightStyle = HighlightStyle.define([
   },
 ]);
 
+// Modern Electric Neon SQL Syntax Theme (for macOS Modern Glass & Dark Themes)
+const macModernNeonHighlightStyle = HighlightStyle.define([
+  // 1. Strings -> Vibrant Neon Mint / Lime Green
+  {
+    tag: [tags.string, tags.special(tags.string), tags.character],
+    color: '#34d399',
+    fontWeight: '500',
+  },
+
+  // 2. Numbers & Numerical Literals -> Bright Electric Gold / Amber
+  {
+    tag: [tags.number, tags.integer, tags.float],
+    color: '#facc15',
+    fontWeight: 'bold',
+  },
+
+  // 3. Comparison & Logical Operators (=, >, <, >=, <=, !=, LIKE, IN, AND, OR) -> Electric Neon Coral / Pink
+  {
+    tag: [tags.compareOperator, tags.arithmeticOperator, tags.logicOperator],
+    color: '#fb7185',
+    fontWeight: 'bold',
+  },
+
+  // 4. SQL Keywords (SELECT, FROM, WHERE, JOIN, ON, GROUP BY, ORDER BY, etc.) -> Electric Neon Cyan
+  {
+    tag: [tags.keyword, tags.controlKeyword, tags.definitionKeyword],
+    color: '#00f0ff',
+    fontWeight: 'bold',
+  },
+
+  // 5. Functions & Aggregates (AVG, COUNT, SUM, MAX, MIN, COALESCE) -> Electric Neon Violet / Lavender
+  {
+    tag: [tags.function(tags.variableName), tags.standard(tags.variableName)],
+    color: '#c084fc',
+    fontWeight: 'bold',
+  },
+
+  // 6. Data Types (VARCHAR, INT, DATE, NUMERIC) -> Bright Neon Sky Blue
+  {
+    tag: tags.typeName,
+    color: '#38bdf8',
+    fontWeight: 'bold',
+  },
+
+  // 7. Comments -> High-Contrast Clean Slate (Clearly readable on dark glass)
+  {
+    tag: [tags.comment, tags.lineComment, tags.blockComment],
+    color: '#94a3b8',
+    fontStyle: 'italic',
+  },
+
+  // 8. Punctuation, commas, semicolons, brackets -> Light Ice White
+  {
+    tag: [tags.punctuation, tags.bracket],
+    color: '#f1f5f9',
+  },
+
+  // 9. Column Identifiers & Table Names -> Crisp Snow White
+  {
+    tag: [tags.variableName, tags.propertyName],
+    color: '#f8fafc',
+  },
+]);
+
 // Custom StateEffect & StateField for rendering inline SQL error squiggles
 const setErrorDecorationEffect = StateEffect.define<SqlErrorLocation | null>();
 
@@ -137,6 +202,8 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const { activeTheme } = useTheme();
+  const isDark = activeTheme === 'macos-glass' || activeTheme === 'win95-noir';
 
   // Keep latest handlers in refs for keymap and listeners
   const onRunRef = useRef(onRun);
@@ -214,17 +281,19 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
         highlightActiveLine(),
         history(),
         getSqlDialectExtension(dialect, schemaTables),
-        syntaxHighlighting(win95SqlHighlightStyle),
+        syntaxHighlighting(isDark ? macModernNeonHighlightStyle : win95SqlHighlightStyle),
         errorDecorationField,
         customKeymap,
         updateListener,
         EditorView.theme({
           '&': { height: '100%', backgroundColor: 'var(--w95-editor-bg, #ffffff)', color: 'var(--w95-editor-text, #000000)' },
           '.cm-scroller': { overflow: 'auto', fontFamily: 'var(--w95-mono)', fontSize: '13px' },
-          '.cm-content': { caretColor: 'var(--w95-editor-text, #000000)' },
-          '.cm-activeLine': { backgroundColor: 'rgba(0, 0, 128, 0.12)' },
-          '.cm-activeLineGutter': { backgroundColor: 'var(--w95-gray, #d4d0c8)', fontWeight: 'bold' },
-          '.cm-gutters': { backgroundColor: 'var(--w95-gray, #ece9d8)', borderRight: '1px solid var(--w95-dark-gray, #999)', color: 'var(--w95-dark-gray, #555)' },
+          '.cm-content': { caretColor: isDark ? '#00f0ff' : 'var(--w95-editor-text, #000000)' },
+          '.cm-cursor': { borderLeftColor: isDark ? '#00f0ff' : 'var(--w95-editor-text, #000000)', borderLeftWidth: '2px' },
+          '.cm-activeLine': { backgroundColor: isDark ? 'rgba(0, 240, 255, 0.08)' : 'rgba(0, 0, 128, 0.12)' },
+          '.cm-activeLineGutter': { backgroundColor: isDark ? 'rgba(0, 240, 255, 0.18)' : 'var(--w95-gray, #d4d0c8)', color: isDark ? '#00f0ff' : null, fontWeight: 'bold' },
+          '.cm-gutters': { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.75)' : 'var(--w95-gray, #ece9d8)', borderRight: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid var(--w95-dark-gray, #999)', color: isDark ? '#64748b' : 'var(--w95-dark-gray, #555)' },
+          '.cm-selectionBackground': { backgroundColor: isDark ? 'rgba(0, 122, 255, 0.4)' : 'rgba(0, 0, 128, 0.25)' },
           '.cm-sql-error-squiggle': { textDecoration: 'underline wavy #d00000 2px', textDecorationSkipInk: 'none', backgroundColor: 'rgba(255, 0, 0, 0.12)' },
         }),
       ],
@@ -241,7 +310,7 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
       view.destroy();
       viewRef.current = null;
     };
-  }, [dialect, schemaTables]);
+  }, [dialect, schemaTables, isDark]);
 
   // Sync inline error squiggles on result/error changes
   useEffect(() => {
@@ -271,7 +340,7 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
         width: '100%',
         height: '100%',
         overflow: 'hidden',
-        background: '#ffffff',
+        background: 'var(--w95-editor-bg, #ffffff)',
       }}
     />
   );

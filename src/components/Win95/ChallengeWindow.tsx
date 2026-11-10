@@ -14,7 +14,6 @@ import { evaluateChallengeSubmission, EvaluationResult } from '../../utils/chall
 import { WindowControls } from './WindowControls';
 import { QueryEditor } from '../IDE/QueryEditor';
 import { Dialect } from '../../engine/parser';
-import { MarvelCelebrationBanner, MarvelCelebrationTrigger } from './MarvelCelebrationBanner';
 
 interface ChallengeWindowProps {
   isOpen:        boolean;
@@ -43,12 +42,6 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
-
-  // Marvel Celebration Trigger State
-  const [celebrationTrigger, setCelebrationTrigger] = useState<MarvelCelebrationTrigger>({
-    type: 'NONE',
-    timestamp: 0,
-  });
 
   // Filter States
   const [diffFilter, setDiffFilter] = useState<string>('All');
@@ -111,15 +104,8 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
             localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSolved));
           }
         }
-        setCelebrationTrigger({
-          type: 'SUCCESS',
-          timestamp: Date.now(),
-        });
       } else {
-        setCelebrationTrigger({
-          type: 'FAILURE',
-          timestamp: Date.now(),
-        });
+        // Not solved
       }
     } catch (err: any) {
       setEvaluation({
@@ -128,10 +114,6 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
         status: 'SYNTAX_ERROR',
         errorMessage: err.message || String(err),
         expectedOutput: selectedChallenge.expectedOutput,
-      });
-      setCelebrationTrigger({
-        type: 'FAILURE',
-        timestamp: Date.now(),
       });
     } finally {
       setIsEvaluating(false);
@@ -621,8 +603,6 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
               position: 'relative',
             }}
           >
-            <MarvelCelebrationBanner trigger={celebrationTrigger} />
-
             {!evaluation ? (
               <div style={{ color: '#808080', textAlign: 'center', marginTop: '40px' }}>
                 Click <strong>🚀 Submit Solution</strong> to evaluate your query against test cases.

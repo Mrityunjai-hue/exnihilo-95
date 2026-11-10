@@ -116,7 +116,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
         {/* Tab Content Panel */}
         <div
           className="win95-inset"
-          style={{ padding: '16px', background: '#c0c0c0', minHeight: '180px' }}
+          style={{ padding: '16px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', minHeight: '180px' }}
         >
           {activeTab === 'general' && (
             <div>
@@ -283,17 +283,17 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
           )}
 
           {activeTab === 'about' && (
-            <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <div style={{ textAlign: 'center', padding: '8px 0', color: 'var(--w95-sunken-text, #000000)' }}>
               <div style={{ fontSize: '32px', marginBottom: '6px' }}>🗄️</div>
               <strong style={{ fontSize: '13px' }}>ExNihilo for Windows 95</strong>
-              <div style={{ fontSize: '11px', color: '#333', margin: '4px 0' }}>Version 1.0 (Build 950)</div>
-              <div style={{ fontSize: '11px', color: '#000080', marginTop: '10px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--w95-dark-gray, #64748b)', margin: '4px 0' }}>Version 1.0 (Build 950)</div>
+              <div style={{ fontSize: '11px', color: 'var(--w95-title-active-bg, #000080)', marginTop: '10px' }}>
                 <strong>Built by:</strong>{' '}
                 <a
                   href="https://github.com/Mrityunjai-hue"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: '#0000ee', fontWeight: 'bold' }}
+                  style={{ color: 'var(--w95-title-active-bg, #0000ee)', fontWeight: 'bold' }}
                 >
                   Mrityunjai
                 </a>
@@ -304,13 +304,13 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                   href="https://n8n-ds-community.netlify.app/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: '#0000ee', fontWeight: 'bold' }}
+                  style={{ color: 'var(--w95-title-active-bg, #0000ee)', fontWeight: 'bold' }}
                 >
                   N8N Data Science Community
                 </a>{' '}
                 using AI
               </div>
-              <div style={{ fontSize: '10px', color: '#666', marginTop: '12px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--w95-dark-gray, #64748b)', marginTop: '12px' }}>
                 Zero-config in-browser SQL IDE with automatic schema inference and synthetic data generation.
               </div>
             </div>
