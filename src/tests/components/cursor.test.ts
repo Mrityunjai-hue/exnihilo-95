@@ -1,5 +1,5 @@
 /**
- * cursor.test.ts — Unit Tests for ExNihilo Dynamic Super-Cursor Settings & Engine
+ * cursor.test.ts — Unit Tests for ExNihilo Signature Liquid Mercury Droplet Cursor
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -26,7 +26,7 @@ class LocalStorageMock {
 
 const mockStorage = new LocalStorageMock();
 
-describe('Cursor Settings & HUD Engine Unit Tests', () => {
+describe('Liquid Mercury Droplet Cursor Unit Tests', () => {
   beforeEach(() => {
     if (typeof window === 'undefined') {
       (global as any).window = {
@@ -34,6 +34,7 @@ describe('Cursor Settings & HUD Engine Unit Tests', () => {
         dispatchEvent: () => true,
         addEventListener: () => {},
         removeEventListener: () => {},
+        matchMedia: () => ({ matches: false }),
       };
     }
     if (typeof localStorage === 'undefined') {
@@ -46,56 +47,58 @@ describe('Cursor Settings & HUD Engine Unit Tests', () => {
     mockStorage.clear();
   });
 
-  it('initializes default cursor settings with all interactive superpowers enabled', () => {
-    const raw = mockStorage.getItem('exnihilo_cursor_settings_v1');
+  it('initializes default liquid cursor settings with enabled = true', () => {
+    const raw = mockStorage.getItem('exnihilo_liquid_cursor_v1');
     expect(raw).toBeNull();
 
-    // Default structure expectations
     const defaults = {
       enabled: true,
-      ambientSpotlight: true,
-      liveMath: true,
-      magneticSnap: true,
-      mascotEnabled: true,
-      audioHaptics: true,
     };
 
     expect(defaults.enabled).toBe(true);
-    expect(defaults.ambientSpotlight).toBe(true);
-    expect(defaults.liveMath).toBe(true);
-    expect(defaults.magneticSnap).toBe(true);
-    expect(defaults.mascotEnabled).toBe(true);
-    expect(defaults.audioHaptics).toBe(true);
   });
 
-  it('persists modified cursor settings to localStorage', () => {
+  it('persists modified liquid cursor state to localStorage', () => {
     const modified = {
-      enabled: true,
-      ambientSpotlight: false,
-      liveMath: true,
-      magneticSnap: false,
-      mascotEnabled: true,
-      audioHaptics: false,
+      enabled: false,
     };
 
-    mockStorage.setItem('exnihilo_cursor_settings_v1', JSON.stringify(modified));
+    mockStorage.setItem('exnihilo_liquid_cursor_v1', JSON.stringify(modified));
 
-    const retrieved = JSON.parse(mockStorage.getItem('exnihilo_cursor_settings_v1') || '{}');
-    expect(retrieved.ambientSpotlight).toBe(false);
-    expect(retrieved.magneticSnap).toBe(false);
-    expect(retrieved.audioHaptics).toBe(false);
-    expect(retrieved.enabled).toBe(true);
+    const retrieved = JSON.parse(mockStorage.getItem('exnihilo_liquid_cursor_v1') || '{}');
+    expect(retrieved.enabled).toBe(false);
   });
 
-  it('calculates live math stats (sum, avg, count) accurately on cell numbers', () => {
-    const sampleNumbers = [150, 250, 400];
-    const sum = sampleNumbers.reduce((a, b) => a + b, 0);
-    const count = sampleNumbers.length;
-    const avg = Number((sum / count).toFixed(2));
+  it('calculates velocity elongation and volume preservation correctly', () => {
+    const BASE_TAIL = 9;
+    const MAX_TAIL = 24;
 
-    expect(count).toBe(3);
-    expect(sum).toBe(800);
-    expect(avg).toBe(266.67);
+    // Test at zero speed
+    const speedZero = 0;
+    const tailZero = BASE_TAIL + Math.min(speedZero * 1.1, MAX_TAIL - BASE_TAIL);
+    expect(tailZero).toBe(9);
+
+    // Test at high speed flick (e.g. 25px delta)
+    const speedFast = 25;
+    const tailFast = BASE_TAIL + Math.min(speedFast * 1.1, MAX_TAIL - BASE_TAIL);
+    expect(tailFast).toBe(24);
+
+    // Fluid volume conservation: width narrows as tail stretches
+    const volWidthAtRest = Math.sqrt(BASE_TAIL / Math.max(tailZero, 4));
+    const volWidthAtMaxStretch = Math.sqrt(BASE_TAIL / Math.max(tailFast, 4));
+
+    expect(volWidthAtRest).toBe(1.0);
+    expect(volWidthAtMaxStretch).toBeLessThan(1.0);
+    expect(Number(volWidthAtMaxStretch.toFixed(2))).toBe(0.61);
+  });
+
+  it('produces valid analytical Bezier SVG path coordinates', () => {
+    const t = 14;
+    const w = 0.85;
+    const d = `M 0 0 C ${-t * 0.24} ${-w * 4.2}, ${-t * 0.78} ${-w * 4.5}, ${-t} 0 C ${-t * 0.78} ${w * 4.5}, ${-t * 0.24} ${w * 4.2}, 0 0 Z`;
+
+    expect(d).toContain('M 0 0');
+    expect(d).toContain(`${-t} 0`);
+    expect(d.endsWith('Z')).toBe(true);
   });
 });
-

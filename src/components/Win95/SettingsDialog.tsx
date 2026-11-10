@@ -260,69 +260,23 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                 </fieldset>
               )}
 
-              {/* Dynamic Themed Super-Cursor Settings */}
+              {/* Signature Liquid Mercury Droplet Cursor */}
               <fieldset style={{ border: '1px solid var(--w95-dark-gray, #808080)', padding: '10px', marginTop: '12px' }}>
                 <legend style={{ padding: '0 4px', fontSize: '11px', fontWeight: 'bold' }}>
-                  🖱️ Dynamic Themed Super-Cursor
+                  💧 Liquid Mercury Droplet Cursor
                 </legend>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', cursor: 'pointer', userSelect: 'none' }}>
                     <input
                       type="checkbox"
                       checked={cursorSettings.enabled}
                       onChange={(e) => updateCursorSetting('enabled', e.target.checked)}
                     />
-                    <strong>Enable Themed Custom Cursor HUD</strong>
+                    <strong>Enable Liquid Mercury Droplet Cursor</strong>
                   </label>
-
-                  {cursorSettings.enabled && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', paddingLeft: '20px', marginTop: '4px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', cursor: 'pointer', userSelect: 'none' }}>
-                        <input
-                          type="checkbox"
-                          checked={cursorSettings.ambientSpotlight}
-                          onChange={(e) => updateCursorSetting('ambientSpotlight', e.target.checked)}
-                        />
-                        <span>💡 Ambient Glass Torch</span>
-                      </label>
-
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', cursor: 'pointer', userSelect: 'none' }}>
-                        <input
-                          type="checkbox"
-                          checked={cursorSettings.liveMath}
-                          onChange={(e) => updateCursorSetting('liveMath', e.target.checked)}
-                        />
-                        <span>⚡ Live Math on Cell Drag</span>
-                      </label>
-
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', cursor: 'pointer', userSelect: 'none' }}>
-                        <input
-                          type="checkbox"
-                          checked={cursorSettings.magneticSnap}
-                          onChange={(e) => updateCursorSetting('magneticSnap', e.target.checked)}
-                        />
-                        <span>🧲 Magnetic Button Pull</span>
-                      </label>
-
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', cursor: 'pointer', userSelect: 'none' }}>
-                        <input
-                          type="checkbox"
-                          checked={cursorSettings.mascotEnabled}
-                          onChange={(e) => updateCursorSetting('mascotEnabled', e.target.checked)}
-                        />
-                        <span>🧙‍♂️ Theme Mascot (Orb/Wizard)</span>
-                      </label>
-
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', cursor: 'pointer', userSelect: 'none' }}>
-                        <input
-                          type="checkbox"
-                          checked={cursorSettings.audioHaptics}
-                          onChange={(e) => updateCursorSetting('audioHaptics', e.target.checked)}
-                        />
-                        <span>🔊 Haptic Audio Clicks</span>
-                      </label>
-                    </div>
-                  )}
+                  <div style={{ fontSize: '10px', color: 'var(--w95-text-muted, #64748b)', paddingLeft: '24px' }}>
+                    Organic physics-driven fluid glass cursor with directional velocity stretch, elastic liquid rebound, and sub-pixel precision.
+                  </div>
                 </div>
               </fieldset>
             </div>

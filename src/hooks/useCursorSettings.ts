@@ -1,28 +1,17 @@
 /**
- * useCursorSettings.ts — Manages settings for the ExNihilo Dynamic Super-Cursor
- * Persists user preferences to localStorage with zero latency.
+ * useCursorSettings.ts — Settings for the ExNihilo Signature Liquid Cursor
  */
 
 import { useState, useEffect, useCallback } from 'react';
 
 export interface CursorSettings {
-  enabled: boolean;          // Master toggle for custom cursor
-  ambientSpotlight: boolean; // Soft glow torch effect on dark glass
-  liveMath: boolean;         // Live Sum/Avg on table cell drag
-  magneticSnap: boolean;     // Proximity pull to primary buttons
-  mascotEnabled: boolean;    // Interactive theme companion (Orb/Wizard)
-  audioHaptics: boolean;     // Subtle micro-audio on clicks/snaps
+  enabled: boolean;
 }
 
-const STORAGE_KEY = 'exnihilo_cursor_settings_v1';
+const STORAGE_KEY = 'exnihilo_liquid_cursor_v1';
 
 const DEFAULT_SETTINGS: CursorSettings = {
   enabled: true,
-  ambientSpotlight: true,
-  liveMath: true,
-  magneticSnap: true,
-  mascotEnabled: true,
-  audioHaptics: true,
 };
 
 export function useCursorSettings() {
@@ -34,7 +23,7 @@ export function useCursorSettings() {
         return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
       }
     } catch {
-      // Fallback on storage errors
+      // Storage fallback
     }
     return DEFAULT_SETTINGS;
   });
@@ -52,16 +41,6 @@ export function useCursorSettings() {
     });
   }, []);
 
-  const resetSettings = useCallback(() => {
-    setSettings(DEFAULT_SETTINGS);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SETTINGS));
-      window.dispatchEvent(new CustomEvent('exnihilo-cursor-settings-change', { detail: DEFAULT_SETTINGS }));
-    } catch {
-      // Storage fail-safe
-    }
-  }, []);
-
   useEffect(() => {
     const handleSync = (e: Event) => {
       const custom = e as CustomEvent<CursorSettings>;
@@ -76,7 +55,5 @@ export function useCursorSettings() {
   return {
     cursorSettings: settings,
     updateCursorSetting: updateSetting,
-    resetCursorSettings: resetSettings,
   };
 }
-

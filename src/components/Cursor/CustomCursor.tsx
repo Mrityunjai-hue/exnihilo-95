@@ -1,116 +1,73 @@
 /**
- * CustomCursor.tsx — ExNihilo Dynamic Themed Super-Cursor Component
- * Provides hardware-accelerated 60-120 FPS cursor tracking, theme-adaptive vectors,
- * live query execution HUD, live math calculations, ambient spotlight, and magnetic snapping.
+ * CustomCursor.tsx — ExNihilo Signature Liquid Mercury Droplet Cursor
+ *
+ * An organic, physics-driven fluid glass cursor modeled as a weightless droplet
+ * of liquid mercury encased in optical glass.
+ * Features:
+ * - Sub-pixel pointing precision at (0, 0) apex tip with 0ms hardware latency.
+ * - Directional velocity elongation that streaks along the movement vector.
+ * - Damped harmonic oscillation (elastic liquid rebound) upon sudden stops.
+ * - Elastic surface squish on mouse click.
+ * - Fluid glass I-beam thread inside SQL / text editors.
+ * - Strict zero-interference: NO magnetic snaps, NO tooltips, NO audio, NO live math.
  */
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCursorSettings } from '../../hooks/useCursorSettings';
-import { playMacHapticClick, playWin95Click, playSuccessChime } from '../../utils/cursorAudio';
 
 interface CustomCursorProps {
-  activeTheme: string;
+  activeTheme?: string;
   isLoading?: boolean;
   hasError?: boolean;
   onShakeDismiss?: () => void;
 }
 
-interface LiveMathState {
-  count: number;
-  sum: number;
-  avg: number;
-  min: number;
-  max: number;
-}
-
-export const CustomCursor: React.FC<CustomCursorProps> = ({
-  activeTheme,
-  isLoading = false,
-  hasError = false,
-  onShakeDismiss,
-}) => {
+export const CustomCursor: React.FC<CustomCursorProps> = () => {
   const { cursorSettings } = useCursorSettings();
-  const isMac = activeTheme === 'macos-glass';
-  const isNoir = activeTheme === 'win95-noir';
 
-  // DOM Refs for 60fps direct transform updates
+  // DOM Refs for direct 60–120 FPS RAF updates without React re-rendering
   const pointerRef = useRef<HTMLDivElement>(null);
-  const spotlightRef = useRef<HTMLDivElement>(null);
+  const dropletGroupRef = useRef<HTMLDivElement>(null);
+  const dropletPathRef = useRef<SVGPathElement>(null);
+  const specularRef = useRef<SVGEllipseElement>(null);
 
-  // Visibility state
+  // High-level state
   const [isVisible, setIsVisible] = useState(false);
   const [cursorType, setCursorType] = useState<'default' | 'pointer' | 'text'>('default');
-  const [hoverLabel, setHoverLabel] = useState<string | null>(null);
+  const [isPressed, setIsPressed] = useState(false);
+  const isPressedRef = useRef(false);
 
-  // Live Math state (drag across numeric cells)
-  const [liveMath, setLiveMath] = useState<LiveMathState | null>(null);
-  const isSelectingRef = useRef(false);
-  const selectedValuesRef = useRef<number[]>([]);
-
-  // Live Timer state
-  const [elapsedMs, setElapsedMs] = useState(0);
-  const timerStartRef = useRef<number | null>(null);
-
-  // Shockwave & Smoke particle effects
-  const [shockwaveKey, setShockwaveKey] = useState<number | null>(null);
-  const [smokeKey, setSmokeKey] = useState<number | null>(null);
-  const prevLoadingRef = useRef(isLoading);
-
-  // Quick-Shake gesture tracking
-  const shakeHistoryRef = useRef<Array<{ x: number; time: number }>>([]);
-
-  // Handle Query Loading Timer & Completion Shockwaves
   useEffect(() => {
-    let animId: number;
-    if (isLoading) {
-      if (!timerStartRef.current) {
-        timerStartRef.current = Date.now();
-      }
-      const updateTimer = () => {
-        if (timerStartRef.current) {
-          setElapsedMs(Date.now() - timerStartRef.current);
-          animId = requestAnimationFrame(updateTimer);
-        }
-      };
-      animId = requestAnimationFrame(updateTimer);
-    } else {
-      if (prevLoadingRef.current && !isLoading) {
-        // Query just completed
-        if (hasError) {
-          setSmokeKey(Date.now());
-        } else {
-          setShockwaveKey(Date.now());
-          if (cursorSettings.audioHaptics) {
-            playSuccessChime();
-          }
-        }
-      }
-      timerStartRef.current = null;
-      setElapsedMs(0);
-    }
-    prevLoadingRef.current = isLoading;
-    return () => cancelAnimationFrame(animId);
-  }, [isLoading, hasError, cursorSettings.audioHaptics]);
+    isPressedRef.current = isPressed;
+  }, [isPressed]);
 
-  // Main Mouse Event Tracking with Hardware Acceleration
   useEffect(() => {
     if (!cursorSettings.enabled) {
       document.body.classList.remove('exnihilo-custom-cursor-active');
       return;
     }
 
-    // Touch device bypass
+    // Bypass touchscreens
     if (window.matchMedia('(pointer: coarse)').matches) {
       return;
     }
 
     document.body.classList.add('exnihilo-custom-cursor-active');
 
-    let currentX = -100;
-    let currentY = -100;
     let targetX = -100;
     let targetY = -100;
-    let isSnapping = false;
+    let prevX = -1;
+    let prevY = -1;
+
+    // Physics parameters
+    const REST_ANGLE = -Math.PI * 0.75; // -135deg (points up-left towards 10:30 o'clock)
+    const BASE_TAIL = 9;
+    const MAX_TAIL = 24;
+
+    let currentAngle = REST_ANGLE;
+    let currentTail = BASE_TAIL;
+    let tailVelocity = 0;
+    let smoothSpeed = 0;
 
     const handlePointerMove = (e: PointerEvent) => {
       targetX = e.clientX;
@@ -118,77 +75,11 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({
 
       if (!isVisible) setIsVisible(true);
 
-      // 1. Magnetic Proximity Pull (gently scoped to primary action targets)
-      if (cursorSettings.magneticSnap) {
-        const targetBtn = (e.target as HTMLElement)?.closest(
-          '#btn-run, .mac-dock-icon-btn'
-        ) as HTMLElement | null;
-
-        if (targetBtn) {
-          const rect = targetBtn.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
-          const dist = Math.hypot(centerX - e.clientX, centerY - e.clientY);
-
-          if (dist < 26) {
-            // Smooth gravitational attraction without visual collision or jarring jump
-            targetX = e.clientX + (centerX - e.clientX) * 0.42;
-            targetY = e.clientY + (centerY - e.clientY) * 0.42;
-            isSnapping = true;
-          } else {
-            isSnapping = false;
-          }
-        } else {
-          isSnapping = false;
-        }
-      }
-
-      // 2. Quick-Shake Gesture Detection
-      const now = Date.now();
-      shakeHistoryRef.current.push({ x: e.clientX, time: now });
-      shakeHistoryRef.current = shakeHistoryRef.current.filter((p) => now - p.time < 650);
-
-      if (shakeHistoryRef.current.length >= 6) {
-        let reversals = 0;
-        let lastDir = 0;
-        for (let i = 1; i < shakeHistoryRef.current.length; i++) {
-          const dx = shakeHistoryRef.current[i].x - shakeHistoryRef.current[i - 1].x;
-          if (Math.abs(dx) > 12) {
-            const dir = Math.sign(dx);
-            if (lastDir !== 0 && dir !== lastDir) {
-              reversals++;
-            }
-            lastDir = dir;
-          }
-        }
-        if (reversals >= 4) {
-          shakeHistoryRef.current = [];
-          if (onShakeDismiss) {
-            onShakeDismiss();
-          }
-        }
-      }
-
-      // 3. Inspect Hover Target Context
+      // Inspect hover target context cleanly without any tooltips or snapping
       const el = e.target as HTMLElement | null;
       if (el) {
-        const cursorData = el.closest('[data-cursor]')?.getAttribute('data-cursor');
-        const titleData = el.closest('[title]')?.getAttribute('title');
-        const ariaLabel = el.closest('[aria-label]')?.getAttribute('aria-label');
-
-        if (cursorData) {
-          setHoverLabel(cursorData);
-        } else if (titleData && titleData.length < 35 && !titleData.includes('http')) {
-          setHoverLabel(titleData);
-        } else if (ariaLabel && ariaLabel.length < 35) {
-          setHoverLabel(ariaLabel);
-        } else {
-          setHoverLabel(null);
-        }
-
-        // Determine pointer glyph
-        const isClickable = Boolean(el.closest('button, a, select, [role="button"], .win95-tab, .mac-dock-icon-btn, .win95-desktop-icon'));
         const isTextEditable = Boolean(el.closest('input, textarea, .cm-content, [contenteditable="true"]'));
+        const isClickable = Boolean(el.closest('button, a, select, [role="button"], .win95-tab, .mac-dock-icon-btn, .win95-desktop-icon, [data-clickable="true"]'));
 
         if (isTextEditable) {
           setCursorType('text');
@@ -197,80 +88,95 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({
         } else {
           setCursorType('default');
         }
-
-        // 4. Live Math Collection on Selection
-        if (isSelectingRef.current) {
-          const cell = el.closest('.win95-grid td, td');
-          if (cell) {
-            const text = cell.textContent?.replace(/[$,€£%]/g, '').trim() || '';
-            const num = parseFloat(text);
-            if (!isNaN(num)) {
-              if (!selectedValuesRef.current.includes(num)) {
-                selectedValuesRef.current.push(num);
-                const sum = selectedValuesRef.current.reduce((a, b) => a + b, 0);
-                const count = selectedValuesRef.current.length;
-                const avg = Number((sum / count).toFixed(2));
-                const min = Math.min(...selectedValuesRef.current);
-                const max = Math.max(...selectedValuesRef.current);
-                setLiveMath({ count, sum, avg, min, max });
-              }
-            }
-          }
-        }
       }
     };
 
-    const handlePointerDown = (e: PointerEvent) => {
-      isSelectingRef.current = true;
-      selectedValuesRef.current = [];
-      setLiveMath(null);
-
-      // Audio strictly limited to primary action: clicking Run Query
-      const isRunBtn = Boolean((e.target as HTMLElement)?.closest('#btn-run'));
-      if (cursorSettings.audioHaptics && isRunBtn) {
-        if (isMac) {
-          playMacHapticClick(0.12);
-        } else {
-          playWin95Click(0.1);
-        }
-      }
+    const handlePointerDown = () => {
+      setIsPressed(true);
     };
 
     const handlePointerUp = () => {
-      isSelectingRef.current = false;
-      // Keep live math visible for 2.5 seconds if values were collected
-      if (selectedValuesRef.current.length > 1) {
-        setTimeout(() => setLiveMath(null), 2500);
-      } else {
-        setLiveMath(null);
-      }
+      setIsPressed(false);
     };
 
     const handleMouseLeave = () => {
       setIsVisible(false);
-      setLiveMath(null);
-      setHoverLabel(null);
     };
 
     const handleMouseEnter = () => {
       setIsVisible(true);
     };
 
-    // 60-120 FPS RAF Smooth Positioning Loop
+    // 60–120 FPS Physics & Geometry Simulation Loop
     let rafId: number;
-    const updatePosition = () => {
-      currentX += (targetX - currentX) * 0.9;
-      currentY += (targetY - currentY) * 0.9;
+    const updatePhysics = () => {
+      if (prevX === -1) {
+        prevX = targetX;
+        prevY = targetY;
+      }
 
+      const dx = targetX - prevX;
+      const dy = targetY - prevY;
+      prevX = targetX;
+      prevY = targetY;
+
+      const instantSpeed = Math.hypot(dx, dy);
+      smoothSpeed += (instantSpeed - smoothSpeed) * 0.38;
+
+      // 1. Angle computation: follow motion vector when moving, relax to resting pointer when idle
+      let targetAngle = REST_ANGLE;
+      if (smoothSpeed > 1.2) {
+        // Point apex forward along movement direction
+        targetAngle = Math.atan2(dy, dx);
+      }
+
+      // Shortest circular angular difference
+      let angleDiff = targetAngle - currentAngle;
+      while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+      while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+      currentAngle += angleDiff * 0.26;
+
+      // 2. Spring dynamics for tail elongation (damped harmonic oscillator)
+      const targetTail = BASE_TAIL + Math.min(smoothSpeed * 1.1, MAX_TAIL - BASE_TAIL);
+      const springForce = (targetTail - currentTail) * 0.24;
+      tailVelocity = (tailVelocity + springForce) * 0.72; // 0.72 damping produces 2 cycles of liquid rebound
+      currentTail += tailVelocity;
+
+      // 3. Fluid volume conservation: droplet slightly narrows as it stretches
+      const volWidth = Math.max(0.68, Math.min(1.22, Math.sqrt(BASE_TAIL / Math.max(currentTail, 4))));
+
+      // 4. Direct DOM Updates (Zero input latency)
       if (pointerRef.current) {
-        pointerRef.current.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+        pointerRef.current.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
       }
-      if (spotlightRef.current && cursorSettings.ambientSpotlight) {
-        spotlightRef.current.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+
+      if (dropletGroupRef.current) {
+        const deg = (currentAngle * 180) / Math.PI;
+        const squish = isPressedRef.current ? 'scale(0.72, 1.34)' : 'scale(1, 1)';
+        dropletGroupRef.current.style.transform = `rotate(${deg}deg) ${squish}`;
       }
-      rafId = requestAnimationFrame(updatePosition);
+
+      if (dropletPathRef.current) {
+        const t = currentTail;
+        const w = volWidth;
+        // Analytical parametric Bezier teardrop with razor apex at (0, 0) and dome tail at (-t, 0)
+        const d = `M 0 0 C ${-t * 0.24} ${-w * 4.2}, ${-t * 0.78} ${-w * 4.5}, ${-t} 0 C ${-t * 0.78} ${w * 4.5}, ${-t * 0.24} ${w * 4.2}, 0 0 Z`;
+        dropletPathRef.current.setAttribute('d', d);
+      }
+
+      if (specularRef.current) {
+        const t = currentTail;
+        const w = volWidth;
+        specularRef.current.setAttribute('cx', String(-t * 0.28));
+        specularRef.current.setAttribute('cy', String(-w * 1.3));
+        specularRef.current.setAttribute('rx', String(Math.max(1.2, t * 0.1)));
+        specularRef.current.setAttribute('ry', String(Math.max(0.8, w * 1.0)));
+      }
+
+      rafId = requestAnimationFrame(updatePhysics);
     };
-    rafId = requestAnimationFrame(updatePosition);
+
+    rafId = requestAnimationFrame(updatePhysics);
 
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('pointerdown', handlePointerDown, { passive: true });
@@ -287,193 +193,100 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
     };
-  }, [cursorSettings.enabled, cursorSettings.ambientSpotlight, cursorSettings.magneticSnap, cursorSettings.audioHaptics, isVisible, isMac, onShakeDismiss]);
+  }, [cursorSettings.enabled, isVisible]);
 
   if (!cursorSettings.enabled || !isVisible) {
     return null;
   }
 
-  const spotlightThemeClass = isMac ? 'macos' : isNoir ? 'noir' : 'retro';
-  const badgeThemeClass = isMac ? 'macos' : 'retro';
-
   return (
     <div className="exnihilo-cursor-root" aria-hidden="true">
-      {/* Ambient Glass Spotlight Torch */}
-      {cursorSettings.ambientSpotlight && (
-        <div
-          ref={spotlightRef}
-          className={`exnihilo-cursor-spotlight ${spotlightThemeClass}`}
-        />
-      )}
-
-      {/* Main Cursor Element */}
       <div
         ref={pointerRef}
-        className={`exnihilo-cursor-pointer ${cursorType === 'pointer' ? 'is-hovering' : ''} ${isMac ? 'macos' : ''}`}
+        className={`exnihilo-cursor-pointer ${cursorType === 'pointer' ? 'is-hovering' : ''} ${isPressed ? 'is-pressed' : ''}`}
       >
-        {/* 1. Loading State: Rainbow Beachball or Retro Sand Hourglass */}
-        {isLoading ? (
-          isMac ? (
-            // macOS 6-Color Spinning Beachball
-            <svg
-              className="exnihilo-cursor-beachball"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))' }}
-            >
-              <circle cx="12" cy="12" r="11" fill="#111" stroke="#fff" strokeWidth="1" />
-              {/* 6 Rotating Color Wedges */}
-              <path d="M12 12 L12 1 A11 11 0 0 1 21.5 6.5 Z" fill="#3b82f6" />
-              <path d="M12 12 L21.5 6.5 A11 11 0 0 1 21.5 17.5 Z" fill="#ec4899" />
-              <path d="M12 12 L21.5 17.5 A11 11 0 0 1 12 23 Z" fill="#eab308" />
-              <path d="M12 12 L12 23 A11 11 0 0 1 2.5 17.5 Z" fill="#06b6d4" />
-              <path d="M12 12 L2.5 17.5 A11 11 0 0 1 2.5 6.5 Z" fill="#22c55e" />
-              <path d="M12 12 L2.5 6.5 A11 11 0 0 1 12 1 Z" fill="#ef4444" />
-              <circle cx="12" cy="12" r="3.5" fill="#ffffff" opacity="0.85" />
-            </svg>
-          ) : (
-            // Windows 95 Animated Pixel Hourglass
-            <svg
-              className="exnihilo-cursor-hourglass"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              style={{ filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.6))' }}
-            >
-              <rect x="5" y="2" width="14" height="2" fill="#000" />
-              <rect x="5" y="20" width="14" height="2" fill="#000" />
-              <polygon points="6,4 18,4 13,12 18,20 6,20 11,12" fill={isNoir ? '#38bdf8' : '#ffffff'} stroke="#000" strokeWidth="1" />
-              <polygon points="8,5 16,5 12,11" fill={isNoir ? '#0ea5e9' : '#000080'} />
-              <circle cx="12" cy="17" r="2.5" fill={isNoir ? '#0ea5e9' : '#000080'} />
-            </svg>
-          )
-        ) : cursorType === 'text' ? (
-          // Precision SQL I-Beam
-          <svg width="18" height="22" viewBox="0 0 18 22" style={{ filter: isMac ? 'drop-shadow(0 2px 6px rgba(56,189,248,0.5))' : 'none' }}>
-            <line x1="5" y1="2" x2="13" y2="2" stroke={isMac ? '#38bdf8' : '#000'} strokeWidth="2" strokeLinecap="round" />
-            <line x1="9" y1="2" x2="9" y2="20" stroke={isMac ? '#f8fafc' : '#000'} strokeWidth="2" />
-            <line x1="5" y1="20" x2="13" y2="20" stroke={isMac ? '#38bdf8' : '#000'} strokeWidth="2" strokeLinecap="round" />
+        {cursorType === 'text' ? (
+          /* Fluid Glass Thread (SQL / Text Editor I-Beam) */
+          <svg
+            className="exnihilo-liquid-thread"
+            width="20"
+            height="24"
+            viewBox="-10 -12 20 24"
+            style={{ overflow: 'visible' }}
+          >
+            <defs>
+              <linearGradient id="liquidThreadGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#38bdf8" />
+                <stop offset="35%" stopColor="#ffffff" />
+                <stop offset="65%" stopColor="#ffffff" />
+                <stop offset="100%" stopColor="#38bdf8" />
+              </linearGradient>
+            </defs>
+            {/* Top Serif */}
+            <line x1="-3.5" y1="-9" x2="3.5" y2="-9" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" />
+            {/* Liquid Vertical Stem */}
+            <line x1="0" y1="-9" x2="0" y2="9" stroke="url(#liquidThreadGrad)" strokeWidth="2" strokeLinecap="round" />
+            {/* Bottom Serif */}
+            <line x1="-3.5" y1="9" x2="3.5" y2="9" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" />
+            {/* Central Precision Optical Bead */}
+            <circle cx="0" cy="0" r="1.6" fill="#ffffff" stroke="#0284c7" strokeWidth="0.7" />
           </svg>
-        ) : cursorType === 'pointer' ? (
-          // Pointing Hand (macOS or Win95)
-          isMac ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" style={{ filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.35))' }}>
-              <path
-                d="M10 2a2 2 0 0 0-2 2v7h-1a2 2 0 0 0-2 2v3a7 7 0 0 0 7 7h3a7 7 0 0 0 7-7v-5a2 2 0 0 0-2-2h-1v-2a2 2 0 0 0-2-2h-1V6a2 2 0 0 0-2-2h-1V4a2 2 0 0 0-2-2z"
-                fill="#ffffff"
-                stroke="#1e293b"
-                strokeWidth="1.5"
-              />
-            </svg>
-          ) : (
-            <svg width="22" height="22" viewBox="0 0 24 24" style={{ filter: 'drop-shadow(2px 2px 0 #000)' }}>
-              <path
-                d="M9 2v8H7V9H5v5a7 7 0 0 0 7 7h3a7 7 0 0 0 7-7v-5h-2v2h-2V7h-2v4h-2V4h-2v6h-1V2H9z"
-                fill={isNoir ? '#38bdf8' : '#ffffff'}
-                stroke="#000"
-                strokeWidth="1"
-              />
-            </svg>
-          )
         ) : (
-          // Default Normal Arrow Pointer
-          isMac ? (
-            // Native macOS Retina Vector Arrow
+          /* The Liquid Mercury Droplet (Stationary Bead & Velocity Stretch) */
+          <div className="exnihilo-liquid-droplet-wrapper" ref={dropletGroupRef}>
             <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              style={{ filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.45))' }}
+              className="exnihilo-liquid-surface"
+              width="60"
+              height="60"
+              viewBox="-35 -30 60 60"
+              style={{ overflow: 'visible', pointerEvents: 'none' }}
             >
+              <defs>
+                {/* Liquid Silver Mercury Gradient */}
+                <linearGradient id="mercuryCore" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ffffff" />
+                  <stop offset="30%" stopColor="#e2e8f0" />
+                  <stop offset="70%" stopColor="#94a3b8" />
+                  <stop offset="100%" stopColor="#475569" />
+                </linearGradient>
+
+                {/* Refractive Optical Rim Gradient */}
+                <linearGradient id="mercuryRim" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                  <stop offset="70%" stopColor="#cbd5e1" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.6" />
+                </linearGradient>
+
+                {/* High Specular Glass Highlight */}
+                <radialGradient id="mercurySpecular" cx="30%" cy="30%" r="50%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+
+              {/* Main Droplet Body (Dynamic Parametric Bezier) */}
               <path
-                d="M3 2 L3 20 L7.5 16 L12 22 L14.5 20.5 L10 14.5 L16.5 14.5 Z"
-                fill="#000000"
-                stroke="#ffffff"
-                strokeWidth="1.8"
+                ref={dropletPathRef}
+                fill="url(#mercuryCore)"
+                stroke="url(#mercuryRim)"
+                strokeWidth="0.85"
                 strokeLinejoin="round"
               />
-            </svg>
-          ) : (
-            // Retro Windows 95 Pixel Arrow
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              style={{ filter: 'drop-shadow(2px 2px 0 #000)' }}
-            >
-              <path
-                d="M2 2 L2 18 L6 14 L9 20 L12 18.5 L9 13 L14 13 Z"
-                fill={isNoir ? '#38bdf8' : '#ffffff'}
-                stroke="#000000"
-                strokeWidth="1.2"
+
+              {/* Specular Optic Reflection Bubble */}
+              <ellipse
+                ref={specularRef}
+                fill="url(#mercurySpecular)"
+                opacity="0.85"
+                transform="rotate(-15)"
               />
+
+              {/* Razor Apex Point Bead */}
+              <circle cx="0" cy="0" r="1.1" fill="#ffffff" />
             </svg>
-          )
-        )}
-
-        {/* 2. Live Execution Timer Capsule */}
-        {isLoading && (
-          <div className={`cursor-timer-capsule ${badgeThemeClass}`}>
-            <span>⏳</span>
-            <span>{(elapsedMs / 1000).toFixed(2)}s</span>
-          </div>
-        )}
-
-        {/* 3. Live Math Capsule (Instant Sum / Avg on Cell Selection) */}
-        {liveMath && cursorSettings.liveMath && !isLoading && (
-          <div className={`cursor-math-capsule ${badgeThemeClass}`}>
-            <span style={{ fontSize: '13px' }}>⚡</span>
-            <span>Sum: <strong>{liveMath.sum.toLocaleString()}</strong></span>
-            <span style={{ opacity: 0.4 }}>|</span>
-            <span>Avg: <strong>{liveMath.avg.toLocaleString()}</strong></span>
-            <span style={{ opacity: 0.5, fontSize: '9px' }}>({liveMath.count} cells)</span>
-          </div>
-        )}
-
-        {/* 4. Smart Hover Info Badge */}
-        {hoverLabel && !isLoading && !liveMath && (
-          <div className={`cursor-hover-badge ${badgeThemeClass}`}>
-            {hoverLabel}
-          </div>
-        )}
-
-        {/* 5. Interactive Theme Mascot Companion */}
-        {cursorSettings.mascotEnabled && !isLoading && !liveMath && (
-          <div className="exnihilo-cursor-mascot">
-            {isMac ? (
-              <div className="cursor-orb-mascot" title="Nihilo AI Glass Orb" />
-            ) : (
-              <div className="cursor-wizard-mascot" title="ExNihilo Pixel Wizard">🧙‍♂️</div>
-            )}
           </div>
         )}
       </div>
-
-      {/* 6. Shockwave Ripple on Query Success */}
-      {shockwaveKey && (
-        <div
-          key={shockwaveKey}
-          className="cursor-shockwave-ring"
-          style={{
-            top: pointerRef.current ? pointerRef.current.style.transform : '0',
-            left: pointerRef.current ? pointerRef.current.style.transform : '0',
-          }}
-        />
-      )}
-
-      {/* 7. Smoke Pouf on Query Error */}
-      {smokeKey && (
-        <div
-          key={smokeKey}
-          className="cursor-smoke-pouf"
-          style={{
-            top: pointerRef.current ? pointerRef.current.style.transform : '0',
-            left: pointerRef.current ? pointerRef.current.style.transform : '0',
-          }}
-        />
-      )}
     </div>
   );
 };
-
