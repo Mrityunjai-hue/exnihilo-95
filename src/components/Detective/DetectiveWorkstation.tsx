@@ -293,7 +293,7 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
     playCaseSolvedFanfare,
     playPaperclip,
   } = useDetectiveAudio();
-  const terminalInputRef = useRef<HTMLInputElement>(null);
+  const terminalInputRef = useRef<HTMLTextAreaElement>(null);
 
   const completedVoucherIds = careerProgress.completedVouchersByCase[dossier.id] || [];
 
@@ -871,7 +871,8 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
             setActiveTab('docket');
           }}
         >
-          📋 Case Briefing
+          <span>📋 Case Briefing</span>
+          {activeTab === 'docket' && <span className="win95-tab-active-pill">● ACTIVE</span>}
         </button>
         <button
           className={`win95-sheet-tab ${activeTab === 'suspects' ? 'active' : ''}`}
@@ -880,7 +881,8 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
             setActiveTab('suspects');
           }}
         >
-          👥 Suspects & Alibis ({dossier.suspects.length})
+          <span>👥 Suspects &amp; Alibis ({dossier.suspects.length})</span>
+          {activeTab === 'suspects' && <span className="win95-tab-active-pill">● ACTIVE</span>}
         </button>
         <button
           className={`win95-sheet-tab ${activeTab === 'evidence' ? 'active' : ''}`}
@@ -889,7 +891,8 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
             setActiveTab('evidence');
           }}
         >
-          🔍 Evidence Vault ({dossier.evidenceDocs.length})
+          <span>🔍 Evidence Vault ({dossier.evidenceDocs.length})</span>
+          {activeTab === 'evidence' && <span className="win95-tab-active-pill">● ACTIVE</span>}
         </button>
         <button
           className={`win95-sheet-tab ${activeTab === 'terminal' ? 'active' : ''}`}
@@ -898,7 +901,8 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
             setActiveTab('terminal');
           }}
         >
-          🔬 Investigation Room
+          <span>🔬 Investigation Room</span>
+          {activeTab === 'terminal' && <span className="win95-tab-active-pill">● ACTIVE</span>}
         </button>
         <button
           className={`win95-sheet-tab ${activeTab === 'vouchers' ? 'active' : ''}`}
@@ -907,7 +911,8 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
             setActiveTab('vouchers');
           }}
         >
-          🧩 Solve Clues ({completedVoucherIds.length}/5)
+          <span>🧩 Solve Clues ({completedVoucherIds.length}/5)</span>
+          {activeTab === 'vouchers' && <span className="win95-tab-active-pill">● ACTIVE</span>}
         </button>
         <button
           className={`win95-sheet-tab ${activeTab === 'courtroom' ? 'active' : ''}`}
@@ -916,7 +921,8 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
             setActiveTab('courtroom');
           }}
         >
-          ⚖️ Grand Jury Trial
+          <span>⚖️ Grand Jury Trial</span>
+          {activeTab === 'courtroom' && <span className="win95-tab-active-pill">● ACTIVE</span>}
         </button>
 
         {/* Right Status Toolbar */}
@@ -1680,51 +1686,153 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
                 </button>
               </div>
 
-              {/* Bottom SQL Query Bar */}
-              <div className="forensic-query-bar">
-                <span style={{ fontWeight: 'bold', fontSize: '13px' }}>SQL&gt;</span>
-                <input
-                  ref={terminalInputRef}
-                  type="text"
-                  className="forensic-sql-input"
-                  value={terminalSql}
-                  onChange={(e) => {
-                    setTerminalSql(e.target.value);
-                    setHistoryIndex(-1);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      executeSql(terminalSql, 'Custom SQL Query');
-                    } else if (e.key === 'ArrowUp') {
-                      if (queryHistory.length === 0) return;
-                      e.preventDefault();
-                      const nextIndex =
-                        historyIndex === -1 ? queryHistory.length - 1 : Math.max(0, historyIndex - 1);
-                      setHistoryIndex(nextIndex);
-                      setTerminalSql(queryHistory[nextIndex]);
-                    } else if (e.key === 'ArrowDown') {
-                      if (historyIndex === -1) return;
-                      e.preventDefault();
-                      if (historyIndex < queryHistory.length - 1) {
-                        const nextIndex = historyIndex + 1;
-                        setHistoryIndex(nextIndex);
-                        setTerminalSql(queryHistory[nextIndex]);
-                      } else {
-                        setHistoryIndex(-1);
+              {/* Spacious & Prominent Multi-Line SQL Query Console */}
+              <div className="forensic-query-console">
+                <div className="forensic-query-console-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      💻 <span>SQL INVESTIGATION CONSOLE</span>
+                    </span>
+                    <span style={{ fontSize: '11px', opacity: 0.8, fontStyle: 'italic' }}>
+                      (Press [F5] or [Ctrl+Enter] to Execute)
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    {queryHistory.length > 0 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <button
+                          type="button"
+                          className="win95-button"
+                          onClick={() => {
+                            const nextIdx = historyIndex === -1 ? queryHistory.length - 1 : Math.max(0, historyIndex - 1);
+                            setHistoryIndex(nextIdx);
+                            setTerminalSql(queryHistory[nextIdx]);
+                          }}
+                          style={{ padding: '2px 8px', fontSize: '11px' }}
+                          title="Previous Query from History (Up Arrow)"
+                        >
+                          ◀ Prev
+                        </button>
+                        <span style={{ fontSize: '10px', opacity: 0.75, padding: '0 2px' }}>
+                          History ({queryHistory.length})
+                        </span>
+                        <button
+                          type="button"
+                          className="win95-button"
+                          onClick={() => {
+                            if (historyIndex === -1) return;
+                            if (historyIndex < queryHistory.length - 1) {
+                              const nextIdx = historyIndex + 1;
+                              setHistoryIndex(nextIdx);
+                              setTerminalSql(queryHistory[nextIdx]);
+                            } else {
+                              setHistoryIndex(-1);
+                              setTerminalSql('');
+                            }
+                          }}
+                          disabled={historyIndex === -1}
+                          style={{ padding: '2px 8px', fontSize: '11px' }}
+                          title="Next Query from History (Down Arrow)"
+                        >
+                          Next ▶
+                        </button>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className="win95-button"
+                      onClick={() => {
                         setTerminalSql('');
+                        terminalInputRef.current?.focus();
+                      }}
+                      style={{ padding: '2px 8px', fontSize: '11px' }}
+                      title="Clear Query Area"
+                    >
+                      ✕ Clear
+                    </button>
+                    <button
+                      type="button"
+                      className="win95-button"
+                      onClick={() => {
+                        setTerminalSql(activeLead.starterSql);
+                        terminalInputRef.current?.focus();
+                      }}
+                      style={{ padding: '2px 8px', fontSize: '11px' }}
+                      title="Reset to Active Table Base Query"
+                    >
+                      🔄 Reset Query
+                    </button>
+                    <button
+                      type="button"
+                      className="win95-button"
+                      onClick={() => executeSql(terminalSql, 'Custom SQL Query')}
+                      disabled={executing || !terminalSql.trim()}
+                      style={{
+                        padding: '4px 18px',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        background: 'var(--w95-title-active-bg, #000080)',
+                        color: '#ffffff',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '1px 1px 4px rgba(0,0,0,0.3)',
+                      }}
+                    >
+                      ▶ RUN QUERY [F5]
+                    </button>
+                  </div>
+                </div>
+
+                {/* Multi-Line SQL Textarea Editor */}
+                <div className="forensic-query-input-wrap">
+                  <div className="forensic-query-gutter">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                  </div>
+                  <textarea
+                    ref={terminalInputRef}
+                    className="forensic-sql-textarea"
+                    value={terminalSql}
+                    onChange={(e) => {
+                      setTerminalSql(e.target.value);
+                      setHistoryIndex(-1);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'F5' || (e.key === 'Enter' && (e.ctrlKey || e.metaKey))) {
+                        e.preventDefault();
+                        executeSql(terminalSql, 'Custom SQL Query');
                       }
-                    }
-                  }}
-                  placeholder="Type SQL query (e.g. SELECT * FROM toxicology_records WHERE concentration_mg_l > lethal_threshold_mg_l;)"
-                />
-                <button
-                  className="win95-button"
-                  onClick={() => executeSql(terminalSql, 'Custom SQL Query')}
-                  disabled={executing}
-                  style={{ padding: '4px 14px', fontSize: '11px', fontWeight: 'bold', whiteSpace: 'nowrap' }}
-                >
-                  ▶ Run Query [F5]
-                </button>
+                    }}
+                    placeholder={`-- Enter SQL query to investigate forensic evidence (Press F5 or Ctrl+Enter to execute):
+SELECT * FROM ${activeLead.table} WHERE ...;`}
+                    rows={4}
+                    spellCheck={false}
+                  />
+                </div>
+
+                {/* Quick SQL Keyword Helper Buttons */}
+                <div className="forensic-query-snippets">
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', opacity: 0.85 }}>Quick SQL Syntax:</span>
+                  {['WHERE', 'AND', 'OR', 'LIKE', 'IN', 'JOIN', 'GROUP BY', 'ORDER BY', 'LIMIT 10'].map((snip) => (
+                    <button
+                      key={snip}
+                      type="button"
+                      className="win95-button"
+                      onClick={() => {
+                        const newSql = terminalSql ? `${terminalSql.trimEnd()} ${snip} ` : `${snip} `;
+                        setTerminalSql(newSql);
+                        terminalInputRef.current?.focus();
+                      }}
+                      style={{ padding: '1px 7px', fontSize: '11px' }}
+                    >
+                      +{snip}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

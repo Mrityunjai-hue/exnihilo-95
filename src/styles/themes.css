@@ -252,6 +252,57 @@
   border-right-color: #334155 !important;
 }
 
+/* Win95 Noir Detective & Active Tab Overrides */
+[data-theme="win95-noir"] .win95-sheet-tab {
+  background: #111827 !important;
+  color: #94a3b8 !important;
+  border-top-color: #334155 !important;
+  border-left-color: #334155 !important;
+  border-right-color: #0f172a !important;
+  border-bottom-color: #334155 !important;
+}
+
+[data-theme="win95-noir"] .win95-sheet-tab:hover {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="win95-noir"] .win95-sheet-tab.active {
+  background: #1e293b !important;
+  color: #38bdf8 !important;
+  border-top: 3px solid #38bdf8 !important;
+  border-left: 2px solid #38bdf8 !important;
+  border-right: 2px solid #0f172a !important;
+  border-bottom: 2px solid #1e293b !important;
+  box-shadow: 0 -2px 8px rgba(56, 189, 248, 0.25) !important;
+}
+
+[data-theme="win95-noir"] .win95-tab-active-pill {
+  background: #38bdf8 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="win95-noir"] .forensic-query-console {
+  background: #1b2230 !important;
+  border-color: #475569 !important;
+  box-shadow: none !important;
+}
+
+[data-theme="win95-noir"] .forensic-query-input-wrap {
+  background: #0f172a !important;
+  border-color: #475569 #1e293b #1e293b #475569 !important;
+}
+
+[data-theme="win95-noir"] .forensic-query-gutter {
+  background: #111827 !important;
+  color: #64748b !important;
+  border-color: #334155 !important;
+}
+
+[data-theme="win95-noir"] .forensic-sql-textarea {
+  color: #38bdf8 !important;
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
  * WINDOWS XP LUNA & WIN2000 OVERRIDES
  * ───────────────────────────────────────────────────────────────────────────── */
@@ -284,6 +335,31 @@
   --w95-callout-blue-text: #000000;
 }
 
+/* WinXP Luna & Win2000 Detective & Active Tab Overrides */
+[data-theme="winxp-luna"] .win95-sheet-tab.active {
+  background: #ffffff !important;
+  color: #0055ea !important;
+  border-top: 3px solid #ff8000 !important;
+  border-bottom: 2px solid #ffffff !important;
+}
+
+[data-theme="winxp-luna"] .win95-tab-active-pill {
+  background: #ff8000 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="win2000"] .win95-sheet-tab.active {
+  background: #ffffff !important;
+  color: #0a246a !important;
+  border-top: 3px solid #0a246a !important;
+  border-bottom: 2px solid #ffffff !important;
+}
+
+[data-theme="win2000"] .win95-tab-active-pill {
+  background: #0a246a !important;
+  color: #ffffff !important;
+}
+
 [data-theme="win2000"] {
   --w95-desktop-bg: #3a6ea5;
   --w95-gray: #d4d0c8;
@@ -311,6 +387,31 @@
   --w95-callout-yellow-text: #000000;
   --w95-callout-blue-bg: #e6f0fa;
   --w95-callout-blue-text: #000000;
+}
+
+/* WinXP Luna & Win2000 Detective & Active Tab Overrides */
+[data-theme="winxp-luna"] .win95-sheet-tab.active {
+  background: #ffffff !important;
+  color: #0055ea !important;
+  border-top: 3px solid #ff8000 !important;
+  border-bottom: 2px solid #ffffff !important;
+}
+
+[data-theme="winxp-luna"] .win95-tab-active-pill {
+  background: #ff8000 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="win2000"] .win95-sheet-tab.active {
+  background: #ffffff !important;
+  color: #0a246a !important;
+  border-top: 3px solid #0a246a !important;
+  border-bottom: 2px solid #ffffff !important;
+}
+
+[data-theme="win2000"] .win95-tab-active-pill {
+  background: #0a246a !important;
+  color: #ffffff !important;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -1957,12 +2058,19 @@ select option {
 }
 
 [data-theme="macos-glass"] .win95-sheet-tab.active {
-  background: rgba(10, 132, 255, 0.22) !important;
+  background: rgba(10, 132, 255, 0.28) !important;
   color: #38bdf8 !important;
-  border-color: rgba(56, 189, 248, 0.45) !important;
+  border: 1px solid rgba(56, 189, 248, 0.6) !important;
+  border-top: 3px solid #0a84ff !important;
   border-bottom-color: rgba(18, 18, 22, 0.90) !important;
   font-weight: bold !important;
-  box-shadow: 0 -1px 6px rgba(56, 189, 248, 0.15) !important;
+  box-shadow: 0 0 12px rgba(10, 132, 255, 0.3) !important;
+}
+
+[data-theme="macos-glass"] .win95-tab-active-pill {
+  background: #0a84ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 6px rgba(10, 132, 255, 0.5) !important;
 }
 
 [data-theme="macos-glass"] .win95-split-view,
@@ -2041,10 +2149,29 @@ select option {
 
 [data-theme="macos-glass"] .forensic-header-bar,
 [data-theme="macos-glass"] .forensic-dock-strip,
-[data-theme="macos-glass"] .forensic-query-bar {
+[data-theme="macos-glass"] .forensic-query-bar,
+[data-theme="macos-glass"] .forensic-query-console {
   background: rgba(22, 22, 26, 0.85) !important;
   color: #f8fafc !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+}
+
+[data-theme="macos-glass"] .forensic-query-input-wrap {
+  background: rgba(12, 12, 16, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 6px !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="macos-glass"] .forensic-query-gutter {
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: #64748b !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-theme="macos-glass"] .forensic-sql-textarea {
+  color: #f8fafc !important;
 }
 
 [data-theme="macos-glass"] .forensic-evidence-btn.unselected {
