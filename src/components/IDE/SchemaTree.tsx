@@ -141,6 +141,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
 }) => {
   const { activeTheme } = useTheme();
   const isMac = activeTheme === 'macos-glass';
+  const isDark = activeTheme === 'macos-glass' || activeTheme === 'win95-noir';
   const [expandedDbs, setExpandedDbs] = useState<Record<string, boolean>>({ default: true });
   const [expandedTables, setExpandedTables] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -394,12 +395,12 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
             padding: isMac ? '6px 8px' : '2px 4px',
             fontWeight: isMac ? 700 : 'bold',
             fontSize: isMac ? 13 : 11,
-            color: isMac ? '#38bdf8' : 'var(--w95-sunken-text, #000000)',
+            color: isDark ? '#38bdf8' : 'var(--w95-sunken-text, #000000)',
             display: 'flex',
             alignItems: 'center',
             gap: isMac ? 8 : 4,
             borderRadius: isMac ? 6 : 0,
-            background: isMac ? 'rgba(56, 189, 248, 0.08)' : 'transparent',
+            background: isDark ? 'rgba(56, 189, 248, 0.08)' : 'transparent',
             marginBottom: isMac ? 4 : 0,
           }}
         >
@@ -491,7 +492,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                       padding: isMac ? '4px 6px' : '1px 3px',
                       fontSize: isMac ? 12 : 10,
                       fontWeight: isMac ? 500 : 'bold',
-                      color: isMac ? '#38bdf8' : '#000080',
+                      color: isDark ? '#38bdf8' : '#000080',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -544,7 +545,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                 fontSize: isMac ? 10 : 9,
                                 minWidth: 12,
                                 textAlign: 'center',
-                                color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
+                                color: isDark ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
                                 cursor: 'pointer',
                               }}
                               onClick={e => { e.stopPropagation(); setExpandedTables(prev => ({ ...prev, [key]: !prev[key] })); }}
@@ -557,7 +558,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                 flex: 1,
                                 fontWeight: isMac ? 600 : 'bold',
                                 fontSize: isMac ? 13 : 11,
-                                color: isMac ? '#f8fafc' : 'var(--w95-sunken-text, #000000)',
+                                color: isDark ? '#f8fafc' : 'var(--w95-sunken-text, #000000)',
                               }}
                             >
                               {entry.tableName}
@@ -565,10 +566,10 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                             <span
                               style={{
                                 fontSize: isMac ? 11 : 9,
-                                background: isMac ? 'rgba(255, 255, 255, 0.08)' : 'var(--w95-gray, #e0e0e0)',
-                                color: isMac ? '#cbd5e1' : 'var(--w95-sunken-text, #000000)',
+                                background: isDark ? 'rgba(255, 255, 255, 0.08)' : 'var(--w95-gray, #e0e0e0)',
+                                color: isDark ? '#cbd5e1' : 'var(--w95-sunken-text, #000000)',
                                 padding: isMac ? '1px 5px' : '0 3px',
-                                border: isMac ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid var(--w95-dark-gray, #808080)',
+                                border: isDark ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid var(--w95-dark-gray, #808080)',
                                 borderRadius: isMac ? 4 : 0,
                               }}
                             >
@@ -605,7 +606,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                 style={{
                                   fontSize: isMac ? 11 : 9,
                                   fontWeight: isMac ? 600 : 'bold',
-                                  color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
+                                  color: isDark ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
                                   marginBottom: 2,
                                   padding: isMac ? '2px 0' : 0,
                                 }}
@@ -634,7 +635,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                       <span
                                         style={{
                                           fontWeight: isPk || isFk ? (isMac ? 600 : 'bold') : 'normal',
-                                          color: isMac ? '#e2e8f0' : 'var(--w95-sunken-text,#000)',
+                                          color: isDark ? '#e2e8f0' : 'var(--w95-sunken-text,#000)',
                                         }}
                                       >
                                         {col.name}
@@ -643,7 +644,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                     <span
                                       style={{
                                         fontSize: isMac ? 11 : 9,
-                                        color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#666)',
+                                        color: isDark ? '#94a3b8' : 'var(--w95-dark-gray,#666)',
                                         fontStyle: 'italic',
                                       }}
                                     >
@@ -665,7 +666,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                     style={{
                                       fontSize: isMac ? 11 : 9,
                                       fontWeight: isMac ? 600 : 'bold',
-                                      color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
+                                      color: isDark ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
                                       marginBottom: 1,
                                     }}
                                   >
@@ -677,7 +678,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                       style={{
                                         fontSize: isMac ? 11 : 10,
                                         padding: '1px 3px',
-                                        color: isMac ? '#cbd5e1' : 'var(--w95-dark-gray,#555)',
+                                        color: isDark ? '#cbd5e1' : 'var(--w95-dark-gray,#555)',
                                       }}
                                     >
                                       ⚡ {tr}
@@ -698,7 +699,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                       style={{
                         padding: isMac ? '3px 6px' : '1px 3px',
                         fontSize: isMac ? 11 : 10,
-                        color: isMac ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
+                        color: isDark ? '#94a3b8' : 'var(--w95-dark-gray,#555)',
                         marginTop: 2,
                       }}
                     >
