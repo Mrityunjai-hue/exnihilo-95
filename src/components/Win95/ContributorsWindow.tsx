@@ -119,7 +119,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
           <div>
             <div style={{ textAlign: 'center', marginBottom: '16px' }}>
               <div style={{ fontSize: '32px', marginBottom: '6px' }}>🤝</div>
-              <h2 style={{ margin: '0 0 4px', fontSize: '16px', color: 'var(--w95-title-active-bg, #000080)' }}>
+              <h2 style={{ margin: '0 0 4px', fontSize: '16px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
                 Calling All Builders — Contributors Wanted!
               </h2>
               <p style={{ margin: 0, fontSize: '11px' }}>
@@ -128,7 +128,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
             </div>
 
             <div className="win95-inset" style={{ padding: '12px', marginBottom: '12px', background: 'var(--w95-callout-yellow-bg, #ffffe0)', color: 'var(--w95-callout-yellow-text, #000000)', border: '1px solid var(--w95-dark-gray, #808000)' }}>
-              <p style={{ margin: '0 0 8px', fontWeight: 'bold', color: 'var(--w95-title-active-bg, #000080)' }}>
+              <p style={{ margin: '0 0 8px', fontWeight: 'bold', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
                 💡 What is ExNihilo 95?
               </p>
               <p style={{ margin: 0 }}>
@@ -139,7 +139,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
             </div>
 
             <div className="win95-inset" style={{ padding: '12px', marginBottom: '12px', background: 'var(--w95-callout-blue-bg, #f0f8ff)', color: 'var(--w95-callout-blue-text, #000000)' }}>
-              <p style={{ margin: '0 0 8px', fontWeight: 'bold', color: 'var(--w95-title-active-bg, #000080)' }}>
+              <p style={{ margin: '0 0 8px', fontWeight: 'bold', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
                 🏗️ Unlocked Roadmap: 10 Major Feature Categories
               </p>
               <p style={{ margin: '0 0 8px' }}>
@@ -155,7 +155,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
             </div>
 
             <div className="win95-inset" style={{ padding: '12px', background: 'var(--w95-callout-blue-bg, #f0fff0)', color: 'var(--w95-callout-blue-text, #000000)', border: '1px solid var(--w95-dark-gray, #228B22)' }}>
-              <p style={{ margin: '0 0 6px', fontWeight: 'bold', color: 'var(--w95-title-active-bg, #006400)' }}>
+              <p style={{ margin: '0 0 6px', fontWeight: 'bold', color: 'var(--w95-accent-color, #006400)' }}>
                 ⭐ Top contributors will be credited as co-creators and core team members.
               </p>
               <p style={{ margin: 0 }}>
@@ -169,7 +169,7 @@ export const ContributorsWindow: React.FC<ContributorsWindowProps> = ({
         {/* ─── FEATURES TAB ─── */}
         {activeTab === 'features' && (
           <div>
-            <h3 style={{ margin: '0 0 10px', fontSize: '13px', color: 'var(--w95-title-active-bg, #000080)' }}>
+            <h3 style={{ margin: '0 0 10px', fontSize: '13px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
               ✨ Open Feature Roadmap (100% Free &amp; Unlocked)
             </h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>

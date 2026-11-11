@@ -73,12 +73,12 @@ export const DetectiveWindow: React.FC<DetectiveWindowProps> = ({
             }
           : {
               position: 'fixed',
-              top: '30px',
+              top: isMac ? '36px' : '30px',
               left: '30px',
               right: '30px',
-              bottom: '45px',
+              bottom: isMac ? '76px' : '45px',
               width: 'calc(100vw - 60px)',
-              height: 'calc(100vh - 75px)',
+              height: isMac ? 'calc(100vh - 112px)' : 'calc(100vh - 75px)',
               maxWidth: '1400px',
               maxHeight: '90vh',
               zIndex,

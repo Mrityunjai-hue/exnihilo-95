@@ -1513,7 +1513,7 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
                 <div style={{ fontSize: '12px', marginTop: '4px', lineHeight: '1.5' }}>
                   <strong>🎯 Target:</strong> {activeLead.objective}
                 </div>
-                <div style={{ fontSize: '11px', marginTop: '3px', opacity: 0.9, color: 'var(--w95-title-active-bg, #000080)' }}>
+                <div style={{ fontSize: '11px', marginTop: '3px', opacity: 0.9, color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
                   💡 <strong>Investigative Clue:</strong> {activeLead.hint}
                 </div>
                 <div style={{ marginTop: '6px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>

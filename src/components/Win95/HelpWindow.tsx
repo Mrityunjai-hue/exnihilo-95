@@ -487,7 +487,7 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
           className="win95-inset"
           style={{ width: '230px', height: '100%', overflowY: 'auto', padding: '4px 4px 48px 4px', boxSizing: 'border-box' }}
         >
-          <div style={{ fontWeight: 'bold', marginBottom: '6px', fontSize: '11px', color: 'var(--w95-title-active-bg, #000080)' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '6px', fontSize: '11px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
             📂 Help Topics
           </div>
           {topics.map((t) => (

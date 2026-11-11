@@ -180,7 +180,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
                 fontSize: '11px',
                 padding: '2px 10px',
                 fontWeight: selectedDialect === 'ALL' ? 'bold' : 'normal',
-                color: selectedDialect === 'ALL' ? 'var(--w95-title-active-bg, #000080)' : 'var(--w95-text-color, #000000)',
+                color: selectedDialect === 'ALL' ? 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' : 'var(--w95-text-color, #000000)',
               }}
             >
               🌐 All Dialects
@@ -198,7 +198,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
                     fontSize: '11px',
                     padding: '2px 10px',
                     fontWeight: isSelected ? 'bold' : 'normal',
-                    color: isSelected ? 'var(--w95-title-active-bg, #000080)' : 'var(--w95-text-color, #000000)',
+                    color: isSelected ? 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' : 'var(--w95-text-color, #000000)',
                   }}
                 >
                   {meta.icon} {dialect}

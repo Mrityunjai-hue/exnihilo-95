@@ -288,13 +288,13 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
               <div style={{ fontSize: '32px', marginBottom: '6px' }}>🗄️</div>
               <strong style={{ fontSize: '13px' }}>ExNihilo for Windows 95</strong>
               <div style={{ fontSize: '11px', color: 'var(--w95-dark-gray, #64748b)', margin: '4px 0' }}>Version 1.0 (Build 950)</div>
-              <div style={{ fontSize: '11px', color: 'var(--w95-title-active-bg, #000080)', marginTop: '10px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))', marginTop: '10px' }}>
                 <strong>Built by:</strong>{' '}
                 <a
                   href="https://github.com/Mrityunjai-hue"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: 'var(--w95-title-active-bg, #0000ee)', fontWeight: 'bold' }}
+                  style={{ color: 'var(--w95-accent-color, var(--w95-titlebar-active, #0000ee))', fontWeight: 'bold' }}
                 >
                   Mrityunjai
                 </a>
@@ -305,7 +305,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                   href="https://n8n-ds-community.netlify.app/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: 'var(--w95-title-active-bg, #0000ee)', fontWeight: 'bold' }}
+                  style={{ color: 'var(--w95-accent-color, var(--w95-titlebar-active, #0000ee))', fontWeight: 'bold' }}
                 >
                   N8N Data Science Community
                 </a>{' '}
