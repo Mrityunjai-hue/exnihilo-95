@@ -1,0 +1,861 @@
+/* ==========================================================================
+   WIN95 HOMICIDE INVESTIGATION BUREAU & VAX SQL TERMINAL (v6.1)
+   100% High-Contrast, Professional, Non-Vanishing Buttons, Clean Terminal Grid
+   ========================================================================== */
+
+/* Main Bureau Window Container */
+.win95-bureau-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--w95-gray, #c0c0c0);
+  color: var(--w95-text-color, #000000);
+  font-family: var(--w95-font, "Segoe UI", Tahoma, sans-serif);
+  font-size: 12px;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Classic Windows 95 Menu Bar */
+.win95-menubar {
+  display: flex;
+  align-items: center;
+  background: var(--w95-gray, #c0c0c0);
+  border-bottom: 1px solid var(--w95-dark-gray, #808080);
+  padding: 2px 6px;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.win95-menubar-item {
+  padding: 2px 8px;
+  cursor: pointer;
+  position: relative;
+}
+
+.win95-menubar-item:hover,
+.win95-menubar-item.active {
+  background: var(--w95-title-active-bg, #000080);
+  color: var(--w95-title-active-text, #ffffff);
+}
+
+.win95-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+  background: var(--w95-gray, #c0c0c0);
+  color: var(--w95-text-color, #000000);
+  border: 2px solid;
+  border-color: var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080) var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff);
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+  min-width: 220px;
+  padding: 2px;
+}
+
+.win95-menu-dropdown-item {
+  padding: 5px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.win95-menu-dropdown-item:hover {
+  background: var(--w95-title-active-bg, #000080);
+  color: var(--w95-title-active-text, #ffffff);
+}
+
+.win95-menu-divider {
+  height: 1px;
+  background: var(--w95-dark-gray, #808080);
+  margin: 3px 2px;
+}
+
+/* Property Sheet Tab Bar */
+.win95-sheet-tabs-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 6px 8px 0 8px;
+  background: var(--w95-gray, #c0c0c0);
+  border-bottom: 2px solid var(--w95-light-gray, #ffffff);
+  position: relative;
+  z-index: 2;
+  flex-wrap: wrap;
+}
+
+.win95-sheet-tab {
+  background: var(--w95-gray, #c0c0c0);
+  color: var(--w95-text-color, #000000);
+  border-top: 2px solid var(--w95-light-gray, #ffffff);
+  border-left: 2px solid var(--w95-light-gray, #ffffff);
+  border-right: 2px solid var(--w95-dark-gray, #808080);
+  border-bottom: 2px solid var(--w95-light-gray, #ffffff);
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: -2px;
+}
+
+.win95-sheet-tab:hover {
+  background: var(--w95-light-gray, #dfdfdf);
+}
+
+.win95-sheet-tab.active {
+  font-weight: bold;
+  background: var(--w95-gray, #c0c0c0);
+  border-bottom: 2px solid var(--w95-gray, #c0c0c0);
+  padding-bottom: 8px;
+  margin-top: -2px;
+  z-index: 3;
+}
+
+/* Master-Detail Split Pane */
+.win95-split-view {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 6px;
+  overflow: hidden;
+  padding: 6px;
+  background: var(--w95-gray, #c0c0c0);
+}
+
+.win95-split-sidebar {
+  width: 320px;
+  min-width: 260px;
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+  border: 2px solid;
+  border-color: var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff) var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080);
+  overflow-y: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.win95-split-content {
+  flex: 1;
+  min-width: 0;
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+  border: 2px solid;
+  border-color: var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff) var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080);
+  overflow-y: auto;
+  padding: 18px 24px;
+  user-select: text;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Authentic Windows 95 ListView Items */
+.win95-listview-header {
+  background: var(--w95-gray, #c0c0c0);
+  color: var(--w95-text-color, #000000);
+  border-bottom: 1px solid var(--w95-dark-gray, #808080);
+  padding: 6px 10px;
+  font-weight: bold;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.win95-list-item {
+  padding: 8px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dotted rgba(128, 128, 128, 0.3);
+  user-select: none;
+}
+
+.win95-list-item:hover {
+  background: rgba(0, 0, 128, 0.08);
+}
+
+.win95-list-item.selected {
+  background: var(--w95-title-active-bg, #000080) !important;
+  color: var(--w95-title-active-text, #ffffff) !important;
+  font-weight: bold;
+}
+
+/* Police Badge / Status Tags */
+.win95-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 7px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.win95-badge.success {
+  background: #1b5e20;
+  color: #ffffff;
+}
+
+.win95-badge.pending {
+  background: #546e7a;
+  color: #ffffff;
+}
+
+.win95-badge.danger {
+  background: #b71c1c;
+  color: #ffffff;
+}
+
+.win95-badge.warning {
+  background: #e65100;
+  color: #ffffff;
+}
+
+/* Hero Banners & Cards */
+.detective-hero-banner {
+  border: 2px solid var(--w95-dark-gray, #808080);
+  background: var(--w95-gray, #c0c0c0);
+  color: var(--w95-text-color, #000000);
+  padding: 16px 20px;
+  border-radius: 2px;
+  box-shadow: inset 1px 1px 0px var(--w95-light-gray, #ffffff);
+}
+
+.detective-card {
+  border: 1px solid var(--w95-dark-gray, #808080);
+  padding: 14px 16px;
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+  border-radius: 2px;
+}
+
+.detective-card-legend {
+  font-weight: bold;
+  font-size: 12px;
+  padding: 0 6px;
+  color: var(--w95-text-color, #000000);
+}
+
+.detective-paper-box {
+  border: 2px solid;
+  border-color: var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff) var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080);
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+  padding: 14px;
+  font-family: var(--w95-mono, "Courier New", monospace);
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+/* Rubber Stamps */
+.forensic-stamp-admitted {
+  border: 3px double #1b5e20;
+  color: #1b5e20;
+  padding: 4px 12px;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: inline-block;
+  transform: rotate(-3deg);
+  background: rgba(27, 94, 32, 0.1);
+}
+
+.forensic-stamp-rejected {
+  border: 3px double #b71c1c;
+  color: #b71c1c;
+  padding: 4px 12px;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: inline-block;
+  transform: rotate(2deg);
+  background: rgba(183, 28, 28, 0.1);
+}
+
+/* ==========================================================================
+   CLEAN FORENSIC INVESTIGATION WORKBENCH (Human-Friendly, Zero-Headache)
+   ========================================================================== */
+.forensic-workbench-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 8px;
+  padding: 8px;
+  background: var(--w95-gray, #c0c0c0);
+  overflow: hidden;
+}
+
+.forensic-lead-sidebar {
+  width: 280px;
+  min-width: 250px;
+  background: var(--w95-gray, #c0c0c0);
+  border: 2px solid;
+  border-color: var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff) var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 10px;
+  gap: 12px;
+}
+
+.forensic-lead-card {
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+  border: 1px solid var(--w95-dark-gray, #808080);
+  border-radius: 2px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.forensic-lead-card:hover {
+  background: rgba(0, 0, 128, 0.08);
+  border-color: var(--w95-title-active-bg, #000080);
+}
+
+.forensic-lead-card.active {
+  background: var(--w95-title-active-bg, #000080) !important;
+  color: var(--w95-title-active-text, #ffffff) !important;
+  border-color: var(--w95-title-active-bg, #000080) !important;
+}
+
+.forensic-lead-card.active .forensic-sub-table {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.forensic-sub-table {
+  font-size: 10px;
+  opacity: 0.75;
+  font-family: var(--w95-mono, monospace);
+}
+
+/* Forensic Main Investigation Screen (Crisp, High-Clarity) */
+.forensic-main-screen {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+  border: 2px solid;
+  border-color: var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff) var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080);
+  overflow: hidden;
+}
+
+.forensic-header-bar {
+  background: var(--w95-gray, #c0c0c0);
+  color: var(--w95-text-color, #000000);
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--w95-dark-gray, #808080);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.forensic-table-viewport {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--w95-sunken-bg, #ffffff);
+}
+
+.forensic-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12px;
+}
+
+.forensic-data-table th {
+  background: var(--w95-gray, #c0c0c0);
+  color: var(--w95-text-color, #000000);
+  border-top: 1px solid var(--w95-light-gray, #ffffff);
+  border-left: 1px solid var(--w95-light-gray, #ffffff);
+  border-right: 1px solid var(--w95-dark-gray, #808080);
+  border-bottom: 1px solid var(--w95-dark-gray, #808080);
+  padding: 6px 12px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.forensic-data-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.18);
+  border-right: 1px solid rgba(128, 128, 128, 0.12);
+  white-space: nowrap;
+}
+
+.forensic-data-table tr:nth-child(even) td {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.forensic-data-table tr:hover td {
+  background: rgba(0, 0, 128, 0.06);
+}
+
+.forensic-data-table tr.selected td {
+  background: rgba(46, 125, 50, 0.12) !important;
+  font-weight: bold;
+}
+
+.forensic-evidence-btn {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.forensic-evidence-btn.unselected {
+  background: var(--w95-gray, #c0c0c0);
+  color: var(--w95-text-color, #000000);
+  border-top: 2px solid var(--w95-light-gray, #ffffff);
+  border-left: 2px solid var(--w95-light-gray, #ffffff);
+  border-right: 2px solid var(--w95-dark-gray, #808080);
+  border-bottom: 2px solid var(--w95-dark-gray, #808080);
+}
+
+.forensic-evidence-btn.unselected:hover {
+  background: #e2e8f0;
+}
+
+.forensic-evidence-btn.selected {
+  background: #1b5e20 !important;
+  color: #ffffff !important;
+  border: 1px solid #1b5e20 !important;
+}
+
+/* Forensic Bottom Query Bar */
+.forensic-query-bar {
+  background: var(--w95-gray, #c0c0c0);
+  border-top: 2px solid var(--w95-dark-gray, #808080);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.forensic-sql-input {
+  flex: 1;
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+  border: 2px solid;
+  border-color: var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff) var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080);
+  padding: 6px 10px;
+  font-family: var(--w95-mono, monospace);
+  font-size: 12px;
+  outline: none;
+}
+
+/* Forensic Bottom Evidence Strip */
+.forensic-dock-strip {
+  background: var(--w95-gray, #c0c0c0);
+  border-top: 1px solid var(--w95-dark-gray, #808080);
+  padding: 8px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+/* ==========================================================================
+   HIGH COURT PROSECUTION VAULT & GRAND JURY STYLING
+   ========================================================================== */
+.court-vault-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1040px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.court-vault-header {
+  border-bottom: 2px solid var(--w95-dark-gray, #808080);
+  padding-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.court-vault-seal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.court-vault-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .court-vault-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.court-vault-card {
+  border: 2px solid;
+  border-color: var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff) var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080);
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+  padding: 16px;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 190px;
+  position: relative;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.court-vault-card.unlocked {
+  border: 2px solid #2e7d32;
+  background: rgba(46, 125, 50, 0.06);
+}
+
+.court-vault-card.locked {
+  border: 2px solid #b71c1c;
+  background: rgba(183, 28, 28, 0.04);
+}
+
+.court-lock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+.court-lock-badge.locked {
+  background: #b71c1c;
+  color: #ffffff;
+}
+
+.court-lock-badge.unlocked {
+  background: #1b5e20;
+  color: #ffffff;
+}
+
+.court-gavel-btn {
+  background: linear-gradient(180deg, #8d4f26 0%, #5d3419 100%) !important;
+  color: #ffffff !important;
+  border-top: 2px solid #b7794e !important;
+  border-left: 2px solid #b7794e !important;
+  border-right: 2px solid #2e1a0d !important;
+  border-bottom: 2px solid #2e1a0d !important;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4) !important;
+  padding: 12px 28px !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px !important;
+  cursor: pointer !important;
+  border-radius: 3px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  transition: transform 0.05s ease, filter 0.1s ease !important;
+}
+
+.court-gavel-btn:hover:not(:disabled) {
+  filter: brightness(1.15) !important;
+}
+
+.court-gavel-btn:active:not(:disabled) {
+  transform: translate(1px, 1px) !important;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+.court-gavel-btn:disabled {
+  background: var(--w95-gray, #c0c0c0) !important;
+  color: var(--w95-dark-gray, #808080) !important;
+  border-color: var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080) var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff) !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+/* Authentic Scottish Newspaper Extra Edition */
+.court-newspaper-frontpage {
+  border: 4px double #1a1a1a;
+  background: #fffdf5;
+  color: #1a1a1a;
+  padding: 24px;
+  box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.35);
+  position: relative;
+  animation: newspaperSlam 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes newspaperSlam {
+  0% {
+    transform: scale(0.6) rotate(-8deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   TACTILE CLUE INTERROGATION CONFRONTATION DESK
+   ========================================================================== */
+.clue-confrontation-desk {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 10px;
+  padding: 10px;
+  background: var(--w95-gray, #c0c0c0);
+  overflow: hidden;
+}
+
+.clue-dossier-list {
+  width: 320px;
+  min-width: 270px;
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+  border: 2px solid;
+  border-color: var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff) var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.clue-dossier-folder-item {
+  padding: 10px 12px;
+  border-bottom: 1px dotted rgba(128, 128, 128, 0.3);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: background 0.1s ease;
+}
+
+.clue-dossier-folder-item:hover {
+  background: rgba(0, 0, 128, 0.08);
+}
+
+.clue-dossier-folder-item.selected {
+  background: var(--w95-title-active-bg, #000080) !important;
+  color: var(--w95-title-active-text, #ffffff) !important;
+}
+
+.clue-dossier-folder-item.selected .win95-badge {
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+.clue-side-by-side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .clue-side-by-side {
+    grid-template-columns: 1fr;
+  }
+}
+
+.clue-confront-btn {
+  background: linear-gradient(180deg, #1b5e20 0%, #0d3813 100%) !important;
+  color: #ffffff !important;
+  border-top: 2px solid #4caf50 !important;
+  border-left: 2px solid #4caf50 !important;
+  border-right: 2px solid #07220b !important;
+  border-bottom: 2px solid #07220b !important;
+  padding: 8px 24px !important;
+  font-size: 13px !important;
+  font-weight: bold !important;
+  letter-spacing: 0.5px !important;
+  cursor: pointer !important;
+  border-radius: 2px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.clue-confront-btn:hover:not(:disabled) {
+  filter: brightness(1.2) !important;
+}
+
+.clue-confront-btn:disabled {
+  background: var(--w95-gray, #c0c0c0) !important;
+  color: var(--w95-dark-gray, #808080) !important;
+  border-color: var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080) var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff) !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+/* Row Evidence Selection Glow & Highlight */
+.vax-row-pin-btn.selected {
+  background: #00ff66 !important;
+  color: #000000 !important;
+  box-shadow: 0 0 6px #00ff66 !important;
+  border-color: #ffffff !important;
+}
+
+.vax-screen-amber .vax-row-pin-btn.selected {
+  background: #ffb000 !important;
+  color: #000000 !important;
+  box-shadow: 0 0 6px #ffb000 !important;
+}
+
+/* ==========================================================================
+   FORENSIC DIRECTIVE CARD & EVIDENCE TOAST NOTIFICATIONS
+   ========================================================================== */
+.forensic-lead-directive-card {
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+  border: 2px solid;
+  border-color: var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff) var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080);
+  padding: 10px 14px;
+  margin: 8px 10px 0 10px;
+  box-shadow: inset 1px 1px 0px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.forensic-toast-banner {
+  background: #1b5e20;
+  color: #ffffff;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.forensic-case-pill {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 2px solid;
+}
+
+/* ==========================================================================
+   FORENSIC WORKBENCH ENHANCEMENTS: SCHEMA, SORTING, FILTERING & EXPORTS
+   ========================================================================== */
+.forensic-schema-box {
+  margin-top: 8px;
+  background: var(--w95-sunken-bg, #ffffff);
+  border: 1px solid var(--w95-dark-gray, #808080);
+  padding: 6px;
+  border-radius: 2px;
+}
+
+.forensic-column-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.forensic-col-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 6px;
+  font-size: 11px;
+  font-family: var(--w95-mono, 'Courier New', monospace);
+  background: var(--w95-gray, #c0c0c0);
+  color: #000000;
+  border: 1px solid;
+  border-color: var(--w95-light-gray, #ffffff) var(--w95-dark-gray, #808080) var(--w95-dark-gray, #808080) var(--w95-light-gray, #ffffff);
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+  transition: all 0.1s ease;
+}
+
+.forensic-col-chip:hover {
+  background: var(--w95-title-active-bg, #000080);
+  color: #ffffff;
+}
+
+.forensic-col-chip .col-name {
+  font-weight: bold;
+}
+
+.forensic-col-chip .col-type {
+  font-size: 9px;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+.forensic-col-chip .col-pk {
+  background: #b71c1c;
+  color: #ffffff;
+  padding: 1px 4px;
+  font-size: 8px;
+  font-weight: bold;
+  border-radius: 2px;
+  margin-left: 4px;
+}
+
+.forensic-data-table th.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.forensic-data-table th.sortable-th:hover {
+  filter: brightness(1.2);
+}
+
+.forensic-sort-indicator {
+  display: inline-block;
+  font-size: 10px;
+  margin-left: 4px;
+  opacity: 0.85;
+}
+
+.forensic-filter-input {
+  background: var(--w95-sunken-bg, #ffffff);
+  color: var(--w95-sunken-text, #000000);
+  border: 1px solid var(--w95-dark-gray, #808080);
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 1px;
+}
+
+

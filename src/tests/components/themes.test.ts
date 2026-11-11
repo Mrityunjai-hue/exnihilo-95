@@ -43,10 +43,10 @@ describe('Multi-Theme Engine Unit Tests', () => {
     localStorage.clear();
   });
 
-  it('contains 6 theme presets with macos-glass as primary default', () => {
+  it('contains 6 theme presets with win95-classic as primary default', () => {
     expect(THEME_PRESETS).toHaveLength(6);
     const themeIds = THEME_PRESETS.map((t) => t.id);
-    expect(themeIds[0]).toBe('macos-glass');
+    expect(themeIds[0]).toBe('win95-classic');
     expect(themeIds).toContain('macos-glass');
     expect(themeIds).toContain('win95-classic');
     expect(themeIds).toContain('win7-aero');

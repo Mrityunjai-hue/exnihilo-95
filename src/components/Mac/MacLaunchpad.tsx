@@ -84,6 +84,14 @@ export const MacLaunchpad: React.FC<MacLaunchpadProps> = ({
       action: () => { onOpenApp('challenges'); onClose(); },
     },
     {
+      id: 'detective',
+      name: 'SQL Noir (Case Files)',
+      category: 'Investigation & Puzzles',
+      icon: '🕵️',
+      bg: 'linear-gradient(135deg, #78350f 0%, #451a03 100%)',
+      action: () => { onOpenApp('detective'); onClose(); },
+    },
+    {
       id: 'erd',
       name: 'Relation Visualizer (ERD)',
       category: 'Data & Databases',

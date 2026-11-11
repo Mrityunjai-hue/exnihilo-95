@@ -21,6 +21,7 @@ interface ToolbarProps {
   onToggleHistory?:     () => void;
   onOpenWorkspaces?:    () => void;
   onOpenERD?:           () => void;
+  onOpenDetective?:     () => void;
   onOpenHelp:           () => void;
   onOpenSettings:       () => void;
   onStartTour:          () => void;
@@ -45,6 +46,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onToggleHistory,
   onOpenWorkspaces,
   onOpenERD,
+  onOpenDetective,
   onOpenHelp,
   onOpenSettings,
   onStartTour,
@@ -333,6 +335,20 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           </button>
         )}
 
+        {/* SQL Noir Detective Case Files Button */}
+        {onOpenDetective && (
+          <button
+            id="btn-detective"
+            className="win95-button"
+            onClick={onOpenDetective}
+            title="Open SQL Noir: Department of Unsolved Homicides (1995)"
+            style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+          >
+            <span>🕵️</span>
+            <span>Case Files</span>
+          </button>
+        )}
+
         {/* Consolidated "More ⋯" Dropdown (History, Share, Settings) */}
         <div ref={moreMenuRef} style={{ position: 'relative' }}>
           <button
@@ -370,6 +386,17 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 >
                   <span>🕒</span>
                   <span>Execution History ({historyCount})</span>
+                </div>
+              )}
+
+              {onOpenDetective && (
+                <div
+                  className={isMac ? 'mac-dropdown-item' : 'win95-dropdown-item'}
+                  onClick={() => { onOpenDetective(); setMoreMenuOpen(false); }}
+                  style={{ padding: isMac ? '6px 10px' : '4px 8px', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span>🕵️</span>
+                  <span>SQL Noir: Case Files (1995)</span>
                 </div>
               )}
 

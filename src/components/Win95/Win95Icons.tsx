@@ -209,3 +209,18 @@ export const ChallengeIcon: React.FC<{ size?: number }> = ({ size = 36 }) => (
     <path d="M18 9L19.5 12H23L20 14L21.5 17L18 15L14.5 17L16 14L13 12H16.5L18 9Z" fill="#ffffff" stroke="#b8860b" strokeWidth="0.5" />
   </svg>
 );
+
+// 14. Case Files Detective Icon (Windows 95 Investigation Docket)
+export const DetectiveIcon: React.FC<{ size?: number }> = ({ size = 36 }) => (
+  <svg width={size} height={size} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Manila Folder Tab & Body */}
+    <path d="M4 8H15L18 11H32V30H4V8Z" fill="#e6c280" stroke="#000000" strokeWidth="1.2" />
+    <path d="M4 12H32V30H4V12Z" fill="#f5d79e" stroke="#000000" strokeWidth="1.2" />
+    <line x1="8" y1="16" x2="22" y2="16" stroke="#8c6d1f" strokeWidth="1.5" />
+    <line x1="8" y1="20" x2="20" y2="20" stroke="#8c6d1f" strokeWidth="1.5" />
+    {/* Magnifying Glass */}
+    <circle cx="23" cy="22" r="6" fill="#cbe6f6" stroke="#000000" strokeWidth="1.5" fillOpacity="0.8" />
+    <line x1="27.5" y1="26.5" x2="33" y2="32" stroke="#000000" strokeWidth="3" strokeLinecap="round" />
+    <line x1="28.5" y1="27.5" x2="32" y2="31" stroke="#d4af37" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);

@@ -105,6 +105,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   const macDockItems = [
     { id: 'welcome', label: 'About ExNihilo', icon: '✨', bg: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' },
     { id: 'ide', label: 'ExNihilo SQL Studio', icon: '🗄️', bg: 'linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)' },
+    { id: 'detective', label: 'Case Files (Homicide Bureau)', icon: '🕵️', bg: 'linear-gradient(135deg, #78350f 0%, #451a03 100%)' },
     { id: 'challenges', label: 'SQL Challenges', icon: '🏆', bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' },
     { id: 'erd', label: 'Relation Visualizer (ERD)', icon: '🌐', bg: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' },
     { id: 'sqlDictionary', label: 'SQL Dictionary', icon: '📖', bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' },
@@ -435,6 +436,17 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               <div>
                 <strong>SQL Challenge Arena</strong>
                 <div style={{ fontSize: '10px', color: '#555' }}>130+ LeetCode SQL Puzzles</div>
+              </div>
+            </div>
+
+            <div
+              className="win95-start-item"
+              onClick={() => { onOpenWindow('detective'); setStartMenuOpen(false); }}
+            >
+              <span style={{ fontSize: '16px' }}>🕵️</span>
+              <div>
+                <strong>Case Files (Homicide Bureau)</strong>
+                <div style={{ fontSize: '10px', color: '#555' }}>SQL Noir: Unsolved Mysteries (1995)</div>
               </div>
             </div>
 

@@ -28,6 +28,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { SQLDictionaryWindow } from './SQLDictionaryWindow';
 import { ChallengeWindow } from './ChallengeWindow';
 import { ERDViewer } from '../IDE/ERDViewer';
+import { DetectiveWindow } from '../Detective/DetectiveWindow';
 import { DialectName } from '../../data/dialectCommands';
 import { clearWorkspaceStorage } from '../../hooks/useWorkspaceStorage';
 import { decodeSharePayload } from '../../utils/shareEncoder';
@@ -45,6 +46,7 @@ import {
   OptionsIcon,
   TourIcon,
   ChallengeIcon,
+  DetectiveIcon,
 } from './Win95Icons';
 
 
@@ -90,23 +92,44 @@ export const Desktop: React.FC = () => {
     queryHistory: [],
   });
 
-  // Window State
+  // Window State with LocalStorage Persistence
   const [windowOrder, setWindowOrder] = useState<string[]>(['ide', 'welcome']);
-  const [openWindows, setOpenWindows] = useState<Record<string, boolean>>({
-    ide: true,
-    welcome: true,
-    help: false,
-    sqlDictionary: false,
-    wizard: false,
-    settings: false,
-    shutdown: false,
-    contributors: false,
-    legal: false,
-    auth: false,
-    admin: false,
-    challenges: false,
-    erd: false,
+  const [openWindows, setOpenWindows] = useState<Record<string, boolean>>(() => {
+    const defaults = {
+      ide: true,
+      welcome: true,
+      help: false,
+      sqlDictionary: false,
+      wizard: false,
+      settings: false,
+      shutdown: false,
+      contributors: false,
+      legal: false,
+      auth: false,
+      admin: false,
+      challenges: false,
+      erd: false,
+      detective: false,
+    };
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('exnihilo_open_windows');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return { ...defaults, ...parsed };
+        }
+      } catch {}
+    }
+    return defaults;
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('exnihilo_open_windows', JSON.stringify(openWindows));
+      } catch {}
+    }
+  }, [openWindows]);
   const [minimizedWindows, setMinimizedWindows] = useState<Record<string, boolean>>({
     ide: false,
     welcome: false,
@@ -121,6 +144,7 @@ export const Desktop: React.FC = () => {
     admin: false,
     challenges: false,
     erd: false,
+    detective: false,
   });
 
   // Boot Animation State
@@ -178,7 +202,24 @@ export const Desktop: React.FC = () => {
     }
   };
   const [tableCap, setTableCap] = useState(25);
-  const [dialect, setDialect] = useState<Dialect>('MySQL');
+  const [dialect, setDialectState] = useState<Dialect>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('exnihilo_active_dialect');
+        if (stored) return stored as Dialect;
+      } catch {}
+    }
+    return 'MySQL';
+  });
+
+  const setDialect = (d: Dialect) => {
+    setDialectState(d);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('exnihilo_active_dialect', d);
+      } catch {}
+    }
+  };
 
   // IDE State
   const [queryText, setQueryText] = useState(DEFAULT_QUERY);
@@ -395,6 +436,7 @@ export const Desktop: React.FC = () => {
     { id: 'settings', title: 'Options & Control Panel', icon: '⚙️', isOpen: openWindows.settings, isMinimized: false, zIndex: getZIndex('settings') },
     { id: 'contributors', title: 'Join the Team', icon: '🤝', isOpen: openWindows.contributors, isMinimized: minimizedWindows.contributors, zIndex: getZIndex('contributors') },
     { id: 'challenges', title: '🏆 SQL Challenge Arena', icon: '🏆', isOpen: openWindows.challenges, isMinimized: minimizedWindows.challenges, zIndex: getZIndex('challenges') },
+    { id: 'detective', title: '🕵️ Case Files (Homicide Bureau)', icon: '🕵️', isOpen: openWindows.detective, isMinimized: minimizedWindows.detective, zIndex: getZIndex('detective') },
     { id: 'erd', title: '🌐 Relation Visualizer (ERD)', icon: '🌐', isOpen: openWindows.erd, isMinimized: minimizedWindows.erd, zIndex: getZIndex('erd') },
     { id: 'legal', title: 'Legal & IP Protection', icon: '⚖️', isOpen: openWindows.legal, isMinimized: minimizedWindows.legal, zIndex: getZIndex('legal') },
     { id: 'auth', title: 'Security Logon', icon: '🔑', isOpen: openWindows.auth, isMinimized: minimizedWindows.auth, zIndex: getZIndex('auth') },
@@ -454,6 +496,14 @@ export const Desktop: React.FC = () => {
             >
               <span>🏆</span>
               <span>Challenge Arena</span>
+            </button>
+            <button
+              type="button"
+              className="mac-pill-btn"
+              onClick={() => focusWindow('detective')}
+            >
+              <span>🕵️</span>
+              <span>Case Files</span>
             </button>
             <button
               type="button"
@@ -579,6 +629,13 @@ export const Desktop: React.FC = () => {
               <button
                 className="win95-button"
                 style={{ fontSize: '11px', padding: '2px 8px' }}
+                onClick={() => focusWindow('detective')}
+              >
+                🕵️ Case Files
+              </button>
+              <button
+                className="win95-button"
+                style={{ fontSize: '11px', padding: '2px 8px' }}
                 onClick={() => focusWindow('erd')}
               >
                 🌐 Relation Visualizer
@@ -649,6 +706,16 @@ export const Desktop: React.FC = () => {
           >
             <ChallengeIcon size={36} />
             <span>SQL Challenges</span>
+          </div>
+
+          <div
+            className="win95-desktop-icon"
+            onDoubleClick={() => focusWindow('detective')}
+            onClick={() => focusWindow('detective')}
+            title="SQL Noir: Department of Unsolved Homicides (1995)"
+          >
+            <DetectiveIcon size={36} />
+            <span>Case Files</span>
           </div>
 
           <div
@@ -793,6 +860,7 @@ export const Desktop: React.FC = () => {
             onOpenHelp={() => focusWindow('help')}
             onOpenSettings={() => focusWindow('settings')}
             onOpenChallenges={() => focusWindow('challenges')}
+            onOpenDetective={() => focusWindow('detective')}
             onOpenERD={() => focusWindow('erd')}
             onStartTour={handleStartGuidedTour}
             crtEnabled={crtEnabled}
@@ -974,6 +1042,18 @@ export const Desktop: React.FC = () => {
           closeWindow('challenges');
           focusWindow('ide');
         }}
+      />
+
+      {/* SQL Noir: Department of Unsolved Homicides */}
+      <DetectiveWindow
+        isOpen={openWindows.detective}
+        isMinimized={minimizedWindows.detective}
+        isMaximized={Boolean(maximizedWindows.detective)}
+        onMaximize={() => handleToggleMaximize('detective')}
+        zIndex={getZIndex('detective')}
+        onClose={() => closeWindow('detective')}
+        onMinimize={() => toggleMinimize('detective')}
+        onFocus={() => focusWindow('detective')}
       />
 
       {/* Database Relation Visualizer (ERD) Window */}

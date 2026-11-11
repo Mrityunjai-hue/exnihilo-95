@@ -373,6 +373,9 @@ export const MacMenuBar: React.FC<MacMenuBarProps> = ({
               <div className="mac-dropdown-item" onClick={() => { onOpenWindow('challenges'); setActiveMenu(null); }}>
                 <span>🏆 SQL Challenge Arena (130+ LeetCode Problems)</span>
               </div>
+              <div className="mac-dropdown-item" onClick={() => { onOpenWindow('detective'); setActiveMenu(null); }}>
+                <span>🕵️ SQL Noir: Case Files (Homicide Bureau)</span>
+              </div>
               <div className="mac-dropdown-item" onClick={() => { onOpenWindow('sqlDictionary'); setActiveMenu(null); }}>
                 <span>📖 SQL Dialects & Syntax Reference</span>
               </div>

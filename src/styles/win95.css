@@ -16,6 +16,7 @@
 
 @import './themes.css';
 @import './crt.css';
+@import './detective.css';
 
 @font-face {
   font-family: 'Windows 95';
@@ -309,14 +310,15 @@ html, body {
 .win95-titlebar {
   background: var(--w95-title-active-gradient);
   color: #ffffff !important;
-  padding: 3px 4px;
+  padding: 4px 6px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-weight: bold;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.5px;
   cursor: default;
+  min-height: 28px;
 }
 
 .win95-titlebar.inactive {
@@ -336,12 +338,13 @@ html, body {
 
 .win95-titlebar-controls {
   display: flex;
-  gap: 2px;
+  gap: 3px;
+  align-items: center;
 }
 
 .win95-btn-titlebar {
-  width: 16px;
-  height: 14px;
+  width: 24px;
+  height: 22px;
   background-color: #c0c0c0 !important;
   border-top: 1px solid #ffffff !important;
   border-left: 1px solid #ffffff !important;
@@ -350,7 +353,7 @@ html, body {
   box-shadow: inset 1px 1px 0px #dfdfdf,
               inset -1px -1px 0px #808080;
   color: #000000 !important;
-  font-size: 9px;
+  font-size: 13px;
   font-weight: bold;
   display: flex;
   align-items: center;

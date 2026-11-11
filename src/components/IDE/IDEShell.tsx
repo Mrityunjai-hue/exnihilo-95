@@ -80,6 +80,7 @@ interface IDEShellProps {
   onOpenHelp:              () => void;
   onOpenSettings:          () => void;
   onOpenChallenges?:       () => void;
+  onOpenDetective?:        () => void;
   onOpenERD?:              () => void;
   onStartTour:             () => void;
   crtEnabled?:             boolean;
@@ -111,6 +112,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   onOpenHelp,
   onOpenSettings,
   onOpenChallenges,
+  onOpenDetective,
   onOpenERD,
   onStartTour,
   crtEnabled,
@@ -935,6 +937,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         onInsertTemplate={handleInsertTemplate}
         onToggleHistory={() => setIsHistoryOpen(true)}
         onOpenERD={handleOpenERD}
+        onOpenDetective={onOpenDetective}
         onOpenHelp={onOpenHelp}
         onOpenSettings={onOpenSettings}
         onStartTour={onStartTour}

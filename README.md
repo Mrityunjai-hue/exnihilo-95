@@ -13,10 +13,10 @@
 
 <p align="center">
   <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Build-Passing-brightgreen.svg" alt="Build Status" /></a>
-  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Vitest%20Suites-22%2F22%20Passed-brightgreen.svg" alt="Vitest Suites" /></a>
-  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Unit%20Tests-155%2F155%20Passed-brightgreen.svg" alt="Unit Tests" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Vitest%20Suites-23%2F23%20Passed-brightgreen.svg" alt="Vitest Suites" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Unit%20Tests-160%2F160%20Passed-brightgreen.svg" alt="Unit Tests" /></a>
   <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/TypeScript-0%20Errors-brightgreen.svg" alt="TypeScript" /></a>
-  <a href="https://github.com/Mrityunjai-hue/exnihilo-95/releases/tag/v2.0.0-challenges"><img src="https://img.shields.io/badge/Release-v2.5.0--analytics-purple.svg" alt="v2.5.0-analytics" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95/releases/tag/v2.1.0-sql-noir"><img src="https://img.shields.io/badge/Release-v2.1.0--sql--noir-purple.svg" alt="v2.1.0-sql-noir" /></a>
   <a href="https://exnihilo-95.vercel.app"><img src="https://img.shields.io/badge/Live_Demo-exnihilo--95.vercel.app-brightgreen.svg" alt="Live Demo" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
   <a href="COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md"><img src="https://img.shields.io/badge/Copyright-Anti--Theft_Protected-red.svg" alt="Copyright" /></a>
@@ -35,6 +35,7 @@
 ## 📑 Table of Contents
 
 - [✨ Core Capabilities & Innovations](#-core-capabilities--innovations)
+- [🕵️‍♂️ SQL Noir: Homicide Bureau & Investigation Room](#%EF%B8%8F%EF%B8%8F-sql-noir-homicide-bureau--investigation-room)
 - [📊 Executive Visual Insights Analytics Dashboard](#-executive-visual-insights-analytics-dashboard)
 - [⚡ Query Execution Plan & Optimizer Analyzer](#-query-execution-plan--optimizer-analyzer)
 - [🌐 Entity-Relationship Diagram (ERD Studio)](#-entity-relationship-diagram-erd-studio)
@@ -62,6 +63,29 @@
    High-contrast syntax highlighting, intelligent SQL autocomplete, 1-click query formatter, prebuilt templates, and execution history.
 5. **Interactive 15-Step Guided Tour:**  
    Dynamic target-tracking balloon tour that guides users through every tool, window, profile, and setting.
+
+---
+
+## 🕵️‍♂️ SQL Noir: Homicide Bureau & Investigation Room
+
+A fully realized, retro-forensic crime lab investigation suite modeled after 1990s law enforcement workstations:
+
+- **Multi-Case Forensic Inquiries:**
+  - **Case 1: The Midnight Cyanide at Blackwood Manor (1995-CR-0842):** A stormy Highland estate, a disinherited heir, and a lethal vintage port. Audit 135+ electronic keycard logs, 45+ coroner toxicology records, 52 apothecary receipts, and telephone dispatches to shatter false train alibis.
+  - **Case 2: The Clyde Naval Shipyard Sabotage (1995-CR-1042):** Classified Type-23 frigate propulsor blueprints stolen from Vault 4. Interrogate 75+ dock turnstile gate logs, drydock chemical stores, and foreign consulate wiretaps.
+- **Learned Detective SQL Writing:**
+  - No pre-filled or auto-solved `WHERE` filters. Detectives must craft authentic SQL queries to isolate the exact smoking-gun row from realistic multi-table datasets.
+- **Investigation Room & Ergonomics:**
+  - **Interactive Table Schema Inspector:** Live `PRAGMA table_info` introspection displaying column names, datatypes, and primary keys with 1-click column insertion.
+  - **Query History Recall:** Navigate previous queries instantly with `ArrowUp` / `ArrowDown`.
+  - **Click-to-Sort & Filter:** Sort table columns ascending/descending with type-aware comparison and instant search filtering.
+  - **Single Dedicated Viewport:** Zero screen clutter or duplicate stacked tables.
+- **Evidence Vault & Clue Deduction Vouchers:**
+  - Attach query rows as legal proof with tactile metallic paperclip audio (`playPaperclip()`).
+  - Cross-examine suspect alibis against forensic proof with authentic rubber stamps and credibility scores.
+- **Crown Office Grand Jury Vault & Dossier Exports:**
+  - Unseal Exhibit A (Motive), Exhibit B (Means), and Exhibit C (Opportunity) to deliver a High Court indictment, striking the oak gavel to trigger victory fanfare and extra-edition newspaper headlines.
+  - Export query records as `.CSV` or the complete case dossier as formatted `.TXT` files.
 
 ---
 
@@ -304,7 +328,7 @@ ExNihilo 95 is an open-source project created by **Mrityunjai ([@Mrityunjai-hue]
 ExNihilo 95 enforces strict multi-layered testing validation across unit and compilation suites:
 
 ```bash
-# 1. Run Complete Vitest Suite (155/155 Tests Passing across 22 Suites)
+# 1. Run Complete Vitest Suite (160/160 Tests Passing across 23 Suites)
 npx vitest run
 
 # 2. Next.js Production Build Validation (0 TypeScript Errors)
@@ -314,7 +338,8 @@ npm run build
 | Test Suite | File Scope | Tests | Status |
 | :--- | :--- | :---: | :---: |
 | **Grid Virtualization & Sorting** | `src/tests/components/grid.test.ts` | 9 | **Passed** |
-| **Themes & macOS Glass Engine** | `src/tests/components/themes.test.ts` | 3 | **Passed** |
+| **Themes & Windows 95 Engine** | `src/tests/components/themes.test.ts` | 3 | **Passed** |
+| **Detective Evaluator & Vouchers** | `src/tests/engine/detective_evaluator.test.ts` | 4 | **Passed** |
 | **Challenge Evaluator Harness** | `src/tests/engine/challenge_evaluator.test.ts` | 3 | **Passed** |
 | **DDL Generation & Dialects** | `src/tests/engine/ddl.test.ts` | 6 | **Passed** |
 | **Procedural Generation & Faker** | `src/tests/engine/procedural.test.ts` | 5 | **Passed** |
@@ -328,10 +353,10 @@ npm run build
 | **Aggregations & Grouping** | `src/tests/engine/aggregations.test.ts` | 10 | **Passed** |
 | **Window Functions & Partitions** | `src/tests/engine/window.test.ts` | 9 | **Passed** |
 | **SQL Exporters (CSV, JSON, XLS, DDL)**| `src/tests/engine/sql_exporter.test.ts` | 13 | **Passed** |
-| **ERD Graph Extractor & FKs** | `src/tests/engine/erd_extractor.test.ts` | 2 | **Passed** |
+| **ERD Graph Extractor & FKs** | `src/tests/engine/erd_extractor.test.ts` | 3 | **Passed** |
 | **Share URL State Serialization** | `src/tests/utils/share_encoder.test.ts` | 3 | **Passed** |
 | **Other Component & Engine Suites** | `src/tests/...` | 15 | **Passed** |
-| **TOTAL** | **22 Suites** | **155** | **100% Passed** |
+| **TOTAL** | **23 Suites** | **160** | **100% Passed** |
 
 ---
 
