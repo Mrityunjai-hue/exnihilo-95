@@ -30,6 +30,8 @@ interface TaskbarProps {
   onToggleLaunchpad?: () => void;
   isLaunchpadOpen?:   boolean;
   onOpenCookies?:     () => void;
+  isOnline?:          boolean;
+  onOpenNetwork?:     () => void;
 }
 
 export const Taskbar: React.FC<TaskbarProps> = ({
@@ -50,6 +52,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   onToggleLaunchpad,
   isLaunchpadOpen = false,
   onOpenCookies,
+  isOnline = true,
+  onOpenNetwork,
 }) => {
   const { activeTheme: hookTheme } = useTheme();
   const activeTheme = propTheme || hookTheme;
@@ -475,6 +479,21 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               </div>
             )}
 
+            {onOpenNetwork && (
+              <div
+                className="win95-start-item"
+                onClick={() => { onOpenNetwork(); setStartMenuOpen(false); }}
+              >
+                <span style={{ fontSize: '16px' }}>{isOnline ? '📟' : '📴'}</span>
+                <div>
+                  <strong>Dial-Up Networking Status</strong>
+                  <div style={{ fontSize: '10px', color: '#555' }}>
+                    {isOnline ? 'Connected at 28,800 bps' : 'Local Autonomous Mode (Offline)'}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div
               className="win95-start-item"
               onClick={() => { onOpenWindow('legal'); setStartMenuOpen(false); }}
@@ -600,6 +619,17 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               onClick={onOpenCookies}
             >
               🍪
+            </span>
+          )}
+
+          {/* Dial-Up Networking Tray Icon */}
+          {onOpenNetwork && (
+            <span
+              title={isOnline ? 'Dial-Up: Connected (28,800 bps) - Click to view status' : 'Dial-Up: Connection Lost (Local Autonomous Mode Active)'}
+              style={{ fontSize: '11px', cursor: 'pointer' }}
+              onClick={onOpenNetwork}
+            >
+              {isOnline ? '📟' : '📴'}
             </span>
           )}
 

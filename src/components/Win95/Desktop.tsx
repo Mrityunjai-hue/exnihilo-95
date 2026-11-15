@@ -22,6 +22,7 @@ import { ContributorsWindow } from './ContributorsWindow';
 import { MobileLanding } from './MobileLanding';
 import { LegalWindow, TabId as LegalTabId } from './LegalWindow';
 import { CookieConsentDialog, getStoredCookiePreferences } from './CookieConsentDialog';
+import { NetworkStatusDialog } from './NetworkStatusDialog';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthWindow } from './AuthWindow';
 import { AdminDashboard, SessionStats } from './AdminDashboard';
@@ -148,11 +149,54 @@ export const Desktop: React.FC = () => {
     detective: false,
   });
 
-  // Boot Animation State
-  const [showBootAnimation, setShowBootAnimation] = useState(true);
+  // Safe Mode State
+  const [isSafeMode, setIsSafeMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('mode') === 'safe';
+    }
+    return false;
+  });
+
+  // Boot Animation State (bypassed in safe mode)
+  const [showBootAnimation, setShowBootAnimation] = useState(() => {
+    if (typeof window !== 'undefined') {
+      if (new URLSearchParams(window.location.search).get('mode') === 'safe') return false;
+    }
+    return true;
+  });
 
   // Tour State
   const [tourOpen, setTourOpen] = useState(false);
+
+  // Network / Dial-Up Offline Status State
+  const [isOnline, setIsOnline] = useState<boolean>(() => {
+    return typeof navigator !== 'undefined' ? navigator.onLine : true;
+  });
+  const [networkDialogOpen, setNetworkDialogOpen] = useState(false);
+  const [networkToast, setNetworkToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      setNetworkDialogOpen(true);
+    };
+
+    const handleOnline = () => {
+      setIsOnline(true);
+      setNetworkToast('Dial-Up Networking: Carrier detected (28,800 bps)');
+      setTimeout(() => setNetworkToast(null), 4000);
+    };
+
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
 
   // CRT Monitor Filter State
   const [crtEnabled, setCrtEnabled] = useState<boolean>(false);
@@ -466,6 +510,86 @@ export const Desktop: React.FC = () => {
 
   return (
     <div className={`win95-desktop ${isMacTheme ? 'macos-desktop-layout' : ''}`}>
+      {/* Safe Mode Watermarks and Top Recovery Banner */}
+      {isSafeMode && (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: '#000000',
+              color: '#ffff00',
+              borderBottom: '2px solid #808080',
+              padding: '4px 12px',
+              fontSize: '11px',
+              fontFamily: 'var(--w95-mono, monospace)',
+              zIndex: 999998,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>⚠️</span>
+              <strong>WINDOWS 95 SAFE MODE (Diagnostic Recovery Environment)</strong>
+              <span style={{ color: '#cccccc' }}>
+                — Startup animations and heavy routines disabled.
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                className="win95-button"
+                style={{ fontSize: '10px', padding: '2px 8px' }}
+                onClick={handleResetSession}
+              >
+                🧹 Reset Workspace
+              </button>
+              <button
+                type="button"
+                className="win95-button"
+                style={{ fontSize: '10px', padding: '2px 8px', fontWeight: 'bold' }}
+                onClick={() => {
+                  window.location.href = window.location.pathname;
+                }}
+              >
+                🔄 Normal Reboot
+              </button>
+            </div>
+          </div>
+
+          <div style={{ position: 'fixed', top: '30px', left: '10px', color: 'rgba(255,255,255,0.7)', fontFamily: 'monospace', fontSize: '12px', zIndex: 10, pointerEvents: 'none', textShadow: '1px 1px 0 #000' }}>Safe Mode</div>
+          <div style={{ position: 'fixed', top: '30px', right: '10px', color: 'rgba(255,255,255,0.7)', fontFamily: 'monospace', fontSize: '12px', zIndex: 10, pointerEvents: 'none', textShadow: '1px 1px 0 #000' }}>Safe Mode</div>
+          <div style={{ position: 'fixed', bottom: '38px', left: '10px', color: 'rgba(255,255,255,0.7)', fontFamily: 'monospace', fontSize: '12px', zIndex: 10, pointerEvents: 'none', textShadow: '1px 1px 0 #000' }}>Safe Mode</div>
+          <div style={{ position: 'fixed', bottom: '38px', right: '10px', color: 'rgba(255,255,255,0.7)', fontFamily: 'monospace', fontSize: '12px', zIndex: 10, pointerEvents: 'none', textShadow: '1px 1px 0 #000' }}>Safe Mode</div>
+        </>
+      )}
+
+      {/* Network Carrier Toast Notification */}
+      {networkToast && (
+        <div
+          className="win95-window"
+          style={{
+            position: 'fixed',
+            bottom: '36px',
+            right: '12px',
+            zIndex: 999990,
+            padding: '6px 12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '11px',
+            boxShadow: '2px 2px 8px rgba(0,0,0,0.5)',
+          }}
+        >
+          <span>📟</span>
+          <span>{networkToast}</span>
+        </div>
+      )}
+
       {/* Native macOS Top Menu Bar */}
       {isMacTheme && (
         <MacMenuBar
@@ -834,6 +958,15 @@ export const Desktop: React.FC = () => {
           >
             <div style={{ fontSize: '30px', lineHeight: 1, padding: '2px 0' }}>🍪</div>
             <span>Cookie Settings</span>
+          </div>
+
+          <div
+            className="win95-desktop-icon"
+            onClick={() => setNetworkDialogOpen(true)}
+            title="Dial-Up Networking & Autonomous Offline Status"
+          >
+            <div style={{ fontSize: '30px', lineHeight: 1, padding: '2px 0' }}>{isOnline ? '📟' : '📴'}</div>
+            <span>Dial-Up ({isOnline ? 'Online' : 'Offline'})</span>
           </div>
 
           <div
@@ -1214,6 +1347,21 @@ export const Desktop: React.FC = () => {
         onToggleLaunchpad={() => setLaunchpadOpen((prev) => !prev)}
         isLaunchpadOpen={launchpadOpen}
         onOpenCookies={() => setCookieConsentOpen(true)}
+        isOnline={isOnline}
+        onOpenNetwork={() => setNetworkDialogOpen(true)}
+      />
+
+      {/* Dial-Up Networking & Autonomous Mode Status Dialog */}
+      <NetworkStatusDialog
+        isOpen={networkDialogOpen}
+        onClose={() => setNetworkDialogOpen(false)}
+        isOnline={isOnline}
+        onRedial={() => {
+          if (typeof navigator !== 'undefined') {
+            setIsOnline(navigator.onLine);
+          }
+        }}
+        zIndex={100000}
       />
     </div>
   );

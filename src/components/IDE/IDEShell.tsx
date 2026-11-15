@@ -29,6 +29,7 @@ import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
 import { hasDialectSugar, transpileDialectSugar } from '../../engine/transpiler';
 import { formatSql } from '../../utils/sqlFormatter';
 import { DialectTranslateDialog } from './DialectTranslateDialog';
+import { FileTransferDialog, FileDialogMode } from '../Win95/FileTransferDialog';
 
 import {
   useWorkspaceStorage,
@@ -164,6 +165,26 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const [isSnippetsOpen, setIsSnippetsOpen] = useState(false);
   const [isExplainPlanOpen, setIsExplainPlanOpen] = useState(false);
   const [isTranslateDialogOpen, setIsTranslateDialogOpen] = useState(false);
+  const [fileDialogOpen, setFileDialogOpen] = useState(false);
+  const [fileDialogMode, setFileDialogMode] = useState<FileDialogMode>('open');
+
+  const handleOpenFile = () => {
+    setFileDialogMode('open');
+    setFileDialogOpen(true);
+    setActiveMenu(null);
+  };
+
+  const handleSaveAs = () => {
+    setFileDialogMode('save');
+    setFileDialogOpen(true);
+    setActiveMenu(null);
+  };
+
+  const handleFileLoaded = (content: string, loadedName: string) => {
+    handleNewTab(loadedName, content);
+    setDbManagerNotif({ msg: `✅ Loaded "${loadedName}".`, ok: true });
+    setTimeout(() => setDbManagerNotif(null), 3500);
+  };
 
   // Editor cursor tracking & dynamic catalog autocomplete
   const [cursorPos, setCursorPos] = useState<{ line: number; col: number }>({ line: 1, col: 1 });
@@ -637,6 +658,14 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         e.preventDefault();
         e.stopPropagation();
         handleExecute();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSaveAs();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'o' || e.key === 'O')) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleOpenFile();
       }
     };
 
@@ -750,10 +779,13 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           {activeMenu === 'file' && (
             <div className="win95-dropdown-menu">
               <div className="win95-dropdown-item" onClick={() => handleNewTab()}>
-                <span>📄 New Query Tab</span>
+                <span>📄 New Query Tab (Ctrl+N)</span>
               </div>
-              <div className="win95-dropdown-item" onClick={handleDownloadSql}>
-                <span>💾 Save / Export Query...</span>
+              <div className="win95-dropdown-item" onClick={handleOpenFile}>
+                <span>📂 Open Query / File... (Ctrl+O)</span>
+              </div>
+              <div className="win95-dropdown-item" onClick={handleSaveAs}>
+                <span>💾 Save Query As... (Ctrl+S)</span>
               </div>
               <div className="win95-dropdown-item" onClick={() => { setIsShareOpen(true); setActiveMenu(null); }}>
                 <span>🔗 Share Query Link...</span>
@@ -1603,6 +1635,18 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             onDialectChange(newDialect);
           }
         }}
+      />
+
+      {/* ── Windows 95 Open & Save As Common Dialog ─────────────────────────── */}
+      <FileTransferDialog
+        isOpen={fileDialogOpen}
+        mode={fileDialogMode}
+        onClose={() => setFileDialogOpen(false)}
+        onOpenSqlFile={handleFileLoaded}
+        currentQueryText={activeTab.queryText}
+        currentResult={activeTab.result}
+        executor={executor}
+        zIndex={zIndex + 10}
       />
     </div>
   );

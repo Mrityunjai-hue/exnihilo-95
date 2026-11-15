@@ -976,6 +976,18 @@ export class SQLExecutor {
     return this.catalog;
   }
 
+  /**
+   * Export the in-memory SQLite database as raw binary Uint8Array.
+   */
+  exportDatabaseBinary(): Uint8Array | null {
+    if (!this.db) return null;
+    try {
+      return this.db.export();
+    } catch {
+      return null;
+    }
+  }
+
 
 
   /**
@@ -1190,10 +1202,11 @@ export class SQLExecutor {
     );
 
     for (const tbl of uniqueTables) {
+      const existsInSqlite = this.hasTableInSqlite(tbl);
       if (
-        this.catalog.has(tbl) ||
+        (this.catalog.has(tbl) && existsInSqlite) ||
         this.catalog.hasView(tbl) ||
-        this.hasTableInSqlite(tbl) ||
+        existsInSqlite ||
         createdInQuery.has(tbl) ||
         cteNameSet.has(tbl.toLowerCase())
       ) {
