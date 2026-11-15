@@ -25,6 +25,7 @@ export const KeyboardShortcutsDialog: React.FC<KeyboardShortcutsDialogProps> = (
     ],
     editor: [
       { key: 'Ctrl + Shift + F', desc: 'Beautify and auto-format SQL query', tag: 'Format' },
+      { key: 'Ctrl + Shift + T', desc: 'Open SQL Dialect Cross-Compiler & Translator', tag: 'Translate' },
       { key: 'Ctrl + Space', desc: 'Trigger intelligent SQL autocompletion', tag: 'IntelliSense' },
       { key: 'Ctrl + Z', desc: 'Undo last editor change', tag: 'Edit' },
       { key: 'Ctrl + Y', desc: 'Redo last undone change', tag: 'Edit' },

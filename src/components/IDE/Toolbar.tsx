@@ -177,7 +177,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             className="win95-button"
             onClick={onTranslateDialect}
             disabled={isLoading}
-            title="Translate Dialect Sugar (ROWNUM, TOP, QUALIFY) into standard SQL"
+            title="Cross-Compile & Translate SQL Dialect (PostgreSQL, MySQL, T-SQL, SQLite, Oracle, Snowflake)... (Ctrl+Shift+T)"
             style={{ padding: '2px 8px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
           >
             <span>🌐</span>

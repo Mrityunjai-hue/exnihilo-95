@@ -27,6 +27,8 @@ import { CreateTableWizard } from './CreateTableWizard';
 import { useTheme } from '../../hooks/useTheme';
 import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
 import { hasDialectSugar, transpileDialectSugar } from '../../engine/transpiler';
+import { formatSql } from '../../utils/sqlFormatter';
+import { DialectTranslateDialog } from './DialectTranslateDialog';
 
 import {
   useWorkspaceStorage,
@@ -161,6 +163,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isSnippetsOpen, setIsSnippetsOpen] = useState(false);
   const [isExplainPlanOpen, setIsExplainPlanOpen] = useState(false);
+  const [isTranslateDialogOpen, setIsTranslateDialogOpen] = useState(false);
 
   // Editor cursor tracking & dynamic catalog autocomplete
   const [cursorPos, setCursorPos] = useState<{ line: number; col: number }>({ line: 1, col: 1 });
@@ -286,6 +289,25 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Shift+F (Format) or Ctrl+Shift+T (Translate Dialect)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
+        const k = e.key.toLowerCase();
+        if (k === 'f') {
+          e.preventDefault();
+          const raw = activeTab.queryText;
+          if (raw.trim()) {
+            const formatted = formatSql(raw);
+            handleActiveQueryChange(formatted);
+          }
+          return;
+        }
+        if (k === 't') {
+          e.preventDefault();
+          setIsTranslateDialogOpen(true);
+          return;
+        }
+      }
+
       if (!e.altKey) return;
 
       const keyLower = e.key.toLowerCase();
@@ -567,74 +589,17 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     onQueryChange(newText);
   };
 
-  // SQL Beautifier / Formatter (Enhanced for Multi-Dialect & Procedural)
+  // SQL Beautifier / Formatter (String-Safe, Comment-Safe, Idempotent)
   const handleFormatSql = () => {
     const raw = activeTab.queryText;
     if (!raw.trim()) return;
-
-    // Standardize all SQL keywords and clauses to uppercase
-    const keywords = [
-      'SELECT', 'FROM', 'WHERE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'OUTER JOIN', 'FULL JOIN', 'CROSS JOIN',
-      'ON', 'GROUP BY', 'ORDER BY', 'HAVING', 'WITH', 'RECURSIVE', 'AS', 'LIMIT', 'OFFSET', 'UNION', 'ALL',
-      'AND', 'OR', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM', 'CREATE TABLE', 'DROP TABLE', 'ALTER TABLE',
-      'ASC', 'DESC', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'IS NULL', 'IS NOT NULL',
-      'QUALIFY', 'ROWNUM', 'PIVOT', 'UNPIVOT', 'DECLARE', 'PRINT', 'EXEC', 'sp_executesql', 'EXECUTE IMMEDIATE',
-      'GRANT', 'REVOKE', 'CREATE USER', 'BACKUP DATABASE', 'OPTIMIZE TABLE', 'VACUUM FULL'
-    ];
-
-    let formatted = raw;
-    keywords.forEach((kw) => {
-      const regex = new RegExp(`\\b${kw.replace(/\s+/g, '\\s+')}\\b`, 'gi');
-      formatted = formatted.replace(regex, kw);
-    });
-
-    // Add line breaks before major clause keywords
-    const breakKeywords = [
-      'FROM', 'WHERE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'FULL JOIN', 'CROSS JOIN',
-      'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT', 'OFFSET', 'QUALIFY', 'UNION ALL', 'UNION', 'SET', 'VALUES'
-    ];
-    breakKeywords.forEach((kw) => {
-      const regex = new RegExp(`\\s+(${kw.replace(/\s+/g, '\\s+')})\\b`, 'g');
-      formatted = formatted.replace(regex, `\n$1`);
-    });
-
+    const formatted = formatSql(raw);
     handleActiveQueryChange(formatted);
   };
 
-  // One-Click Dialect Translator
+  // Interactive SQL Dialect Cross-Compiler & Translator Dialog
   const handleTranslateDialect = () => {
-    const raw = activeTab.queryText;
-    if (!raw.trim()) return;
-
-    // 1. Transpile dialect sugar (QUALIFY, ROWNUM, PIVOT) via engine transpiler
-    if (hasDialectSugar(raw)) {
-      const transpiled = transpileDialectSugar(raw);
-      handleActiveQueryChange(transpiled);
-      return;
-    }
-
-    // 2. T-SQL TOP N translation to LIMIT N
-    if (/SELECT\s+TOP\s+(\d+)\s+([\s\S]+?)\s+FROM\b/i.test(raw)) {
-      const converted = raw.replace(/SELECT\s+TOP\s+(\d+)\s+([\s\S]+?)\s+FROM\b/i, 'SELECT $2 FROM')
-        .replace(/;?$/, ' LIMIT $1;');
-      handleActiveQueryChange(converted);
-      return;
-    }
-
-    // 3. Oracle NVL to ANSI COALESCE
-    if (/\bNVL\s*\(/i.test(raw)) {
-      handleActiveQueryChange(raw.replace(/\bNVL\s*\(/gi, 'COALESCE('));
-      return;
-    }
-
-    // 4. T-SQL LEN to ANSI LENGTH
-    if (/\bLEN\s*\(/i.test(raw)) {
-      handleActiveQueryChange(raw.replace(/\bLEN\s*\(/gi, 'LENGTH('));
-      return;
-    }
-
-    // Default: run formatter if no dialect sugar detected
-    handleFormatSql();
+    setIsTranslateDialogOpen(true);
   };
 
   const handleSelectTable = (tableName: string, querySql?: string) => {
@@ -819,10 +784,14 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           </span>
           {activeMenu === 'edit' && (
             <div className="win95-dropdown-menu">
-              <div className="win95-dropdown-item" onClick={handleFormatSql}>
-                <span>🧹 Format SQL Query</span>
+              <div className="win95-dropdown-item" onClick={() => { handleFormatSql(); setActiveMenu(null); }}>
+                <span>🧹 Format SQL Query (Ctrl+Shift+F)</span>
               </div>
-              <div className="win95-dropdown-item" onClick={() => handleActiveQueryChange('')}>
+              <div className="win95-dropdown-item" onClick={() => { handleTranslateDialect(); setActiveMenu(null); }}>
+                <span>🌐 Translate Dialect... (Ctrl+Shift+T)</span>
+              </div>
+              <div className="win95-dropdown-divider" />
+              <div className="win95-dropdown-item" onClick={() => { handleActiveQueryChange(''); setActiveMenu(null); }}>
                 <span>✨ Clear Query Text</span>
               </div>
             </div>
@@ -846,6 +815,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             <div className="win95-dropdown-menu">
               <div className="win95-dropdown-item" onClick={handleExecute}>
                 <span>▶ Run All / Active (F5)</span>
+              </div>
+              <div className="win95-dropdown-item" onClick={() => { handleTranslateDialect(); setActiveMenu(null); }}>
+                <span>🌐 Translate Dialect...</span>
               </div>
               <div className="win95-dropdown-item" onClick={() => { setIsExplainPlanOpen(true); setActiveMenu(null); }}>
                 <span>⚡ Explain Query Plan...</span>
@@ -1612,6 +1584,26 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           onCancel={() => setShowCreateTableWizard(false)}
         />
       )}
+
+      {/* ── Dialect Cross-Compiler & Interactive Translator Modal ─────────── */}
+      <DialectTranslateDialog
+        isOpen={isTranslateDialogOpen}
+        onClose={() => setIsTranslateDialogOpen(false)}
+        currentSql={activeTab.queryText}
+        currentDialect={dialect}
+        onApplyTranslation={(translatedSql, newDialect) => {
+          handleActiveQueryChange(translatedSql);
+          if (newDialect && onDialectChange) {
+            onDialectChange(newDialect);
+          }
+        }}
+        onOpenInNewTab={(translatedSql, tabTitle, newDialect) => {
+          handleNewTab(tabTitle, translatedSql);
+          if (newDialect && onDialectChange) {
+            onDialectChange(newDialect);
+          }
+        }}
+      />
     </div>
   );
 };
