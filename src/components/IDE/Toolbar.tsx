@@ -16,6 +16,7 @@ interface ToolbarProps {
   onRun:                () => void;
   onReset:              () => void;
   onFormatSql?:         () => void;
+  onTranslateDialect?:  () => void;
   onOpenExplainPlan?:   () => void;
   onInsertTemplate?:    (templateSql: string) => void;
   onToggleHistory?:     () => void;
@@ -41,6 +42,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onRun,
   onReset,
   onFormatSql,
+  onTranslateDialect,
   onOpenExplainPlan,
   onInsertTemplate,
   onToggleHistory,
@@ -167,6 +169,21 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <span>⚡</span>
           <span>Format</span>
         </button>
+
+        {/* Translate Dialect Sugar Button */}
+        {onTranslateDialect && (
+          <button
+            id="btn-translate-dialect"
+            className="win95-button"
+            onClick={onTranslateDialect}
+            disabled={isLoading}
+            title="Translate Dialect Sugar (ROWNUM, TOP, QUALIFY) into standard SQL"
+            style={{ padding: '2px 8px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+          >
+            <span>🌐</span>
+            <span>Translate</span>
+          </button>
+        )}
 
         {/* Explain Plan Button */}
         {onOpenExplainPlan && (

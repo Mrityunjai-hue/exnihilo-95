@@ -56,9 +56,10 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
 
     (async () => {
       try {
-        const db = (executor as any).db;
+        let db = (executor as any).db;
         if (!db) {
-          throw new Error('No active session database found. Please run your query first (F5) so tables and schema are generated in memory, then view the Execution Plan.');
+          await executor.init();
+          db = (executor as any).db;
         }
 
         // Clean query text (first executable SELECT query)
@@ -69,10 +70,22 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
 
         if (!cleanQuery) {
           if (isMounted) {
-            setErrorMsg('Please enter a valid SQL SELECT statement to analyze.');
+            setErrorMsg('Please enter a valid SQL statement to analyze.');
             setIsLoading(false);
           }
           return;
+        }
+
+        // Auto-materialize tables if query hasn't been executed yet
+        try {
+          await executor.execute(cleanQuery, dialect);
+          db = (executor as any).db;
+        } catch {
+          // Continue to EXPLAIN attempt
+        }
+
+        if (!db) {
+          throw new Error('Database engine initialization failed.');
         }
 
         const explainSql = `EXPLAIN QUERY PLAN ${cleanQuery.replace(/;+$/, '')};`;

@@ -15,8 +15,10 @@ import { EditorView, keymap, lineNumbers, highlightActiveLineGutter, highlightAc
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { sql, MySQL, PostgreSQL, SQLite, MSSQL } from '@codemirror/lang-sql';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
+import { autocompletion } from '@codemirror/autocomplete';
 import { tags } from '@lezer/highlight';
 import { useTheme } from '../../hooks/useTheme';
+import { createSqlCompletionSource } from './sqlAutocomplete';
 
 export interface SqlErrorLocation {
   line: number;
@@ -282,6 +284,35 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
         history(),
         getSqlDialectExtension(dialect, schemaTables),
         syntaxHighlighting(isDark ? macModernNeonHighlightStyle : win95SqlHighlightStyle),
+        autocompletion({
+          override: [createSqlCompletionSource(schemaTables)],
+          defaultKeymap: true,
+        }),
+        EditorView.domEventHandlers({
+          drop(event, view) {
+            const text = event.dataTransfer?.getData('text/plain');
+            if (!text) return false;
+            event.preventDefault();
+            const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
+            if (pos !== null) {
+              view.dispatch({
+                changes: { from: pos, insert: text },
+                selection: { anchor: pos + text.length },
+              });
+              view.focus();
+              return true;
+            }
+            return false;
+          },
+          dragover(event) {
+            if (event.dataTransfer?.types.includes('text/plain')) {
+              event.preventDefault();
+              event.dataTransfer.dropEffect = 'copy';
+              return true;
+            }
+            return false;
+          },
+        }),
         errorDecorationField,
         customKeymap,
         updateListener,
@@ -295,6 +326,34 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
           '.cm-gutters': { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.75)' : 'var(--w95-gray, #ece9d8)', borderRight: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid var(--w95-dark-gray, #999)', color: isDark ? '#64748b' : 'var(--w95-dark-gray, #555)' },
           '.cm-selectionBackground': { backgroundColor: isDark ? 'rgba(0, 122, 255, 0.4)' : 'rgba(0, 0, 128, 0.25)' },
           '.cm-sql-error-squiggle': { textDecoration: 'underline wavy #d00000 2px', textDecorationSkipInk: 'none', backgroundColor: 'rgba(255, 0, 0, 0.12)' },
+          '.cm-tooltip.cm-tooltip-autocomplete': {
+            backgroundColor: isDark ? '#1e2430' : '#ffffff',
+            border: isDark ? '1px solid rgba(0, 240, 255, 0.4)' : '2px outset #ffffff',
+            boxShadow: '2px 2px 6px rgba(0, 0, 0, 0.25)',
+            fontFamily: 'var(--w95-mono)',
+            fontSize: '12px',
+          },
+          '.cm-tooltip.cm-tooltip-autocomplete > ul': {
+            maxHeight: '220px',
+            fontFamily: 'var(--w95-mono)',
+            padding: '2px 0',
+          },
+          '.cm-tooltip.cm-tooltip-autocomplete > ul > li': {
+            padding: '2px 6px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          },
+          '.cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected]': {
+            backgroundColor: isDark ? '#00f0ff' : '#000080',
+            color: isDark ? '#000000' : '#ffffff',
+          },
+          '.cm-completionDetail': {
+            fontSize: '10px',
+            opacity: '0.75',
+            fontStyle: 'italic',
+            marginLeft: 'auto',
+          },
         }),
       ],
     });

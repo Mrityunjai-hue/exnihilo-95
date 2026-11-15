@@ -110,6 +110,42 @@ export const HelpWindow: React.FC<HelpWindowProps> = ({
       ),
     },
     {
+      id: 'ergonomics-power',
+      category: '2. IDE & Navigation',
+      title: 'IntelliSense, Drag-and-Drop & Dialect Translation',
+      summary: 'Retro autocomplete popover, column dragging, and 1-click dialect translation.',
+      content: (
+        <div>
+          <h3 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #808080', paddingBottom: '4px' }}>
+            ⚡ Ergonomics & Power Features
+          </h3>
+          <p>
+            ExNihilo 95 includes productivity accelerators wrapped in authentic Windows 95 aesthetics:
+          </p>
+          <ul style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
+            <li>
+              <strong>💡 Retro IntelliSense Autocomplete:</strong> Start typing any SQL keyword (<code>SELECT</code>, <code>QUALIFY</code>, <code>DECLARE</code>) or function (<code>REGEXP_LIKE</code>, <code>ST_Distance</code>, <code>NVL2</code>, <code>DECODE</code>) to trigger a retro tooltip popover. Press <code>↑</code> / <code>↓</code> to navigate and <code>Tab</code> or <code>Enter</code> to insert.
+            </li>
+            <li>
+              <strong>🖱️ Drag-and-Drop Columns & Tables:</strong> Drag any column or table name directly from the Database Navigator on the left and drop it into the Query Editor at your cursor position!
+            </li>
+            <li>
+              <strong>🌐 1-Click Dialect Translator:</strong> Click <strong>[🌐 Translate]</strong> on the toolbar to instantly convert non-standard dialect sugar (Oracle <code>ROWNUM &lt;= N</code>, T-SQL <code>TOP N</code>, Snowflake <code>QUALIFY</code>, <code>NVL</code>, <code>LEN</code>) into clean ANSI SQL.
+            </li>
+            <li>
+              <strong>🔍 Visual EXPLAIN Query Plan:</strong> Click <strong>[🔍 Explain]</strong> to inspect query execution trees, full-table scans, and index bottleneck advisories.
+            </li>
+            <li>
+              <strong>📝 Multi-Tab Scratchpads:</strong> Click <strong>[+ Scratchpad]</strong> to create persistent scratch tabs for notes, temporary queries, and DDL scripts.
+            </li>
+            <li>
+              <strong>🖥️ HiDPI UI Zoom (Options ➔ Display):</strong> Choose between 100%, 115%, 125%, and 150% scaling for optimal clarity on high-resolution displays.
+            </li>
+          </ul>
+        </div>
+      ),
+    },
+    {
       id: 'highlighting',
       category: '3. Editor & Syntax',
       title: 'Color Highlighting & Selection Execution',

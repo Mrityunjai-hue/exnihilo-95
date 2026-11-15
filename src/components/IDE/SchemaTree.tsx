@@ -528,6 +528,11 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                           {/* Table row */}
                           <div
                             className="win95-tree-item"
+                            draggable={true}
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('text/plain', entry.tableName);
+                              e.dataTransfer.effectAllowed = 'copy';
+                            }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
@@ -538,7 +543,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                             }}
                             onClick={() => onSelectTable(entry.tableName, `SELECT * FROM ${entry.tableName};`)}
                             onContextMenu={e => handleTableContextMenu(e, entry)}
-                            title="Left-click to SELECT • Right-click for options"
+                            title="Left-click to SELECT • Drag table name into Editor • Right-click for options"
                           >
                             <span
                               style={{
@@ -619,6 +624,11 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                 return (
                                   <div
                                     key={col.name}
+                                    draggable={true}
+                                    onDragStart={(e) => {
+                                      e.dataTransfer.setData('text/plain', col.name);
+                                      e.dataTransfer.effectAllowed = 'copy';
+                                    }}
                                     style={{
                                       display: 'flex',
                                       justifyContent: 'space-between',
@@ -628,7 +638,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                       borderRadius: isMac ? 4 : 0,
                                     }}
                                     onClick={e => { e.stopPropagation(); onSelectTable(entry.tableName, `SELECT ${col.name} FROM ${entry.tableName};`); }}
-                                    title={`SELECT ${col.name}`}
+                                    title={`Click to SELECT • Drag "${col.name}" into SQL Editor`}
                                   >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: isMac ? 5 : 3 }}>
                                       <span style={{ fontSize: isMac ? 13 : 11 }}>{isPk ? '🔑' : isFk ? '🔗' : '📄'}</span>

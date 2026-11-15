@@ -83,9 +83,9 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
       action: 'ide',
     },
     {
-      title: '4. 1-Click SQL Beautifier / Formatter',
+      title: '4. 1-Click SQL Beautifier & Dialect Translator',
       content:
-        'Click "Format" to automatically convert keywords (SELECT, FROM, WHERE, JOIN) to uppercase and format clause line breaks cleanly.',
+        'Click "Format" to automatically uppercase keywords and format clauses cleanly. Click "Translate" to convert dialect sugar (Oracle ROWNUM, T-SQL TOP, Snowflake QUALIFY, NVL) into clean standard ANSI SQL on the fly!',
       targetId: 'btn-format',
       action: 'ide',
     },
@@ -97,9 +97,9 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
       action: 'ide',
     },
     {
-      title: '6. CodeMirror 6 Syntax Highlighting Editor',
+      title: '6. Retro IntelliSense Autocomplete Editor',
       content:
-        'Write SQL with intelligent autocomplete, high-contrast syntax highlighting (Strings in Green, Numbers in Purple, Operators in Crimson, Keywords in Bold Navy), line numbers, and bracket matching.',
+        'Write SQL with intelligent retro autocomplete! Features floating Win95 tooltip popovers for keywords, multi-dialect functions (REGEXP_LIKE, ST_Distance, NVL2, DECODE), active tables, and columns with type badges.',
       targetId: 'tour-query-editor',
       action: 'ide',
     },
@@ -113,7 +113,7 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
     {
       title: '8. Visual Query Execution Plan & Optimizer',
       content:
-        'Analyze query performance with Tools ➔ ⚡ Explain Query Plan! View an interactive hierarchical execution tree with branch connectors, full table scan warnings, temp B-tree sort detection, and index recommendations.',
+        'Analyze query performance with "Explain"! Inspect an interactive hierarchical execution tree with branch connectors, full table scan warnings, temp B-tree sort detection, and index recommendations.',
       targetId: 'btn-explain',
       action: 'ide',
     },
@@ -125,9 +125,9 @@ export const Win95Tour: React.FC<Win95TourProps> = ({
       action: 'erd',
     },
     {
-      title: '10. Database Navigator & Schema Explorer',
+      title: '10. Database Navigator with Column Drag & Drop',
       content:
-        'Inspect all materialized tables, columns, logical types, and foreign key badges. Run 1-click COUNT(*) queries or view generated CREATE TABLE DDL schemas.',
+        'Inspect all materialized tables, columns, logical types, and foreign key badges. Drag and drop any table or column name directly from this pane into the SQL Editor at your cursor!',
       targetId: 'tour-schema-tree',
       action: 'ide',
     },

@@ -26,6 +26,7 @@ import { CreateDatabaseDialog } from './CreateDatabaseDialog';
 import { CreateTableWizard } from './CreateTableWizard';
 import { useTheme } from '../../hooks/useTheme';
 import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
+import { hasDialectSugar, transpileDialectSugar } from '../../engine/transpiler';
 
 import {
   useWorkspaceStorage,
@@ -566,33 +567,74 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     onQueryChange(newText);
   };
 
-  // SQL Beautifier / Formatter
+  // SQL Beautifier / Formatter (Enhanced for Multi-Dialect & Procedural)
   const handleFormatSql = () => {
     const raw = activeTab.queryText;
     if (!raw.trim()) return;
 
-    // Standardize SQL keywords to uppercase
+    // Standardize all SQL keywords and clauses to uppercase
     const keywords = [
-      'SELECT', 'FROM', 'WHERE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'OUTER JOIN',
-      'ON', 'GROUP BY', 'ORDER BY', 'HAVING', 'WITH', 'AS', 'LIMIT', 'OFFSET', 'UNION', 'ALL',
-      'AND', 'OR', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM', 'CREATE TABLE', 'DROP TABLE',
-      'ASC', 'DESC', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'IS NULL', 'IS NOT NULL'
+      'SELECT', 'FROM', 'WHERE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'OUTER JOIN', 'FULL JOIN', 'CROSS JOIN',
+      'ON', 'GROUP BY', 'ORDER BY', 'HAVING', 'WITH', 'RECURSIVE', 'AS', 'LIMIT', 'OFFSET', 'UNION', 'ALL',
+      'AND', 'OR', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM', 'CREATE TABLE', 'DROP TABLE', 'ALTER TABLE',
+      'ASC', 'DESC', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'IS NULL', 'IS NOT NULL',
+      'QUALIFY', 'ROWNUM', 'PIVOT', 'UNPIVOT', 'DECLARE', 'PRINT', 'EXEC', 'sp_executesql', 'EXECUTE IMMEDIATE',
+      'GRANT', 'REVOKE', 'CREATE USER', 'BACKUP DATABASE', 'OPTIMIZE TABLE', 'VACUUM FULL'
     ];
 
     let formatted = raw;
     keywords.forEach((kw) => {
-      const regex = new RegExp(`\\b${kw}\\b`, 'gi');
+      const regex = new RegExp(`\\b${kw.replace(/\s+/g, '\\s+')}\\b`, 'gi');
       formatted = formatted.replace(regex, kw);
     });
 
     // Add line breaks before major clause keywords
-    const breakKeywords = ['FROM', 'WHERE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT'];
+    const breakKeywords = [
+      'FROM', 'WHERE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'FULL JOIN', 'CROSS JOIN',
+      'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT', 'OFFSET', 'QUALIFY', 'UNION ALL', 'UNION', 'SET', 'VALUES'
+    ];
     breakKeywords.forEach((kw) => {
-      const regex = new RegExp(`\\s+(${kw})\\b`, 'g');
+      const regex = new RegExp(`\\s+(${kw.replace(/\s+/g, '\\s+')})\\b`, 'g');
       formatted = formatted.replace(regex, `\n$1`);
     });
 
     handleActiveQueryChange(formatted);
+  };
+
+  // One-Click Dialect Translator
+  const handleTranslateDialect = () => {
+    const raw = activeTab.queryText;
+    if (!raw.trim()) return;
+
+    // 1. Transpile dialect sugar (QUALIFY, ROWNUM, PIVOT) via engine transpiler
+    if (hasDialectSugar(raw)) {
+      const transpiled = transpileDialectSugar(raw);
+      handleActiveQueryChange(transpiled);
+      return;
+    }
+
+    // 2. T-SQL TOP N translation to LIMIT N
+    if (/SELECT\s+TOP\s+(\d+)\s+([\s\S]+?)\s+FROM\b/i.test(raw)) {
+      const converted = raw.replace(/SELECT\s+TOP\s+(\d+)\s+([\s\S]+?)\s+FROM\b/i, 'SELECT $2 FROM')
+        .replace(/;?$/, ' LIMIT $1;');
+      handleActiveQueryChange(converted);
+      return;
+    }
+
+    // 3. Oracle NVL to ANSI COALESCE
+    if (/\bNVL\s*\(/i.test(raw)) {
+      handleActiveQueryChange(raw.replace(/\bNVL\s*\(/gi, 'COALESCE('));
+      return;
+    }
+
+    // 4. T-SQL LEN to ANSI LENGTH
+    if (/\bLEN\s*\(/i.test(raw)) {
+      handleActiveQueryChange(raw.replace(/\bLEN\s*\(/gi, 'LENGTH('));
+      return;
+    }
+
+    // Default: run formatter if no dialect sugar detected
+    handleFormatSql();
   };
 
   const handleSelectTable = (tableName: string, querySql?: string) => {
@@ -933,6 +975,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         onRun={handleExecute}
         onReset={handleReset}
         onFormatSql={handleFormatSql}
+        onTranslateDialect={handleTranslateDialect}
         onOpenExplainPlan={() => setIsExplainPlanOpen(true)}
         onInsertTemplate={handleInsertTemplate}
         onToggleHistory={() => setIsHistoryOpen(true)}

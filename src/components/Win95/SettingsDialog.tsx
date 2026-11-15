@@ -37,8 +37,23 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const [localRows, setLocalRows] = useState<number>(rowsPerTable);
   const [localCap, setLocalCap] = useState<number>(tableCap);
   const [localDialect, setLocalDialect] = useState<Dialect>(currentDialect);
+  const [uiScale, setUiScale] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('exnihilo_ui_scale') || '1';
+    }
+    return '1';
+  });
   const { position, handleMouseDown } = useDraggable({ x: 220, y: 110 });
   const { activeTheme, setTheme } = useTheme();
+
+  const handleScaleChange = (scale: string) => {
+    setUiScale(scale);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('exnihilo_ui_scale', scale);
+      document.documentElement.style.setProperty('--ide-scale', scale);
+      (document.body.style as any).zoom = scale === '1' ? '' : scale;
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -258,6 +273,33 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                   </p>
                 </fieldset>
               )}
+
+              {/* HiDPI Display & UI Zoom */}
+              <fieldset style={{ border: '1px solid var(--w95-dark-gray, #808080)', padding: '10px', marginTop: '12px' }}>
+                <legend style={{ padding: '0 4px', fontSize: '11px', fontWeight: 'bold' }}>
+                  🔍 HiDPI Display & UI Zoom
+                </legend>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <label htmlFor="uiScaleSelect" style={{ fontSize: '11px' }}>
+                    <strong>Desktop Scale:</strong>
+                  </label>
+                  <select
+                    id="uiScaleSelect"
+                    value={uiScale}
+                    onChange={(e) => handleScaleChange(e.target.value)}
+                    className="win95-sunken"
+                    style={{ padding: '2px 6px', fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
+                  >
+                    <option value="1">100% (Standard 1024x768)</option>
+                    <option value="1.15">115% (Comfortable)</option>
+                    <option value="1.25">125% (Large / HiDPI)</option>
+                    <option value="1.5">150% (Ultra-Large / 4K)</option>
+                  </select>
+                </div>
+                <p style={{ margin: '6px 0 0 0', fontSize: '10px', opacity: 0.8 }}>
+                  Scales retro windows, fonts, and controls for modern high-DPI and 4K displays.
+                </p>
+              </fieldset>
             </div>
           )}
 
