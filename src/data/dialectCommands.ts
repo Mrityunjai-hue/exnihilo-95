@@ -22,7 +22,10 @@ export type CommandCategory =
   | 'Date & Time'
   | 'JSON & Semi-Structured'
   | 'Aggregate & Math'
-  | 'Advanced & Windowing';
+  | 'Advanced & Windowing'
+  | 'Procedural & Dynamic SQL'
+  | 'GIS & Spatial'
+  | 'Admin & Security';
 
 export interface DialectVariation {
   dialect: DialectName;
@@ -824,6 +827,260 @@ export const SQL_DICTIONARY_ITEMS: SQLDictionaryItem[] = [
     status: 'supported',
     example: 'WITH RECURSIVE org AS (SELECT id, name, manager_id, 1 AS depth FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.name, e.manager_id, o.depth + 1 FROM employees e JOIN org o ON e.manager_id = o.id) SELECT * FROM org;',
     notes: 'Standard ANSI SQL syntax for hierarchical tree traversal. Executable live in ExNihilo 95.'
+  },
+
+  // ── 11. Regular Expressions (String Functions) ──────────────────────────────
+  {
+    id: 'string-regexp',
+    command: 'REGEXP / REGEXP_LIKE()',
+    syntax: "expr REGEXP 'pattern' OR REGEXP_LIKE(source_str, pattern, [flags])",
+    description: 'Matches strings against regular expressions with optional case sensitivity flags.',
+    category: 'String Functions',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT name, email FROM users WHERE email REGEXP '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$';",
+    notes: 'Supported in all dialects in ExNihilo 95 via in-WASM pure regular expression evaluation.'
+  },
+  {
+    id: 'string-regexp-substr',
+    command: 'REGEXP_SUBSTR()',
+    syntax: "REGEXP_SUBSTR(source_str, 'pattern')",
+    description: 'Extracts the first substring matching a specified regular expression pattern.',
+    category: 'String Functions',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT REGEXP_SUBSTR('Invoice #INV-9842 verified', 'INV-\\d+') AS invoice_code;",
+    notes: 'Returns NULL if no match is found.'
+  },
+  {
+    id: 'string-regexp-replace',
+    command: 'REGEXP_REPLACE()',
+    syntax: "REGEXP_REPLACE(source_str, 'pattern', 'replacement', [flags])",
+    description: 'Replaces substrings matching a regular expression with a substitution string.',
+    category: 'String Functions',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT REGEXP_REPLACE('Call 555-1234 or 555-5678', '\\d{3}-\\d{4}', '[REDACTED]', 'g') AS masked_phone;",
+    notes: 'Flags default to global replacement (g).'
+  },
+
+  // ── 12. GIS & Spatial Primitives ────────────────────────────────────────────
+  {
+    id: 'gis-st-point',
+    command: 'ST_Point() / ST_X() / ST_Y()',
+    syntax: 'ST_Point(x, y) / ST_X(geom) / ST_Y(geom)',
+    description: 'Constructs 2D GeoJSON Point geometries and extracts X (longitude) or Y (latitude) coordinates.',
+    category: 'GIS & Spatial',
+    dialects: ['PostgreSQL', 'MySQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT ST_X(ST_Point(-73.985, 40.748)) AS lon, ST_Y(ST_Point(-73.985, 40.748)) AS lat;',
+    notes: 'Standard geospatial geometry constructor compatible with PostGIS and BigQuery GIS.'
+  },
+  {
+    id: 'gis-st-distance',
+    command: 'ST_Distance()',
+    syntax: 'ST_Distance(geom1, geom2)',
+    description: 'Calculates the planar Euclidean distance between two spatial points or geometries.',
+    category: 'GIS & Spatial',
+    dialects: ['PostgreSQL', 'MySQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT branch_name, ROUND(ST_Distance(ST_Point(user_x, user_y), ST_Point(branch_x, branch_y)), 2) AS distance_km FROM branches;',
+    notes: 'Computes sqrt((x2-x1)^2 + (y2-y1)^2) in pure JavaScript in-WASM runtime.'
+  },
+  {
+    id: 'gis-st-contains',
+    command: 'ST_Contains()',
+    syntax: 'ST_Contains(polygon_geom, point_geom)',
+    description: 'Evaluates whether a 2D spatial polygon completely encloses a target point using 2D ray casting.',
+    category: 'GIS & Spatial',
+    dialects: ['PostgreSQL', 'MySQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT delivery_id FROM deliveries WHERE ST_Contains('{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[10,0],[10,10],[0,10],[0,0]]]}', ST_Point(5, 5)) = 1;",
+    notes: 'Returns 1 if polygon encloses the point; returns 0 otherwise.'
+  },
+
+  // ── 13. Multi-Dialect Helpers ───────────────────────────────────────────────
+  {
+    id: 'null-nvl2',
+    command: 'NVL2()',
+    syntax: 'NVL2(expr, not_null_return, null_return)',
+    description: 'Returns not_null_return if expr is NOT NULL, or null_return if expr IS NULL.',
+    category: 'Null Handling',
+    dialects: ['PostgreSQL', 'SQLite', 'MySQL', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT name, NVL2(commission_pct, 'Commission Eligible', 'Salaried Only') AS compensation_plan FROM employees;",
+    notes: 'Oracle and Snowflake conditional null evaluation helper.'
+  },
+  {
+    id: 'adv-decode',
+    command: 'DECODE()',
+    syntax: 'DECODE(expr, search1, result1, search2, result2, ..., [default])',
+    description: 'Provides IF-THEN-ELSE variable-argument matching logic across discrete values.',
+    category: 'Advanced & Windowing',
+    dialects: ['PostgreSQL', 'SQLite', 'MySQL', 'TransactSQL'],
+    status: 'supported',
+    example: "SELECT order_id, DECODE(status_code, 1, 'Pending', 2, 'Processing', 3, 'Shipped', 'Unknown') AS order_status FROM orders;",
+    notes: 'Oracle DECODE supported variadically (-1 arity) in ExNihilo 95.'
+  },
+  {
+    id: 'math-greatest-least',
+    command: 'GREATEST() / LEAST()',
+    syntax: 'GREATEST(val1, val2, ...) / LEAST(val1, val2, ...)',
+    description: 'Returns the maximum or minimum scalar value across a list of arguments or column values.',
+    category: 'Aggregate & Math',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT product_id, GREATEST(wholesale_cost, minimum_advertised_price, 9.99) AS floor_price FROM products;',
+    notes: 'Standard SQL comparison: returns NULL if any argument is NULL.'
+  },
+  {
+    id: 'date-getdate-sysdate',
+    command: 'GETDATE() / SYSDATE',
+    syntax: 'GETDATE() / SYSDATE',
+    description: 'Returns the current database timestamp without requiring arguments.',
+    category: 'Date & Time',
+    dialects: ['TransactSQL', 'PostgreSQL', 'SQLite', 'MySQL'],
+    status: 'supported',
+    example: 'SELECT order_id, GETDATE() AS audit_timestamp FROM orders;',
+    notes: 'T-SQL and Oracle current timestamp aliases.'
+  },
+
+  // ── 14. Advanced Analytical Sugar (Transpiled) ──────────────────────────────
+  {
+    id: 'adv-qualify',
+    command: 'QUALIFY',
+    syntax: 'SELECT ... FROM table QUALIFY window_condition;',
+    description: 'Filters the results of window functions directly without an explicit subquery or CTE wrapper.',
+    category: 'Advanced & Windowing',
+    dialects: ['PostgreSQL', 'SQLite', 'MySQL', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT dept_id, emp_name, salary, RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) as rk FROM employees QUALIFY rk <= 3;',
+    notes: 'Snowflake / BigQuery standard analytical clause, transpiled to ANSI CTE stage in ExNihilo 95.'
+  },
+  {
+    id: 'dml-rownum',
+    command: 'ROWNUM',
+    syntax: 'SELECT ... FROM table WHERE ROWNUM <= N;',
+    description: 'Oracle pseudo-column limiting the number of rows returned by a query.',
+    category: 'DML & Querying',
+    dialects: ['PostgreSQL', 'SQLite', 'MySQL', 'TransactSQL'],
+    status: 'supported',
+    example: 'SELECT * FROM high_value_accounts WHERE ROWNUM <= 10;',
+    notes: 'Transpiled cleanly to standard LIMIT clause.'
+  },
+  {
+    id: 'adv-pivot',
+    command: 'PIVOT',
+    syntax: 'SELECT ... FROM table PIVOT (agg_func(val) FOR pivot_col IN (v1, v2, ...)) AS pvt;',
+    description: 'Rotates rows into columns by aggregating a value column across discrete column categories.',
+    category: 'Advanced & Windowing',
+    dialects: ['TransactSQL', 'PostgreSQL', 'SQLite', 'MySQL'],
+    status: 'supported',
+    example: "SELECT * FROM quarterly_revenue PIVOT (SUM(revenue) FOR quarter IN ('Q1', 'Q2', 'Q3', 'Q4')) AS pvt;",
+    notes: 'T-SQL and Oracle PIVOT transpiled to ANSI conditional CASE aggregations.'
+  },
+
+  // ── 15. Procedural & Dynamic SQL ───────────────────────────────────────────
+  {
+    id: 'proc-declare',
+    command: 'DECLARE @variable',
+    syntax: 'DECLARE @var_name DATA_TYPE [= default_expr];',
+    description: 'Declares and initializes session variables for procedural query batches and scripts.',
+    category: 'Procedural & Dynamic SQL',
+    dialects: ['TransactSQL', 'MySQL'],
+    status: 'supported',
+    example: 'DECLARE @min_salary INT = 60000; SELECT * FROM employees WHERE salary >= @min_salary;',
+    notes: 'Variables are maintained in session memory and substituted at execution time.'
+  },
+  {
+    id: 'proc-set',
+    command: 'SET @variable',
+    syntax: 'SET @var_name = expr | (SELECT ...);',
+    description: 'Assigns scalar values or subquery results to an active declared variable.',
+    category: 'Procedural & Dynamic SQL',
+    dialects: ['TransactSQL', 'MySQL'],
+    status: 'supported',
+    example: 'DECLARE @top_earner TEXT; SET @top_earner = (SELECT name FROM employees ORDER BY salary DESC LIMIT 1); SELECT @top_earner AS highest_paid;',
+    notes: 'Supports scalar subqueries and arithmetic expressions.'
+  },
+  {
+    id: 'proc-if-else',
+    command: 'IF ... BEGIN ... END ELSE',
+    syntax: 'IF <condition> BEGIN ... END [ELSE BEGIN ... END]',
+    description: 'Conditionally executes procedural statement blocks based on expression truth values.',
+    category: 'Procedural & Dynamic SQL',
+    dialects: ['TransactSQL', 'PostgreSQL'],
+    status: 'supported',
+    example: "DECLARE @stock INT = 5; IF @stock < 10 BEGIN PRINT 'Restock required!'; SELECT 'ALERT' AS status, @stock AS remaining; END;",
+    notes: 'Includes infinite loop guards and statement batch isolation.'
+  },
+  {
+    id: 'proc-print',
+    command: 'PRINT',
+    syntax: "PRINT 'message' | @var_name;",
+    description: 'Streams diagnostic and audit text messages directly to the client console output.',
+    category: 'Procedural & Dynamic SQL',
+    dialects: ['TransactSQL'],
+    status: 'supported',
+    example: "PRINT 'Forensic audit batch initialized successfully.';",
+    notes: 'Outputs directly into execution status message and console panes.'
+  },
+  {
+    id: 'proc-sp-executesql',
+    command: 'EXEC sp_executesql / EXECUTE IMMEDIATE',
+    syntax: 'EXEC sp_executesql @stmt; OR EXECUTE IMMEDIATE <string_expr>;',
+    description: 'Executes dynamically constructed SQL queries stored in string variables.',
+    category: 'Procedural & Dynamic SQL',
+    dialects: ['TransactSQL', 'PostgreSQL'],
+    status: 'supported',
+    example: "DECLARE @sql TEXT = 'SELECT * FROM inventory WHERE stock < 10'; EXEC sp_executesql @sql;",
+    notes: 'Dynamic SQL queries are parsed, inferred, and executed in the WASM engine.'
+  },
+
+  // ── 16. Administration & Security Sandbox ──────────────────────────────────
+  {
+    id: 'admin-grant-revoke',
+    command: 'GRANT / REVOKE',
+    syntax: 'GRANT privilege ON object TO grantee; OR REVOKE privilege ON object FROM grantee;',
+    description: 'Manages object-level and role-level security permissions in the database catalog.',
+    category: 'Admin & Security',
+    dialects: ['PostgreSQL', 'MySQL', 'TransactSQL'],
+    status: 'supported',
+    example: 'GRANT SELECT, INSERT ON customer_accounts TO financial_analyst;',
+    notes: 'Simulated in ExNihilo 95 with structured session security audit logs.'
+  },
+  {
+    id: 'admin-create-user',
+    command: 'CREATE USER',
+    syntax: "CREATE USER 'username' IDENTIFIED BY 'password';",
+    description: 'Provisions new database user authentication credentials into the session catalog.',
+    category: 'Admin & Security',
+    dialects: ['MySQL', 'PostgreSQL', 'TransactSQL'],
+    status: 'supported',
+    example: "CREATE USER 'sec_auditor' IDENTIFIED BY 'Vault95!Secure';",
+    notes: 'Records user accounts in the session catalog with native hashing status.'
+  },
+  {
+    id: 'admin-backup-database',
+    command: 'BACKUP DATABASE',
+    syntax: "BACKUP DATABASE db_name TO DISK = 'filepath';",
+    description: 'Creates a full in-memory SQLite binary snapshot of the database for backup and export.',
+    category: 'Admin & Security',
+    dialects: ['TransactSQL', 'SQLite'],
+    status: 'supported',
+    example: "BACKUP DATABASE master TO DISK = 'C:\\backups\\master.bak';",
+    notes: 'Generates a real SQLite WASM binary snapshot export.'
+  },
+  {
+    id: 'admin-optimize-vacuum',
+    command: 'OPTIMIZE TABLE / VACUUM FULL',
+    syntax: 'OPTIMIZE TABLE table_name; OR VACUUM FULL;',
+    description: 'Defragments storage, reclaims deleted page space, and optimizes table indexes.',
+    category: 'Admin & Security',
+    dialects: ['MySQL', 'PostgreSQL', 'SQLite'],
+    status: 'supported',
+    example: 'OPTIMIZE TABLE customer_orders;',
+    notes: 'Executes VACUUM on the in-memory SQLite database.'
   }
 ];
 

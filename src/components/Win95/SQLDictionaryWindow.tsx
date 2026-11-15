@@ -69,6 +69,9 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
     'JSON & Semi-Structured',
     'Aggregate & Math',
     'Advanced & Windowing',
+    'Procedural & Dynamic SQL',
+    'GIS & Spatial',
+    'Admin & Security',
   ];
 
 
