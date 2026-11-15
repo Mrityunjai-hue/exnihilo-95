@@ -38,6 +38,9 @@ import { buildTableGenerationPlan } from './relationships';
 import { generateSyntheticDataset, GeneratorOptions, generateCreateTableSql, generateInsertSql } from './generator';
 import { SessionCatalog, globalCatalog } from './catalog';
 import { continualLearner } from './continual_learner';
+import { isAdminCommand, AdminSimulator } from './admin_simulator';
+import { isProceduralScript, ProceduralRunner } from './procedural_runner';
+import { hasDialectSugar, transpileDialectSugar } from './transpiler';
 
 // Module-level WASM binary loader singleton — avoids compiling WASM on each SQLExecutor instance
 let _sqlJsModulePromise: Promise<SqlJsStatic> | null = null;
@@ -74,6 +77,7 @@ export interface ExecutionSuccess {
   inferredTables:  string[];
   reusedTables:    string[];
   allResults?:     SingleQueryResult[];
+  message?:        string;
 }
 
 export interface ExecutionFailure {
@@ -280,6 +284,194 @@ export function evalPgJsonExtract(jsonVal: any, key: any, asText = false): any {
     return typeof res === 'object' && res !== null ? JSON.stringify(res) : String(res);
   }
   return typeof res === 'object' && res !== null ? JSON.stringify(res) : (typeof res === 'string' ? `"${res}"` : String(res));
+}
+
+// ── Regular Expression Evaluators ─────────────────────────────────────────────
+
+export function evalRegexp(pattern: any, str: any): number {
+  if (pattern === null || pattern === undefined || str === null || str === undefined) return 0;
+  try {
+    return new RegExp(String(pattern), 'i').test(String(str)) ? 1 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function evalRegexpLike(str: any, pattern: any, flags?: any): number {
+  if (pattern === null || pattern === undefined || str === null || str === undefined) return 0;
+  try {
+    const f = flags ? String(flags) : 'i';
+    return new RegExp(String(pattern), f).test(String(str)) ? 1 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function evalRegexpSubstr(str: any, pattern: any): string | null {
+  if (pattern === null || pattern === undefined || str === null || str === undefined) return null;
+  try {
+    const match = String(str).match(new RegExp(String(pattern)));
+    return match ? match[0] : null;
+  } catch {
+    return null;
+  }
+}
+
+export function evalRegexpReplace(str: any, pattern: any, replacement?: any, flags?: any): string | null {
+  if (str === null || str === undefined) return null;
+  if (pattern === null || pattern === undefined) return String(str);
+  try {
+    const f = flags ? String(flags) : 'g';
+    return String(str).replace(new RegExp(String(pattern), f), String(replacement ?? ''));
+  } catch {
+    return String(str);
+  }
+}
+
+// ── GIS Spatial Evaluators ───────────────────────────────────────────────────
+
+export function evalStPoint(x: any, y: any): string | null {
+  if (x === null || x === undefined || y === null || y === undefined) return null;
+  const numX = Number(x);
+  const numY = Number(y);
+  if (isNaN(numX) || isNaN(numY)) return null;
+  return JSON.stringify({ type: 'Point', coordinates: [numX, numY] });
+}
+
+function parsePointCoords(geom: any): [number, number] | null {
+  if (geom === null || geom === undefined) return null;
+  if (typeof geom === 'object' && geom !== null) {
+    if (Array.isArray(geom.coordinates) && geom.coordinates.length >= 2) {
+      return [Number(geom.coordinates[0]), Number(geom.coordinates[1])];
+    }
+  }
+  const s = String(geom).trim();
+  if (s.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(s);
+      if (parsed && Array.isArray(parsed.coordinates) && parsed.coordinates.length >= 2) {
+        return [Number(parsed.coordinates[0]), Number(parsed.coordinates[1])];
+      }
+    } catch {
+      // Not JSON
+    }
+  }
+  const pointMatch = s.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
+  if (pointMatch) {
+    return [Number(pointMatch[1]), Number(pointMatch[2])];
+  }
+  const commaParts = s.split(',');
+  if (commaParts.length === 2) {
+    const x = Number(commaParts[0].trim());
+    const y = Number(commaParts[1].trim());
+    if (!isNaN(x) && !isNaN(y)) return [x, y];
+  }
+  return null;
+}
+
+export function evalStX(geom: any): number | null {
+  const coords = parsePointCoords(geom);
+  return coords ? coords[0] : null;
+}
+
+export function evalStY(geom: any): number | null {
+  const coords = parsePointCoords(geom);
+  return coords ? coords[1] : null;
+}
+
+export function evalStDistance(p1: any, p2: any): number | null {
+  const c1 = parsePointCoords(p1);
+  const c2 = parsePointCoords(p2);
+  if (!c1 || !c2) return null;
+  return Math.hypot(c2[0] - c1[0], c2[1] - c1[1]);
+}
+
+export function evalStContains(polyGeom: any, ptGeom: any): number {
+  const pt = parsePointCoords(ptGeom);
+  if (!pt) return 0;
+  const [px, py] = pt;
+
+  let rings: [number, number][] | null = null;
+  if (typeof polyGeom === 'object' && polyGeom !== null) {
+    if (Array.isArray(polyGeom.coordinates)) {
+      rings = polyGeom.coordinates[0] || polyGeom.coordinates;
+    }
+  } else if (typeof polyGeom === 'string') {
+    try {
+      const parsed = JSON.parse(polyGeom);
+      if (parsed && Array.isArray(parsed.coordinates)) {
+        rings = Array.isArray(parsed.coordinates[0]) && Array.isArray(parsed.coordinates[0][0])
+          ? parsed.coordinates[0]
+          : parsed.coordinates;
+      }
+    } catch {
+      // Not JSON
+    }
+  }
+
+  if (!rings || !Array.isArray(rings) || rings.length < 3) return 0;
+
+  let inside = false;
+  for (let i = 0, j = rings.length - 1; i < rings.length; j = i++) {
+    const xi = Number(rings[i][0]);
+    const yi = Number(rings[i][1]);
+    const xj = Number(rings[j][0]);
+    const yj = Number(rings[j][1]);
+    const intersect = ((yi > py) !== (yj > py)) &&
+                      (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside ? 1 : 0;
+}
+
+// ── Multi-Dialect Helper Functions ────────────────────────────────────────────
+
+export function evalNvl2(val: any, ifNotNull: any, ifNull: any): any {
+  return (val !== null && val !== undefined) ? ifNotNull : ifNull;
+}
+
+export function evalDecode(val: any, ...args: any[]): any {
+  if (args.length === 0) return null;
+  for (let i = 0; i < args.length - 1; i += 2) {
+    const search = args[i];
+    const result = args[i + 1];
+    if (val === search || (val == search) || (val === null && search === null)) {
+      return result;
+    }
+  }
+  return args.length % 2 === 1 ? args[args.length - 1] : null;
+}
+
+export function evalGreatest(...args: any[]): any {
+  const clean = args.filter(a => a !== undefined && a !== null);
+  if (clean.length === 0) return null;
+  if (clean.length < args.length) return null; // Standard SQL behavior: NULL argument produces NULL
+  const allNumbers = clean.every(a => !isNaN(Number(a)) && typeof a !== 'boolean');
+  if (allNumbers) {
+    return Math.max(...clean.map(Number));
+  }
+  return clean.reduce((max, curr) => String(curr) > String(max) ? curr : max, clean[0]);
+}
+
+export function evalLeast(...args: any[]): any {
+  const clean = args.filter(a => a !== undefined && a !== null);
+  if (clean.length === 0) return null;
+  if (clean.length < args.length) return null; // Standard SQL behavior: NULL argument produces NULL
+  const allNumbers = clean.every(a => !isNaN(Number(a)) && typeof a !== 'boolean');
+  if (allNumbers) {
+    return Math.min(...clean.map(Number));
+  }
+  return clean.reduce((min, curr) => String(curr) < String(min) ? curr : min, clean[0]);
+}
+
+export function evalGetDate(): string {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${now.getUTCFullYear()}-${pad(now.getUTCMonth() + 1)}-${pad(now.getUTCDate())} ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
+}
+
+export function evalSysDate(): string {
+  return evalGetDate();
 }
 
 // ── Multi-Pass Window Function Execution Pipeline ─────────────────────────────
@@ -600,20 +792,78 @@ export class SQLExecutor {
   }
 
   private registerCustomFunctions(db: Database): void {
-    db.create_function('COALESCE', evalCoalesce);
-    db.create_function('NULLIF', evalNullif);
-    db.create_function('CONCAT', evalConcat);
-    db.create_function('SUBSTRING', evalSubstring);
-    db.create_function('SUBSTR', evalSubstring);
-    db.create_function('DATE_FORMAT', evalDateFormat);
-    db.create_function('TO_CHAR', evalToChar);
-    db.create_function('strftime', evalStrftime);
-    db.create_function('FORMAT', evalFormatMssql);
-    db.create_function('JSON_EXTRACT', evalJsonExtract);
-    db.create_function('JSON_VALUE', evalJsonValue);
-    db.create_function('JSON_QUERY', evalJsonQuery);
-    db.create_function('PG_JSON_EXTRACT', (val: any, key: any) => evalPgJsonExtract(val, key, false));
-    db.create_function('PG_JSON_EXTRACT_TEXT', (val: any, key: any) => evalPgJsonExtract(val, key, true));
+    const SQLITE_INTERNAL_BLACKLIST = new Set([
+      'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'TOTAL', 'ABS', 'TYPEOF', 'LENGTH',
+      'LOWER', 'UPPER', 'INSTR', 'TRIM', 'LTRIM', 'RTRIM', 'HEX', 'QUOTE',
+      'RANDOM', 'ROUND', 'SOUNDEX', 'UNICODE', 'CHAR', 'ZEROBLOB', 'GLOB', 'LIKE'
+    ]);
+
+    const safeRegister = (name: string, fn: (...args: any[]) => any, arity?: number) => {
+      if (SQLITE_INTERNAL_BLACKLIST.has(name.toUpperCase())) return;
+      try {
+        const wrapped = (...args: any[]) => fn(...args);
+        const targetLength = arity !== undefined ? arity : -1;
+        Object.defineProperty(wrapped, 'length', { value: targetLength });
+        db.create_function(name, wrapped);
+      } catch {
+        // Safe fail-soft registration
+      }
+    };
+
+    // Existing functions
+    safeRegister('COALESCE', evalCoalesce, -1);
+    safeRegister('NULLIF', evalNullif, 2);
+    safeRegister('CONCAT', evalConcat, -1);
+    safeRegister('SUBSTRING', evalSubstring, -1);
+    safeRegister('SUBSTR', evalSubstring, -1);
+    safeRegister('DATE_FORMAT', evalDateFormat, 2);
+    safeRegister('TO_CHAR', evalToChar, 2);
+    safeRegister('strftime', evalStrftime, 2);
+    safeRegister('FORMAT', evalFormatMssql, 2);
+    safeRegister('JSON_EXTRACT', evalJsonExtract, 2);
+    safeRegister('JSON_VALUE', evalJsonValue, 2);
+    safeRegister('JSON_QUERY', evalJsonQuery, 2);
+    safeRegister('PG_JSON_EXTRACT', (val: any, key: any) => evalPgJsonExtract(val, key, false), 2);
+    safeRegister('PG_JSON_EXTRACT_TEXT', (val: any, key: any) => evalPgJsonExtract(val, key, true), 2);
+
+    // Phase 1: Regular Expression Functions (PostgreSQL, MySQL, Snowflake, BigQuery, Oracle)
+    safeRegister('REGEXP', evalRegexp, 2);
+    safeRegister('regexp', evalRegexp, 2);
+    safeRegister('REGEXP_LIKE', evalRegexpLike, -1);
+    safeRegister('regexp_like', evalRegexpLike, -1);
+    safeRegister('REGEXP_SUBSTR', evalRegexpSubstr, -1);
+    safeRegister('regexp_substr', evalRegexpSubstr, -1);
+    safeRegister('REGEXP_REPLACE', evalRegexpReplace, -1);
+    safeRegister('regexp_replace', evalRegexpReplace, -1);
+
+    // Phase 1: GIS Spatial Functions (PostGIS, BigQuery GIS)
+    safeRegister('ST_Point', evalStPoint, 2);
+    safeRegister('ST_POINT', evalStPoint, 2);
+    safeRegister('st_point', evalStPoint, 2);
+    safeRegister('ST_X', evalStX, 1);
+    safeRegister('st_x', evalStX, 1);
+    safeRegister('ST_Y', evalStY, 1);
+    safeRegister('st_y', evalStY, 1);
+    safeRegister('ST_Distance', evalStDistance, 2);
+    safeRegister('ST_DISTANCE', evalStDistance, 2);
+    safeRegister('st_distance', evalStDistance, 2);
+    safeRegister('ST_Contains', evalStContains, 2);
+    safeRegister('ST_CONTAINS', evalStContains, 2);
+    safeRegister('st_contains', evalStContains, 2);
+
+    // Phase 1: Multi-Dialect Helper Functions (Oracle, MSSQL, PostgreSQL)
+    safeRegister('NVL2', evalNvl2, 3);
+    safeRegister('nvl2', evalNvl2, 3);
+    safeRegister('DECODE', evalDecode, -1);
+    safeRegister('decode', evalDecode, -1);
+    safeRegister('GREATEST', evalGreatest, -1);
+    safeRegister('greatest', evalGreatest, -1);
+    safeRegister('LEAST', evalLeast, -1);
+    safeRegister('least', evalLeast, -1);
+    safeRegister('GETDATE', evalGetDate, 0);
+    safeRegister('getdate', evalGetDate, 0);
+    safeRegister('SYSDATE', evalSysDate, 0);
+    safeRegister('sysdate', evalSysDate, 0);
   }
 
   private isRehydrated = false;
@@ -779,8 +1029,24 @@ export class SQLExecutor {
       };
     }
 
+    // ── Fast-Path Fall-Through Gate: Administrative & Procedural Classifiers ───
+    if (isAdminCommand(codeWithoutComments)) {
+      return await AdminSimulator.execute(codeWithoutComments, this.db, this.catalog, startTime);
+    }
+
+    if (isProceduralScript(codeWithoutComments)) {
+      return await ProceduralRunner.execute(codeWithoutComments, this, this.db, this.catalog, dialect, startTime);
+    }
+
+    const effectiveQuery = hasDialectSugar(codeWithoutComments)
+      ? transpileDialectSugar(codeWithoutComments)
+      : trimmedQuery;
+
     // ── 1. Parse Query ────────────────────────────────────────────────────────
-    const parseResult = parse(trimmedQuery, dialect);
+    let parseResult = parse(effectiveQuery, dialect);
+    if (!parseResult.ok && effectiveQuery !== trimmedQuery) {
+      parseResult = parse(trimmedQuery, dialect);
+    }
     if (!parseResult.ok) {
       const routineSpecs = extractRoutineStatements(trimmedQuery);
       const triggerSpecs = extractTriggerStatements(trimmedQuery);
@@ -969,7 +1235,7 @@ export class SQLExecutor {
     }
 
     // ── 4. Execute Query in SQLite WASM ───────────────────────────────────────
-    let executableQuery = trimmedQuery
+    let executableQuery = effectiveQuery
       .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->>\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT_TEXT($1, $2)')
       .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT($1, $2)')
       .replace(/\bSTRING_AGG\s*\(\s*([^,]+?)\s*,\s*('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)')
