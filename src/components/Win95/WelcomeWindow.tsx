@@ -6,7 +6,7 @@
  * followed by the guided tour trigger.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from './WindowControls';
 import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
@@ -31,6 +31,15 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
   onFocus,
 }) => {
   const { position, handleMouseDown } = useDraggable({ x: 100, y: 50 });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -110,14 +119,14 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
             lineHeight: '1.6',
           }}
         >
-          <h4 style={{ margin: '0 0 6px 0', color: '#000080', fontSize: '12px' }}>
+          <h4 style={{ margin: '0 0 6px 0', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))', fontSize: '12px' }}>
             💡 What is ExNihilo?
           </h4>
           <p style={{ margin: '0 0 10px 0' }}>
             <em>Ex Nihilo</em> is Latin for <strong>&quot;out of nothing&quot;</strong>. In traditional SQL tools, querying an uncreated table immediately crashes with a <code>Table not found</code> error. ExNihilo analyzes your query&apos;s Abstract Syntax Tree (AST), infers column data types, links foreign keys, and generates realistic synthetic data inside your browser in milliseconds!
           </p>
 
-          <h4 style={{ margin: '10px 0 6px 0', color: '#000080', fontSize: '12px' }}>
+          <h4 style={{ margin: '10px 0 6px 0', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))', fontSize: '12px' }}>
             ⚡ Key Capabilities
           </h4>
           <ul style={{ margin: '0 0 10px 0', paddingLeft: '18px' }}>
@@ -128,23 +137,23 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
           </ul>
 
           {/* Target Audience / Personas Section */}
-          <h4 style={{ margin: '14px 0 6px 0', color: '#000080', fontSize: '12px' }}>
+          <h4 style={{ margin: '14px 0 6px 0', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))', fontSize: '12px' }}>
             🎯 Who is ExNihilo 95 Built For?
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
-            <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 10px', fontSize: '10.5px' }}>
+            <div className="win95-sunken" style={{ background: 'var(--w95-callout-blue-bg, #f8f8ff)', color: 'var(--w95-callout-blue-text, #000000)', padding: '6px 10px', fontSize: '10.5px' }}>
               🎓 <strong>Students &amp; Self-Learners:</strong> Practice SQL instantly with zero DB setup, installation, or dataset imports.
             </div>
-            <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 10px', fontSize: '10.5px' }}>
+            <div className="win95-sunken" style={{ background: 'var(--w95-callout-blue-bg, #f8f8ff)', color: 'var(--w95-callout-blue-text, #000000)', padding: '6px 10px', fontSize: '10.5px' }}>
               💼 <strong>Recruiters &amp; Interviewers:</strong> Conduct live candidate SQL coding interviews without provisioning test database instances.
             </div>
-            <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 10px', fontSize: '10.5px' }}>
+            <div className="win95-sunken" style={{ background: 'var(--w95-callout-blue-bg, #f8f8ff)', color: 'var(--w95-callout-blue-text, #000000)', padding: '6px 10px', fontSize: '10.5px' }}>
               🏫 <strong>Educators &amp; Teachers:</strong> Demonstrate complex queries (JOINs, CTEs, Window Functions) live in class with zero friction.
             </div>
-            <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 10px', fontSize: '10.5px' }}>
+            <div className="win95-sunken" style={{ background: 'var(--w95-callout-blue-bg, #f8f8ff)', color: 'var(--w95-callout-blue-text, #000000)', padding: '6px 10px', fontSize: '10.5px' }}>
               👨‍💻 <strong>Software Developers &amp; DBAs:</strong> Prototype and dry-run query logic before writing migrations or staging tables.
             </div>
-            <div className="win95-sunken" style={{ background: '#f8f8ff', padding: '6px 10px', fontSize: '10.5px' }}>
+            <div className="win95-sunken" style={{ background: 'var(--w95-callout-blue-bg, #f8f8ff)', color: 'var(--w95-callout-blue-text, #000000)', padding: '6px 10px', fontSize: '10.5px' }}>
               🧪 <strong>QA Engineers &amp; Data Analysts:</strong> Test complex query corner-cases against auto-generated relational data on demand.
             </div>
           </div>
@@ -153,8 +162,9 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
           <div
             className="win95-sunken"
             style={{
-              background: '#f7f7f7',
-              border: '1px solid #c0c0c0',
+              background: 'var(--w95-grid-even-bg, #f7f7f7)',
+              border: '1px solid var(--w95-dark-gray, #c0c0c0)',
+              color: 'var(--w95-text-color, #000000)',
               padding: '10px 12px',
               marginTop: '10px',
               borderRadius: '2px',
@@ -168,7 +178,7 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
                   href="https://github.com/Mrityunjai-hue"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: '#0000ee', fontWeight: 'bold', textDecoration: 'underline' }}
+                  style={{ color: 'var(--w95-accent-color, #0000ee)', fontWeight: 'bold', textDecoration: 'underline' }}
                 >
                   Mrityunjai
                 </a>
@@ -183,7 +193,7 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    color: '#0000ee',
+                    color: 'var(--w95-accent-color, #0000ee)',
                     fontWeight: 'bold',
                     textDecoration: 'underline',
                     cursor: 'pointer',
@@ -205,7 +215,7 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
             justifyContent: 'space-between',
             alignItems: 'center',
             paddingTop: '6px',
-            borderTop: '1px solid #808080',
+            borderTop: '1px solid var(--w95-dark-gray, #808080)',
           }}
         >
           <a
@@ -213,7 +223,7 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             className="win95-button"
-            style={{ fontSize: '11px', textDecoration: 'none', color: '#000' }}
+            style={{ fontSize: '11px', textDecoration: 'none', color: 'var(--w95-text-color, #000000)' }}
           >
             🌐 Visit N8N Community
           </a>
@@ -232,7 +242,7 @@ export const WelcomeWindow: React.FC<WelcomeWindowProps> = ({
 
             <button
               className="win95-button"
-              style={{ fontWeight: 'bold', fontSize: '11px', background: '#000080', color: '#ffffff' }}
+              style={{ fontWeight: 'bold', fontSize: '11px', background: 'var(--w95-title-active-bg, #000080)', color: 'var(--w95-title-active-text, #ffffff)' }}
               onClick={() => {
                 onClose();
                 onOpenIDE();

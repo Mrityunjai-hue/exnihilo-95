@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { SavedSnippet, useSnippetsStorage } from '../../hooks/useSnippetsStorage';
 import { Dialect } from '../../engine/parser';
+import { WindowControls } from '../Win95/WindowControls';
 
 interface SnippetsPanelProps {
   isOpen: boolean;
@@ -27,6 +28,16 @@ export const SnippetsPanel: React.FC<SnippetsPanelProps> = ({
   const [newSnippetName, setNewSnippetName] = useState('');
   const [newSnippetTag, setNewSnippetTag] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   const filteredSnippets = useMemo(() => {
     if (!searchQuery.trim()) return snippets;
@@ -93,14 +104,14 @@ export const SnippetsPanel: React.FC<SnippetsPanelProps> = ({
             <span>📚</span>
             <span>Saved Queries & Snippets Library ({snippets.length})</span>
           </div>
-          <div className="win95-titlebar-controls">
-            <button className="win95-btn-titlebar" onClick={onClose}>
-              ✕
-            </button>
-          </div>
+          <WindowControls
+            showMinimize={false}
+            showMaximize={false}
+            onClose={onClose}
+          />
         </div>
 
-        <div style={{ padding: '8px', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ padding: '8px', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--w95-gray, #c0c0c0)', color: 'var(--w95-text-color, #000000)' }}>
           {/* Top action bar with Search and New Snippet button */}
           <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', alignItems: 'center' }}>
             <input
@@ -113,8 +124,9 @@ export const SnippetsPanel: React.FC<SnippetsPanelProps> = ({
                 padding: '4px 6px',
                 fontSize: '11px',
                 fontFamily: 'var(--w95-font)',
-                border: '1px solid #808080',
-                background: '#ffffff',
+                border: '1px solid var(--w95-dark-gray, #808080)',
+                background: 'var(--w95-sunken-bg, #ffffff)',
+                color: 'var(--w95-sunken-text, #000000)',
               }}
             />
             {searchQuery && (
@@ -128,7 +140,7 @@ export const SnippetsPanel: React.FC<SnippetsPanelProps> = ({
             )}
             <button
               className="win95-button"
-              style={{ fontWeight: 'bold', fontSize: '11px', padding: '2px 10px', backgroundColor: isSavingNew ? '#e0e0e0' : undefined }}
+              style={{ fontWeight: 'bold', fontSize: '11px', padding: '2px 10px' }}
               onClick={() => setIsSavingNew(!isSavingNew)}
             >
               💾 Save Current Tab
@@ -143,14 +155,14 @@ export const SnippetsPanel: React.FC<SnippetsPanelProps> = ({
               style={{
                 padding: '8px',
                 marginBottom: '8px',
-                backgroundColor: '#e8ecf0',
-                border: '1px solid #000080',
+                backgroundColor: 'var(--w95-light-gray, #e8ecf0)',
+                border: '1px solid var(--w95-accent-color, #000080)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '6px',
               }}
             >
-              <div style={{ fontWeight: 'bold', fontSize: '11px', color: '#000080' }}>
+              <div style={{ fontWeight: 'bold', fontSize: '11px', color: 'var(--w95-accent-color, #000080)' }}>
                 Save Active Query as Reusable Snippet:
               </div>
               <div style={{ display: 'flex', gap: '6px' }}>
@@ -160,14 +172,14 @@ export const SnippetsPanel: React.FC<SnippetsPanelProps> = ({
                   value={newSnippetName}
                   onChange={(e) => setNewSnippetName(e.target.value)}
                   required
-                  style={{ flex: 2, padding: '3px 6px', fontSize: '11px', background: '#fff', border: '1px solid #808080' }}
+                  style={{ flex: 2, padding: '3px 6px', fontSize: '11px', background: 'var(--w95-sunken-bg, #fff)', color: 'var(--w95-sunken-text, #000)', border: '1px solid var(--w95-dark-gray, #808080)' }}
                 />
                 <input
                   type="text"
                   placeholder="Tags (comma separated, e.g. Finance, Monthly)"
                   value={newSnippetTag}
                   onChange={(e) => setNewSnippetTag(e.target.value)}
-                  style={{ flex: 1, padding: '3px 6px', fontSize: '11px', background: '#fff', border: '1px solid #808080' }}
+                  style={{ flex: 1, padding: '3px 6px', fontSize: '11px', background: 'var(--w95-sunken-bg, #fff)', color: 'var(--w95-sunken-text, #000)', border: '1px solid var(--w95-dark-gray, #808080)' }}
                 />
                 <button type="submit" className="win95-button" style={{ fontWeight: 'bold', fontSize: '11px', padding: '0 12px' }}>
                   Save
@@ -185,9 +197,9 @@ export const SnippetsPanel: React.FC<SnippetsPanelProps> = ({
           )}
 
           {/* Snippets List Container */}
-          <div className="win95-sunken" style={{ flex: 1, overflow: 'auto', background: '#ffffff', padding: '6px' }}>
+          <div className="win95-sunken" style={{ flex: 1, overflow: 'auto', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', padding: '6px', border: '1px solid var(--w95-dark-gray, #808080)' }}>
             {filteredSnippets.length === 0 ? (
-              <div style={{ padding: '30px', color: '#888', textAlign: 'center', fontSize: '11px' }}>
+              <div style={{ padding: '30px', color: 'var(--w95-dark-gray, #888)', textAlign: 'center', fontSize: '11px' }}>
                 {snippets.length === 0 ? 'No snippets saved yet. Click "Save Current Tab" to store your first reusable query!' : 'No snippets match your search criteria.'}
               </div>
             ) : (
@@ -196,25 +208,25 @@ export const SnippetsPanel: React.FC<SnippetsPanelProps> = ({
                   key={item.id}
                   style={{
                     padding: '8px',
-                    borderBottom: '1px solid #e0e0e0',
+                    borderBottom: '1px solid var(--w95-dark-gray, #e0e0e0)',
                     fontSize: '11px',
-                    background: idx % 2 === 0 ? '#fbfbfb' : '#ffffff',
+                    background: idx % 2 === 0 ? 'var(--w95-grid-even-bg, transparent)' : 'var(--w95-grid-odd-bg, transparent)',
                     marginBottom: '4px',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontWeight: 'bold', color: '#000080', fontSize: '12px' }}>{item.name}</span>
-                      <span style={{ fontSize: '10px', background: '#dce8f5', color: '#003366', padding: '1px 5px', borderRadius: '2px' }}>
+                      <span style={{ fontWeight: 'bold', color: 'var(--w95-accent-color, #000080)', fontSize: '12px' }}>{item.name}</span>
+                      <span style={{ fontSize: '10px', background: 'var(--w95-accent-color, #003366)', color: '#ffffff', padding: '1px 6px', borderRadius: '2px', fontWeight: 'bold' }}>
                         {item.dialect}
                       </span>
                       {item.tags?.map((t, ti) => (
-                        <span key={ti} style={{ fontSize: '9px', background: '#eaeaea', color: '#555', padding: '1px 4px', borderRadius: '2px' }}>
+                        <span key={ti} style={{ fontSize: '9px', background: 'var(--w95-light-gray, #eaeaea)', color: 'var(--w95-text-color, #555)', padding: '1px 4px', borderRadius: '2px' }}>
                           #{t}
                         </span>
                       ))}
                     </div>
-                    <span style={{ fontSize: '10px', color: '#888' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--w95-dark-gray, #888)' }}>
                       {new Date(item.createdAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -225,12 +237,12 @@ export const SnippetsPanel: React.FC<SnippetsPanelProps> = ({
                       fontFamily: 'var(--w95-mono)',
                       fontSize: '11px',
                       whiteSpace: 'pre-wrap',
-                      background: '#f4f4f4',
+                      background: 'var(--w95-gray, #f4f4f4)',
                       padding: '6px',
-                      border: '1px solid #ddd',
+                      border: '1px solid var(--w95-dark-gray, #ddd)',
                       maxHeight: '75px',
                       overflow: 'hidden',
-                      color: '#222',
+                      color: 'var(--w95-sunken-text, #222)',
                     }}
                   >
                     {item.sql}

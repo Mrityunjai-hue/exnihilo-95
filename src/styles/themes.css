@@ -339,8 +339,9 @@
 [data-theme="winxp-luna"] .win95-sheet-tab.active {
   background: #ffffff !important;
   color: #0055ea !important;
-  border-top: 3px solid #ff8000 !important;
+  border-top: 4px solid #ff8000 !important;
   border-bottom: 2px solid #ffffff !important;
+  box-shadow: 0 -3px 8px rgba(255, 128, 0, 0.25) !important;
 }
 
 [data-theme="winxp-luna"] .win95-tab-active-pill {
@@ -351,13 +352,9 @@
 [data-theme="win2000"] .win95-sheet-tab.active {
   background: #ffffff !important;
   color: #0a246a !important;
-  border-top: 3px solid #0a246a !important;
+  border-top: 4px solid #0a246a !important;
   border-bottom: 2px solid #ffffff !important;
-}
-
-[data-theme="win2000"] .win95-tab-active-pill {
-  background: #0a246a !important;
-  color: #ffffff !important;
+  box-shadow: 0 -3px 8px rgba(10, 36, 106, 0.25) !important;
 }
 
 [data-theme="win2000"] {
@@ -389,30 +386,10 @@
   --w95-callout-blue-text: #000000;
 }
 
-/* WinXP Luna & Win2000 Detective & Active Tab Overrides */
-[data-theme="winxp-luna"] .win95-sheet-tab.active {
-  background: #ffffff !important;
-  color: #0055ea !important;
-  border-top: 3px solid #ff8000 !important;
-  border-bottom: 2px solid #ffffff !important;
-}
 
-[data-theme="winxp-luna"] .win95-tab-active-pill {
-  background: #ff8000 !important;
-  color: #ffffff !important;
-}
 
-[data-theme="win2000"] .win95-sheet-tab.active {
-  background: #ffffff !important;
-  color: #0a246a !important;
-  border-top: 3px solid #0a246a !important;
-  border-bottom: 2px solid #ffffff !important;
-}
 
-[data-theme="win2000"] .win95-tab-active-pill {
-  background: #0a246a !important;
-  color: #ffffff !important;
-}
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * WINDOWS 7 AERO GLASS THEME ENGINE
@@ -619,6 +596,48 @@
   background-color: rgba(51, 153, 255, 0.25) !important;
   color: #0c2340 !important;
 }
+
+/* Windows 7 Aero Detective & Sheet Tab Overrides */
+[data-theme="win7-aero"] .win95-sheet-tabs-container {
+  background: linear-gradient(180deg, rgba(220, 235, 250, 0.95) 0%, rgba(195, 220, 245, 0.95) 100%) !important;
+  border-bottom: 2px solid #70a0d0 !important;
+}
+
+[data-theme="win7-aero"] .win95-sheet-tab {
+  background: linear-gradient(180deg, #f2f7fc 0%, #d8e8f8 100%) !important;
+  border: 1px solid #8e9da7 !important;
+  border-bottom: none !important;
+  border-radius: 4px 4px 0 0 !important;
+  color: #1c2833 !important;
+  font-family: 'Segoe UI', Tahoma, sans-serif !important;
+}
+
+[data-theme="win7-aero"] .win95-sheet-tab:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #e6f2fc 100%) !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 8px rgba(51, 153, 255, 0.4) !important;
+}
+
+[data-theme="win7-aero"] .win95-sheet-tab.active {
+  background: #ffffff !important;
+  color: #0c2340 !important;
+  border: 1px solid #70a0d0 !important;
+  border-top: 4px solid #1e88e5 !important;
+  border-bottom: 2px solid #ffffff !important;
+  box-shadow: 0 -2px 8px rgba(30, 136, 229, 0.3) !important;
+  font-weight: bold !important;
+}
+
+[data-theme="win7-aero"] .win95-tab-active-pill {
+  background: #1e88e5 !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(30, 136, 229, 0.5) !important;
+}
+
+[data-theme="win7-aero"] .forensic-query-console {
+  flex-shrink: 0 !important;
+}
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * NIHILO GLASS (MACOS MODERN) DESIGN ENGINE — APPLE NATIVE AESTHETIC
@@ -2058,19 +2077,19 @@ select option {
 }
 
 [data-theme="macos-glass"] .win95-sheet-tab.active {
-  background: rgba(10, 132, 255, 0.28) !important;
-  color: #38bdf8 !important;
-  border: 1px solid rgba(56, 189, 248, 0.6) !important;
-  border-top: 3px solid #0a84ff !important;
-  border-bottom-color: rgba(18, 18, 22, 0.90) !important;
+  background: rgba(10, 132, 255, 0.35) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(56, 189, 248, 0.75) !important;
+  border-top: 4px solid #0a84ff !important;
+  border-bottom-color: rgba(18, 18, 22, 0.95) !important;
   font-weight: bold !important;
-  box-shadow: 0 0 12px rgba(10, 132, 255, 0.3) !important;
+  box-shadow: 0 0 16px rgba(10, 132, 255, 0.5) !important;
 }
 
 [data-theme="macos-glass"] .win95-tab-active-pill {
   background: #0a84ff !important;
   color: #ffffff !important;
-  box-shadow: 0 0 6px rgba(10, 132, 255, 0.5) !important;
+  box-shadow: 0 0 8px rgba(10, 132, 255, 0.7) !important;
 }
 
 [data-theme="macos-glass"] .win95-split-view,
@@ -2155,6 +2174,7 @@ select option {
   color: #f8fafc !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   box-shadow: none !important;
+  flex-shrink: 0 !important;
 }
 
 [data-theme="macos-glass"] .forensic-query-input-wrap {
@@ -2172,6 +2192,7 @@ select option {
 
 [data-theme="macos-glass"] .forensic-sql-textarea {
   color: #f8fafc !important;
+  min-height: 135px !important;
 }
 
 [data-theme="macos-glass"] .forensic-evidence-btn.unselected {

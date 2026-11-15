@@ -86,7 +86,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
         </div>
 
         <div style={{ flex: 1 }}>
-          <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '12px', color: '#000000', lineHeight: '1.4' }}>
+          <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '12px', color: 'var(--w95-text-color, #000000)', lineHeight: '1.4' }}>
             {error.message}
           </p>
 
@@ -95,10 +95,10 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
               className="win95-inset"
               style={{
                 padding: '6px 8px',
-                background: '#ffffe0',
-                border: '1px solid #c0c000',
+                background: 'var(--w95-callout-yellow-bg, #ffffe0)',
+                border: '1px solid var(--w95-dark-gray, #c0c000)',
                 fontSize: '11px',
-                color: '#333300',
+                color: 'var(--w95-callout-yellow-text, #333300)',
                 marginTop: '8px',
                 lineHeight: '1.4',
               }}
@@ -110,7 +110,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
       </div>
 
       {/* Footer Buttons */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '8px', borderTop: '1px solid #808080' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '8px', borderTop: '1px solid var(--w95-dark-gray, #808080)' }}>
         <button
           className="win95-button"
           style={{ minWidth: '90px' }}

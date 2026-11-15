@@ -3,7 +3,7 @@
  * Designed for maximum readability, zero clutter, and comprehensive dialect reference.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from './WindowControls';
 import {
@@ -119,6 +119,15 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -254,7 +263,13 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              style={{ background: '#fff', border: '1px solid #808080', padding: '2px 4px', fontSize: '11px' }}
+              style={{
+                background: 'var(--w95-sunken-bg, #ffffff)',
+                color: 'var(--w95-sunken-text, #000000)',
+                border: '1px solid var(--w95-dark-gray, #808080)',
+                padding: '2px 4px',
+                fontSize: '11px',
+              }}
             >
               <option value="ALL">All Categories ({categories.length})</option>
               {categories.map((cat) => (
@@ -266,8 +281,8 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
           </div>
 
           {/* Status Filter Toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#d4d0c8', padding: '1px 3px', border: '1px solid #808080' }}>
-            <span style={{ fontSize: '10px', color: '#555', marginRight: '2px' }}>Status:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'var(--w95-gray, #d4d0c8)', padding: '1px 3px', border: '1px solid var(--w95-dark-gray, #808080)' }}>
+            <span style={{ fontSize: '10px', color: 'var(--w95-dark-gray, #555555)', marginRight: '2px' }}>Status:</span>
             <button
               type="button"
               onClick={() => setStatusFilter('ALL')}
@@ -280,7 +295,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
               type="button"
               onClick={() => setStatusFilter('supported')}
               className={`win95-button ${statusFilter === 'supported' ? 'pressed' : ''}`}
-              style={{ fontSize: '10px', padding: '1px 5px', color: statusFilter === 'supported' ? '#008000' : '#000' }}
+              style={{ fontSize: '10px', padding: '1px 5px', color: statusFilter === 'supported' ? 'var(--w95-success-color, #008000)' : 'var(--w95-text-color, #000000)' }}
             >
               ✅ Executable
             </button>
@@ -288,7 +303,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
               type="button"
               onClick={() => setStatusFilter('coming_soon')}
               className={`win95-button ${statusFilter === 'coming_soon' ? 'pressed' : ''}`}
-              style={{ fontSize: '10px', padding: '1px 5px', color: statusFilter === 'coming_soon' ? '#808000' : '#000' }}
+              style={{ fontSize: '10px', padding: '1px 5px', color: statusFilter === 'coming_soon' ? 'var(--w95-accent-color, #808000)' : 'var(--w95-text-color, #000000)' }}
             >
               ⏳ Soon
             </button>
@@ -384,11 +399,11 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
                 </div>
 
                 {activeItem.status === 'supported' ? (
-                  <span style={{ background: '#e6f4ea', color: '#137333', border: '1px solid #a8dab5', padding: '2px 8px', fontSize: '11px', fontWeight: 'bold' }}>
+                  <span style={{ background: 'rgba(19, 115, 51, 0.15)', color: 'var(--w95-success-color, #137333)', border: '1px solid var(--w95-success-color, #a8dab5)', padding: '2px 8px', fontSize: '11px', fontWeight: 'bold' }}>
                     ✅ Executable in ExNihilo IDE
                   </span>
                 ) : (
-                  <span style={{ background: '#fef7e0', color: '#b06000', border: '1px solid #fde293', padding: '2px 8px', fontSize: '11px', fontWeight: 'bold' }}>
+                  <span style={{ background: 'rgba(176, 96, 0, 0.15)', color: 'var(--w95-accent-color, #b06000)', border: '1px solid var(--w95-accent-color, #fde293)', padding: '2px 8px', fontSize: '11px', fontWeight: 'bold' }}>
                     ⏳ Coming Soon / Advanced Dialect
                   </span>
                 )}
@@ -494,8 +509,8 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
 
           {/* Bottom Action Footer */}
           {activeItem && (
-            <div style={{ marginTop: '16px', paddingTop: '10px', borderTop: '1px solid #c0c0c0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: '11px', color: '#666' }}>
+            <div style={{ marginTop: '16px', paddingTop: '10px', borderTop: '1px solid var(--w95-dark-gray, #808080)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: '11px', color: 'var(--w95-dark-gray, #666)' }}>
                 Selected Command: <strong>{activeItem.command}</strong>
               </div>
 
@@ -513,7 +528,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
                     fontSize: '11px',
                     padding: '4px 14px',
                     fontWeight: 'bold',
-                    color: '#000080',
+                    color: 'var(--w95-accent-color, #000080)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px',
@@ -522,7 +537,7 @@ export const SQLDictionaryWindow: React.FC<SQLDictionaryWindowProps> = ({
                   <span>▶</span> Try in IDE ({selectedDialect !== 'ALL' ? selectedDialect : activeItem.dialects[0]})
                 </button>
               ) : (
-                <span style={{ fontSize: '11px', color: '#888', fontStyle: 'italic' }}>
+                <span style={{ fontSize: '11px', color: 'var(--w95-dark-gray, #888)', fontStyle: 'italic' }}>
                   ⏳ Planned for future engine update
                 </span>
               )}

@@ -6,8 +6,9 @@
  * evidence selection system.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../hooks/useTheme';
+import { WindowControls } from '../Win95/WindowControls';
 
 interface DetectiveTourModalProps {
   isOpen: boolean;
@@ -31,6 +32,16 @@ export const DetectiveTourModal: React.FC<DetectiveTourModalProps> = ({
   const { activeTheme } = useTheme();
   const [currentStep, setCurrentStep] = useState(0);
   const [dontShowAgain, setDontShowAgain] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -287,18 +298,15 @@ export const DetectiveTourModal: React.FC<DetectiveTourModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Titlebar */}
-        <div className="win95-titlebar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="win95-titlebar">
           <div className="win95-titlebar-text">
             <span>📖 Detective Field Manual: Guide Tour (Step {currentStep + 1} of {steps.length})</span>
           </div>
-          <button
-            className="win95-close-btn"
-            onClick={onClose}
-            title="Close Tour"
-            style={{ minWidth: '18px', height: '18px', padding: 0, lineHeight: 1 }}
-          >
-            ✕
-          </button>
+          <WindowControls
+            showMinimize={false}
+            showMaximize={false}
+            onClose={onClose}
+          />
         </div>
 
         {/* Wizard Body */}

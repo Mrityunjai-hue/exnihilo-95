@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from './WindowControls';
 
@@ -39,6 +39,15 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
   const [activeTab, setActiveTab] = useState<TabId>('originality');
   const [isMaximized, setIsMaximized] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -102,8 +111,8 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
         style={{
           display: 'flex',
           flexWrap: 'wrap',
-          background: '#c0c0c0',
-          borderBottom: '1px solid #808080',
+          background: 'var(--w95-gray, #c0c0c0)',
+          borderBottom: '1px solid var(--w95-dark-gray, #808080)',
           padding: '2px 4px 0',
           gap: '2px',
           flexShrink: 0,
@@ -117,9 +126,10 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
             style={{
               fontSize: '10px',
               padding: '3px 8px',
-              borderBottom: activeTab === tab.id ? '2px solid #000080' : '2px solid transparent',
+              borderBottom: activeTab === tab.id ? '2px solid var(--w95-accent-color, #000080)' : '2px solid transparent',
               fontWeight: activeTab === tab.id ? 'bold' : 'normal',
-              background: activeTab === tab.id ? '#ffffff' : '#c0c0c0',
+              background: activeTab === tab.id ? 'var(--w95-sunken-bg, #ffffff)' : 'var(--w95-gray, #c0c0c0)',
+              color: activeTab === tab.id ? 'var(--w95-sunken-text, #000000)' : 'var(--w95-text-color, #000000)',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
             }}
@@ -138,16 +148,16 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
           <div>
             <div style={{ textAlign: 'center', marginBottom: '16px' }}>
               <div style={{ fontSize: '32px', marginBottom: '4px' }}>📜</div>
-              <h2 style={{ margin: '0 0 4px', fontSize: '15px', color: '#000080' }}>
+              <h2 style={{ margin: '0 0 4px', fontSize: '15px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
                 Declaration of Ownership & Original Concept
               </h2>
-              <p style={{ margin: 0, color: '#555', fontSize: '11px' }}>
+              <p style={{ margin: 0, color: 'var(--w95-dark-gray, #555)', fontSize: '11px' }}>
                 ExNihilo 95 — In-Browser Zero-Config SQL Development Environment
               </p>
             </div>
 
-            <div className="win95-inset" style={{ padding: '12px', marginBottom: '12px', background: '#ffffe0', border: '1px solid #808000' }}>
-              <p style={{ margin: '0 0 6px', fontWeight: 'bold', color: '#800000', fontSize: '12px' }}>
+            <div className="win95-inset" style={{ padding: '12px', marginBottom: '12px', background: 'var(--w95-callout-yellow-bg, #ffffe0)', color: 'var(--w95-callout-yellow-text, #000000)', border: '1px solid var(--w95-dark-gray, #808000)' }}>
+              <p style={{ margin: '0 0 6px', fontWeight: 'bold', color: 'var(--w95-danger-color, #800000)', fontSize: '12px' }}>
                 💡 Formal Ownership Claim
               </p>
               <p style={{ margin: 0, fontStyle: 'italic' }}>
@@ -155,8 +165,8 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
               </p>
             </div>
 
-            <div className="win95-inset" style={{ padding: '12px', marginBottom: '12px', background: '#f8f8ff' }}>
-              <p style={{ margin: '0 0 6px', fontWeight: 'bold', color: '#000080' }}>
+            <div className="win95-inset" style={{ padding: '12px', marginBottom: '12px', background: 'var(--w95-callout-blue-bg, #f8f8ff)', color: 'var(--w95-callout-blue-text, #000000)' }}>
+              <p style={{ margin: '0 0 6px', fontWeight: 'bold', color: 'var(--w95-accent-color, #000080)' }}>
                 🧠 Intellectual Property Scope
               </p>
               <p style={{ margin: '0 0 8px' }}>
@@ -174,12 +184,12 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
         {/* ─── TAB 2: ANTI-THEFT TERMS ─── */}
         {activeTab === 'antitheft' && (
           <div>
-            <h3 style={{ margin: '0 0 10px', fontSize: '13px', color: '#000080' }}>
+            <h3 style={{ margin: '0 0 10px', fontSize: '13px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
               🛡️ Terms of Use & Strict Anti-Plagiarism Policy
             </h3>
 
-            <div className="win95-inset" style={{ padding: '10px', marginBottom: '10px', background: '#f0fff0', border: '1px solid #228B22' }}>
-              <p style={{ margin: '0 0 4px', fontWeight: 'bold', color: '#006400' }}>
+            <div className="win95-inset" style={{ padding: '10px', marginBottom: '10px', background: 'rgba(0, 100, 0, 0.08)', border: '1px solid #228B22' }}>
+              <p style={{ margin: '0 0 4px', fontWeight: 'bold', color: 'var(--w95-success-color, #006400)' }}>
                 ✅ Allowed Open-Source Actions:
               </p>
               <ul style={{ margin: 0, paddingLeft: '18px' }}>
@@ -189,8 +199,8 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
               </ul>
             </div>
 
-            <div className="win95-inset" style={{ padding: '10px', marginBottom: '10px', background: '#fff0f0', border: '1px solid #b00020' }}>
-              <p style={{ margin: '0 0 4px', fontWeight: 'bold', color: '#b00020' }}>
+            <div className="win95-inset" style={{ padding: '10px', marginBottom: '10px', background: 'rgba(176, 0, 32, 0.08)', border: '1px solid #b00020' }}>
+              <p style={{ margin: '0 0 4px', fontWeight: 'bold', color: 'var(--w95-danger-color, #b00020)' }}>
                 🚫 Strictly Prohibited Actions (Theft & Plagiarism):
               </p>
               <ul style={{ margin: 0, paddingLeft: '18px' }}>
@@ -205,12 +215,12 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
         {/* ─── TAB 3: LEGAL ENFORCEMENT & DMCA ─── */}
         {activeTab === 'enforcement' && (
           <div>
-            <h3 style={{ margin: '0 0 10px', fontSize: '13px', color: '#000080' }}>
+            <h3 style={{ margin: '0 0 10px', fontSize: '13px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
               ⚖️ Legal Enforcement & DMCA Takedowns
             </h3>
 
-            <div className="win95-inset" style={{ padding: '12px', marginBottom: '10px', background: '#ffffe0', border: '1px solid #808000' }}>
-              <p style={{ margin: '0 0 6px', fontWeight: 'bold', color: '#800000' }}>
+            <div className="win95-inset" style={{ padding: '12px', marginBottom: '10px', background: 'var(--w95-callout-yellow-bg, #ffffe0)', color: 'var(--w95-callout-yellow-text, #000000)', border: '1px solid var(--w95-dark-gray, #808000)' }}>
+              <p style={{ margin: '0 0 6px', fontWeight: 'bold', color: 'var(--w95-danger-color, #800000)' }}>
                 🚨 Notice of DMCA & Legal Recourse
               </p>
               <p style={{ margin: 0 }}>
@@ -220,13 +230,13 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div className="win95-inset" style={{ padding: '10px', background: '#f8f8ff' }}>
+              <div className="win95-inset" style={{ padding: '10px', background: 'var(--w95-callout-blue-bg, #f8f8ff)', color: 'var(--w95-callout-blue-text, #000000)' }}>
                 <strong>1. Formal DMCA Takedown Notices:</strong> Filed immediately with GitHub, Vercel, Netlify, Cloudflare, AWS, and domain registrars to remove infringing sites/forks.
               </div>
-              <div className="win95-inset" style={{ padding: '10px', background: '#f8f8ff' }}>
+              <div className="win95-inset" style={{ padding: '10px', background: 'var(--w95-callout-blue-bg, #f8f8ff)', color: 'var(--w95-callout-blue-text, #000000)' }}>
                 <strong>2. GitHub Trust & Safety Escalation:</strong> Infringing repositories and user accounts will be reported for Terms of Service violations and intellectual property theft.
               </div>
-              <div className="win95-inset" style={{ padding: '10px', background: '#f8f8ff' }}>
+              <div className="win95-inset" style={{ padding: '10px', background: 'var(--w95-callout-blue-bg, #f8f8ff)', color: 'var(--w95-callout-blue-text, #000000)' }}>
                 <strong>3. Public Plagiarism Disclosures:</strong> Legal cease & desist notices and public disclosures of infringement will be published.
               </div>
             </div>
@@ -236,10 +246,10 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
         {/* ─── TAB 4: REQUIRED ATTRIBUTION NOTICE ─── */}
         {activeTab === 'attribution' && (
           <div>
-            <h3 style={{ margin: '0 0 8px', fontSize: '13px', color: '#000080' }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: '13px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
               📌 Mandatory Legal Attribution Notice
             </h3>
-            <p style={{ margin: '0 0 10px', color: '#333' }}>
+            <p style={{ margin: '0 0 10px', color: 'var(--w95-sunken-text, #333333)' }}>
               Any authorized deployment, fork, or derivative work <strong>MUST</strong> include the following notice:
             </p>
 
@@ -253,7 +263,7 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
                 borderRadius: '2px',
                 marginBottom: '12px',
                 whiteSpace: 'pre-wrap',
-                border: '1px solid #808080',
+                border: '1px solid var(--w95-dark-gray, #808080)',
               }}
             >
               {ATTRIBUTION_TEXT}
@@ -284,8 +294,8 @@ export const LegalWindow: React.FC<LegalWindowProps> = ({
       </div>
 
       {/* Footer Controls */}
-      <div style={{ padding: '8px 14px', background: '#c0c0c0', borderTop: '1px solid #808080', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <div style={{ fontSize: '10px', color: '#444' }}>
+      <div style={{ padding: '8px 14px', background: 'var(--w95-gray, #c0c0c0)', borderTop: '1px solid var(--w95-dark-gray, #808080)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+        <div style={{ fontSize: '10px', color: 'var(--w95-dark-gray, #444)' }}>
           Owner: <strong>Mrityunjai (@Mrityunjai-hue)</strong>
         </div>
         <button

@@ -69,11 +69,15 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
 
   const { position, handleMouseDown } = useDraggable({ x: 200, y: 80 });
 
-  // Caps Lock Listener
+  // Caps Lock & Escape Listener
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.getModifierState) {
         setCapsLockOn(e.getModifierState('CapsLock'));
+      }
+      if (e.key === 'Escape') {
+        setErrorModalText(null);
+        onClose();
       }
     };
     window.addEventListener('keydown', handleKey);
@@ -82,7 +86,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
       window.removeEventListener('keydown', handleKey);
       window.removeEventListener('keyup', handleKey);
     };
-  }, []);
+  }, [onClose]);
 
   if (!isOpen || isMinimized) return null;
 

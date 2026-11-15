@@ -11,7 +11,7 @@
  *   - Bottom Section: Live DDL Preview & Table-Level Multi-Column Constraints
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Dialect } from '../../engine/parser';
 import { SessionCatalog } from '../../engine/catalog';
 import {
@@ -22,6 +22,7 @@ import {
   parseEnumOrSetInput,
 } from '../../utils/dbManagerUtils';
 import { TableDesignerTour } from '../Tour/TableDesignerTour';
+import { WindowControls } from '../Win95/WindowControls';
 
 const REFERENTIAL_ACTIONS = ['CASCADE', 'SET NULL', 'SET DEFAULT', 'RESTRICT', 'NO ACTION'];
 
@@ -192,6 +193,16 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
     boxSizing: 'border-box',
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onCancel]);
+
   const handleEnsureStep = (targetStep: number) => {
     if (targetStep === 2 && step === 1) {
       if (!tableName.trim()) {
@@ -220,12 +231,13 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
         onEnsureStep={handleEnsureStep}
       />
       <div
-        className="win95-raised"
+        className="win95-window"
         style={{
           width: 880,
+          maxWidth: '96vw',
           height: '90vh',
           maxHeight: 760,
-          minHeight: 680,
+          minHeight: 600,
           background: 'var(--w95-gray, #c0c0c0)',
           color: 'var(--w95-text-color, #000000)',
           fontFamily: 'var(--w95-font)',
@@ -233,58 +245,53 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '6px 6px 14px rgba(0,0,0,0.6)',
-          border: '2px solid',
-          borderColor: '#ffffff #808080 #808080 #ffffff',
           boxSizing: 'border-box',
         }}
       >
         {/* Window Title Bar */}
-        <div style={{
-          background: 'var(--w95-title-active-bg, #000080)',
-          color: 'var(--w95-title-active-text, #ffffff)',
-          padding: '4px 8px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          fontWeight: 'bold',
-          fontSize: 11,
-          userSelect: 'none',
-          flexShrink: 0,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div className="win95-titlebar" style={{ flexShrink: 0 }}>
+          <div className="win95-titlebar-text">
             <span>🗄️</span>
             <span>Table Designer — [{tableName || 'New Table'}] — <strong>{dialect} Dialect</strong></span>
           </div>
-          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <button
               className="win95-button"
-              style={{ padding: '0 6px', height: 18, fontSize: 10, fontWeight: 'bold' }}
+              style={{ padding: '2px 8px', fontSize: 10, fontWeight: 'bold' }}
               onClick={() => setIsTourOpen(true)}
               title="Start Table Designer Guided Tour"
             >
               💡 Quick Tour
             </button>
-            <button className="win95-button" style={{ padding: '0 4px', minHeight: 16, fontSize: 10 }} onClick={onCancel} title="Close">✕</button>
+            <WindowControls
+              showMinimize={false}
+              showMaximize={false}
+              onClose={onCancel}
+            />
           </div>
         </div>
 
         {/* Step Indicator Header */}
         <div style={{ display: 'flex', background: 'var(--w95-gray, #c0c0c0)', borderBottom: '1px solid var(--w95-dark-gray,#808080)', flexShrink: 0 }}>
           <div style={{
-            flex: 1, padding: '5px 12px', textAlign: 'center', fontSize: 11,
+            flex: 1, padding: '6px 12px', textAlign: 'center', fontSize: 11,
             fontWeight: step === 1 ? 'bold' : 'normal',
-            background: step === 1 ? 'var(--w95-light-gray,#e0e0e0)' : 'var(--w95-gray,#c0c0c0)',
-            color: step === 1 ? 'var(--w95-titlebar-active, #000080)' : 'var(--w95-text-color,#555)',
-            borderBottom: step === 1 ? '2px solid var(--w95-titlebar-active, #000080)' : 'none',
+            background: step === 1 ? 'var(--w95-sunken-bg,#ffffff)' : 'transparent',
+            color: step === 1 ? 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' : 'var(--w95-text-color,#555)',
+            borderTop: step === 1 ? '3px solid var(--w95-accent-color, #000080)' : '3px solid transparent',
+            borderBottom: step === 1 ? '1px solid var(--w95-sunken-bg,#ffffff)' : 'none',
+            opacity: step === 1 ? 1 : 0.75,
           }}>
             Step 1: Table & Database Setup
           </div>
           <div style={{
-            flex: 1, padding: '5px 12px', textAlign: 'center', fontSize: 11,
+            flex: 1, padding: '6px 12px', textAlign: 'center', fontSize: 11,
             fontWeight: step === 2 ? 'bold' : 'normal',
-            background: step === 2 ? 'var(--w95-light-gray,#e0e0e0)' : 'var(--w95-gray,#c0c0c0)',
-            color: step === 2 ? 'var(--w95-titlebar-active, #000080)' : 'var(--w95-text-color,#555)',
-            borderBottom: step === 2 ? '2px solid var(--w95-titlebar-active, #000080)' : 'none',
+            background: step === 2 ? 'var(--w95-sunken-bg,#ffffff)' : 'transparent',
+            color: step === 2 ? 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' : 'var(--w95-text-color,#555)',
+            borderTop: step === 2 ? '3px solid var(--w95-accent-color, #000080)' : '3px solid transparent',
+            borderBottom: step === 2 ? '1px solid var(--w95-sunken-bg,#ffffff)' : 'none',
+            opacity: step === 2 ? 1 : 0.75,
           }}>
             Step 2: Table Designer (Access 95 View)
           </div>

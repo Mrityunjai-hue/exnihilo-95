@@ -2,7 +2,7 @@
  * SettingsDialog.tsx — Windows 95 Options & Control Panel Dialog
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialect } from '../../engine/parser';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from './WindowControls';
@@ -54,6 +54,15 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
       (document.body.style as any).zoom = scale === '1' ? '' : scale;
     }
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

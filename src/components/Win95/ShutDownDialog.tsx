@@ -2,7 +2,7 @@
  * ShutDownDialog.tsx — Windows 95 Authentic Shut Down Dialog
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from './WindowControls';
 
@@ -27,6 +27,15 @@ export const ShutDownDialog: React.FC<ShutDownDialogProps> = ({
 }) => {
   const [selectedOption, setSelectedOption] = useState<'restart' | 'clear' | 'closeAll'>('restart');
   const { position, handleMouseDown } = useDraggable({ x: 300, y: 180 });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -120,7 +129,7 @@ export const ShutDownDialog: React.FC<ShutDownDialogProps> = ({
       </div>
 
       {/* Footer Buttons */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '8px 12px', borderTop: '1px solid #808080' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '8px 12px', borderTop: '1px solid var(--w95-dark-gray, #808080)' }}>
         <button
           className="win95-button"
           style={{ minWidth: '70px', fontWeight: 'bold' }}

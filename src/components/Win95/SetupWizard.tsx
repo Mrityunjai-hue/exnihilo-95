@@ -2,7 +2,7 @@
  * SetupWizard.tsx — Windows 95 Setup & Onboarding Wizard
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from './WindowControls';
 
@@ -28,6 +28,15 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
   const [step, setStep] = useState<number>(1);
   const totalSteps = 4;
   const { position, handleMouseDown } = useDraggable({ x: 140, y: 70 });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -73,8 +82,8 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
           style={{
             width: '140px',
             height: '100%',
-            background: '#000080',
-            color: '#ffffff',
+            background: 'var(--w95-title-active-bg, #000080)',
+            color: 'var(--w95-title-active-text, #ffffff)',
             padding: '16px 8px',
             display: 'flex',
             flexDirection: 'column',
@@ -86,11 +95,11 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
             <strong style={{ fontSize: '14px', lineHeight: '1.2' }}>
               ExNihilo 95
             </strong>
-            <p style={{ fontSize: '10px', color: '#c0c0c0', marginTop: '8px' }}>
+            <p style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.8)', marginTop: '8px' }}>
               Intelligent Zero-Config SQL IDE
             </p>
           </div>
-          <div style={{ fontSize: '10px', color: '#a0a0a0' }}>
+          <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.7)' }}>
             Step {step} of {totalSteps}
           </div>
         </div>
@@ -102,7 +111,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
         >
           {step === 1 && (
             <div>
-              <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#000080' }}>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
                 Welcome to ExNihilo Setup
               </h3>
               <p style={{ lineHeight: '1.5' }}>
@@ -111,7 +120,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
               <p style={{ lineHeight: '1.5' }}>
                 Whenever you query a non-existent table, ExNihilo parses your SQL AST, infers column data types, maps foreign key relationships, and generates realistic synthetic data on the fly.
               </p>
-              <p style={{ marginTop: '16px', color: '#555' }}>
+              <p style={{ marginTop: '16px', color: 'var(--w95-dark-gray, #555555)' }}>
                 Click <strong>Next</strong> to discover key features.
               </p>
             </div>
@@ -119,7 +128,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
 
           {step === 2 && (
             <div>
-              <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#000080' }}>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
                 Select Your SQL Dialect
               </h3>
               <p style={{ lineHeight: '1.5' }}>
@@ -136,7 +145,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
 
           {step === 3 && (
             <div>
-              <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#000080' }}>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
                 Referential Integrity & Caching
               </h3>
               <p style={{ lineHeight: '1.5' }}>
@@ -152,7 +161,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
 
           {step === 4 && (
             <div>
-              <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#000080' }}>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
                 Setup Complete!
               </h3>
               <p style={{ lineHeight: '1.5' }}>
@@ -167,7 +176,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
       </div>
 
       {/* Wizard Footer Buttons */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '6px 8px', borderTop: '1px solid #808080' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '6px 8px', borderTop: '1px solid var(--w95-dark-gray, #808080)' }}>
         <button
           className="win95-button"
           disabled={step === 1}

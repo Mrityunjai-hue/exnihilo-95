@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { WindowControls } from './WindowControls';
 
 interface KeyboardShortcutsDialogProps {
   isOpen: boolean;
@@ -12,6 +13,16 @@ export const KeyboardShortcutsDialog: React.FC<KeyboardShortcutsDialogProps> = (
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState<'exec' | 'editor' | 'nav'>('exec');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -66,21 +77,21 @@ export const KeyboardShortcutsDialog: React.FC<KeyboardShortcutsDialogProps> = (
             <span>⌨️</span>
             <span>Keyboard Shortcuts & Accelerator Reference</span>
           </div>
-          <div className="win95-titlebar-controls">
-            <button className="win95-btn-titlebar" onClick={onClose}>
-              ✕
-            </button>
-          </div>
+          <WindowControls
+            showMinimize={false}
+            showMaximize={false}
+            onClose={onClose}
+          />
         </div>
 
-        <div style={{ padding: '12px' }}>
+        <div style={{ padding: '12px', background: 'var(--w95-gray, #c0c0c0)', color: 'var(--w95-text-color, #000000)' }}>
           {/* Win95 Tab Headers */}
-          <div style={{ display: 'flex', gap: '2px', borderBottom: '2px solid #808080', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', gap: '2px', borderBottom: '2px solid var(--w95-dark-gray, #808080)', marginBottom: '8px' }}>
             <button
-              className={`win95-button ${activeTab === 'exec' ? 'active' : ''}`}
+              className={`win95-button ${activeTab === 'exec' ? 'active pressed' : ''}`}
               style={{
                 fontWeight: activeTab === 'exec' ? 'bold' : 'normal',
-                borderBottom: activeTab === 'exec' ? '2px solid #c0c0c0' : undefined,
+                borderBottom: activeTab === 'exec' ? '2px solid var(--w95-gray, #c0c0c0)' : undefined,
                 marginBottom: activeTab === 'exec' ? '-2px' : '0',
                 padding: '4px 12px',
                 fontSize: '11px',
@@ -90,10 +101,10 @@ export const KeyboardShortcutsDialog: React.FC<KeyboardShortcutsDialogProps> = (
               ⚡ Execution & Tabs
             </button>
             <button
-              className={`win95-button ${activeTab === 'editor' ? 'active' : ''}`}
+              className={`win95-button ${activeTab === 'editor' ? 'active pressed' : ''}`}
               style={{
                 fontWeight: activeTab === 'editor' ? 'bold' : 'normal',
-                borderBottom: activeTab === 'editor' ? '2px solid #c0c0c0' : undefined,
+                borderBottom: activeTab === 'editor' ? '2px solid var(--w95-gray, #c0c0c0)' : undefined,
                 marginBottom: activeTab === 'editor' ? '-2px' : '0',
                 padding: '4px 12px',
                 fontSize: '11px',
@@ -103,10 +114,10 @@ export const KeyboardShortcutsDialog: React.FC<KeyboardShortcutsDialogProps> = (
               📝 Editor & Formatting
             </button>
             <button
-              className={`win95-button ${activeTab === 'nav' ? 'active' : ''}`}
+              className={`win95-button ${activeTab === 'nav' ? 'active pressed' : ''}`}
               style={{
                 fontWeight: activeTab === 'nav' ? 'bold' : 'normal',
-                borderBottom: activeTab === 'nav' ? '2px solid #c0c0c0' : undefined,
+                borderBottom: activeTab === 'nav' ? '2px solid var(--w95-gray, #c0c0c0)' : undefined,
                 marginBottom: activeTab === 'nav' ? '-2px' : '0',
                 padding: '4px 12px',
                 fontSize: '11px',
@@ -118,10 +129,10 @@ export const KeyboardShortcutsDialog: React.FC<KeyboardShortcutsDialogProps> = (
           </div>
 
           {/* Table of Shortcuts */}
-          <div className="win95-sunken" style={{ background: '#ffffff', maxHeight: '240px', overflowY: 'auto', padding: '4px' }}>
+          <div className="win95-sunken" style={{ background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', maxHeight: '250px', overflowY: 'auto', padding: '4px', border: '1px solid var(--w95-dark-gray, #808080)' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', fontFamily: 'var(--w95-font)' }}>
               <thead>
-                <tr style={{ background: '#ece9d8', borderBottom: '1px solid #c0c0c0', textAlign: 'left' }}>
+                <tr style={{ background: 'var(--w95-gray, #ece9d8)', color: 'var(--w95-text-color, #000000)', borderBottom: '1px solid var(--w95-dark-gray, #c0c0c0)', textAlign: 'left' }}>
                   <th style={{ padding: '6px 8px', width: '140px' }}>Key Binding</th>
                   <th style={{ padding: '6px 8px' }}>Action Description</th>
                   <th style={{ padding: '6px 8px', width: '80px', textAlign: 'right' }}>Category</th>
@@ -132,37 +143,37 @@ export const KeyboardShortcutsDialog: React.FC<KeyboardShortcutsDialogProps> = (
                   <tr
                     key={idx}
                     style={{
-                      borderBottom: '1px solid #f0f0f0',
-                      background: idx % 2 === 0 ? '#fafafa' : '#ffffff',
+                      borderBottom: '1px solid var(--w95-dark-gray, #f0f0f0)',
+                      background: idx % 2 === 0 ? 'var(--w95-grid-even-bg, transparent)' : 'var(--w95-grid-odd-bg, transparent)',
                     }}
                   >
                     <td style={{ padding: '6px 8px' }}>
                       <kbd
                         style={{
-                          background: '#f4f4f4',
-                          border: '1px solid #c0c0c0',
-                          boxShadow: '1px 1px 0 #808080',
+                          background: 'var(--w95-light-gray, #f4f4f4)',
+                          color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))',
+                          border: '1px solid var(--w95-dark-gray, #c0c0c0)',
+                          boxShadow: '1px 1px 0 var(--w95-dark-gray, #808080)',
                           padding: '2px 6px',
                           borderRadius: '2px',
                           fontWeight: 'bold',
-                          fontFamily: 'monospace',
+                          fontFamily: 'var(--w95-mono, monospace)',
                           fontSize: '10px',
-                          color: '#000080',
                         }}
                       >
                         {item.key}
                       </kbd>
                     </td>
-                    <td style={{ padding: '6px 8px', color: '#222' }}>{item.desc}</td>
+                    <td style={{ padding: '6px 8px', color: 'var(--w95-sunken-text, #222222)' }}>{item.desc}</td>
                     <td style={{ padding: '6px 8px', textAlign: 'right' }}>
                       <span
                         style={{
-                          background: '#e0e8f0',
-                          color: '#004080',
-                          padding: '1px 6px',
+                          background: 'var(--w95-accent-color, #004080)',
+                          color: '#ffffff',
+                          padding: '2px 6px',
                           borderRadius: '2px',
                           fontSize: '10px',
-                          fontWeight: '500',
+                          fontWeight: '600',
                         }}
                       >
                         {item.tag}
@@ -177,7 +188,7 @@ export const KeyboardShortcutsDialog: React.FC<KeyboardShortcutsDialogProps> = (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
             <button
               className="win95-button"
-              style={{ padding: '4px 18px', fontWeight: 'bold' }}
+              style={{ padding: '4px 20px', fontWeight: 'bold' }}
               onClick={onClose}
             >
               OK

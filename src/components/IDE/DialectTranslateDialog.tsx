@@ -15,6 +15,7 @@ import {
   TranslationResult,
 } from '../../engine/dialect_translator';
 import { Dialect } from '../../engine/parser';
+import { WindowControls } from '../Win95/WindowControls';
 
 interface DialectTranslateDialogProps {
   isOpen: boolean;
@@ -46,13 +47,20 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
   const [copied, setCopied] = useState(false);
   const [switchActiveDialect, setSwitchActiveDialect] = useState(true);
 
-  // Sync initial query when opened
+  // Sync initial query when opened & handle Escape key
   useEffect(() => {
     if (isOpen) {
       setSourceCode(currentSql || '');
       setCopied(false);
     }
-  }, [isOpen, currentSql]);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, currentSql, onClose]);
 
   // Run translation whenever source code, source dialect, or target dialect changes
   useEffect(() => {
@@ -126,11 +134,11 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
             <span>🌐</span>
             <span>SQL Dialect Cross-Compiler & Interactive Translator</span>
           </div>
-          <div className="win95-titlebar-controls">
-            <button className="win95-btn-titlebar" onClick={onClose} title="Close Dialog">
-              ✕
-            </button>
-          </div>
+          <WindowControls
+            showMinimize={false}
+            showMaximize={false}
+            onClose={onClose}
+          />
         </div>
 
         {/* Content Body */}
@@ -143,16 +151,19 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
             overflowY: 'auto',
             flex: 1,
             backgroundColor: 'var(--w95-gray, #c0c0c0)',
+            color: 'var(--w95-text-color, #000000)',
           }}
         >
           {/* Information banner */}
           <div
             className="win95-groupbox"
             style={{
-              padding: '6px 10px',
+              padding: '8px 12px',
               fontSize: '11px',
               backgroundColor: 'var(--w95-light-gray, #e0e0e0)',
               color: 'var(--w95-text-color, #000000)',
+              border: '1px solid var(--w95-dark-gray, #808080)',
+              lineHeight: 1.45,
             }}
           >
             Translate queries across dialects without manual rewrites. Converts row limits (<code>TOP / LIMIT / ROWNUM</code>),
@@ -164,7 +175,7 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
               gap: '10px',
               minHeight: '260px',
               flex: 1,
@@ -176,6 +187,7 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '6px',
+                minWidth: 0,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '4px' }}>
@@ -186,7 +198,12 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
                   className="win95-select"
                   value={sourceDialect}
                   onChange={(e) => setSourceDialect(e.target.value as SourceDialect)}
-                  style={{ fontSize: '11px', padding: '2px 4px' }}
+                  style={{
+                    fontSize: '11px',
+                    padding: '2px 6px',
+                    background: 'var(--w95-sunken-bg, #ffffff)',
+                    color: 'var(--w95-sunken-text, #000000)',
+                  }}
                 >
                   <option value="Auto-Detect">Auto-Detect ({detection.detectedDialect})</option>
                   <option value="PostgreSQL">PostgreSQL</option>
@@ -199,7 +216,7 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
               </div>
 
               {sourceDialect === 'Auto-Detect' && (
-                <div style={{ fontSize: '10px', color: '#000080', fontWeight: 'bold' }}>
+                <div style={{ fontSize: '10px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))', fontWeight: 'bold' }}>
                   🔍 Detected: {detection.detectedDialect} ({detection.confidence}% confidence)
                 </div>
               )}
@@ -212,11 +229,14 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
                 style={{
                   flex: 1,
                   minHeight: '180px',
-                  fontFamily: 'Consolas, monospace',
+                  fontFamily: 'var(--w95-mono, Consolas, monospace)',
                   fontSize: '11px',
-                  padding: '6px',
+                  padding: '8px',
                   resize: 'none',
                   whiteSpace: 'pre-wrap',
+                  background: 'var(--w95-sunken-bg, #ffffff)',
+                  color: 'var(--w95-sunken-text, #000000)',
+                  border: '1px solid var(--w95-dark-gray, #808080)',
                 }}
               />
             </div>
@@ -227,6 +247,7 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '6px',
+                minWidth: 0,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '4px' }}>
@@ -237,7 +258,12 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
                   className="win95-select"
                   value={targetDialect}
                   onChange={(e) => setTargetDialect(e.target.value as TargetDialect)}
-                  style={{ fontSize: '11px', padding: '2px 4px' }}
+                  style={{
+                    fontSize: '11px',
+                    padding: '2px 6px',
+                    background: 'var(--w95-sunken-bg, #ffffff)',
+                    color: 'var(--w95-sunken-text, #000000)',
+                  }}
                 >
                   <option value="PostgreSQL">PostgreSQL</option>
                   <option value="MySQL">MySQL</option>
@@ -247,7 +273,7 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
                 </select>
               </div>
 
-              <div style={{ fontSize: '10px', color: '#006400', fontWeight: 'bold' }}>
+              <div style={{ fontSize: '10px', color: 'var(--w95-success-color, #1b5e20)', fontWeight: 'bold' }}>
                 ⚡ Ready for execution in {targetDialect}
               </div>
 
@@ -259,10 +285,12 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
                 style={{
                   flex: 1,
                   minHeight: '180px',
-                  fontFamily: 'Consolas, monospace',
+                  fontFamily: 'var(--w95-mono, Consolas, monospace)',
                   fontSize: '11px',
-                  padding: '6px',
-                  backgroundColor: '#f8f8f8',
+                  padding: '8px',
+                  background: 'var(--w95-sunken-bg, #ffffff)',
+                  color: 'var(--w95-sunken-text, #000000)',
+                  border: '1px solid var(--w95-dark-gray, #808080)',
                   resize: 'none',
                   whiteSpace: 'pre-wrap',
                 }}
@@ -275,20 +303,21 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
             <div
               className="win95-groupbox"
               style={{
-                padding: '6px 10px',
+                padding: '8px 12px',
                 fontSize: '11px',
-                maxHeight: '80px',
+                maxHeight: '90px',
                 overflowY: 'auto',
-                backgroundColor: '#ffffff',
-                border: '1px solid #808080',
+                background: 'var(--w95-sunken-bg, #ffffff)',
+                color: 'var(--w95-sunken-text, #000000)',
+                border: '1px solid var(--w95-dark-gray, #808080)',
               }}
             >
-              <div style={{ fontWeight: 'bold', marginBottom: '4px', color: '#000080' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '4px', color: 'var(--w95-accent-color, var(--w95-titlebar-active, #000080))' }}>
                 Applied Transformations ({result.transformations.length}):
               </div>
               <ul style={{ margin: 0, paddingLeft: '18px' }}>
                 {result.transformations.map((t, idx) => (
-                  <li key={idx} style={{ color: '#333333' }}>
+                  <li key={idx} style={{ color: 'var(--w95-sunken-text, #333333)', marginBottom: '2px' }}>
                     {t}
                   </li>
                 ))}
@@ -322,7 +351,7 @@ export const DialectTranslateDialog: React.FC<DialectTranslateDialogProps> = ({
           }}
         >
           <div style={{ fontSize: '11px' }}>
-            {copied && <span style={{ color: '#006400', fontWeight: 'bold' }}>✓ Copied to clipboard!</span>}
+            {copied && <span style={{ color: 'var(--w95-success-color, #1b5e20)', fontWeight: 'bold' }}>✓ Copied to clipboard!</span>}
           </div>
 
           <div style={{ display: 'flex', gap: '6px' }}>

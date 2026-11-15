@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialect } from '../../engine/parser';
 import { encodeSharePayload } from '../../utils/shareEncoder';
+import { WindowControls } from './WindowControls';
 
 interface ShareDialogProps {
   isOpen:         boolean;
@@ -30,6 +31,16 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
   const [shareUrl, setShareUrl] = useState('');
   const [copiedNotice, setCopiedNotice] = useState(false);
   const [showEmbedCode, setShowEmbedCode] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && isOpen) {
@@ -71,19 +82,16 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
       onMouseDown={onFocus}
     >
       {/* Titlebar */}
-      <div className="win95-titlebar" style={{ background: 'var(--w95-title-active-bg, #000080)' }}>
+      <div className="win95-titlebar">
         <div className="win95-titlebar-text">
           <span>🔗</span>
           <span>Share SQL Query Playground</span>
         </div>
-        <button
-          className="win95-btn-titlebar"
-          onClick={onClose}
-          aria-label="Close"
-          style={{ width: '16px', height: '14px', lineHeight: '10px' }}
-        >
-          ✕
-        </button>
+        <WindowControls
+          showMinimize={false}
+          showMaximize={false}
+          onClose={onClose}
+        />
       </div>
 
       <div style={{ padding: '12px', fontSize: '11px', lineHeight: '1.5' }}>

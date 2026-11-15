@@ -25,6 +25,7 @@ import { getOrInitSqlJs } from '../../engine/executor';
 import { useDetectiveAudio } from '../../hooks/useDetectiveAudio';
 import { useTheme } from '../../hooks/useTheme';
 import { DetectiveTourModal } from './DetectiveTourModal';
+import { formatSql } from '../../utils/sqlFormatter';
 
 interface DetectiveWorkstationProps {
   onClose?: () => void;
@@ -863,8 +864,10 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
       </div>
 
       {/* ── 2. Tab Navigation Bar ────────────────────────────────────────── */}
-      <div className="win95-sheet-tabs-container">
+      <div className="win95-sheet-tabs-container" role="tablist">
         <button
+          role="tab"
+          aria-selected={activeTab === 'docket'}
           className={`win95-sheet-tab ${activeTab === 'docket' ? 'active' : ''}`}
           onClick={() => {
             playTypewriterKey();
@@ -872,9 +875,11 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
           }}
         >
           <span>📋 Case Briefing</span>
-          {activeTab === 'docket' && <span className="win95-tab-active-pill">● ACTIVE</span>}
+          {activeTab === 'docket' && <span className="win95-tab-active-pill"><span className="pulse-dot">●</span> CURRENT TAB</span>}
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === 'suspects'}
           className={`win95-sheet-tab ${activeTab === 'suspects' ? 'active' : ''}`}
           onClick={() => {
             playTypewriterKey();
@@ -882,9 +887,11 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
           }}
         >
           <span>👥 Suspects &amp; Alibis ({dossier.suspects.length})</span>
-          {activeTab === 'suspects' && <span className="win95-tab-active-pill">● ACTIVE</span>}
+          {activeTab === 'suspects' && <span className="win95-tab-active-pill"><span className="pulse-dot">●</span> CURRENT TAB</span>}
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === 'evidence'}
           className={`win95-sheet-tab ${activeTab === 'evidence' ? 'active' : ''}`}
           onClick={() => {
             playTypewriterKey();
@@ -892,9 +899,11 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
           }}
         >
           <span>🔍 Evidence Vault ({dossier.evidenceDocs.length})</span>
-          {activeTab === 'evidence' && <span className="win95-tab-active-pill">● ACTIVE</span>}
+          {activeTab === 'evidence' && <span className="win95-tab-active-pill"><span className="pulse-dot">●</span> CURRENT TAB</span>}
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === 'terminal'}
           className={`win95-sheet-tab ${activeTab === 'terminal' ? 'active' : ''}`}
           onClick={() => {
             playTypewriterKey();
@@ -902,9 +911,11 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
           }}
         >
           <span>🔬 Investigation Room</span>
-          {activeTab === 'terminal' && <span className="win95-tab-active-pill">● ACTIVE</span>}
+          {activeTab === 'terminal' && <span className="win95-tab-active-pill"><span className="pulse-dot">●</span> CURRENT TAB</span>}
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === 'vouchers'}
           className={`win95-sheet-tab ${activeTab === 'vouchers' ? 'active' : ''}`}
           onClick={() => {
             playTypewriterKey();
@@ -912,9 +923,11 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
           }}
         >
           <span>🧩 Solve Clues ({completedVoucherIds.length}/5)</span>
-          {activeTab === 'vouchers' && <span className="win95-tab-active-pill">● ACTIVE</span>}
+          {activeTab === 'vouchers' && <span className="win95-tab-active-pill"><span className="pulse-dot">●</span> CURRENT TAB</span>}
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === 'courtroom'}
           className={`win95-sheet-tab ${activeTab === 'courtroom' ? 'active' : ''}`}
           onClick={() => {
             playTypewriterKey();
@@ -922,7 +935,7 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
           }}
         >
           <span>⚖️ Grand Jury Trial</span>
-          {activeTab === 'courtroom' && <span className="win95-tab-active-pill">● ACTIVE</span>}
+          {activeTab === 'courtroom' && <span className="win95-tab-active-pill"><span className="pulse-dot">●</span> CURRENT TAB</span>}
         </button>
 
         {/* Right Status Toolbar */}
@@ -989,9 +1002,9 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
         {activeTab === 'docket' && (
           <div className="win95-split-content" style={{ padding: '20px 24px', flex: 1, overflowY: 'auto' }}>
             {/* Dual Case Dossier Switcher Tabs */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', borderBottom: '2px solid var(--w95-dark-gray, #808080)', paddingBottom: '12px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', borderBottom: '2px solid var(--w95-dark-gray, #808080)', paddingBottom: '12px', flexWrap: 'wrap' }}>
               <button
-                className={`win95-button ${activeCaseId === 'case_blackwood_manor' ? 'active' : ''}`}
+                className={`win95-button ${activeCaseId === 'case_blackwood_manor' ? 'active pressed' : ''}`}
                 onClick={() => handleSwitchCase('case_blackwood_manor')}
                 style={{
                   padding: '6px 16px',
@@ -999,15 +1012,21 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
                   fontWeight: 'bold',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
+                  gap: '8px',
                   background: activeCaseId === 'case_blackwood_manor' ? 'var(--w95-title-active-bg, #000080)' : undefined,
                   color: activeCaseId === 'case_blackwood_manor' ? '#ffffff' : undefined,
+                  border: activeCaseId === 'case_blackwood_manor' ? '2px solid var(--w95-accent-color, #000080)' : undefined,
                 }}
               >
-                📁 CASE #1995-CR-0842: Blackwood Manor (Scottish Highlands)
+                <span>📁 CASE #1995-CR-0842: Blackwood Manor (Scottish Highlands)</span>
+                {activeCaseId === 'case_blackwood_manor' && (
+                  <span style={{ background: 'var(--w95-accent-color, #ff8000)', color: '#ffffff', fontSize: '9px', padding: '1px 6px', borderRadius: '2px', fontWeight: 'bold' }}>
+                    ACTIVE DOSSIER
+                  </span>
+                )}
               </button>
               <button
-                className={`win95-button ${activeCaseId === 'case_clyde_shipyard' ? 'active' : ''}`}
+                className={`win95-button ${activeCaseId === 'case_clyde_shipyard' ? 'active pressed' : ''}`}
                 onClick={() => handleSwitchCase('case_clyde_shipyard')}
                 style={{
                   padding: '6px 16px',
@@ -1015,12 +1034,18 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
                   fontWeight: 'bold',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
+                  gap: '8px',
                   background: activeCaseId === 'case_clyde_shipyard' ? 'var(--w95-title-active-bg, #000080)' : undefined,
                   color: activeCaseId === 'case_clyde_shipyard' ? '#ffffff' : undefined,
+                  border: activeCaseId === 'case_clyde_shipyard' ? '2px solid var(--w95-accent-color, #000080)' : undefined,
                 }}
               >
-                📁 CASE #1995-CR-1042: Clyde Naval Shipyard (Glasgow)
+                <span>📁 CASE #1995-CR-1042: Clyde Naval Shipyard (Glasgow)</span>
+                {activeCaseId === 'case_clyde_shipyard' && (
+                  <span style={{ background: 'var(--w95-accent-color, #ff8000)', color: '#ffffff', fontSize: '9px', padding: '1px 6px', borderRadius: '2px', fontWeight: 'bold' }}>
+                    ACTIVE DOSSIER
+                  </span>
+                )}
               </button>
             </div>
 
@@ -1690,11 +1715,11 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
               <div className="forensic-query-console">
                 <div className="forensic-query-console-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      💻 <span>SQL INVESTIGATION CONSOLE</span>
+                    <span style={{ fontWeight: 'bold', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      💻 <span>FORENSIC SQL WORKBENCH [QUERY RUNNER]</span>
                     </span>
-                    <span style={{ fontSize: '11px', opacity: 0.8, fontStyle: 'italic' }}>
-                      (Press [F5] or [Ctrl+Enter] to Execute)
+                    <span style={{ fontSize: '11px', opacity: 0.85, fontStyle: 'italic' }}>
+                      (F5 or Ctrl+Enter to Execute • Ctrl+Shift+F to Format)
                     </span>
                   </div>
 
@@ -1743,6 +1768,20 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
                       type="button"
                       className="win95-button"
                       onClick={() => {
+                        if (terminalSql.trim()) {
+                          setTerminalSql(formatSql(terminalSql));
+                          terminalInputRef.current?.focus();
+                        }
+                      }}
+                      style={{ padding: '2px 8px', fontSize: '11px' }}
+                      title="Beautify and format forensic SQL query (Ctrl+Shift+F)"
+                    >
+                      🪄 Format SQL
+                    </button>
+                    <button
+                      type="button"
+                      className="win95-button"
+                      onClick={() => {
                         setTerminalSql('');
                         terminalInputRef.current?.focus();
                       }}
@@ -1769,7 +1808,7 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
                       onClick={() => executeSql(terminalSql, 'Custom SQL Query')}
                       disabled={executing || !terminalSql.trim()}
                       style={{
-                        padding: '4px 18px',
+                        padding: '5px 20px',
                         fontSize: '12px',
                         fontWeight: 'bold',
                         background: 'var(--w95-title-active-bg, #000080)',
@@ -1788,10 +1827,9 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
                 {/* Multi-Line SQL Textarea Editor */}
                 <div className="forensic-query-input-wrap">
                   <div className="forensic-query-gutter">
-                    <span>1</span>
-                    <span>2</span>
-                    <span>3</span>
-                    <span>4</span>
+                    {Array.from({ length: Math.max(7, (terminalSql.match(/\n/g) || []).length + 1) }).map((_, i) => (
+                      <span key={i}>{i + 1}</span>
+                    ))}
                   </div>
                   <textarea
                     ref={terminalInputRef}
@@ -1805,11 +1843,16 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
                       if (e.key === 'F5' || (e.key === 'Enter' && (e.ctrlKey || e.metaKey))) {
                         e.preventDefault();
                         executeSql(terminalSql, 'Custom SQL Query');
+                      } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'F' || e.key === 'f')) {
+                        e.preventDefault();
+                        if (terminalSql.trim()) {
+                          setTerminalSql(formatSql(terminalSql));
+                        }
                       }
                     }}
                     placeholder={`-- Enter SQL query to investigate forensic evidence (Press F5 or Ctrl+Enter to execute):
 SELECT * FROM ${activeLead.table} WHERE ...;`}
-                    rows={4}
+                    rows={7}
                     spellCheck={false}
                   />
                 </div>
