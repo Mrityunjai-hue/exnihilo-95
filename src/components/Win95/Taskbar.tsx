@@ -29,6 +29,7 @@ interface TaskbarProps {
   onLogout:          () => void;
   onToggleLaunchpad?: () => void;
   isLaunchpadOpen?:   boolean;
+  onOpenCookies?:     () => void;
 }
 
 export const Taskbar: React.FC<TaskbarProps> = ({
@@ -48,6 +49,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   onLogout,
   onToggleLaunchpad,
   isLaunchpadOpen = false,
+  onOpenCookies,
 }) => {
   const { activeTheme: hookTheme } = useTheme();
   const activeTheme = propTheme || hookTheme;
@@ -457,7 +459,31 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               onClick={() => { onOpenWindow('settings'); setStartMenuOpen(false); }}
             >
               <span style={{ fontSize: '16px' }}>⚙️</span>
-              <div>Control Panel & Options</div>
+              <div>Control Panel &amp; Options</div>
+            </div>
+
+            {onOpenCookies && (
+              <div
+                className="win95-start-item"
+                onClick={() => { onOpenCookies(); setStartMenuOpen(false); }}
+              >
+                <span style={{ fontSize: '16px' }}>🍪</span>
+                <div>
+                  <strong>Cookie &amp; Storage Manager</strong>
+                  <div style={{ fontSize: '10px', color: '#555' }}>Configure local storage &amp; cookies</div>
+                </div>
+              </div>
+            )}
+
+            <div
+              className="win95-start-item"
+              onClick={() => { onOpenWindow('legal'); setStartMenuOpen(false); }}
+            >
+              <span style={{ fontSize: '16px' }}>⚖️</span>
+              <div>
+                <strong>Terms, Privacy &amp; Legal Notice</strong>
+                <div style={{ fontSize: '10px', color: '#555' }}>Terms of Service &amp; Privacy Policy</div>
+              </div>
             </div>
 
             {onToggleCrt && (
@@ -565,6 +591,17 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           >
             {isSecureContext ? '🛡️' : '⚠️'}
           </span>
+
+          {/* Cookie & Storage Tray Icon */}
+          {onOpenCookies && (
+            <span
+              title="Cookie & Storage Preferences"
+              style={{ fontSize: '11px', cursor: 'pointer' }}
+              onClick={onOpenCookies}
+            >
+              🍪
+            </span>
+          )}
 
           {/* Account Tray Icon */}
           <span

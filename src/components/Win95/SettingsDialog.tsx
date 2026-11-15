@@ -19,6 +19,8 @@ interface SettingsDialogProps {
   onSave:         (rows: number, cap: number, dialect: Dialect) => void;
   onClose:        () => void;
   onFocus:        () => void;
+  onOpenCookies?: () => void;
+  onOpenLegal?:   (tab?: 'terms' | 'privacy') => void;
 }
 
 export const SettingsDialog: React.FC<SettingsDialogProps> = ({
@@ -32,6 +34,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   onSave,
   onClose,
   onFocus,
+  onOpenCookies,
+  onOpenLegal,
 }) => {
   const [activeTab, setActiveTab] = useState<'general' | 'themes' | 'engine' | 'about'>('general');
   const [localRows, setLocalRows] = useState<number>(rowsPerTable);
@@ -362,8 +366,51 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                 </a>{' '}
                 using AI
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--w95-dark-gray, #64748b)', marginTop: '12px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--w95-dark-gray, #64748b)', marginTop: '10px' }}>
                 Zero-config in-browser SQL IDE with automatic schema inference and synthetic data generation.
+              </div>
+
+              {/* Legal & Cookie Quick Links */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                {onOpenCookies && (
+                  <button
+                    type="button"
+                    className="win95-button"
+                    style={{ fontSize: '10px', padding: '2px 8px' }}
+                    onClick={() => {
+                      onOpenCookies();
+                      onClose();
+                    }}
+                  >
+                    🍪 Cookie Preferences
+                  </button>
+                )}
+                {onOpenLegal && (
+                  <>
+                    <button
+                      type="button"
+                      className="win95-button"
+                      style={{ fontSize: '10px', padding: '2px 8px' }}
+                      onClick={() => {
+                        onOpenLegal('terms');
+                        onClose();
+                      }}
+                    >
+                      📜 Terms of Service
+                    </button>
+                    <button
+                      type="button"
+                      className="win95-button"
+                      style={{ fontSize: '10px', padding: '2px 8px' }}
+                      onClick={() => {
+                        onOpenLegal('privacy');
+                        onClose();
+                      }}
+                    >
+                      🔒 Privacy Policy
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}

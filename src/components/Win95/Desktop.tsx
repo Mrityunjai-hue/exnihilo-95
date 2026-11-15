@@ -20,7 +20,8 @@ import { BootAnimation } from './BootAnimation';
 import { ShutDownDialog } from './ShutDownDialog';
 import { ContributorsWindow } from './ContributorsWindow';
 import { MobileLanding } from './MobileLanding';
-import { LegalWindow } from './LegalWindow';
+import { LegalWindow, TabId as LegalTabId } from './LegalWindow';
+import { CookieConsentDialog, getStoredCookiePreferences } from './CookieConsentDialog';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthWindow } from './AuthWindow';
 import { AdminDashboard, SessionStats } from './AdminDashboard';
@@ -158,6 +159,23 @@ export const Desktop: React.FC = () => {
 
   // macOS Launchpad Overlay State
   const [launchpadOpen, setLaunchpadOpen] = useState(false);
+
+  // Cookie Consent & Legal Navigation State
+  const [cookieConsentOpen, setCookieConsentOpen] = useState(false);
+  const [legalInitialTab, setLegalInitialTab] = useState<LegalTabId>('terms');
+
+  // Automatically prompt Cookie Consent dialog on first boot
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const consent = getStoredCookiePreferences();
+      if (!consent) {
+        const timer = setTimeout(() => {
+          setCookieConsentOpen(true);
+        }, 1200);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -801,10 +819,21 @@ export const Desktop: React.FC = () => {
 
           <div
             className="win95-desktop-icon"
-            onClick={() => focusWindow('legal')}
+            onClick={() => {
+              setLegalInitialTab('terms');
+              focusWindow('legal');
+            }}
           >
-            <img src="/icons/legal_gavel.png" alt="Legal & IP Notice" />
-            <span>Legal & IP Notice</span>
+            <img src="/icons/legal_gavel.png" alt="Terms, Privacy & Legal Notice" />
+            <span>Terms, Privacy &amp; Legal</span>
+          </div>
+
+          <div
+            className="win95-desktop-icon"
+            onClick={() => setCookieConsentOpen(true)}
+          >
+            <div style={{ fontSize: '30px', lineHeight: 1, padding: '2px 0' }}>🍪</div>
+            <span>Cookie Settings</span>
           </div>
 
           <div
@@ -888,6 +917,10 @@ export const Desktop: React.FC = () => {
           return res;
         }}
         currentUser={currentUser}
+        onOpenLegal={(tab) => {
+          if (tab) setLegalInitialTab(tab);
+          focusWindow('legal');
+        }}
       />
 
       {/* Admin Dashboard Window */}
@@ -966,6 +999,11 @@ export const Desktop: React.FC = () => {
         }}
         onClose={() => closeWindow('settings')}
         onFocus={() => focusWindow('settings')}
+        onOpenCookies={() => setCookieConsentOpen(true)}
+        onOpenLegal={(tab) => {
+          if (tab) setLegalInitialTab(tab);
+          focusWindow('legal');
+        }}
       />
 
       {/* Retro CRT Monitor Filter Overlay */}
@@ -1021,9 +1059,21 @@ export const Desktop: React.FC = () => {
         isOpen={openWindows.legal}
         isMinimized={minimizedWindows.legal}
         zIndex={getZIndex('legal')}
+        initialTab={legalInitialTab}
         onClose={() => closeWindow('legal')}
         onMinimize={() => toggleMinimize('legal')}
         onFocus={() => focusWindow('legal')}
+      />
+
+      {/* Cookie & Local Storage Consent Dialog */}
+      <CookieConsentDialog
+        isOpen={cookieConsentOpen}
+        onClose={() => setCookieConsentOpen(false)}
+        onOpenPrivacy={() => {
+          setLegalInitialTab('privacy');
+          focusWindow('legal');
+        }}
+        onFocus={() => {}}
       />
 
       {/* Flagship SQL Challenge Arena Window */}
@@ -1163,6 +1213,7 @@ export const Desktop: React.FC = () => {
         onLogout={handleLogout}
         onToggleLaunchpad={() => setLaunchpadOpen((prev) => !prev)}
         isLaunchpadOpen={launchpadOpen}
+        onOpenCookies={() => setCookieConsentOpen(true)}
       />
     </div>
   );

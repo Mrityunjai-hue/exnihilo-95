@@ -29,6 +29,7 @@ interface AuthWindowProps {
     pass: string
   ) => Promise<{ success: boolean; error?: string }>;
   currentUser: StoredUser | null;
+  onOpenLegal?: (tab?: 'terms' | 'privacy') => void;
 }
 
 const AVATAR_OPTIONS = ['💻', '🧙‍♂️', '💾', '🕹️', '⚡', '⚙️', '🛡️', '✨'];
@@ -44,6 +45,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
   onSignUp,
   onLogin,
   currentUser,
+  onOpenLegal,
 }) => {
   const { activeTheme } = useTheme();
   const isMac = activeTheme === 'macos-glass';
@@ -431,6 +433,27 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                   </div>
                 )}
 
+                {/* Legal & Privacy Disclaimer */}
+                <div style={{ marginTop: '10px', fontSize: isMac ? '11px' : '10px', color: isMac ? '#94a3b8' : 'var(--w95-dark-gray, #64748b)', textAlign: 'center', lineHeight: 1.4 }}>
+                  ExNihilo 95 processes all queries locally. Review our{' '}
+                  <button
+                    type="button"
+                    onClick={() => onOpenLegal?.('terms')}
+                    style={{ background: 'none', border: 'none', padding: 0, color: isMac ? '#38bdf8' : 'var(--w95-accent-color, #0000ee)', textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit' }}
+                  >
+                    Terms
+                  </button>{' '}
+                  &amp;{' '}
+                  <button
+                    type="button"
+                    onClick={() => onOpenLegal?.('privacy')}
+                    style={{ background: 'none', border: 'none', padding: 0, color: isMac ? '#38bdf8' : 'var(--w95-accent-color, #0000ee)', textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit' }}
+                  >
+                    Privacy Policy
+                  </button>
+                  .
+                </div>
+
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
                   <button
                     type="submit"
@@ -683,6 +706,27 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
                     ⏳ Generating key (PBKDF2 600k iterations), please wait…
                   </div>
                 )}
+
+                {/* Legal & Privacy Disclaimer */}
+                <div style={{ marginTop: '10px', fontSize: isMac ? '11px' : '10px', color: isMac ? '#94a3b8' : 'var(--w95-dark-gray, #64748b)', textAlign: 'center', lineHeight: 1.4 }}>
+                  By signing in, you agree to our{' '}
+                  <button
+                    type="button"
+                    onClick={() => onOpenLegal?.('terms')}
+                    style={{ background: 'none', border: 'none', padding: 0, color: isMac ? '#38bdf8' : 'var(--w95-accent-color, #0000ee)', textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit' }}
+                  >
+                    Terms of Service
+                  </button>{' '}
+                  &amp;{' '}
+                  <button
+                    type="button"
+                    onClick={() => onOpenLegal?.('privacy')}
+                    style={{ background: 'none', border: 'none', padding: 0, color: isMac ? '#38bdf8' : 'var(--w95-accent-color, #0000ee)', textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit', fontFamily: 'inherit' }}
+                  >
+                    Privacy Policy
+                  </button>
+                  . 100% In-Browser Local Execution.
+                </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '14px' }}>
                   <button
