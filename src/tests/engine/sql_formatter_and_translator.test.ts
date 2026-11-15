@@ -5,24 +5,61 @@ import {
   translateDialect,
 } from '../../engine/dialect_translator';
 
-describe('SQL Formatter (formatSql) — String-Safe & Idempotent', () => {
-  it('formats standard SELECT queries with clean clause newlines', () => {
-    const raw = 'select id, name, email from customers where active = 1 order by id desc limit 10;';
+describe('SQL Formatter (formatSql) — Professional, String-Safe & Idempotent', () => {
+  it('formats short SELECT queries cleanly on one line', () => {
+    const raw = 'select id, name from customers where active = 1 order by id desc limit 10;';
     const formatted = formatSql(raw);
 
-    expect(formatted).toContain('SELECT id, name, email');
+    expect(formatted).toContain('SELECT id, name');
     expect(formatted).toContain('\nFROM customers');
     expect(formatted).toContain('\nWHERE active = 1');
     expect(formatted).toContain('\nORDER BY id DESC');
     expect(formatted).toContain('\nLIMIT 10;');
   });
 
-  it('indents JOIN clauses with 2 spaces', () => {
+  it('formats multi-column SELECT lists with clean indentation', () => {
+    const raw = 'select id, first_name, last_name, email, phone from users where active = 1;';
+    const formatted = formatSql(raw);
+
+    expect(formatted).toContain('SELECT\n  id,\n  first_name,\n  last_name,\n  email,\n  phone');
+    expect(formatted).toContain('\nFROM users');
+  });
+
+  it('indents JOIN clauses by 2 spaces', () => {
     const raw = 'select o.id, c.name from orders o inner join customers c on o.cust_id = c.id left join items i on o.id = i.order_id where o.total > 50;';
     const formatted = formatSql(raw);
 
     expect(formatted).toContain('\n  INNER JOIN customers c ON o.cust_id = c.id');
     expect(formatted).toContain('\n  LEFT JOIN items i ON o.id = i.order_id');
+  });
+
+  it('indents multiple AND / OR filter conditions under WHERE', () => {
+    const raw = 'select * from orders where status = 1 and total > 100 and region = 5 or priority = 1;';
+    const formatted = formatSql(raw);
+
+    expect(formatted).toContain('WHERE status = 1\n  AND total > 100\n  AND region = 5\n  OR priority = 1;');
+  });
+
+  it('formats CTEs (WITH ... AS (...)) with indented body and distinct outer query', () => {
+    const raw = 'with regional_sales as (select region, sum(amount) as total_sales from orders group by region) select region, total_sales from regional_sales where total_sales > 1000;';
+    const formatted = formatSql(raw);
+
+    expect(formatted).toContain('WITH regional_sales AS (\n  SELECT region, SUM(amount) AS total_sales\n  FROM orders\n  GROUP BY region\n)');
+    expect(formatted).toContain('\nSELECT region, total_sales\nFROM regional_sales');
+  });
+
+  it('formats subqueries with indented inner clauses', () => {
+    const raw = 'select * from (select id, count(*) as cnt from orders where status = 1 group by id) as sub where id > 10;';
+    const formatted = formatSql(raw);
+
+    expect(formatted).toContain('FROM (\n  SELECT id, COUNT(*) AS cnt\n  FROM orders\n  WHERE status = 1\n  GROUP BY id\n) AS sub');
+  });
+
+  it('formats CREATE TABLE DDL with one column per line indented', () => {
+    const raw = 'create table employees (id int primary key, name varchar(100) not null, salary decimal(10, 2), dept_id int);';
+    const formatted = formatSql(raw);
+
+    expect(formatted).toContain('CREATE TABLE employees (\n  id INT PRIMARY KEY,\n  name VARCHAR(100) NOT NULL,\n  salary DECIMAL(10, 2),\n  dept_id INT\n);');
   });
 
   it('PROTECTS string literals from keyword uppercasing and clause linebreaks', () => {
