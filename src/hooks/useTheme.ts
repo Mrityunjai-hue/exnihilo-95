@@ -11,6 +11,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 export type ThemeId = 'macos-glass' | 'win95-classic' | 'win7-aero' | 'win95-noir' | 'winxp-luna' | 'win2000';
+export type TypographyMode = 'hybrid' | 'pure95' | 'modern';
 
 export interface ThemeMeta {
   id: ThemeId;
@@ -80,6 +81,7 @@ export const THEME_PRESETS: ThemeMeta[] = [
 ];
 
 const THEME_STORAGE_KEY = 'exnihilo_active_theme';
+const TYPOGRAPHY_STORAGE_KEY = 'exnihilo_typography_mode';
 
 export function useTheme() {
   const [activeTheme, setActiveThemeState] = useState<ThemeId>(() => {
@@ -103,10 +105,37 @@ export function useTheme() {
     return 'win95-classic';
   });
 
+  const [typographyMode, setTypographyModeState] = useState<TypographyMode>(() => {
+    if (typeof window === 'undefined') return 'hybrid';
+    try {
+      if (typeof document !== 'undefined') {
+        const domTypo = document.documentElement.getAttribute('data-typography') as TypographyMode;
+        if (domTypo && ['hybrid', 'pure95', 'modern'].includes(domTypo)) {
+          return domTypo;
+        }
+      }
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const stored = localStorage.getItem(TYPOGRAPHY_STORAGE_KEY) as TypographyMode;
+        if (stored && ['hybrid', 'pure95', 'modern'].includes(stored)) {
+          return stored;
+        }
+      }
+    } catch {
+      // Fallback on error
+    }
+    return 'hybrid';
+  });
+
   const applyThemeToDOM = useCallback((theme: ThemeId) => {
     if (typeof document === 'undefined') return;
     document.documentElement.setAttribute('data-theme', theme);
     document.body.setAttribute('data-theme', theme);
+  }, []);
+
+  const applyTypographyToDOM = useCallback((mode: TypographyMode) => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.setAttribute('data-typography', mode);
+    document.body.setAttribute('data-typography', mode);
   }, []);
 
   const setTheme = useCallback(
@@ -127,9 +156,31 @@ export function useTheme() {
     [applyThemeToDOM]
   );
 
+  const setTypographyMode = useCallback(
+    (newMode: TypographyMode) => {
+      setTypographyModeState(newMode);
+      applyTypographyToDOM(newMode);
+      if (typeof window !== 'undefined') {
+        try {
+          if (window.localStorage) {
+            localStorage.setItem(TYPOGRAPHY_STORAGE_KEY, newMode);
+          }
+          window.dispatchEvent(new CustomEvent('exnihilo-typography-change', { detail: newMode }));
+        } catch {
+          // Ignore quota error
+        }
+      }
+    },
+    [applyTypographyToDOM]
+  );
+
   useEffect(() => {
     applyThemeToDOM(activeTheme);
   }, [activeTheme, applyThemeToDOM]);
+
+  useEffect(() => {
+    applyTypographyToDOM(typographyMode);
+  }, [typographyMode, applyTypographyToDOM]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -139,10 +190,18 @@ export function useTheme() {
         setActiveThemeState(custom.detail);
       }
     };
+    const handleTypoSync = (e: Event) => {
+      const custom = e as CustomEvent<TypographyMode>;
+      if (custom.detail && ['hybrid', 'pure95', 'modern'].includes(custom.detail)) {
+        setTypographyModeState(custom.detail);
+      }
+    };
     window.addEventListener('exnihilo-theme-change', handleSync);
+    window.addEventListener('exnihilo-typography-change', handleTypoSync);
     window.addEventListener('storage', handleSync);
     return () => {
       window.removeEventListener('exnihilo-theme-change', handleSync);
+      window.removeEventListener('exnihilo-typography-change', handleTypoSync);
       window.removeEventListener('storage', handleSync);
     };
   }, []);
@@ -154,5 +213,7 @@ export function useTheme() {
     currentThemeMeta,
     setTheme,
     allThemes: THEME_PRESETS,
+    typographyMode,
+    setTypographyMode,
   };
 }

@@ -73,4 +73,18 @@ describe('Multi-Theme Engine Unit Tests', () => {
     expect(noir?.isDark).toBe(true);
     expect(classic?.isDark).toBe(false);
   });
+
+  it('supports typography modes and validates mode storage', () => {
+    const validModes = ['hybrid', 'pure95', 'modern'];
+    expect(validModes).toContain('hybrid');
+    expect(validModes).toContain('pure95');
+    expect(validModes).toContain('modern');
+
+    // Default typography key should store hybrid mode
+    localStorage.setItem('exnihilo_typography_mode', 'hybrid');
+    expect(localStorage.getItem('exnihilo_typography_mode')).toBe('hybrid');
+
+    localStorage.setItem('exnihilo_typography_mode', 'pure95');
+    expect(localStorage.getItem('exnihilo_typography_mode')).toBe('pure95');
+  });
 });

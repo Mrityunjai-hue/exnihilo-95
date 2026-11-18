@@ -39,7 +39,7 @@ export default function NotFound() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        fontFamily: "'MS Sans Serif', Tahoma, Geneva, Verdana, sans-serif",
+        fontFamily: "var(--w95-font-body, var(--font-inter), sans-serif)",
         color: '#000000',
         userSelect: 'none',
         overflow: 'hidden',

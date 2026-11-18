@@ -56,7 +56,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-theme="win95-classic" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" data-theme="win95-classic" data-typography="hybrid" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

@@ -28,21 +28,44 @@
   font-display: swap;
 }
 
-/* Retro Font Fallbacks */
-[data-theme="win95-classic"] {
-  --w95-font: 'Windows 95', 'MS Sans Serif', Tahoma, Arial, sans-serif;
-  --w95-mono: 'Lucida Console', 'Courier New', Courier, monospace;
+/* Typography Tokens & Selective Retro System */
+:root {
+  --w95-font-retro: 'Windows 95', 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  --w95-font-body: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --w95-font: var(--w95-font-body);
+  --w95-mono: var(--font-mono), 'JetBrains Mono', 'Lucida Console', 'Courier New', Courier, monospace;
 }
 
-/* Global Reset & Body */
+[data-theme="win95-classic"] {
+  --w95-font-retro: 'Windows 95', 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  --w95-font-body: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --w95-font: var(--w95-font-body);
+  --w95-mono: var(--font-mono), 'JetBrains Mono', 'Lucida Console', 'Courier New', Courier, monospace;
+}
+
+/* Typography Mode Attributes */
+[data-typography="pure95"] {
+  --w95-font-body: 'Windows 95', 'MS Sans Serif', Tahoma, Arial, sans-serif !important;
+  --w95-font-retro: 'Windows 95', 'MS Sans Serif', Tahoma, Arial, sans-serif !important;
+  -webkit-font-smoothing: none !important;
+}
+
+[data-typography="modern"] {
+  --w95-font-retro: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  --w95-font-body: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+/* Global Reset & Body — Defaults to clean, legible Inter */
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
   width: 100%;
   overflow: hidden;
-  font-family: var(--w95-font);
-  font-size: 12px;
+  font-family: var(--w95-font-body);
+  font-size: 12.5px;
+  line-height: 1.45;
   background: var(--w95-desktop-bg, #008080);
   color: var(--w95-black, #000000);
   user-select: none;
@@ -51,8 +74,19 @@ html, body {
   text-rendering: optimizeLegibility;
 }
 
-[data-theme="win95-classic"] {
-  -webkit-font-smoothing: none;
+/* Windows 95 Operating System Chrome Elements (Keep Iconic Retro Font) */
+.win95-titlebar,
+.win95-titlebar-text,
+.win95-button,
+.win95-btn,
+.win95-start-btn,
+.win95-desktop-icon span,
+.win95-task-tab,
+.win95-tab,
+.win95-start-item strong,
+.win95-3d-title,
+.win95-3d-badge-text {
+  font-family: var(--w95-font-retro);
 }
 
 .mac-control-glyph {
@@ -874,8 +908,8 @@ html, body {
 .win95-grid {
   width: 100%;
   border-collapse: collapse;
-  font-size: 11px;
-  font-family: 'Windows 95', 'MS Sans Serif', Tahoma, sans-serif;
+  font-size: 11.5px;
+  font-family: var(--w95-font-body);
 }
 
 .win95-grid th {
@@ -890,6 +924,7 @@ html, body {
   font-weight: bold;
   white-space: nowrap;
   user-select: none;
+  font-family: var(--w95-font-retro);
 }
 
 .win95-grid td {

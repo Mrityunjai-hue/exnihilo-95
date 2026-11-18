@@ -57,7 +57,7 @@ ${error.stack || 'No stack trace available.'}`;
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontFamily: "'MS Sans Serif', Tahoma, Geneva, Verdana, sans-serif",
+        fontFamily: "var(--w95-font-body, var(--font-inter), sans-serif)",
         color: '#000000',
         padding: '16px',
         boxSizing: 'border-box',

@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialect } from '../../engine/parser';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from './WindowControls';
-import { useTheme, ThemeId, THEME_PRESETS } from '../../hooks/useTheme';
+import { useTheme, ThemeId, THEME_PRESETS, TypographyMode } from '../../hooks/useTheme';
 
 interface SettingsDialogProps {
   isOpen:         boolean;
@@ -48,7 +48,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     return '1';
   });
   const { position, handleMouseDown } = useDraggable({ x: 220, y: 110 });
-  const { activeTheme, setTheme } = useTheme();
+  const { activeTheme, setTheme, typographyMode, setTypographyMode } = useTheme();
 
   const handleScaleChange = (scale: string) => {
     setUiScale(scale);
@@ -312,6 +312,63 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                 <p style={{ margin: '6px 0 0 0', fontSize: '10px', opacity: 0.8 }}>
                   Scales retro windows, fonts, and controls for modern high-DPI and 4K displays.
                 </p>
+              </fieldset>
+
+              {/* Typography & Readability Mode */}
+              <fieldset style={{ border: '1px solid var(--w95-dark-gray, #808080)', padding: '10px', marginTop: '12px' }}>
+                <legend style={{ padding: '0 4px', fontSize: '11px', fontWeight: 'bold' }}>
+                  🔤 Typography & Font Rendering
+                </legend>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px' }}>
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="typographyMode"
+                      value="hybrid"
+                      checked={typographyMode === 'hybrid'}
+                      onChange={() => setTypographyMode('hybrid')}
+                      style={{ marginTop: '2px' }}
+                    />
+                    <div>
+                      <strong>Retro-Modern Hybrid (Recommended)</strong>
+                      <div style={{ fontSize: '10px', opacity: 0.75 }}>
+                        Crisp Inter for query editor, results tables & docs; classic pixel font for titlebars & buttons.
+                      </div>
+                    </div>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="typographyMode"
+                      value="pure95"
+                      checked={typographyMode === 'pure95'}
+                      onChange={() => setTypographyMode('pure95')}
+                      style={{ marginTop: '2px' }}
+                    />
+                    <div>
+                      <strong>Pure 1995 Aliased</strong>
+                      <div style={{ fontSize: '10px', opacity: 0.75 }}>
+                        Authentic pixelated MS Sans Serif font everywhere across windows and text.
+                      </div>
+                    </div>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="typographyMode"
+                      value="modern"
+                      checked={typographyMode === 'modern'}
+                      onChange={() => setTypographyMode('modern')}
+                      style={{ marginTop: '2px' }}
+                    />
+                    <div>
+                      <strong>Modern Clean</strong>
+                      <div style={{ fontSize: '10px', opacity: 0.75 }}>
+                        Antialiased modern Inter across titlebars, controls, and body text.
+                      </div>
+                    </div>
+                  </label>
+                </div>
               </fieldset>
             </div>
           )}
