@@ -34,22 +34,31 @@ export const getStoredCookiePreferences = (): CookiePreferences | null => {
 interface CookieConsentDialogProps {
   isOpen:         boolean;
   zIndex?:        number;
+  variant?:       'dialog' | 'toast';
   onClose:        () => void;
   onOpenPrivacy?: () => void;
+  onOpenOptions?: () => void;
   onFocus?:       () => void;
 }
 
 export const CookieConsentDialog: React.FC<CookieConsentDialogProps> = ({
   isOpen,
   zIndex = 99999,
+  variant = 'dialog',
   onClose,
   onOpenPrivacy,
+  onOpenOptions,
   onFocus,
 }) => {
   const [showCustomize, setShowCustomize] = useState(false);
+  const [internalVariant, setInternalVariant] = useState<'dialog' | 'toast'>(variant);
   const [prefStorage, setPrefStorage] = useState(true);
   const [prefAnalytics, setPrefAnalytics] = useState(true);
   const { position, handleMouseDown } = useDraggable({ x: 180, y: 140 });
+
+  useEffect(() => {
+    setInternalVariant(variant);
+  }, [variant]);
 
   // Load existing preferences if available
   useEffect(() => {
@@ -98,6 +107,77 @@ export const CookieConsentDialog: React.FC<CookieConsentDialogProps> = ({
   const handleSaveCustom = () => {
     saveConsent(prefStorage, prefAnalytics);
   };
+
+  if (internalVariant === 'toast') {
+    return (
+      <div
+        id="cookie-consent-toast"
+        className="win95-window"
+        style={{
+          position: 'fixed',
+          bottom: '34px',
+          right: '12px',
+          width: '380px',
+          maxWidth: 'calc(100vw - 24px)',
+          zIndex,
+          boxShadow: '3px 3px 12px rgba(0, 0, 0, 0.6)',
+          boxSizing: 'border-box',
+        }}
+        onMouseDown={onFocus}
+        role="dialog"
+        aria-labelledby="cookie-toast-title"
+      >
+        <div className="win95-titlebar" style={{ padding: '2px 4px' }}>
+          <div className="win95-titlebar-text" id="cookie-toast-title" style={{ fontSize: '11px' }}>
+            <span>🍪</span>
+            <span>Storage &amp; Cookie Preferences</span>
+          </div>
+          <WindowControls
+            showMinimize={false}
+            showMaximize={false}
+            onClose={onClose}
+          />
+        </div>
+        <div style={{ padding: '10px 12px', background: 'var(--w95-gray, #c0c0c0)', color: 'var(--w95-text-color, #000000)', fontSize: '11px' }}>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', marginBottom: '10px' }}>
+            <span style={{ fontSize: '20px' }}>🍪</span>
+            <div style={{ lineHeight: '1.4' }}>
+              ExNihilo 95 runs entirely client-side. We use local browser storage for schemas, auth tokens, and retro desktop skins.
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+            <button
+              type="button"
+              className="win95-button"
+              style={{ fontSize: '11px', padding: '2px 8px' }}
+              onClick={handleEssentialOnly}
+            >
+              Essential
+            </button>
+            <button
+              type="button"
+              className="win95-button"
+              style={{ fontSize: '11px', padding: '2px 8px' }}
+              onClick={() => {
+                if (onOpenOptions) onOpenOptions();
+                setInternalVariant('dialog');
+              }}
+            >
+              Options...
+            </button>
+            <button
+              type="button"
+              className="win95-button"
+              style={{ fontSize: '11px', padding: '2px 10px', fontWeight: 'bold' }}
+              onClick={handleAcceptAll}
+            >
+              Accept All
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

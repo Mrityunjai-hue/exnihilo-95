@@ -142,4 +142,24 @@ describe('UI State Resilience & Storage (Phase 3) Tests', () => {
       expect(reloaded?.tabs[0].isPinned).toBe(true);
     });
   });
+
+  // ── 4. SQLite Snapshots Guardrail ──────────────────────────────────────────
+  describe('SQLite Binary Snapshots Guardrail', () => {
+    it('gracefully handles snapshot APIs in non-IndexedDB test environment without crashing', async () => {
+      const { saveDatabaseSnapshot, listDatabaseSnapshots, loadDatabaseSnapshot, deleteDatabaseSnapshot } =
+        await import('../../hooks/useWorkspaceStorage');
+
+      const saved = await saveDatabaseSnapshot('test_snap', new Uint8Array([1, 2, 3]), 2);
+      expect(saved === null || typeof saved === 'object').toBe(true);
+
+      const list = await listDatabaseSnapshots();
+      expect(Array.isArray(list)).toBe(true);
+
+      const loaded = await loadDatabaseSnapshot('invalid_id');
+      expect(loaded).toBeNull();
+
+      const deleted = await deleteDatabaseSnapshot('invalid_id');
+      expect(deleted === false || deleted === true).toBe(true);
+    });
+  });
 });

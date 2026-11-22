@@ -62,6 +62,27 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" type="image/svg+xml" href="/icon.svg" />
         <link rel="icon" href="/favicon.ico" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "ExNihilo 95",
+              operatingSystem: "Any / WebBrowser",
+              applicationCategory: "DeveloperApplication",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              description:
+                "An intuitive, zero-backend, in-browser SQL IDE that eliminates 'Table not found' errors. Instantly parse queries, infer data types on the fly, and run relational execution loops completely in memory.",
+              browserRequirements: "Requires WebAssembly support",
+              softwareVersion: "2.1.0",
+            }),
+          }}
+        />
       </head>
       <body>
         <ServiceWorkerRegistration />

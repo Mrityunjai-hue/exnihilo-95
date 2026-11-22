@@ -1377,6 +1377,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               isLoading={activeTab.isLoading}
               executionTimeMs={activeTab.executionTimeMs}
               dialect={dialect}
+              onRunSample={handleExecute}
             />
 
 

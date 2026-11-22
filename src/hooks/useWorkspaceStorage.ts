@@ -23,6 +23,15 @@ export interface PersistedTabMeta {
   isPinned?: boolean;
 }
 
+export interface DatabaseSnapshot {
+  id: string;
+  name: string;
+  timestamp: string;
+  binary?: Uint8Array;
+  tablesCount?: number;
+  sizeBytes?: number;
+}
+
 export interface StorageEstimateResult {
   usedMb: number;
   totalQuotaMb: number;
@@ -30,7 +39,8 @@ export interface StorageEstimateResult {
 
 const DB_NAME = 'ExNihiloDB';
 const STORE_NAME = 'workspace_tabs';
-const DB_VERSION = 1;
+const SNAPSHOT_STORE = 'db_snapshots';
+const DB_VERSION = 2;
 
 const INDEX_KEY = 'exnihilo_tab_index';
 const ACTIVE_TAB_KEY = 'exnihilo_active_tab_id';
@@ -52,6 +62,9 @@ function openIDB(): Promise<IDBDatabase | null> {
         const db = (event.target as IDBOpenDBRequest).result;
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           db.createObjectStore(STORE_NAME);
+        }
+        if (!db.objectStoreNames.contains(SNAPSHOT_STORE)) {
+          db.createObjectStore(SNAPSHOT_STORE, { keyPath: 'id' });
         }
       };
 
@@ -449,6 +462,107 @@ export function useWorkspaceStorage(debounceMs = 500) {
     removeTabFromStorage,
     clearWorkspaceStorage,
     formatIDEDisk,
+    saveDatabaseSnapshot,
+    listDatabaseSnapshots,
+    loadDatabaseSnapshot,
+    deleteDatabaseSnapshot,
   };
+}
+
+/**
+ * Save SQLite snapshot into IndexedDB ExNihiloDB store
+ */
+export async function saveDatabaseSnapshot(
+  name: string,
+  binary?: Uint8Array,
+  tablesCount: number = 0
+): Promise<DatabaseSnapshot | null> {
+  const db = await openIDB();
+  if (!db) return null;
+
+  const snapshot: DatabaseSnapshot = {
+    id: `snap_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    name: name.trim() || `Snapshot ${new Date().toLocaleTimeString()}`,
+    timestamp: new Date().toISOString(),
+    binary,
+    tablesCount,
+    sizeBytes: binary ? binary.byteLength : 0,
+  };
+
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(SNAPSHOT_STORE, 'readwrite');
+      const store = tx.objectStore(SNAPSHOT_STORE);
+      const req = store.put(snapshot);
+      req.onsuccess = () => resolve(snapshot);
+      req.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+/**
+ * List all saved SQLite database snapshots
+ */
+export async function listDatabaseSnapshots(): Promise<DatabaseSnapshot[]> {
+  const db = await openIDB();
+  if (!db) return [];
+
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(SNAPSHOT_STORE, 'readonly');
+      const store = tx.objectStore(SNAPSHOT_STORE);
+      const req = store.getAll();
+      req.onsuccess = () => {
+        const results = (req.result as DatabaseSnapshot[]) || [];
+        results.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+        resolve(results);
+      };
+      req.onerror = () => resolve([]);
+    } catch {
+      resolve([]);
+    }
+  });
+}
+
+/**
+ * Load a single SQLite snapshot by ID
+ */
+export async function loadDatabaseSnapshot(id: string): Promise<DatabaseSnapshot | null> {
+  const db = await openIDB();
+  if (!db) return null;
+
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(SNAPSHOT_STORE, 'readonly');
+      const store = tx.objectStore(SNAPSHOT_STORE);
+      const req = store.get(id);
+      req.onsuccess = () => resolve((req.result as DatabaseSnapshot) || null);
+      req.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+/**
+ * Delete a SQLite snapshot by ID
+ */
+export async function deleteDatabaseSnapshot(id: string): Promise<boolean> {
+  const db = await openIDB();
+  if (!db) return false;
+
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(SNAPSHOT_STORE, 'readwrite');
+      const store = tx.objectStore(SNAPSHOT_STORE);
+      const req = store.delete(id);
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => resolve(false);
+    } catch {
+      resolve(false);
+    }
+  });
 }
 

@@ -12,6 +12,7 @@ import dynamic from 'next/dynamic';
 import { ClassifiedError, classifyError } from '../../engine/errors';
 import { Taskbar, WindowMeta } from './Taskbar';
 import { IDEShell } from '../IDE/IDEShell';
+import { PocketSQLShell } from '../Mobile/PocketSQLShell';
 import { ErrorDialog } from './ErrorDialog';
 import { MobileLanding } from './MobileLanding';
 import { CookieConsentDialog, getStoredCookiePreferences } from './CookieConsentDialog';
@@ -231,6 +232,7 @@ export const Desktop: React.FC = () => {
 
   // Cookie Consent & Legal Navigation State
   const [cookieConsentOpen, setCookieConsentOpen] = useState(false);
+  const [cookieConsentVariant, setCookieConsentVariant] = useState<'toast' | 'dialog'>('toast');
   const [legalInitialTab, setLegalInitialTab] = useState<LegalTabId>('terms');
 
   // Automatically prompt Cookie Consent dialog on first boot
@@ -239,6 +241,7 @@ export const Desktop: React.FC = () => {
       const consent = getStoredCookiePreferences();
       if (!consent) {
         const timer = setTimeout(() => {
+          setCookieConsentVariant('toast');
           setCookieConsentOpen(true);
         }, 1200);
         return () => clearTimeout(timer);
@@ -516,9 +519,22 @@ export const Desktop: React.FC = () => {
     );
   }
 
-  // Mobile Landing Screen Guard
+  // Mobile Pocket SQL Mode (< 1024px or touch device)
   if (isMobileViewport && !forceDesktop) {
-    return <MobileLanding onForceDesktop={() => setForceDesktop(true)} />;
+    return (
+      <PocketSQLShell
+        dialect={dialect}
+        onDialectChange={setDialect}
+        queryText={queryText}
+        onQueryChange={setQueryText}
+        onRun={() => handleRunQuery()}
+        onCancelQuery={handleCancelQuery}
+        isLoading={isLoading}
+        result={result}
+        catalog={executor.getCatalog()}
+        onSwitchToDesktop={() => setForceDesktop(true)}
+      />
+    );
   }
 
   const windowsMeta: WindowMeta[] = [
@@ -1176,7 +1192,10 @@ export const Desktop: React.FC = () => {
           }}
           onClose={() => closeWindow('settings')}
           onFocus={() => focusWindow('settings')}
-          onOpenCookies={() => setCookieConsentOpen(true)}
+          onOpenCookies={() => {
+          setCookieConsentVariant('dialog');
+          setCookieConsentOpen(true);
+        }}
           onOpenLegal={(tab) => {
             if (tab) setLegalInitialTab(tab);
             focusWindow('legal');
@@ -1252,7 +1271,9 @@ export const Desktop: React.FC = () => {
       {/* Cookie & Local Storage Consent Dialog */}
       <CookieConsentDialog
         isOpen={cookieConsentOpen}
+        variant={cookieConsentVariant}
         onClose={() => setCookieConsentOpen(false)}
+        onOpenOptions={() => setCookieConsentVariant('dialog')}
         onOpenPrivacy={() => {
           setLegalInitialTab('privacy');
           focusWindow('legal');
@@ -1307,6 +1328,10 @@ export const Desktop: React.FC = () => {
           onClose={() => closeWindow('erd')}
           onMinimize={() => toggleMinimize('erd')}
           onFocus={() => focusWindow('erd')}
+          onLoadQuery={(query) => {
+            setQueryText(query);
+            focusWindow('ide');
+          }}
         />
       )}
 
@@ -1405,7 +1430,10 @@ export const Desktop: React.FC = () => {
         onLogout={handleLogout}
         onToggleLaunchpad={() => setLaunchpadOpen((prev) => !prev)}
         isLaunchpadOpen={launchpadOpen}
-        onOpenCookies={() => setCookieConsentOpen(true)}
+        onOpenCookies={() => {
+          setCookieConsentVariant('dialog');
+          setCookieConsentOpen(true);
+        }}
         isOnline={isOnline}
         onOpenNetwork={() => setNetworkDialogOpen(true)}
       />

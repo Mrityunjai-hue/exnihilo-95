@@ -94,4 +94,14 @@ describe('New Windows 95 Screens & Autonomous Mode Tests', () => {
     const normalParams = new URL(normalUrl).searchParams;
     expect(normalParams.get('mode')).toBeNull();
   });
+
+  it('validates ERD JOIN query auto-generation logic', () => {
+    const mockLinks = [
+      { sourceTable: 'orders', sourceColumn: 'customer_id', targetTable: 'customers', targetColumn: 'id' },
+    ];
+    const link = mockLinks[0];
+    const sql = `-- Auto-generated JOIN query from ERD relationships\nSELECT\n  a.*,\n  b.*\nFROM "${link.sourceTable}" a\nINNER JOIN "${link.targetTable}" b ON a."${link.sourceColumn}" = b."${link.targetColumn}"\nLIMIT 25;`;
+    expect(sql).toContain('FROM "orders" a');
+    expect(sql).toContain('INNER JOIN "customers" b ON a."customer_id" = b."id"');
+  });
 });

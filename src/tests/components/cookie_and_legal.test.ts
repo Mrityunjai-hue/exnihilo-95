@@ -68,4 +68,18 @@ describe('Cookie Consent & Privacy Storage Unit Tests', () => {
     const consent = getStoredCookiePreferences();
     expect(consent).toBeNull();
   });
+
+  it('stores and retrieves updated cookie preferences with all categories enabled', () => {
+    const consent: CookiePreferences = {
+      essential: true,
+      preferences: true,
+      analytics: true,
+      timestamp: new Date().toISOString(),
+    };
+    localStorage.setItem('exnihilo_cookie_consent', JSON.stringify(consent));
+    const retrieved = getStoredCookiePreferences();
+    expect(retrieved?.essential).toBe(true);
+    expect(retrieved?.preferences).toBe(true);
+    expect(retrieved?.analytics).toBe(true);
+  });
 });

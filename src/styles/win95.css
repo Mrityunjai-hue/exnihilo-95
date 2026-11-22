@@ -887,6 +887,15 @@ html, body {
   font-size: 13px !important;
   background-color: #ffffff !important;
   color: #000000 !important;
+  font-variant-ligatures: none !important;
+  font-feature-settings: "liga" 0, "calt" 0 !important;
+}
+
+code,
+pre,
+.win95-mono {
+  font-variant-ligatures: none !important;
+  font-feature-settings: "liga" 0, "calt" 0 !important;
 }
 
 .cm-gutters {

@@ -31,6 +31,7 @@ export interface ERDViewerProps {
   zIndex?: number;
   onClose: () => void;
   onFocus?: () => void;
+  onLoadQuery?: (query: string) => void;
 }
 
 export const ERDViewer: React.FC<ERDViewerProps> = ({
@@ -44,6 +45,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
   zIndex = 999999,
   onClose,
   onFocus,
+  onLoadQuery,
 }) => {
   const { activeTheme } = useTheme();
   const isMac = activeTheme === 'macos-glass';
@@ -327,6 +329,48 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  // ── Action: Generate JOIN Query ─────────────────────────────────────────
+  const handleGenerateJoinQuery = () => {
+    if (erdData.links.length > 0) {
+      const primaryLink = erdData.links[0];
+      const sourceTbl = primaryLink.sourceTable;
+      const targetTbl = primaryLink.targetTable;
+      const sourceCol = primaryLink.sourceColumn;
+      const targetCol = primaryLink.targetColumn;
+
+      const sql = `-- Auto-generated JOIN query from ERD relationships\nSELECT\n  a.*,\n  b.*\nFROM "${sourceTbl}" a\nINNER JOIN "${targetTbl}" b ON a."${sourceCol}" = b."${targetCol}"\nLIMIT 25;`;
+
+      if (onLoadQuery) {
+        onLoadQuery(sql);
+        setCopyNotice('Loaded JOIN query in SQL Studio!');
+        setTimeout(() => setCopyNotice(null), 3000);
+      } else {
+        copyToClipboard(sql, 'JOIN Query');
+      }
+    } else if (erdData.nodes.length >= 2) {
+      const t1 = erdData.nodes[0].tableName;
+      const t2 = erdData.nodes[1].tableName;
+      const sql = `-- Multi-table cross query\nSELECT\n  a.*,\n  b.*\nFROM "${t1}" a\nCROSS JOIN "${t2}" b\nLIMIT 25;`;
+      if (onLoadQuery) {
+        onLoadQuery(sql);
+        setCopyNotice('Loaded query in SQL Studio!');
+        setTimeout(() => setCopyNotice(null), 3000);
+      } else {
+        copyToClipboard(sql, 'Query');
+      }
+    } else if (erdData.nodes.length === 1) {
+      const t = erdData.nodes[0].tableName;
+      const sql = `SELECT * FROM "${t}" LIMIT 25;`;
+      if (onLoadQuery) {
+        onLoadQuery(sql);
+        setCopyNotice('Loaded query in SQL Studio!');
+        setTimeout(() => setCopyNotice(null), 3000);
+      } else {
+        copyToClipboard(sql, 'Query');
+      }
+    }
+  };
+
   // ── Clipboard Toast Helper ────────────────────────────────────────────────
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard?.writeText(text);
@@ -524,6 +568,21 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
               {isSeeding ? '⏳ Generating...' : '⚡ Seed Sample Schema'}
             </button>
           )}
+
+          <button
+            className="win95-button"
+            style={{
+              padding: '2px 8px',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              background: '#ffffdf',
+            }}
+            onClick={handleGenerateJoinQuery}
+            disabled={erdData.nodes.length === 0}
+            title="Generate an INNER JOIN query from relationship links and open in SQL Studio"
+          >
+            ⚡ Generate JOIN Query
+          </button>
         </div>
 
         {/* Right Toolbar Actions */}

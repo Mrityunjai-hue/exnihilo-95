@@ -35,6 +35,7 @@ export const DetectiveWindow: React.FC<DetectiveWindowProps> = ({
   const { activeTheme } = useTheme();
   const isMac = activeTheme === 'macos-glass';
   const [internalMaximized, setInternalMaximized] = useState(false);
+  const [showBriefing, setShowBriefing] = useState(true);
   const isMaximized = propIsMaximized !== undefined ? propIsMaximized : internalMaximized;
 
   const toggleMaximize = () => {
@@ -110,6 +111,42 @@ export const DetectiveWindow: React.FC<DetectiveWindowProps> = ({
           onClose={onClose}
         />
       </div>
+
+      {/* Quick-Start Investigation Briefing Banner */}
+      {showBriefing && (
+        <div
+          style={{
+            background: '#ffffdf',
+            borderBottom: '2px solid #808080',
+            padding: '5px 12px',
+            fontSize: '11px',
+            color: '#1a1a1a',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '10px',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <span>📋</span>
+            <strong>Quick-Start Briefing:</strong>
+            <span>1. 📁 Read the incident report &amp; witness statements in the left dossier.</span>
+            <span>2. 🔍 Execute SQL against phone records, license plates, &amp; logs.</span>
+            <span>3. ⚖️ Cross-examine suspects and file an arrest warrant when certain.</span>
+          </div>
+          <button
+            type="button"
+            className="win95-button"
+            style={{ fontSize: '10px', padding: '1px 6px', whiteSpace: 'nowrap' }}
+            onClick={() => setShowBriefing(false)}
+            title="Dismiss briefing"
+          >
+            ✕ Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Main Workstation Container */}
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>

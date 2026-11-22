@@ -24,6 +24,7 @@ interface ResultsGridProps {
   isLoading:       boolean;
   executionTimeMs: number | null;
   dialect?:        string;
+  onRunSample?:    () => void;
 }
 
 const ROW_HEIGHT = 26;
@@ -37,6 +38,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   isLoading,
   executionTimeMs,
   dialect = 'MySQL',
+  onRunSample,
 }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -350,12 +352,32 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
           justifyContent: 'center',
           background: 'var(--w95-sunken-bg, #ffffff)',
           color: 'var(--w95-sunken-text, #666666)',
+          gap: '10px',
         }}
       >
-        <div style={{ fontSize: '24px', marginBottom: '4px' }}>📋</div>
-        <div style={{ fontSize: '11px' }}>
-          Ready for execution. Highlight any query or press <strong>F5</strong> to run.
+        <div style={{ fontSize: '28px' }}>📋</div>
+        <div style={{ fontSize: '11px', textAlign: 'center', maxWidth: '340px', lineHeight: '1.4' }}>
+          Ready for execution. Highlight any query or press <strong>F5</strong> to synthesize relational data.
         </div>
+        {onRunSample && (
+          <button
+            type="button"
+            className="win95-button"
+            onClick={onRunSample}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 14px',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+            }}
+          >
+            <span style={{ color: '#008000', fontSize: '13px' }}>▶</span>
+            <span>Run Sample Query (F5)</span>
+          </button>
+        )}
       </div>
     );
   }

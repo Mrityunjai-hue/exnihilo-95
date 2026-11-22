@@ -172,6 +172,8 @@ export default function LandingPage() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '8px',
           fontSize: '11px',
           fontWeight: 'bold',
           borderBottom: '2px solid #ffffff',
@@ -184,7 +186,7 @@ export default function LandingPage() {
           <span>ExNihilo 95: Professional SQL Studio — Zero-Schema Relational Engine</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <button
             type="button"
             className="win95-button"
@@ -207,10 +209,11 @@ export default function LandingPage() {
         style={{
           flex: 1,
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'center',
           padding: '16px',
           overflowY: 'auto',
+          boxSizing: 'border-box',
         }}
       >
         <div
@@ -218,6 +221,7 @@ export default function LandingPage() {
           style={{
             width: '920px',
             maxWidth: '96vw',
+            margin: 'auto 0',
             maxHeight: 'calc(100vh - 84px)',
             display: 'flex',
             flexDirection: 'column',
