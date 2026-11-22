@@ -14,6 +14,7 @@ interface ToolbarProps {
   rowsPerTable?:        number;
   onRowsPerTableChange?: (count: number) => void;
   onRun:                () => void;
+  onCancelQuery?:       () => void;
   onReset:              () => void;
   onFormatSql?:         () => void;
   onTranslateDialect?:  () => void;
@@ -40,6 +41,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   rowsPerTable = 20,
   onRowsPerTableChange,
   onRun,
+  onCancelQuery,
   onReset,
   onFormatSql,
   onTranslateDialect,
@@ -64,6 +66,20 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   const isMac = activeTheme === 'macos-glass';
   const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [elapsedSec, setElapsedSec] = useState<string>('0.0');
+
+  useEffect(() => {
+    if (!isLoading) {
+      setElapsedSec('0.0');
+      return;
+    }
+    const start = performance.now();
+    const interval = setInterval(() => {
+      const elapsed = (performance.now() - start) / 1000;
+      setElapsedSec(elapsed.toFixed(1));
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const templateMenuRef = useRef<HTMLDivElement>(null);
@@ -133,29 +149,54 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     >
       {/* Primary Execution & Core Settings Group */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-        {/* Primary Run Button */}
-        <button
-          id="btn-run"
-          className="win95-button"
-          style={{
-            fontWeight: 'bold',
-            color: hasSelection
-              ? (isDark ? '#c084fc' : '#800080')
-              : (isDark ? '#4ade80' : '#006600'),
-            padding: isMac ? '3px 12px' : '2px 10px',
-            fontSize: '11px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '5px',
-            cursor: isLoading ? 'wait' : 'pointer',
-          }}
-          onClick={onRun}
-          disabled={isLoading}
-          title={hasSelection ? 'Execute Selected Query (F5 or Ctrl+Enter)' : 'Execute All Queries (F5 or Ctrl+Enter)'}
-        >
-          <span>{isLoading ? '⏳' : '▶'}</span>
-          <span>{isLoading ? 'Running...' : hasSelection ? 'Run Selection (F5)' : 'Run (F5)'}</span>
-        </button>
+        {/* Primary Run / Stop Button */}
+        {isLoading ? (
+          <button
+            id="btn-stop-query"
+            className="win95-button"
+            style={{
+              fontWeight: 'bold',
+              color: '#ffffff',
+              background: '#b91c1c',
+              padding: isMac ? '3px 12px' : '2px 10px',
+              fontSize: '11px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              cursor: 'pointer',
+            }}
+            onClick={onCancelQuery}
+            title="Stop Query Execution (Esc)"
+          >
+            <span>■</span>
+            <span>Stop (Esc)</span>
+            <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: '10px', opacity: 0.9 }}>
+              {elapsedSec}s
+            </span>
+          </button>
+        ) : (
+          <button
+            id="btn-run"
+            className="win95-button"
+            style={{
+              fontWeight: 'bold',
+              color: hasSelection
+                ? (isDark ? '#c084fc' : '#800080')
+                : (isDark ? '#4ade80' : '#006600'),
+              padding: isMac ? '3px 12px' : '2px 10px',
+              fontSize: '11px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              cursor: 'pointer',
+            }}
+            onClick={onRun}
+            title={hasSelection ? 'Execute Selected Query (F5 or Ctrl+Enter)' : 'Execute All Queries (F5 or Ctrl+Enter)'}
+          >
+            <span>▶</span>
+            <span>{hasSelection ? 'Run Selection (F5)' : 'Run (F5)'}</span>
+          </button>
+        )}
 
         {/* Format SQL Button */}
         <button

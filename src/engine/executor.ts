@@ -47,9 +47,9 @@ let _sqlJsModulePromise: Promise<SqlJsStatic> | null = null;
 
 export async function getOrInitSqlJs(): Promise<SqlJsStatic> {
   if (!_sqlJsModulePromise) {
-    const isBrowser = typeof window !== 'undefined';
+    const isBrowserOrWorker = typeof window !== 'undefined' || (typeof self !== 'undefined' && typeof (process as any)?.versions?.node === 'undefined');
     _sqlJsModulePromise = initSqlJs(
-      isBrowser ? { locateFile: () => '/sql-wasm.wasm' } : undefined
+      isBrowserOrWorker ? { locateFile: () => '/sql-wasm.wasm' } : undefined
     );
     _sqlJsModulePromise.catch(() => {
       _sqlJsModulePromise = null; // Clear cached rejection to allow retry on next call
@@ -985,6 +985,136 @@ export class SQLExecutor {
       return this.db.export();
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * Materialize an imported tabular dataset (CSV, TSV, JSON) directly into SQLite
+   * and register it in the session catalog.
+   */
+  async importTabularTable(
+    tableName: string,
+    columns: Array<{ name: string; sqliteType: string }>,
+    rows: unknown[][],
+    dbName: string = 'default'
+  ): Promise<{ ok: boolean; rowCount: number; error?: string }> {
+    await this.init();
+    if (!this.db) return { ok: false, rowCount: 0, error: 'Database not initialized' };
+
+    const safeTable = tableName.toLowerCase().trim().replace(/[^a-z0-9_]/g, '_');
+    const colDefs = columns.map((c) => `"${c.name.replace(/"/g, '""')}" ${c.sqliteType || 'TEXT'}`).join(', ');
+    const ddl = `CREATE TABLE IF NOT EXISTS "${safeTable}" (${colDefs});`;
+
+    try {
+      this.db.exec(ddl);
+
+      if (rows.length > 0) {
+        const placeholders = columns.map(() => '?').join(', ');
+        const insertSql = `INSERT INTO "${safeTable}" VALUES (${placeholders});`;
+        const stmt = this.db.prepare(insertSql);
+        try {
+          this.db.exec('BEGIN TRANSACTION;');
+          for (const row of rows) {
+            const rowValues = columns.map((_, i) => {
+              const v = row[i];
+              return (typeof v === 'number' || typeof v === 'string') ? v : v == null ? null : String(v);
+            });
+            stmt.run(rowValues);
+          }
+          this.db.exec('COMMIT;');
+        } catch (insertErr) {
+          try { this.db.exec('ROLLBACK;'); } catch {}
+          throw insertErr;
+        } finally {
+          stmt.free();
+        }
+      }
+
+      // Register in catalog
+      const inferredCols: import('./inference').ColumnDef[] = columns.map((c) => ({
+        name: c.name,
+        logicalType: (c.sqliteType === 'INTEGER' ? 'INTEGER' : c.sqliteType === 'REAL' ? 'NUMERIC' : 'VARCHAR') as import('./inference').LogicalType,
+        sqliteType: c.sqliteType || 'TEXT',
+        source: 'csv_import',
+      }));
+
+      const schema: import('./inference').TableSchema = {
+        tableName: safeTable,
+        columns: inferredCols,
+        isDefault: false,
+      };
+
+      this.catalog.set(safeTable, schema, rows.length, true, dbName);
+      return { ok: true, rowCount: rows.length };
+    } catch (err: any) {
+      return { ok: false, rowCount: 0, error: err.message || String(err) };
+    }
+  }
+
+  /**
+   * Load an entire SQLite binary database into the engine and inspect its tables to rebuild catalog.
+   */
+  async loadDatabaseBinary(binary: Uint8Array): Promise<void> {
+    if (!this.SQL) {
+      this.SQL = await getOrInitSqlJs();
+    }
+    if (this.db) {
+      try { this.db.close(); } catch {}
+    }
+    this.db = new this.SQL.Database(binary);
+    this.registerCustomFunctions(this.db);
+    await this.rebuildCatalogFromSqlite();
+  }
+
+  private async rebuildCatalogFromSqlite(): Promise<void> {
+    if (!this.db) return;
+    this.catalog.reset();
+
+    try {
+      const res = this.db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';");
+      if (!res.length || !res[0].values) return;
+
+      for (const [tblNameVal] of res[0].values) {
+        const tableName = String(tblNameVal);
+        const colRes = this.db.exec(`PRAGMA table_info("${tableName.replace(/"/g, '""')}");`);
+        const countRes = this.db.exec(`SELECT COUNT(*) FROM "${tableName.replace(/"/g, '""')}";`);
+        const rowCount = Number(countRes[0]?.values[0]?.[0] || 0);
+
+        const columns: import('./inference').ColumnDef[] = [];
+        let pkCol: string | undefined;
+
+        if (colRes.length && colRes[0].values) {
+          for (const colRow of colRes[0].values) {
+            const colName = String(colRow[1]);
+            const colType = String(colRow[2] || 'TEXT').toUpperCase();
+            const isPk = Boolean(colRow[5]);
+            if (isPk && !pkCol) pkCol = colName;
+
+            let logicalType: import('./inference').LogicalType = 'VARCHAR';
+            if (colType.includes('INT')) logicalType = 'INTEGER';
+            else if (colType.includes('REAL') || colType.includes('FLOA') || colType.includes('DOUB')) logicalType = 'NUMERIC';
+            else if (colType.includes('DATE') || colType.includes('TIME')) logicalType = 'DATE';
+            else if (colType.includes('BOOL')) logicalType = 'BOOLEAN';
+
+            columns.push({
+              name: colName,
+              logicalType,
+              sqliteType: colType,
+              source: 'sqlite_import',
+            });
+          }
+        }
+
+        const schema: import('./inference').TableSchema = {
+          tableName,
+          columns,
+          isDefault: false,
+        };
+
+        this.catalog.set(tableName, schema, rowCount, true, 'default');
+      }
+    } catch (e) {
+      console.warn('Failed to rebuild catalog from sqlite binary:', e);
     }
   }
 

@@ -7,6 +7,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dialect } from '../../engine/parser';
 import { SQLExecutor, ExecutionSuccess } from '../../engine/executor';
+import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
 import dynamic from 'next/dynamic';
 import { ClassifiedError, classifyError } from '../../engine/errors';
 import { Taskbar, WindowMeta } from './Taskbar';
@@ -341,8 +342,9 @@ export const Desktop: React.FC = () => {
 
   useEffect(() => {
     setMounted(true);
-    // Initialize DB
+    // Initialize DB & worker
     executor.init().catch(console.error);
+    sqlWorkerClient.init().catch(console.error);
   }, [executor]);
 
   // Share URL Link Hydration Engine
@@ -417,7 +419,12 @@ export const Desktop: React.FC = () => {
     closeWindow('admin');
   };
 
-  // Run Query (Supports highlighted query execution or full multi-query execution)
+  const handleCancelQuery = () => {
+    sqlWorkerClient.cancelActiveQuery('USER_CANCELLED');
+    setIsLoading(false);
+  };
+
+  // Run Query (Supports highlighted query execution or full multi-query execution via Web Worker)
   const handleRunQuery = async (customQueryText?: string) => {
     if (isLoading) return;
     setIsLoading(true);
@@ -428,7 +435,7 @@ export const Desktop: React.FC = () => {
       : queryText;
 
     try {
-      const res = await executor.execute(targetSql, dialect, {
+      const res = await sqlWorkerClient.execute(targetSql, dialect, {
         rowsPerTable,
         tableCap,
       });
@@ -486,6 +493,7 @@ export const Desktop: React.FC = () => {
   // Reset Session
   const handleResetSession = () => {
     executor.reset();
+    sqlWorkerClient.reset().catch(console.warn);
     clearWorkspaceStorage();
     setResult(null);
     setExecutionTimeMs(null);
@@ -1041,6 +1049,7 @@ export const Desktop: React.FC = () => {
             onQueryChange={setQueryText}
             onDialectChange={setDialect}
             onRun={handleRunQuery}
+            onCancelQuery={handleCancelQuery}
             onReset={handleResetSession}
             onClose={() => closeWindow('ide')}
             onMinimize={() => toggleMinimize('ide')}

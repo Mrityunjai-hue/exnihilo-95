@@ -80,6 +80,7 @@ interface IDEShellProps {
   onDialectChange:         (dialect: Dialect) => void;
   onQueryChange:           (query: string) => void;
   onRun:                   (queryToRun?: string) => void;
+  onCancelQuery?:          () => void;
   onReset:                 () => void;
   onOpenHelp:              () => void;
   onOpenSettings:          () => void;
@@ -112,6 +113,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   onDialectChange,
   onQueryChange,
   onRun,
+  onCancelQuery,
   onReset,
   onOpenHelp,
   onOpenSettings,
@@ -654,6 +656,12 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     if (!isOpen || isMinimized) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && activeTab.isLoading) {
+        e.preventDefault();
+        e.stopPropagation();
+        onCancelQuery?.();
+        return;
+      }
       if (e.key === 'F5' || e.code === 'F5' || (e.key === 'Enter' && (e.ctrlKey || e.metaKey))) {
         e.preventDefault();
         e.stopPropagation();
@@ -671,7 +679,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [isOpen, isMinimized, handleExecute]);
+  }, [isOpen, isMinimized, handleExecute, activeTab.isLoading, onCancelQuery]);
 
   const handleDownloadSql = () => {
     const blob = new Blob([activeTab.queryText], { type: 'text/sql' });
@@ -977,6 +985,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         rowsPerTable={rowsPerTable}
         onRowsPerTableChange={onRowsPerTableChange}
         onRun={handleExecute}
+        onCancelQuery={onCancelQuery}
         onReset={handleReset}
         onFormatSql={handleFormatSql}
         onTranslateDialect={handleTranslateDialect}

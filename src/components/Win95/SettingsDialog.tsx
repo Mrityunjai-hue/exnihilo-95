@@ -47,8 +47,21 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     }
     return '1';
   });
+  const [queryTimeoutMs, setQueryTimeoutMs] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('exnihilo_query_timeout_ms') || '5000';
+    }
+    return '5000';
+  });
   const { position, handleMouseDown } = useDraggable({ x: 220, y: 110 });
   const { activeTheme, setTheme, typographyMode, setTypographyMode } = useTheme();
+
+  const handleTimeoutChange = (ms: string) => {
+    setQueryTimeoutMs(ms);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('exnihilo_query_timeout_ms', ms);
+    }
+  };
 
   const handleScaleChange = (scale: string) => {
     setUiScale(scale);
@@ -383,6 +396,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                   <strong>Runtime:</strong> WebAssembly In-Browser (sql.js v1.14.2)
                 </p>
                 <p style={{ margin: '4px 0', fontSize: '11px' }}>
+                  <strong>Thread Architecture:</strong> Dedicated Web Worker (Off-thread, non-blocking)
+                </p>
+                <p style={{ margin: '4px 0', fontSize: '11px' }}>
                   <strong>SQLite Kernel:</strong> 3.49.1 (Full Join & Right Join enabled)
                 </p>
                 <p style={{ margin: '4px 0', fontSize: '11px' }}>
@@ -390,6 +406,32 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                 </p>
                 <p style={{ margin: '4px 0', fontSize: '11px' }}>
                   <strong>Data Generator:</strong> @faker-js/faker (deterministic hash seed)
+                </p>
+              </fieldset>
+
+              <fieldset style={{ border: '1px solid #808080', padding: '10px', marginTop: '10px' }}>
+                <legend style={{ padding: '0 4px', fontSize: '11px', fontWeight: 'bold' }}>
+                  ⏱️ Query Execution Watchdog & Timeout
+                </legend>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <label htmlFor="queryTimeoutSelect" style={{ fontSize: '11px' }}>
+                    <strong>Execution Limit:</strong>
+                  </label>
+                  <select
+                    id="queryTimeoutSelect"
+                    value={queryTimeoutMs}
+                    onChange={(e) => handleTimeoutChange(e.target.value)}
+                    className="win95-sunken"
+                    style={{ padding: '2px 6px', fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}
+                  >
+                    <option value="3000">3 Seconds (Fast)</option>
+                    <option value="5000">5 Seconds (Default)</option>
+                    <option value="15000">15 Seconds (Complex CTEs)</option>
+                    <option value="30000">30 Seconds (Heavy Benchmarks)</option>
+                  </select>
+                </div>
+                <p style={{ margin: '6px 0 0 0', fontSize: '10px', opacity: 0.8 }}>
+                  Off-thread Web Worker terminates execution immediately if query exceeds this duration.
                 </p>
               </fieldset>
             </div>
