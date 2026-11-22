@@ -40,6 +40,7 @@ export interface ReadOnlyCatalogEntry {
   schema: {
     columns: ColumnDTO[];
   };
+  columns?: ColumnDTO[]; // Convenience accessor matching schema.columns
   sampleRows?: unknown[][];
 }
 
@@ -79,6 +80,7 @@ export class ReadOnlyCatalogAdapter {
       schema: {
         columns: t.columns || [],
       },
+      columns: t.columns || [],
       sampleRows: t.sampleRows,
     }));
   }
@@ -99,6 +101,7 @@ export class ReadOnlyCatalogAdapter {
       schema: {
         columns: t.columns || [],
       },
+      columns: t.columns || [],
       sampleRows: t.sampleRows,
     };
   }

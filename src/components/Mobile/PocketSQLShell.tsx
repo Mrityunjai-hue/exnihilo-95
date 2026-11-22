@@ -388,7 +388,14 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
         isOpen={isCopilotOpen}
         onClose={() => setIsCopilotOpen(false)}
         dialect={dialect}
-        schemaContext={catalog.getAll ? catalog.getAll().map((t: any) => `${t.tableName} (${t.columns.map((c: any) => `${c.name} ${c.logicalType}`).join(', ')})`).join('\n') : ''}
+        schemaContext={
+          catalog?.getAll
+            ? catalog.getAll().map((t: any) => {
+                const cols = t.schema?.columns || t.columns || [];
+                return `${t.tableName} (${cols.map((c: any) => `${c.name} ${c.logicalType || c.type || ''}`).join(', ')})`;
+              }).join('\n')
+            : ''
+        }
         onInsertSql={(sql) => {
           onQueryChange(sql);
           setActiveTab('query');
