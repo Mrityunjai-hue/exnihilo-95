@@ -16,6 +16,7 @@ import {
   ExportColumnDef,
   ColumnType,
 } from '../../engine/sql_exporter';
+import { pickSmartChartColumns } from '../../utils/chartColumnPicker';
 
 interface ResultsGridProps {
   result:          ExecutionSuccess | null;
@@ -203,11 +204,12 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   }, [columns, numericColIndices]);
 
   useEffect(() => {
-    if (categoricalColIndices.length > 0) setSelectedCatCol(categoricalColIndices[0]);
-    if (numericColIndices.length > 0) setSelectedNumCol(numericColIndices[0]);
-    else if (columns.length > 1) setSelectedNumCol(1);
-    else setSelectedNumCol(0);
-  }, [columns, categoricalColIndices, numericColIndices]);
+    if (columns.length > 0) {
+      const { catIndex, numIndex } = pickSmartChartColumns(columns, rawRows);
+      setSelectedCatCol(catIndex);
+      setSelectedNumCol(numIndex);
+    }
+  }, [columns, rawRows]);
 
   const chartData = useMemo(() => {
     if (rawRows.length === 0) return [];

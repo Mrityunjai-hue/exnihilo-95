@@ -106,7 +106,35 @@ const shard: SQLChallenge[] = [
       "💡 Use LEFT JOIN Address a ON p.personId = a.personId."
     ],
     "solutionSql": "SELECT p.firstName, p.lastName, a.city, a.state FROM Person p LEFT JOIN Address a ON p.personId = a.personId;",
-    "starterSql": "-- Problem #175: Combine Two Tables (LeetCode #175)\n-- Write your SQL query solution below:\nSELECT \nFROM \n;"
+    "starterSql": "-- Problem #175: Combine Two Tables (LeetCode #175)\n-- Write your SQL query solution below:\nSELECT \nFROM \n;",
+    "hiddenTestCases": [
+      {
+        "name": "Empty addresses & multiple unmapped persons",
+        "seedDataSql": "INSERT INTO Person VALUES (10, 'Smith', 'John');\nINSERT INTO Person VALUES (20, 'Doe', 'Jane');\nINSERT INTO Address VALUES (1, 99, 'Seattle', 'Washington');",
+        "expectedOutput": {
+          "columns": [
+            "firstName",
+            "lastName",
+            "city",
+            "state"
+          ],
+          "rows": [
+            [
+              "John",
+              "Smith",
+              null,
+              null
+            ],
+            [
+              "Jane",
+              "Doe",
+              null,
+              null
+            ]
+          ]
+        }
+      }
+    ]
   },
   {
     "id": 181,

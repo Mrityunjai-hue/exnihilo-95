@@ -30,6 +30,9 @@ import { hasDialectSugar, transpileDialectSugar } from '../../engine/transpiler'
 import { formatSql } from '../../utils/sqlFormatter';
 import { DialectTranslateDialog } from './DialectTranslateDialog';
 import { FileTransferDialog, FileDialogMode } from '../Win95/FileTransferDialog';
+import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
+import { parseTabularFile, isSQLiteBinary, ParsedTableDataset } from '../../utils/tabularImporter';
+import { TableImportModal } from './TableImportModal';
 
 import {
   useWorkspaceStorage,
@@ -169,6 +172,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const [isTranslateDialogOpen, setIsTranslateDialogOpen] = useState(false);
   const [fileDialogOpen, setFileDialogOpen] = useState(false);
   const [fileDialogMode, setFileDialogMode] = useState<FileDialogMode>('open');
+  const [importDataset, setImportDataset] = useState<ParsedTableDataset | null>(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
 
   const handleOpenFile = () => {
     setFileDialogMode('open');
@@ -182,10 +188,103 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     setActiveMenu(null);
   };
 
+  const handleConfirmImport = async (
+    tableName: string,
+    columns: Array<{ name: string; sqliteType: 'INTEGER' | 'REAL' | 'TEXT' }>,
+    rows: unknown[][],
+    dbName: string
+  ) => {
+    await sqlWorkerClient.importTabular(tableName, columns, rows);
+    await executor.importTabularTable(tableName, columns, rows, dbName);
+    setRefreshKey((k) => k + 1);
+
+    const query = `SELECT * FROM "${tableName}" LIMIT 50;`;
+    handleNewTab(`${tableName}.sql`, query);
+    onRun(query);
+
+    setDbManagerNotif({
+      msg: `✅ Table "${tableName}" materialized (${rows.length} rows).`,
+      ok: true,
+    });
+    setTimeout(() => setDbManagerNotif(null), 4000);
+  };
+
   const handleFileLoaded = (content: string, loadedName: string) => {
+    const ext = loadedName.split('.').pop()?.toLowerCase();
+    if (ext === 'csv' || ext === 'tsv' || ext === 'json') {
+      const parsed = parseTabularFile(loadedName, content);
+      setImportDataset(parsed);
+      setIsImportModalOpen(true);
+      return;
+    }
     handleNewTab(loadedName, content);
     setDbManagerNotif({ msg: `✅ Loaded "${loadedName}".`, ok: true });
     setTimeout(() => setDbManagerNotif(null), 3500);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingFile(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingFile(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingFile(false);
+
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    const ext = file.name.split('.').pop()?.toLowerCase();
+
+    if (ext === 'sqlite' || ext === 'db' || ext === 'sqlite3') {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const buffer = reader.result as ArrayBuffer;
+        const u8 = new Uint8Array(buffer);
+        if (isSQLiteBinary(u8)) {
+          await sqlWorkerClient.importSqliteBinary(u8);
+          await executor.loadDatabaseBinary(u8);
+          setRefreshKey((k) => k + 1);
+          setDbManagerNotif({ msg: `✅ Loaded SQLite binary "${file.name}".`, ok: true });
+          setTimeout(() => setDbManagerNotif(null), 4000);
+        } else {
+          setDbManagerNotif({ msg: `⚠️ File "${file.name}" is not a valid SQLite database.`, ok: false });
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      return;
+    }
+
+    if (ext === 'csv' || ext === 'tsv' || ext === 'json') {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = String(reader.result || '');
+        const parsed = parseTabularFile(file.name, text);
+        setImportDataset(parsed);
+        setIsImportModalOpen(true);
+      };
+      reader.readAsText(file);
+      return;
+    }
+
+    // Default to SQL text
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || '');
+      handleNewTab(file.name, text);
+      setDbManagerNotif({ msg: `✅ Loaded file "${file.name}".`, ok: true });
+      setTimeout(() => setDbManagerNotif(null), 3500);
+    };
+    reader.readAsText(file);
   };
 
   // Editor cursor tracking & dynamic catalog autocomplete
@@ -733,7 +832,34 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             }
       }
       onMouseDown={onFocus}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
+      {/* File Drag & Drop Overlay */}
+      {isDraggingFile && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(0, 0, 128, 0.25)',
+            border: '3px dashed var(--w95-accent-color, #000080)',
+            zIndex: 99999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            className="win95-window"
+            style={{ padding: '16px 24px', textAlign: 'center', fontWeight: 'bold', fontSize: '13px' }}
+          >
+            📥 Drop CSV, TSV, JSON, or SQLite database to import directly into ExNihilo Studio
+          </div>
+        </div>
+      )}
       {/* Titlebar with Drag & Double-Click Maximize */}
       <div
         className="win95-titlebar"
@@ -1656,6 +1782,15 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         currentResult={activeTab.result}
         executor={executor}
         zIndex={zIndex + 10}
+      />
+
+      {/* ── Tabular Data Import Wizard Modal (CSV / TSV / JSON) ──────────────── */}
+      <TableImportModal
+        isOpen={isImportModalOpen}
+        dataset={importDataset}
+        zIndex={zIndex + 20}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleConfirmImport}
       />
     </div>
   );

@@ -24,6 +24,7 @@
 import { parse, Dialect } from './parser';
 import { resolveDomainSchema, UNIVERSAL_FALLBACK_SCHEMA } from './domain_dictionary';
 import { matchColumnToken } from './token_dictionary';
+import { getSemanticGroupId } from './semanticAliases';
 
 // ── Logical types (dialect-agnostic layer) ────────────────────────────────────
 
@@ -803,17 +804,37 @@ function buildSchemaMap(
     // Domain Schema Augmentation: fill in complementary domain columns if table matches a domain spec
     const domainSchema = resolveDomainSchema(tableName);
     if (domainSchema) {
-      for (const dc of domainSchema) {
-        if (!colNameSet.has(dc.name.toLowerCase())) {
-          columns.push({
-            name:              dc.name,
-            logicalType:       dc.logicalType,
-            sqliteType:        SQLITE_DDL[dc.logicalType],
-            source:            `domain catalog: augmented ${tableName} schema`,
-            predicateLiterals: literalsMap.get(signalKey(tableName, dc.name)),
-          });
-          colNameSet.add(dc.name.toLowerCase());
+      // Collect semantic groups already satisfied by explicitly referenced columns
+      const userReferencedGroups = new Set<string>();
+      for (const col of referencedCols) {
+        const gid = getSemanticGroupId(col);
+        if (gid) {
+          userReferencedGroups.add(gid);
+          if (gid === 'FULL_NAME') {
+            userReferencedGroups.add('FIRST_NAME');
+            userReferencedGroups.add('LAST_NAME');
+          }
         }
+      }
+
+      for (const dc of domainSchema) {
+        const colLower = dc.name.toLowerCase();
+        if (colNameSet.has(colLower)) continue;
+
+        // Deduplicate semantic synonyms (e.g. do not add total_amount if query already has total)
+        const dcGroup = getSemanticGroupId(colLower);
+        if (dcGroup && userReferencedGroups.has(dcGroup)) {
+          continue;
+        }
+
+        columns.push({
+          name:              dc.name,
+          logicalType:       dc.logicalType,
+          sqliteType:        SQLITE_DDL[dc.logicalType],
+          source:            `domain catalog: augmented ${tableName} schema`,
+          predicateLiterals: literalsMap.get(signalKey(tableName, dc.name)),
+        });
+        colNameSet.add(colLower);
       }
     }
 

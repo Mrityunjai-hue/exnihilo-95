@@ -17,6 +17,7 @@
  */
 
 import initSqlJs, { Database, SqlJsStatic } from 'sql.js';
+import { registerCustomSqliteFunctions } from './sqliteFunctions';
 import {
   parse,
   Dialect,
@@ -792,78 +793,7 @@ export class SQLExecutor {
   }
 
   private registerCustomFunctions(db: Database): void {
-    const SQLITE_INTERNAL_BLACKLIST = new Set([
-      'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'TOTAL', 'ABS', 'TYPEOF', 'LENGTH',
-      'LOWER', 'UPPER', 'INSTR', 'TRIM', 'LTRIM', 'RTRIM', 'HEX', 'QUOTE',
-      'RANDOM', 'ROUND', 'SOUNDEX', 'UNICODE', 'CHAR', 'ZEROBLOB', 'GLOB', 'LIKE'
-    ]);
-
-    const safeRegister = (name: string, fn: (...args: any[]) => any, arity?: number) => {
-      if (SQLITE_INTERNAL_BLACKLIST.has(name.toUpperCase())) return;
-      try {
-        const wrapped = (...args: any[]) => fn(...args);
-        const targetLength = arity !== undefined ? arity : -1;
-        Object.defineProperty(wrapped, 'length', { value: targetLength });
-        db.create_function(name, wrapped);
-      } catch {
-        // Safe fail-soft registration
-      }
-    };
-
-    // Existing functions
-    safeRegister('COALESCE', evalCoalesce, -1);
-    safeRegister('NULLIF', evalNullif, 2);
-    safeRegister('CONCAT', evalConcat, -1);
-    safeRegister('SUBSTRING', evalSubstring, -1);
-    safeRegister('SUBSTR', evalSubstring, -1);
-    safeRegister('DATE_FORMAT', evalDateFormat, 2);
-    safeRegister('TO_CHAR', evalToChar, 2);
-    safeRegister('strftime', evalStrftime, 2);
-    safeRegister('FORMAT', evalFormatMssql, 2);
-    safeRegister('JSON_EXTRACT', evalJsonExtract, 2);
-    safeRegister('JSON_VALUE', evalJsonValue, 2);
-    safeRegister('JSON_QUERY', evalJsonQuery, 2);
-    safeRegister('PG_JSON_EXTRACT', (val: any, key: any) => evalPgJsonExtract(val, key, false), 2);
-    safeRegister('PG_JSON_EXTRACT_TEXT', (val: any, key: any) => evalPgJsonExtract(val, key, true), 2);
-
-    // Phase 1: Regular Expression Functions (PostgreSQL, MySQL, Snowflake, BigQuery, Oracle)
-    safeRegister('REGEXP', evalRegexp, 2);
-    safeRegister('regexp', evalRegexp, 2);
-    safeRegister('REGEXP_LIKE', evalRegexpLike, -1);
-    safeRegister('regexp_like', evalRegexpLike, -1);
-    safeRegister('REGEXP_SUBSTR', evalRegexpSubstr, -1);
-    safeRegister('regexp_substr', evalRegexpSubstr, -1);
-    safeRegister('REGEXP_REPLACE', evalRegexpReplace, -1);
-    safeRegister('regexp_replace', evalRegexpReplace, -1);
-
-    // Phase 1: GIS Spatial Functions (PostGIS, BigQuery GIS)
-    safeRegister('ST_Point', evalStPoint, 2);
-    safeRegister('ST_POINT', evalStPoint, 2);
-    safeRegister('st_point', evalStPoint, 2);
-    safeRegister('ST_X', evalStX, 1);
-    safeRegister('st_x', evalStX, 1);
-    safeRegister('ST_Y', evalStY, 1);
-    safeRegister('st_y', evalStY, 1);
-    safeRegister('ST_Distance', evalStDistance, 2);
-    safeRegister('ST_DISTANCE', evalStDistance, 2);
-    safeRegister('st_distance', evalStDistance, 2);
-    safeRegister('ST_Contains', evalStContains, 2);
-    safeRegister('ST_CONTAINS', evalStContains, 2);
-    safeRegister('st_contains', evalStContains, 2);
-
-    // Phase 1: Multi-Dialect Helper Functions (Oracle, MSSQL, PostgreSQL)
-    safeRegister('NVL2', evalNvl2, 3);
-    safeRegister('nvl2', evalNvl2, 3);
-    safeRegister('DECODE', evalDecode, -1);
-    safeRegister('decode', evalDecode, -1);
-    safeRegister('GREATEST', evalGreatest, -1);
-    safeRegister('greatest', evalGreatest, -1);
-    safeRegister('LEAST', evalLeast, -1);
-    safeRegister('least', evalLeast, -1);
-    safeRegister('GETDATE', evalGetDate, 0);
-    safeRegister('getdate', evalGetDate, 0);
-    safeRegister('SYSDATE', evalSysDate, 0);
-    safeRegister('sysdate', evalSysDate, 0);
+    registerCustomSqliteFunctions(db);
   }
 
   private isRehydrated = false;
