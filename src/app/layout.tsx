@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { ServiceWorkerRegistration } from "../components/PWA/ServiceWorkerRegistration";
 import "../styles/win95.css";
 
 const inter = Inter({
@@ -45,9 +46,8 @@ export const metadata: Metadata = {
       { url: "/favicon.ico" },
     ],
     shortcut: ["/icon.svg"],
-    apple: ["/icon.svg"],
+    apple: ["/apple-touch-icon.png"],
   },
-  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -64,6 +64,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body>
+        <ServiceWorkerRegistration />
         {children}
         <Analytics />
         <SpeedInsights />

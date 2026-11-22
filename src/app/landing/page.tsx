@@ -9,6 +9,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ExNihiloLogo } from '../../components/Brand/ExNihiloLogo';
 import { SQLExecutor, ExecutionSuccess } from '../../engine/executor';
+import { PWAInstallButton } from '../../components/Win95/PWAInstallButton';
 
 type LandingTab = 'sandbox' | 'architecture' | 'compare' | 'download';
 
@@ -662,10 +663,10 @@ export default function LandingPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '11px' }}>
                 <div className="win95-inset" style={{ backgroundColor: '#ffffff', padding: '12px' }}>
                   <h3 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#000080' }}>
-                    ExNihilo 95 Software Distribution Depot
+                    ExNihilo 95 Offline PWA &amp; Starter Depot
                   </h3>
                   <p style={{ margin: 0, color: '#444' }}>
-                    Choose your operating system below to download the standalone desktop distribution or run instantly via the command line interface.
+                    ExNihilo 95 is an in-browser WebAssembly application that installs directly to your workstation or phone as a native Progressive Web App (PWA) with zero network dependencies.
                   </p>
                 </div>
 
@@ -684,23 +685,12 @@ export default function LandingPage() {
                     }}
                   >
                     <span style={{ fontSize: '36px' }}>🪟</span>
-                    <strong>Windows Edition</strong>
-                    <div style={{ fontSize: '10px', color: '#666' }}>Windows 95, 10, 11 (64-bit)</div>
-                    <div style={{ fontSize: '10px', color: '#888' }}>Installer (.exe) • 38.4 MB</div>
-                    <Link
-                      href="/download?os=windows"
-                      className="win95-button"
-                      style={{
-                        padding: '4px 12px',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        marginTop: 'auto',
-                        textDecoration: 'none',
-                        color: '#000',
-                      }}
-                    >
-                      💾 Download .exe
-                    </Link>
+                    <strong>Windows Desktop</strong>
+                    <div style={{ fontSize: '10px', color: '#666' }}>Windows 95, 10, 11 (PWA)</div>
+                    <div style={{ fontSize: '10px', color: '#888' }}>Zero-Config • Standalone Window</div>
+                    <div style={{ marginTop: 'auto', width: '100%' }}>
+                      <PWAInstallButton label="Install on Windows" style={{ width: '100%', justifyContent: 'center' }} />
+                    </div>
                   </div>
 
                   {/* macOS Card */}
@@ -718,21 +708,10 @@ export default function LandingPage() {
                     <span style={{ fontSize: '36px' }}>🍏</span>
                     <strong>macOS Universal</strong>
                     <div style={{ fontSize: '10px', color: '#666' }}>Apple Silicon &amp; Intel</div>
-                    <div style={{ fontSize: '10px', color: '#888' }}>Disk Image (.dmg) • 42.1 MB</div>
-                    <Link
-                      href="/download?os=macos"
-                      className="win95-button"
-                      style={{
-                        padding: '4px 12px',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        marginTop: 'auto',
-                        textDecoration: 'none',
-                        color: '#000',
-                      }}
-                    >
-                      🍏 Download .dmg
-                    </Link>
+                    <div style={{ fontSize: '10px', color: '#888' }}>PWA / Add to Dock</div>
+                    <div style={{ marginTop: 'auto', width: '100%' }}>
+                      <PWAInstallButton label="Install on macOS" style={{ width: '100%', justifyContent: 'center' }} />
+                    </div>
                   </div>
 
                   {/* Linux Card */}
@@ -748,23 +727,12 @@ export default function LandingPage() {
                     }}
                   >
                     <span style={{ fontSize: '36px' }}>🐧</span>
-                    <strong>Linux Standalone</strong>
+                    <strong>Linux &amp; ChromeOS</strong>
                     <div style={{ fontSize: '10px', color: '#666' }}>Ubuntu, Debian, Fedora, Arch</div>
-                    <div style={{ fontSize: '10px', color: '#888' }}>AppImage • 36.9 MB</div>
-                    <Link
-                      href="/download?os=linux"
-                      className="win95-button"
-                      style={{
-                        padding: '4px 12px',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        marginTop: 'auto',
-                        textDecoration: 'none',
-                        color: '#000',
-                      }}
-                    >
-                      🐧 Download AppImage
-                    </Link>
+                    <div style={{ fontSize: '10px', color: '#888' }}>Desktop App Launcher</div>
+                    <div style={{ marginTop: 'auto', width: '100%' }}>
+                      <PWAInstallButton label="Install on Linux" style={{ width: '100%', justifyContent: 'center' }} />
+                    </div>
                   </div>
                 </div>
 

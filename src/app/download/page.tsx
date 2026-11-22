@@ -1,6 +1,6 @@
 /**
- * src/app/download/page.tsx — ExNihilo 95 Software Distribution Depot
- * Dedicated retro Windows 95 installation center with OS detection and download simulation.
+ * src/app/download/page.tsx — ExNihilo 95 Offline PWA & Starter Depot
+ * Genuine Progressive Web App installation portal and starter dataset repository.
  */
 
 'use client';
@@ -8,25 +8,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ExNihiloLogo } from '../../components/Brand/ExNihiloLogo';
-
-interface OSDownloadOption {
-  id: string;
-  osName: string;
-  icon: string;
-  fileName: string;
-  fileSize: string;
-  architecture: string;
-  recommended: boolean;
-  notes: string;
-}
+import { PWAInstallButton } from '../../components/Win95/PWAInstallButton';
 
 export default function DownloadPage() {
   const [detectedOs, setDetectedOs] = useState<'windows' | 'macos' | 'linux'>('windows');
-  const [downloadingPackage, setDownloadingPackage] = useState<OSDownloadOption | null>(null);
-  const [downloadProgress, setDownloadProgress] = useState<number>(0);
-  const [isDownloadComplete, setIsDownloadComplete] = useState<boolean>(false);
   const [copiedCli, setCopiedCli] = useState<boolean>(false);
   const [timeStr, setTimeStr] = useState<string>('');
+  const [downloadSuccessMsg, setDownloadSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof navigator !== 'undefined') {
@@ -49,95 +37,65 @@ export default function DownloadPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const downloadPackages: OSDownloadOption[] = [
-    {
-      id: 'windows',
-      osName: 'Microsoft Windows',
-      icon: '🪟',
-      fileName: 'ExNihilo95-Setup-v2.5.0-x64.exe',
-      fileSize: '38.4 MB',
-      architecture: 'x64 (Windows 95, 10, 11)',
-      recommended: detectedOs === 'windows',
-      notes: 'Includes embedded SQLite 3.45 binary, desktop shortcut, and 16GB RAM support.',
-    },
-    {
-      id: 'macos',
-      osName: 'Apple macOS',
-      icon: '🍏',
-      fileName: 'ExNihilo-v2.5.0-Universal.dmg',
-      fileSize: '42.1 MB',
-      architecture: 'Universal (Apple Silicon M1/M2/M3/M4 & Intel)',
-      recommended: detectedOs === 'macos',
-      notes: 'Native macOS drag-and-drop DMG with Metal acceleration and dark glass theme.',
-    },
-    {
-      id: 'linux',
-      osName: 'Linux Distribution',
-      icon: '🐧',
-      fileName: 'ExNihilo-v2.5.0-x86_64.AppImage',
-      fileSize: '36.9 MB',
-      architecture: 'x86_64 AppImage',
-      recommended: detectedOs === 'linux',
-      notes: 'Zero dependencies. Runs seamlessly on Ubuntu, Debian, Fedora, RedHat, and Arch.',
-    },
-  ];
+  const handleCopyCli = () => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText('npx exnihilo-sql');
+      setCopiedCli(true);
+      setTimeout(() => setCopiedCli(false), 2000);
+    }
+  };
 
-  const handleStartDownload = (pkg: OSDownloadOption) => {
-    setDownloadingPackage(pkg);
-    setDownloadProgress(0);
-    setIsDownloadComplete(false);
+  const handleDownloadStarterSql = () => {
+    const starterSql = `-- ExNihilo 95 Local Standalone Starter Kit
+-- Synthesized Relational Analytics (Zero Config Needed)
 
-    // Realistic retro 28.8k dial-up progress simulation
-    const interval = setInterval(() => {
-      setDownloadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsDownloadComplete(true);
-
-          // Trigger a real download of a helpful sample starter SQL pack
-          const starterSql = `-- ExNihilo 95 Local Standalone Starter Kit
--- Automatically generated for ${pkg.osName} (${pkg.architecture})
-
--- 1. E-Commerce Multi-Table Join
+-- 1. Customer & Order Revenue Analytics
 SELECT 
     c.name AS customer_name,
     COUNT(o.id) AS total_orders,
     ROUND(SUM(o.total), 2) AS lifetime_value
 FROM customers c
-JOIN orders o ON c.id = o.customer_id
+INNER JOIN orders o ON c.id = o.customer_id
 GROUP BY c.name
 ORDER BY lifetime_value DESC;
 
--- 2. Financial Ledger Reconciliation
+-- 2. Employee Hierarchy & Salary Analytics
 SELECT 
-    t.account_number,
-    ROUND(SUM(CASE WHEN t.direction = 'CREDIT' THEN t.amount ELSE -t.amount END), 2) AS net_balance
-FROM transactions t
-GROUP BY t.account_number;
+    e.name,
+    e.department,
+    e.salary,
+    RANK() OVER (PARTITION BY e.department ORDER BY e.salary DESC) AS salary_rank,
+    ROUND(AVG(e.salary) OVER (PARTITION BY e.department), 2) AS dept_avg_salary
+FROM employees e;
 `;
-          const blob = new Blob([starterSql], { type: 'text/sql' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `exnihilo_starter_kit.sql`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-
-          return 100;
-        }
-        return prev + 12;
-      });
-    }, 280);
+    const blob = new Blob([starterSql], { type: 'text/sql' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'exnihilo_starter_pack.sql';
+    a.click();
+    URL.revokeObjectURL(url);
+    setDownloadSuccessMsg('Downloaded "exnihilo_starter_pack.sql"');
+    setTimeout(() => setDownloadSuccessMsg(null), 3000);
   };
 
-  const handleCopyCli = () => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText('npx exnihilo-sql');
-      setCopiedCli(true);
-      setTimeout(() => setCopiedCli(false), 2000);
-    }
+  const handleDownloadSampleCsv = () => {
+    const csvContent = `id,sku,product_name,category,stock_qty,unit_price
+1,SKU-9501,486-DX2 66MHz Processor,Hardware,140,199.99
+2,SKU-9502,16MB EDO RAM Module,Memory,320,89.50
+3,SKU-9503,1.44MB 3.5" Floppy Drive,Storage,500,24.00
+4,SKU-9504,SoundBlaster 16 ISA Card,Audio,75,129.95
+5,SKU-9505,14" CRT SVGA Color Monitor,Display,60,249.00
+6,SKU-9506,US Robotics 28.8k Modem,Networking,210,149.95`;
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'retro_hardware_inventory.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    setDownloadSuccessMsg('Downloaded "retro_hardware_inventory.csv"');
+    setTimeout(() => setDownloadSuccessMsg(null), 3000);
   };
 
   return (
@@ -213,7 +171,7 @@ GROUP BY t.account_number;
           <div className="win95-titlebar">
             <div className="win95-titlebar-text">
               <span>💾</span>
-              <span>ExNihilo 95: Standalone Desktop Edition Distribution Station</span>
+              <span>ExNihilo 95: Offline Desktop PWA &amp; Starter Depot</span>
             </div>
             <div className="win95-window-controls">
               <Link href="/" className="win95-control-btn" title="Back to Web Studio">
@@ -237,75 +195,186 @@ GROUP BY t.account_number;
               <div style={{ fontSize: '42px' }}>💽</div>
               <div style={{ flex: 1, fontSize: '11px', lineHeight: '1.45' }}>
                 <h2 style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#000080' }}>
-                  Install ExNihilo Standalone on Your Workstation
+                  Install ExNihilo 95 Offline PWA on Your Device
                 </h2>
                 <div>
-                  Eliminate browser sandbox constraints. The desktop binary accesses your local file system, runs with up to 16GB of physical RAM, and processes multi-million row datasets completely offline without telemetry.
+                  ExNihilo 95 runs 100% in-browser using compiled SQLite WebAssembly. No database servers, background daemons, or telemetry required. You can install it directly onto your desktop or mobile device as a Progressive Web App (PWA) with full offline caching, or download starter kits.
                 </div>
               </div>
             </div>
 
-            {/* Operating System Installer Cards */}
+            {/* Platform PWA Installation Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-              {downloadPackages.map((pkg) => (
-                <div
-                  key={pkg.id}
-                  className="win95-window"
-                  style={{
-                    padding: '12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textAlign: 'center',
-                    gap: '6px',
-                    border: pkg.recommended ? '2px solid #000080' : undefined,
-                    position: 'relative',
-                  }}
-                >
-                  {pkg.recommended && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '-8px',
-                        backgroundColor: '#ffff00',
-                        color: '#000000',
-                        fontSize: '9px',
-                        fontWeight: 'bold',
-                        padding: '1px 6px',
-                        border: '1px solid #808080',
-                      }}
-                    >
-                      ★ DETECTED OS
-                    </div>
-                  )}
-
-                  <span style={{ fontSize: '36px', marginTop: '4px' }}>{pkg.icon}</span>
-                  <strong style={{ fontSize: '12px' }}>{pkg.osName}</strong>
-                  <div style={{ fontSize: '10px', color: '#444' }}>{pkg.architecture}</div>
-                  <div style={{ fontSize: '10px', color: '#666' }}>{pkg.fileSize}</div>
-
-                  <div style={{ fontSize: '10px', color: '#555', margin: '4px 0', minHeight: '36px' }}>
-                    {pkg.notes}
+              {/* Windows PWA */}
+              <div
+                className="win95-window"
+                style={{
+                  padding: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  gap: '6px',
+                  border: detectedOs === 'windows' ? '2px solid #000080' : undefined,
+                  position: 'relative',
+                }}
+              >
+                {detectedOs === 'windows' && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '-8px',
+                      backgroundColor: '#ffff00',
+                      color: '#000000',
+                      fontSize: '9px',
+                      fontWeight: 'bold',
+                      padding: '1px 6px',
+                      border: '1px solid #808080',
+                    }}
+                  >
+                    ★ DETECTED OS
                   </div>
+                )}
+                <span style={{ fontSize: '36px', marginTop: '4px' }}>🪟</span>
+                <strong style={{ fontSize: '12px' }}>Microsoft Windows</strong>
+                <div style={{ fontSize: '10px', color: '#444' }}>Desktop App (PWA)</div>
+                <div style={{ fontSize: '10px', color: '#555', margin: '4px 0', minHeight: '36px' }}>
+                  Standalone window, Start Menu integration, taskbar pinning, and 100% offline querying.
+                </div>
+                <div style={{ marginTop: 'auto', width: '100%' }}>
+                  <PWAInstallButton label="Install on Windows" style={{ width: '100%', justifyContent: 'center' }} />
+                </div>
+              </div>
 
+              {/* macOS PWA */}
+              <div
+                className="win95-window"
+                style={{
+                  padding: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  gap: '6px',
+                  border: detectedOs === 'macos' ? '2px solid #000080' : undefined,
+                  position: 'relative',
+                }}
+              >
+                {detectedOs === 'macos' && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '-8px',
+                      backgroundColor: '#ffff00',
+                      color: '#000000',
+                      fontSize: '9px',
+                      fontWeight: 'bold',
+                      padding: '1px 6px',
+                      border: '1px solid #808080',
+                    }}
+                  >
+                    ★ DETECTED OS
+                  </div>
+                )}
+                <span style={{ fontSize: '36px', marginTop: '4px' }}>🍏</span>
+                <strong style={{ fontSize: '12px' }}>Apple macOS</strong>
+                <div style={{ fontSize: '10px', color: '#444' }}>Native Web App (PWA)</div>
+                <div style={{ fontSize: '10px', color: '#555', margin: '4px 0', minHeight: '36px' }}>
+                  Runs via Chrome/Edge or Safari "Add to Dock", with dedicated icon and offline cache.
+                </div>
+                <div style={{ marginTop: 'auto', width: '100%' }}>
+                  <PWAInstallButton label="Install on macOS" style={{ width: '100%', justifyContent: 'center' }} />
+                </div>
+              </div>
+
+              {/* Linux PWA */}
+              <div
+                className="win95-window"
+                style={{
+                  padding: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  gap: '6px',
+                  border: detectedOs === 'linux' ? '2px solid #000080' : undefined,
+                  position: 'relative',
+                }}
+              >
+                {detectedOs === 'linux' && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '-8px',
+                      backgroundColor: '#ffff00',
+                      color: '#000000',
+                      fontSize: '9px',
+                      fontWeight: 'bold',
+                      padding: '1px 6px',
+                      border: '1px solid #808080',
+                    }}
+                  >
+                    ★ DETECTED OS
+                  </div>
+                )}
+                <span style={{ fontSize: '36px', marginTop: '4px' }}>🐧</span>
+                <strong style={{ fontSize: '12px' }}>Linux &amp; ChromeOS</strong>
+                <div style={{ fontSize: '10px', color: '#444' }}>Desktop PWA</div>
+                <div style={{ fontSize: '10px', color: '#555', margin: '4px 0', minHeight: '36px' }}>
+                  Direct desktop launcher icon for Ubuntu, Fedora, Debian, Arch, and Chromebooks.
+                </div>
+                <div style={{ marginTop: 'auto', width: '100%' }}>
+                  <PWAInstallButton label="Install on Linux" style={{ width: '100%', justifyContent: 'center' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Starter Data Packs Download Section */}
+            <fieldset style={{ border: '1px solid #808080', padding: '10px', backgroundColor: '#ffffff' }}>
+              <legend style={{ padding: '0 4px', fontSize: '11px', fontWeight: 'bold', color: '#000080' }}>
+                📦 Offline Starter Data Packs (Direct Downloads)
+              </legend>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                    1. SQL Starter Schemas &amp; Queries (.sql)
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#555' }}>
+                    Includes pre-configured multi-table JOINs, CTEs, and financial ledgers.
+                  </div>
                   <button
                     type="button"
                     className="win95-button"
-                    style={{
-                      width: '100%',
-                      padding: '5px 8px',
-                      fontSize: '11px',
-                      fontWeight: pkg.recommended ? 'bold' : 'normal',
-                      marginTop: 'auto',
-                      backgroundColor: pkg.recommended ? '#ffffdf' : undefined,
-                    }}
-                    onClick={() => handleStartDownload(pkg)}
+                    style={{ fontSize: '11px', padding: '3px 8px', alignSelf: 'flex-start', marginTop: '4px' }}
+                    onClick={handleDownloadStarterSql}
                   >
-                    💾 Download {pkg.osName.split(' ')[0]}
+                    📥 Download starter_pack.sql
                   </button>
                 </div>
-              ))}
-            </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                    2. Sample Tabular Hardware Inventory (.csv)
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#555' }}>
+                    RFC-4180 CSV dataset ready for drag-and-drop into ExNihilo Studio.
+                  </div>
+                  <button
+                    type="button"
+                    className="win95-button"
+                    style={{ fontSize: '11px', padding: '3px 8px', alignSelf: 'flex-start', marginTop: '4px' }}
+                    onClick={handleDownloadSampleCsv}
+                  >
+                    📥 Download sample_inventory.csv
+                  </button>
+                </div>
+              </div>
+              {downloadSuccessMsg && (
+                <div style={{ marginTop: '8px', color: '#15803d', fontWeight: 'bold', fontSize: '11px' }}>
+                  ✓ {downloadSuccessMsg}
+                </div>
+              )}
+            </fieldset>
 
             {/* Terminal CLI Command */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -337,32 +406,6 @@ GROUP BY t.account_number;
                 >
                   {copiedCli ? '✓ Copied' : '📋 Copy'}
                 </button>
-              </div>
-            </div>
-
-            {/* System Requirements Table */}
-            <div className="win95-inset" style={{ backgroundColor: '#ffffff', padding: '8px 12px', fontSize: '11px' }}>
-              <strong style={{ color: '#000080' }}>🖥️ Minimum &amp; Recommended System Specifications:</strong>
-              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr', gap: '6px', marginTop: '6px' }}>
-                <span style={{ color: '#666' }}>Component:</span>
-                <span style={{ color: '#666' }}>Minimum (Standard)</span>
-                <span style={{ color: '#666' }}>Recommended (Heavy Queries)</span>
-
-                <strong>Processor:</strong>
-                <span>486 DX2-66 MHz or x86_64</span>
-                <span>Intel Core i5 / Apple Silicon M1+</span>
-
-                <strong>Memory (RAM):</strong>
-                <span>16 MB RAM</span>
-                <span>2 GB - 16 GB Physical RAM</span>
-
-                <strong>Hard Disk:</strong>
-                <span>50 MB available space</span>
-                <span>500 MB for local table caching</span>
-
-                <strong>Display:</strong>
-                <span>640x480 256 Colors (VGA)</span>
-                <span>1920x1080 or 4K Retina Display</span>
               </div>
             </div>
           </div>
@@ -399,104 +442,6 @@ GROUP BY t.account_number;
           </div>
         </div>
       </main>
-
-      {/* Windows 95 File Download Simulation Dialog */}
-      {downloadingPackage && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 999999,
-          }}
-        >
-          <div className="win95-window" style={{ width: '420px', maxWidth: '94vw' }}>
-            <div className="win95-titlebar">
-              <div className="win95-titlebar-text">
-                <span>💾</span>
-                <span>File Download — {downloadingPackage.fileName}</span>
-              </div>
-            </div>
-
-            <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '11px' }}>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span style={{ fontSize: '32px' }}>📥</span>
-                <div>
-                  <div style={{ fontWeight: 'bold' }}>
-                    {isDownloadComplete
-                      ? 'Download Complete!'
-                      : `Saving ${downloadingPackage.fileName}...`}
-                  </div>
-                  <div style={{ color: '#555', fontSize: '10px' }}>
-                    from software.exnihilo.dev (TCP/IP Dial-Up 28,800 bps)
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              <div
-                className="win95-inset"
-                style={{
-                  height: '18px',
-                  backgroundColor: '#ffffff',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${downloadProgress}%`,
-                    backgroundColor: '#000080',
-                    transition: 'width 0.25s linear',
-                  }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#444' }}>
-                <span>Transfer rate: 28.8 KB/second</span>
-                <span>{downloadProgress}% Complete</span>
-              </div>
-
-              {isDownloadComplete ? (
-                <div
-                  className="win95-inset"
-                  style={{
-                    backgroundColor: '#e6ffed',
-                    padding: '6px 10px',
-                    fontSize: '11px',
-                    color: '#006600',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  ✓ Package downloaded. Run installer or double-click to execute!
-                </div>
-              ) : (
-                <div style={{ fontSize: '10px', color: '#666' }}>
-                  Estimated time left: {Math.max(1, Math.round((100 - downloadProgress) / 25))} seconds
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '4px' }}>
-                <button
-                  type="button"
-                  className="win95-button"
-                  style={{ padding: '3px 14px', fontWeight: isDownloadComplete ? 'bold' : 'normal' }}
-                  onClick={() => setDownloadingPackage(null)}
-                >
-                  {isDownloadComplete ? 'Close' : 'Cancel'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Taskbar */}
       <footer
@@ -541,8 +486,8 @@ GROUP BY t.account_number;
         </div>
 
         <div className="win95-systray" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '2px 6px' }}>
-          <span title="Dial-Up Status: 28,800 bps Connected" style={{ fontSize: '11px' }}>
-            📟
+          <span title="PWA Offline Engine Ready" style={{ fontSize: '11px' }}>
+            ⚡
           </span>
           <span style={{ borderLeft: '1px solid #808080', height: '12px' }} />
           <span style={{ fontSize: '11px' }}>{timeStr || '12:00 PM'}</span>
