@@ -11,6 +11,7 @@ import type { Dialect } from '../../engine/parser';
 import type { ExecutionSuccess } from '../../engine/executor';
 import type { SessionCatalog } from '../../engine/catalog';
 import { QueryEditor } from '../IDE/QueryEditor';
+import { SnapshotsDialog } from '../IDE/SnapshotsDialog';
 
 interface PocketSQLShellProps {
   dialect: Dialect;
@@ -21,7 +22,7 @@ interface PocketSQLShellProps {
   onCancelQuery?: () => void;
   isLoading: boolean;
   result: ExecutionSuccess | null;
-  catalog: SessionCatalog;
+  catalog: SessionCatalog | any;
   onSwitchToDesktop: () => void;
 }
 
@@ -38,8 +39,9 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
   onSwitchToDesktop,
 }) => {
   const [activeTab, setActiveTab] = useState<'query' | 'results' | 'schema'>('query');
+  const [isSnapshotsOpen, setIsSnapshotsOpen] = useState(false);
 
-  const catalogTables = catalog.getAll();
+  const catalogTables = catalog.getAll ? catalog.getAll() : [];
   const rowCount = result?.rowCount ?? 0;
 
   const handleInsertTableQuery = (tableName: string) => {
@@ -47,17 +49,26 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
     setActiveTab('query');
   };
 
+  const handleQuickInsert = (kw: string) => {
+    const trimmed = queryText.trimEnd();
+    const separator = trimmed.length > 0 ? ' ' : '';
+    onQueryChange(`${trimmed}${separator}${kw} `);
+  };
+
   return (
     <div
       style={{
         position: 'fixed',
         inset: 0,
+        height: '100dvh',
+        maxHeight: '100dvh',
         backgroundColor: '#008080',
         display: 'flex',
         flexDirection: 'column',
         boxSizing: 'border-box',
         overflow: 'hidden',
         fontFamily: "'Segoe UI', Tahoma, sans-serif",
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
       {/* Top Titlebar */}
@@ -76,6 +87,15 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
           <span>ExNihilo 95: Pocket SQL</span>
         </div>
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <button
+            type="button"
+            className="win95-button"
+            onClick={() => setIsSnapshotsOpen(true)}
+            style={{ fontSize: '10px', padding: '1px 6px' }}
+            title="Time-Travel Snapshots"
+          >
+            💾 Snapshots
+          </button>
           <button
             type="button"
             className="win95-button"
@@ -194,16 +214,45 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
       >
         {/* Tab 1: Query Editor */}
         {activeTab === 'query' && (
-          <div style={{ flex: 1, height: '100%', overflow: 'hidden' }}>
-            <QueryEditor
-              value={queryText}
-              onChange={onQueryChange}
-              dialect={dialect}
-              onRun={() => {
-                onRun();
-                setActiveTab('results');
+          <div style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            {/* Quick SQL Keyword Keyboard Bar */}
+            <div
+              className="win95-window"
+              style={{
+                display: 'flex',
+                gap: '4px',
+                overflowX: 'auto',
+                padding: '3px 4px',
+                background: '#d4d0c8',
+                borderBottom: '1px solid #808080',
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
               }}
-            />
+            >
+              {['SELECT', 'FROM', 'WHERE', 'JOIN', 'ON', 'GROUP BY', 'ORDER BY', 'LIMIT 10', '*'].map((kw) => (
+                <button
+                  key={kw}
+                  type="button"
+                  className="win95-button"
+                  onClick={() => handleQuickInsert(kw)}
+                  style={{ fontSize: '10px', padding: '1px 6px', fontWeight: 'bold' }}
+                >
+                  {kw}
+                </button>
+              ))}
+            </div>
+            <div style={{ flex: 1, height: '100%', overflow: 'hidden' }}>
+              <QueryEditor
+                value={queryText}
+                onChange={onQueryChange}
+                dialect={dialect}
+                wrapLines={true}
+                onRun={() => {
+                  onRun();
+                  setActiveTab('results');
+                }}
+              />
+            </div>
           </div>
         )}
 
@@ -271,7 +320,7 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {catalogTables.map((entry) => (
+                {catalogTables.map((entry: any) => (
                   <div
                     key={entry.tableName}
                     className="win95-window"
@@ -289,7 +338,7 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
                       </button>
                     </div>
                     <div style={{ fontSize: '10px', color: '#555', marginTop: '2px' }}>
-                      {entry.rowCount} rows • Columns: {entry.schema.columns.map((c) => c.name).join(', ')}
+                      {entry.rowCount} rows • Columns: {(entry.schema?.columns || []).map((c: any) => c.name).join(', ')}
                     </div>
                   </div>
                 ))}
@@ -314,6 +363,12 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
         <span>ExNihilo 95 Pocket Edition</span>
         <span>Offline SQLite Kernel</span>
       </div>
+
+      {/* Time-Travel Snapshots Modal */}
+      <SnapshotsDialog
+        isOpen={isSnapshotsOpen}
+        onClose={() => setIsSnapshotsOpen(false)}
+      />
     </div>
   );
 };

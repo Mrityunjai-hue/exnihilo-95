@@ -8,7 +8,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ExNihiloLogo } from '../../components/Brand/ExNihiloLogo';
-import { SQLExecutor, ExecutionSuccess } from '../../engine/executor';
+import type { ExecutionSuccess } from '../../engine/executor';
+import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
 import { PWAInstallButton } from '../../components/Win95/PWAInstallButton';
 
 type LandingTab = 'sandbox' | 'architecture' | 'compare' | 'download';
@@ -90,7 +91,6 @@ export default function LandingPage() {
   const [copiedCli, setCopiedCli] = useState<boolean>(false);
 
   // In-browser execution state
-  const executor = useMemo(() => new SQLExecutor(), []);
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [executionResult, setExecutionResult] = useState<ExecutionSuccess | null>(null);
   const [execPipelineStep, setExecPipelineStep] = useState<number>(0);
@@ -128,9 +128,9 @@ export default function LandingPage() {
     setExecPipelineStep(4);
 
     try {
-      const res = await executor.execute(querySql, 'MySQL', { rowsPerTable: 8 });
-      if (res.ok) {
-        setExecutionResult(res);
+      const res = await sqlWorkerClient.execute(querySql, 'MySQL', { rowsPerTable: 8 });
+      if (res && res.ok) {
+        setExecutionResult(res as ExecutionSuccess);
       }
     } catch {
       // safe fallback
@@ -141,7 +141,7 @@ export default function LandingPage() {
 
   const handleCopyCli = () => {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText('npx exnihilo-sql');
+      navigator.clipboard.writeText('git clone https://github.com/exnihilo-95/exnihilo-95.git && cd exnihilo-95 && npm install && npm run dev');
       setCopiedCli(true);
       setTimeout(() => setCopiedCli(false), 2000);
     }
@@ -756,9 +756,9 @@ export default function LandingPage() {
                 >
                   <div>
                     <span style={{ color: '#888' }}>$ </span>
-                    <span>npx exnihilo-sql</span>
+                    <span>git clone https://github.com/exnihilo-95/exnihilo-95.git</span>
                     <span style={{ color: '#aaa', marginLeft: '12px', fontSize: '11px' }}>
-                      # Run zero-config SQL engine from terminal
+                      # Run offline local studio
                     </span>
                   </div>
                   <button

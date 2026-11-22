@@ -197,9 +197,9 @@ export const MobileLanding: React.FC<MobileLandingProps> = ({ onForceDesktop }) 
                 minHeight: '200px',
               }}
             >
-              {/* Animated Demo WebP / Video */}
+              {/* Animated Demo GIF */}
               <img
-                src="/win95_ide_demo.webp"
+                src="/exnihilo_demo.gif"
                 alt="ExNihilo 95 Desktop IDE Demo Video"
                 style={{
                   width: '100%',

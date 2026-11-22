@@ -20,6 +20,7 @@ import {
 } from '../../data/cases/types';
 import { CASE_1_DOSSIER } from '../../data/cases/case1_blackwood_manor';
 import { CASE_2_DOSSIER } from '../../data/cases/case2_clyde_shipyard';
+import { CASE_3_DOSSIER } from '../../data/cases/case3_wallstreet_phantom';
 import { DetectiveEvaluator } from '../../engine/detective_evaluator';
 import { getOrInitSqlJs } from '../../engine/executor';
 import { useDetectiveAudio } from '../../hooks/useDetectiveAudio';
@@ -56,7 +57,57 @@ interface InvestigationLead {
 const DOSSIERS: Record<string, CaseDossier> = {
   case_blackwood_manor: CASE_1_DOSSIER,
   case_clyde_shipyard: CASE_2_DOSSIER,
+  case_wallstreet_phantom: CASE_3_DOSSIER,
 };
+
+const CASE_3_LEADS: InvestigationLead[] = [
+  {
+    icon: '🔑',
+    title: '1. 44th Floor Suite Keycard Access',
+    desc: 'Shatter Gregory Vance Hanover Square bar alibi',
+    table: 'keycard_access',
+    objective: 'Query keycard_access to prove Gregory Vance entered Marcus suite at 21:48 during the murder window.',
+    hint: 'Filter keycard_access WHERE badge_id = "BADGE_GV_02".',
+    starterSql: 'SELECT * FROM keycard_access WHERE badge_id = "BADGE_GV_02";',
+    matchingVoucherId: 'voucher_wallstreet_1_keycard_alibi',
+  },
+  {
+    icon: '💸',
+    title: '2. $42M Cayman Offshore Wire',
+    desc: 'Expose the illicit Cayman Islands transfer',
+    table: 'wire_transfers',
+    objective: 'Query wire_transfers to expose the $42,000,000 offshore wire authorized under Marcus forged signature.',
+    hint: 'Filter wire_transfers WHERE destination_country LIKE "%Cayman%".',
+    starterSql: 'SELECT * FROM wire_transfers WHERE destination_country LIKE "%Cayman%";',
+    matchingVoucherId: 'voucher_wallstreet_2_cayman_wire',
+  },
+  {
+    icon: '📞',
+    title: '3. Payphone Call to Cayman Trust',
+    desc: 'Connect the Hanover Square payphone to Pierre Dubois',
+    table: 'phone_logs',
+    objective: 'Query phone_logs to reveal Gregory Vance coordinating the routing code confirmation from the bar payphone.',
+    hint: 'Filter phone_logs WHERE caller LIKE "%Payphone%".',
+    starterSql: 'SELECT * FROM phone_logs WHERE caller LIKE "%Payphone%";',
+    matchingVoucherId: 'voucher_wallstreet_3_payphone_conspiracy',
+  },
+  {
+    icon: '📉',
+    title: '4. Illegal MedTech 500k Short',
+    desc: 'Prove the $14.2M insider trading profit',
+    table: 'trades',
+    objective: 'Query trades to uncover the massive 500,000 share short position placed minutes before market close.',
+    hint: 'Filter trades WHERE symbol = "MEDTECH".',
+    starterSql: 'SELECT * FROM trades WHERE symbol = "MEDTECH";',
+    matchingVoucherId: 'voucher_wallstreet_4_medtech_short',
+  },
+];
+
+function getCaseLeads(caseId: string): InvestigationLead[] {
+  if (caseId === 'case_wallstreet_phantom') return CASE_3_LEADS;
+  if (caseId === 'case_clyde_shipyard') return CASE_2_LEADS;
+  return CASE_1_LEADS;
+}
 
 const CASE_1_LEADS: InvestigationLead[] = [
   {
@@ -184,7 +235,7 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
   });
 
   const dossier = DOSSIERS[activeCaseId] || CASE_1_DOSSIER;
-  const caseLeads = activeCaseId === 'case_clyde_shipyard' ? CASE_2_LEADS : CASE_1_LEADS;
+  const caseLeads = getCaseLeads(activeCaseId);
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<DetectiveTab>(() => {
@@ -577,7 +628,7 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
     setActiveLeadIndex(0);
     setIndictmentState('pending');
 
-    const leads = newCaseId === 'case_clyde_shipyard' ? CASE_2_LEADS : CASE_1_LEADS;
+    const leads = getCaseLeads(newCaseId);
     setActiveQueryTitle(leads[0].title);
     setTerminalSql(leads[0].starterSql);
     setSelectedTableForBrowse(targetDossier.tables[0]);
@@ -604,7 +655,7 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
         db.run(dossier.seedSql);
         setDbInstance(db);
 
-        const currentLeads = activeCaseId === 'case_clyde_shipyard' ? CASE_2_LEADS : CASE_1_LEADS;
+        const currentLeads = getCaseLeads(activeCaseId);
         executeSql(currentLeads[0].starterSql, `Table: ${currentLeads[0].table}`, db);
       } catch (err: any) {
         setActiveError(err?.message || 'Database initialization error');
@@ -739,6 +790,15 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
                 }}
               >
                 <span>{activeCaseId === 'case_clyde_shipyard' ? '✓ ' : '  '}Case 2: Clyde Naval Shipyard</span>
+              </div>
+              <div
+                className="win95-menu-dropdown-item"
+                onClick={() => {
+                  setActiveMenu(null);
+                  handleSwitchCase('case_wallstreet_phantom');
+                }}
+              >
+                <span>{activeCaseId === 'case_wallstreet_phantom' ? '✓ ' : '  '}Case 3: The Wall Street Phantom</span>
               </div>
               <div className="win95-menu-divider" />
               <div
@@ -1042,6 +1102,28 @@ export const DetectiveWorkstation: React.FC<DetectiveWorkstationProps> = ({ onCl
               >
                 <span>📁 CASE #1995-CR-1042: Clyde Naval Shipyard (Glasgow)</span>
                 {activeCaseId === 'case_clyde_shipyard' && (
+                  <span style={{ background: 'var(--w95-accent-color, #ff8000)', color: '#ffffff', fontSize: '9px', padding: '1px 6px', borderRadius: '2px', fontWeight: 'bold' }}>
+                    ACTIVE DOSSIER
+                  </span>
+                )}
+              </button>
+              <button
+                className={`win95-button ${activeCaseId === 'case_wallstreet_phantom' ? 'active pressed' : ''}`}
+                onClick={() => handleSwitchCase('case_wallstreet_phantom')}
+                style={{
+                  padding: '6px 16px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: activeCaseId === 'case_wallstreet_phantom' ? 'var(--w95-title-active-bg, #000080)' : undefined,
+                  color: activeCaseId === 'case_wallstreet_phantom' ? '#ffffff' : undefined,
+                  border: activeCaseId === 'case_wallstreet_phantom' ? '2px solid var(--w95-accent-color, #000080)' : undefined,
+                }}
+              >
+                <span>📁 CASE #1995-CR-1104: The Wall Street Phantom (Manhattan)</span>
+                {activeCaseId === 'case_wallstreet_phantom' && (
                   <span style={{ background: 'var(--w95-accent-color, #ff8000)', color: '#ffffff', fontSize: '9px', padding: '1px 6px', borderRadius: '2px', fontWeight: 'bold' }}>
                     ACTIVE DOSSIER
                   </span>

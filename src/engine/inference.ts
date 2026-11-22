@@ -25,6 +25,7 @@ import { parse, Dialect } from './parser';
 import { resolveDomainSchema, UNIVERSAL_FALLBACK_SCHEMA } from './domain_dictionary';
 import { matchColumnToken } from './token_dictionary';
 import { getSemanticGroupId } from './semanticAliases';
+import { inferColumnIntelligence } from './column_intelligence';
 
 // ── Logical types (dialect-agnostic layer) ────────────────────────────────────
 
@@ -790,13 +791,24 @@ function buildSchemaMap(
             predicateLiterals: lits,
           });
         } else {
-          columns.push({
-            name:              col,
-            logicalType:       'VARCHAR',
-            sqliteType:        SQLITE_DDL['VARCHAR'],
-            source:            `spec 3.2 last row: no signal found → fallback VARCHAR(255)`,
-            predicateLiterals: lits,
-          });
+          const intel = inferColumnIntelligence(col, tableName);
+          if (intel) {
+            columns.push({
+              name:              col,
+              logicalType:       intel.logicalType,
+              sqliteType:        SQLITE_DDL[intel.logicalType],
+              source:            `column intelligence: calibrated ${intel.semanticType}`,
+              predicateLiterals: lits,
+            });
+          } else {
+            columns.push({
+              name:              col,
+              logicalType:       'VARCHAR',
+              sqliteType:        SQLITE_DDL['VARCHAR'],
+              source:            `spec 3.2 last row: no signal found → fallback VARCHAR(255)`,
+              predicateLiterals: lits,
+            });
+          }
         }
       }
     }
@@ -813,6 +825,8 @@ function buildSchemaMap(
           if (gid === 'FULL_NAME') {
             userReferencedGroups.add('FIRST_NAME');
             userReferencedGroups.add('LAST_NAME');
+          } else if (gid === 'FIRST_NAME' || gid === 'LAST_NAME') {
+            userReferencedGroups.add('FULL_NAME');
           }
         }
       }

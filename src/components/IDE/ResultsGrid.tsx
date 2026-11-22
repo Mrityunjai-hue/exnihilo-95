@@ -10,6 +10,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ExecutionSuccess } from '../../engine/executor';
 import { Dialect } from '../../engine/parser';
 import { useTheme } from '../../hooks/useTheme';
+import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
+import type { MutationDiffDTO } from '../../engine/worker/protocol';
 import {
   generateInsertStatements,
   generateDDLStatement,
@@ -67,7 +69,40 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   } | null>(null);
 
   const [toastNotice, setToastNotice] = useState<string | null>(null);
+  const [showDiffModal, setShowDiffModal] = useState(false);
+  const [isUndoing, setIsUndoing] = useState(false);
+  const [undoStatus, setUndoStatus] = useState<string | null>(null);
 
+  const mutationDiff: MutationDiffDTO | null = useMemo(() => {
+    if (!result) return null;
+    if ((result as any).mutationDiff) return (result as any).mutationDiff;
+    if (result.columns?.includes('rows_affected') && result.rows?.[0]?.[1] > 0) {
+      return {
+        tableName: result.inferredTables?.[0] || 'table',
+        type: 'UPDATE',
+        rowsAffected: Number(result.rows[0][1]),
+        timestamp: Date.now(),
+      };
+    }
+    return null;
+  }, [result]);
+
+  const handleUndoMutation = async () => {
+    setIsUndoing(true);
+    try {
+      const res = await sqlWorkerClient.undoLastMutation();
+      if (res && res.undone) {
+        showToast('↩️ Mutation undone! Restored previous database state.');
+        setUndoStatus('Mutation reverted.');
+      } else {
+        showToast(`Undo unavailable: ${res?.message || 'No checkpoint'}`);
+      }
+    } catch (e: any) {
+      showToast(`Undo failed: ${e?.message || e}`);
+    } finally {
+      setIsUndoing(false);
+    }
+  };
 
   // Reset state when new query result arrives
   useEffect(() => {
@@ -77,6 +112,8 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
     setSortDir('asc');
     setInspectedCell(null);
     setScrollTop(0);
+    setUndoStatus(null);
+    setShowDiffModal(false);
   }, [result]);
 
 
@@ -580,6 +617,66 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
         position: 'relative',
       }}
     >
+      {/* Safe DML Mutation Action Bar */}
+      {mutationDiff && !undoStatus && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '4px 10px',
+            background: isDark ? 'rgba(234, 179, 8, 0.2)' : '#fff8e1',
+            borderBottom: '1px solid var(--w95-border-dark, #808080)',
+            fontSize: '11px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>⚡</span>
+            <span>
+              <strong>DML Mutation:</strong> {mutationDiff.rowsAffected} row{mutationDiff.rowsAffected === 1 ? '' : 's'} affected on <code>{mutationDiff.tableName}</code>.
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {mutationDiff.preRows && mutationDiff.preRows.length > 0 && (
+              <button
+                className="win95-button"
+                style={{ fontSize: '10px', padding: '1px 6px', display: 'flex', alignItems: 'center', gap: '3px' }}
+                onClick={() => setShowDiffModal(true)}
+              >
+                <span>🔍</span>
+                <span>Preview Diff</span>
+              </button>
+            )}
+            <button
+              className="win95-button"
+              style={{ fontSize: '10px', padding: '1px 8px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '3px' }}
+              onClick={handleUndoMutation}
+              disabled={isUndoing}
+            >
+              <span>↩️</span>
+              <span>{isUndoing ? 'Reverting...' : '1-Click Undo'}</span>
+            </button>
+          </div>
+        </div>
+      )}
+      {undoStatus && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '4px 10px',
+            background: isDark ? 'rgba(34, 197, 94, 0.2)' : '#e6f4ea',
+            borderBottom: '1px solid #34a853',
+            fontSize: '11px',
+            color: isDark ? '#4ade80' : '#137333',
+            fontWeight: 'bold',
+          }}
+        >
+          <span>✅</span>
+          <span style={{ marginLeft: '6px' }}>{undoStatus}</span>
+        </div>
+      )}
+
       {/* Action & Export Bar */}
       <div
         style={{
@@ -860,7 +957,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px' }}>
                     <div className="win95-sunken" style={{ padding: '12px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', borderRadius: isDark ? '6px' : '0' }}>
                       <div style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>
-                        TOTAL {columns[selectedNumCol]}
+                        {/^total$/i.test(columns[selectedNumCol]) ? 'SUM OF TOTAL' : `TOTAL ${columns[selectedNumCol]}`}
                       </div>
                       <div style={{ fontSize: '22px', fontWeight: 'bold', marginTop: '6px', color: isDark ? '#38bdf8' : '#000080' }}>
                         {sumChartVal.toLocaleString()}
@@ -1373,6 +1470,105 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Safe DML Mutation Diff Modal */}
+      {showDiffModal && mutationDiff && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999999,
+            padding: '12px',
+          }}
+          onClick={() => setShowDiffModal(false)}
+        >
+          <div
+            className="win95-window"
+            style={{
+              width: '560px',
+              maxWidth: '95vw',
+              maxHeight: '80vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '4px 4px 12px rgba(0,0,0,0.5)',
+              background: 'var(--w95-gray, #c0c0c0)',
+              color: 'var(--w95-text-color, #000000)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="win95-titlebar" style={{ padding: '3px 6px' }}>
+              <div className="win95-titlebar-text">
+                <span>🔍</span>
+                <span>DML Mutation Diff — {mutationDiff.tableName}</span>
+              </div>
+              <div className="win95-titlebar-controls">
+                <button className="win95-btn-titlebar" onClick={() => setShowDiffModal(false)}>
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div style={{ padding: '10px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ fontSize: '11px' }}>
+                Showing sample rows before and after the <strong>{mutationDiff.type}</strong> operation ({mutationDiff.rowsAffected} rows modified):
+              </div>
+
+              <div>
+                <strong style={{ fontSize: '11px', color: '#c5221f' }}>🟥 State Before Mutation:</strong>
+                <pre
+                  className="win95-sunken"
+                  style={{
+                    padding: '6px',
+                    fontSize: '10px',
+                    maxHeight: '120px',
+                    overflow: 'auto',
+                    background: 'var(--w95-sunken-bg, #ffffff)',
+                    color: 'var(--w95-sunken-text, #000000)',
+                  }}
+                >
+                  {JSON.stringify(mutationDiff.preRows || [], null, 2)}
+                </pre>
+              </div>
+
+              <div>
+                <strong style={{ fontSize: '11px', color: '#137333' }}>🟩 State After Mutation:</strong>
+                <pre
+                  className="win95-sunken"
+                  style={{
+                    padding: '6px',
+                    fontSize: '10px',
+                    maxHeight: '120px',
+                    overflow: 'auto',
+                    background: 'var(--w95-sunken-bg, #ffffff)',
+                    color: 'var(--w95-sunken-text, #000000)',
+                  }}
+                >
+                  {JSON.stringify(mutationDiff.postRows || [], null, 2)}
+                </pre>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px', padding: '8px 10px', borderTop: '1px solid var(--w95-dark-gray)' }}>
+              <button
+                className="win95-button"
+                style={{ fontWeight: 'bold' }}
+                onClick={() => {
+                  setShowDiffModal(false);
+                  handleUndoMutation();
+                }}
+              >
+                ↩️ Revert (Undo)
+              </button>
+              <button className="win95-button" onClick={() => setShowDiffModal(false)}>
+                Close
+              </button>
             </div>
           </div>
         </div>

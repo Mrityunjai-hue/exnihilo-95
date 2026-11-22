@@ -22,8 +22,10 @@ interface ToolbarProps {
   onInsertTemplate?:    (templateSql: string) => void;
   onToggleHistory?:     () => void;
   onOpenWorkspaces?:    () => void;
+  onOpenSnapshots?:     () => void;
   onOpenERD?:           () => void;
   onOpenDetective?:     () => void;
+  onOpenCopilot?:       () => void;
   onOpenHelp:           () => void;
   onOpenSettings:       () => void;
   onStartTour:          () => void;
@@ -49,8 +51,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onInsertTemplate,
   onToggleHistory,
   onOpenWorkspaces,
+  onOpenSnapshots,
   onOpenERD,
   onOpenDetective,
+  onOpenCopilot,
   onOpenHelp,
   onOpenSettings,
   onStartTour,
@@ -393,6 +397,20 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           </button>
         )}
 
+        {/* Snapshots Button */}
+        {onOpenSnapshots && (
+          <button
+            id="btn-snapshots"
+            className="win95-button"
+            onClick={onOpenSnapshots}
+            title="Time-Travel Snapshots & Database Checkpoints"
+            style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+          >
+            <span>💾</span>
+            <span>Snapshots</span>
+          </button>
+        )}
+
         {/* SQL Noir Detective Case Files Button */}
         {onOpenDetective && (
           <button
@@ -404,6 +422,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           >
             <span>🕵️</span>
             <span>Case Files</span>
+          </button>
+        )}
+
+        {onOpenCopilot && (
+          <button
+            id="btn-copilot"
+            className="win95-button"
+            onClick={onOpenCopilot}
+            title="Ask Gemini SQL Copilot (Natural Language to SQL)"
+            style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+          >
+            <span>✨</span>
+            <span>AI Copilot</span>
           </button>
         )}
 
@@ -444,6 +475,28 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 >
                   <span>🕒</span>
                   <span>Execution History ({historyCount})</span>
+                </div>
+              )}
+
+              {onOpenCopilot && (
+                <div
+                  className={isMac ? 'mac-dropdown-item' : 'win95-dropdown-item'}
+                  onClick={() => { onOpenCopilot(); setMoreMenuOpen(false); }}
+                  style={{ padding: isMac ? '6px 10px' : '4px 8px', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span>✨</span>
+                  <span>Gemini SQL Copilot</span>
+                </div>
+              )}
+
+              {onOpenSnapshots && (
+                <div
+                  className={isMac ? 'mac-dropdown-item' : 'win95-dropdown-item'}
+                  onClick={() => { onOpenSnapshots(); setMoreMenuOpen(false); }}
+                  style={{ padding: isMac ? '6px 10px' : '4px 8px', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span>💾</span>
+                  <span>Snapshots & Checkpoints</span>
                 </div>
               )}
 

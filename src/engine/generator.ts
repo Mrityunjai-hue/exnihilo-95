@@ -18,6 +18,8 @@ import { fakerEN as faker } from '@faker-js/faker';
 import { TableSchema, ColumnDef, LogicalType } from './inference';
 import { ForeignKeyRelationship, TableGenerationPlan } from './relationships';
 import { resolveDomainSchema, inferFakerFromColumnName } from './domain_dictionary';
+import { inferColumnIntelligence } from './column_intelligence';
+import { correlateRow } from './row_correlator';
 
 // ── Configuration Options ─────────────────────────────────────────────────────
 
@@ -208,6 +210,15 @@ function generateScalarValue(
     }
   }
 
+  // Step 2.5: Calibrated Universal Column Intelligence (150+ types, prefix/suffix grammar)
+  const intel = inferColumnIntelligence(col.name, tableName);
+  if (intel) {
+    const val = intel.generate(rowIndex);
+    if (val !== undefined && val !== null) {
+      return val;
+    }
+  }
+
   // Step 3: Type-appropriate baseline scalar generators based on logicalType
   switch (col.logicalType) {
     case 'INTEGER':   return generateInteger(col.name, rowIndex);
@@ -346,6 +357,9 @@ export function generateSyntheticDataset(
           row[childCol] = rows[parentIndex]?.[parentCol] ?? 1;
         }
       }
+
+      // 4. Apply Intra-Row Statistical & Logical Correlation (Layer 4)
+      correlateRow(row, tableName);
 
       rows.push(row);
     }

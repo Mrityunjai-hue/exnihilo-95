@@ -8,7 +8,8 @@
 import React, { useState, useRef } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from './WindowControls';
-import { SQLExecutor, ExecutionSuccess } from '../../engine/executor';
+import type { ExecutionSuccess } from '../../engine/executor';
+import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
 
 export type FileDialogMode = 'open' | 'save';
 
@@ -107,7 +108,7 @@ interface FileTransferDialogProps {
   onOpenSqlFile?: (content: string, fileName: string) => void;
   currentQueryText?: string;
   currentResult?: ExecutionSuccess | null;
-  executor?: SQLExecutor;
+  executor?: any;
   zIndex?: number;
 }
 
@@ -148,7 +149,7 @@ export const FileTransferDialog: React.FC<FileTransferDialogProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     let finalName = fileName.trim() || 'export_file';
     let blob: Blob;
 
@@ -160,8 +161,8 @@ export const FileTransferDialog: React.FC<FileTransferDialogProps> = ({
       if (!finalName.toLowerCase().endsWith('.sqlite') && !finalName.toLowerCase().endsWith('.db')) {
         finalName += '.sqlite';
       }
-      const binary = executor?.exportDatabaseBinary();
-      if (!binary) {
+      const binary = await sqlWorkerClient.exportDatabaseBinary();
+      if (!binary || binary.byteLength === 0) {
         setFeedback('⚠️ In-memory database has no tables yet. Run a query first.');
         setTimeout(() => setFeedback(null), 3000);
         return;

@@ -475,13 +475,14 @@ export function useWorkspaceStorage(debounceMs = 500) {
 export async function saveDatabaseSnapshot(
   name: string,
   binary?: Uint8Array,
-  tablesCount: number = 0
+  tablesCount: number = 0,
+  customId?: string
 ): Promise<DatabaseSnapshot | null> {
   const db = await openIDB();
   if (!db) return null;
 
   const snapshot: DatabaseSnapshot = {
-    id: `snap_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    id: customId || `snap_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     name: name.trim() || `Snapshot ${new Date().toLocaleTimeString()}`,
     timestamp: new Date().toISOString(),
     binary,

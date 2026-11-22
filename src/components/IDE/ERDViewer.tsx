@@ -14,14 +14,14 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { SessionCatalog } from '../../engine/catalog';
 import { extractERDData, ERDGraphData, ERDNode, ERDLink } from '../../engine/erd_extractor';
+import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
 import { useDraggable } from '../../hooks/useDraggable';
 import { WindowControls } from '../Win95/WindowControls';
 import { useTheme } from '../../hooks/useTheme';
 
 export interface ERDViewerProps {
-  catalog: SessionCatalog;
+  catalog: any;
   executor?: any;
   isOpen?: boolean;
   isMinimized?: boolean;
@@ -142,7 +142,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
 
   // If a table is selected, auto-fetch 5 sample records
   useEffect(() => {
-    if (!selectedTableId || !executor) {
+    if (!selectedTableId) {
       setSampleRows(null);
       setSampleCols([]);
       return;
@@ -151,13 +151,26 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
     let isSubscribed = true;
     setSampleLoading(true);
 
+    const activeNode = erdData.nodes.find((n) => n.id === selectedTableId);
+    if (activeNode) {
+      setSampleCols(activeNode.columns.map((c) => c.name));
+      const maybeNodeAny = activeNode as any;
+      if (maybeNodeAny.sampleRows && maybeNodeAny.sampleRows.length > 0) {
+        setSampleRows(maybeNodeAny.sampleRows);
+        setSampleLoading(false);
+        return;
+      }
+    }
+
     const loadSample = async () => {
       try {
-        const res = await executor.execute(`SELECT * FROM "${selectedTableId}" LIMIT 5;`, 'SQLite');
-        if (isSubscribed && res && res.ok && res.rows) {
-          setSampleCols(res.columns || []);
-          setSampleRows(res.rows);
-        } else if (isSubscribed) {
+        const res: any = await sqlWorkerClient.execute(`SELECT * FROM "${selectedTableId}" LIMIT 5;`, 'SQLite');
+        if (!isSubscribed) return;
+        const actualResult = res?.result || res;
+        if (actualResult && actualResult.rows) {
+          setSampleCols(actualResult.columns || []);
+          setSampleRows(actualResult.rows);
+        } else {
           setSampleRows([]);
           setSampleCols([]);
         }
@@ -276,7 +289,6 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
 
   // ── Action: Seed Sample Relational Schema (Users, Orders, Products, Items) ──
   const handleSeedSampleData = async () => {
-    if (!executor) return;
     setIsSeeding(true);
     try {
       const sampleQuery = `
@@ -296,7 +308,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
         JOIN order_items ON orders.id = order_items.order_id
         JOIN products ON order_items.product_id = products.id;
       `;
-      await executor.execute(sampleQuery, 'PostgreSQL');
+      await sqlWorkerClient.execute(sampleQuery, 'PostgreSQL');
       const refreshedData = extractERDData(catalog);
       setErdData(refreshedData);
       setPositions(calculateAutoLayout(refreshedData.nodes));

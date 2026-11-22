@@ -8,23 +8,24 @@ import type { ClassifiedError } from '../errors';
 import type { SQLChallenge } from '../../data/challenges/types';
 import type { EvaluationResult } from '../../utils/challengeEvaluator';
 import type { ColumnFormRow } from '../../utils/dbManagerUtils';
+import type { ColumnDTO, TableEntryDTO, CatalogSnapshotDTO } from './catalogAdapter';
 
-export interface WorkerCatalogTableDTO {
+export type { ColumnDTO, TableEntryDTO, CatalogSnapshotDTO };
+export type WorkerCatalogTableDTO = TableEntryDTO;
+
+export interface MutationDiffDTO {
   tableName: string;
-  dbName: string;
-  rowCount: number;
-  isUserCreated: boolean;
-  columns: Array<{
-    name: string;
-    logicalType: string;
-    sqliteType: string;
-    isPrimaryKey?: boolean;
-  }>;
+  type: 'UPDATE' | 'DELETE' | 'INSERT';
+  rowsAffected: number;
+  preRows?: Record<string, any>[];
+  postRows?: Record<string, any>[];
+  timestamp: number;
 }
 
 export type WorkerRequest =
   | { id: string; type: 'INIT'; snapshot?: Uint8Array }
   | { id: string; type: 'EXECUTE'; sql: string; dialect: Dialect; options?: { rowsPerTable?: number; tableCap?: number } }
+  | { id: string; type: 'UNDO_LAST_MUTATION' }
   | { id: string; type: 'CREATE_USER_DB'; dbName: string }
   | { id: string; type: 'DROP_USER_DB'; dbName: string }
   | { id: string; type: 'CREATE_USER_TABLE'; tableName: string; columns: ColumnFormRow[]; dbName?: string; seedRows?: number }

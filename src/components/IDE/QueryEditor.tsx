@@ -35,6 +35,7 @@ interface QueryEditorProps {
   onCursorChange?:    (line: number, col: number) => void;
   schemaTables?:      Record<string, string[]>;
   errorLocation?:     SqlErrorLocation | null;
+  wrapLines?:         boolean;
 }
 
 // Custom Windows 95 IDE Syntax Theme
@@ -201,6 +202,7 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
   onCursorChange,
   schemaTables,
   errorLocation,
+  wrapLines = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -282,6 +284,7 @@ export const QueryEditor: React.FC<QueryEditorProps> = ({
         highlightActiveLineGutter(),
         highlightActiveLine(),
         history(),
+        ...(wrapLines ? [EditorView.lineWrapping] : []),
         getSqlDialectExtension(dialect, schemaTables),
         syntaxHighlighting(isDark ? macModernNeonHighlightStyle : win95SqlHighlightStyle),
         autocompletion({

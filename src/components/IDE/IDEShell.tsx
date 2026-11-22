@@ -11,7 +11,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDraggable } from '../../hooks/useDraggable';
 import { Dialect } from '../../engine/parser';
-import { SQLExecutor, ExecutionSuccess } from '../../engine/executor';
+import type { ExecutionSuccess } from '../../engine/executor';
+import { ReadOnlyCatalogAdapter } from '../../engine/worker/catalogAdapter';
+import { SnapshotsDialog } from './SnapshotsDialog';
 import { QueryEditor } from './QueryEditor';
 import { ResultsGrid } from './ResultsGrid';
 import { SchemaTree } from './SchemaTree';
@@ -22,6 +24,7 @@ import { WindowControls } from '../Win95/WindowControls';
 import { KeyboardShortcutsDialog } from '../Win95/KeyboardShortcutsDialog';
 import { SnippetsPanel } from './SnippetsPanel';
 import { ExplainPlanViewer } from './ExplainPlanViewer';
+import { CopilotDialog } from './CopilotDialog';
 import { CreateDatabaseDialog } from './CreateDatabaseDialog';
 import { CreateTableWizard } from './CreateTableWizard';
 import { useTheme } from '../../hooks/useTheme';
@@ -76,7 +79,8 @@ interface IDEShellProps {
   initialResult:           ExecutionSuccess | null;
   initialIsLoading:        boolean;
   initialExecutionTimeMs:  number | null;
-  executor:                SQLExecutor;
+  catalog?:                any;
+  executor?:               any;
   onFocus:                 () => void;
   onClose:                 () => void;
   onMinimize:              () => void;
@@ -109,6 +113,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   initialResult,
   initialIsLoading,
   initialExecutionTimeMs,
+  catalog: propCatalog,
   executor,
   onFocus,
   onClose,
@@ -169,7 +174,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isSnippetsOpen, setIsSnippetsOpen] = useState(false);
   const [isExplainPlanOpen, setIsExplainPlanOpen] = useState(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [isTranslateDialogOpen, setIsTranslateDialogOpen] = useState(false);
+  const [isSnapshotsOpen, setIsSnapshotsOpen] = useState(false);
   const [fileDialogOpen, setFileDialogOpen] = useState(false);
   const [fileDialogMode, setFileDialogMode] = useState<FileDialogMode>('open');
   const [importDataset, setImportDataset] = useState<ParsedTableDataset | null>(null);
@@ -194,8 +201,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     rows: unknown[][],
     dbName: string
   ) => {
-    await sqlWorkerClient.importTabular(tableName, columns, rows);
-    await executor.importTabularTable(tableName, columns, rows, dbName);
+    await sqlWorkerClient.importTabular(tableName, columns, rows, dbName);
     setRefreshKey((k) => k + 1);
 
     const query = `SELECT * FROM "${tableName}" LIMIT 50;`;
@@ -252,7 +258,6 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         const u8 = new Uint8Array(buffer);
         if (isSQLiteBinary(u8)) {
           await sqlWorkerClient.importSqliteBinary(u8);
-          await executor.loadDatabaseBinary(u8);
           setRefreshKey((k) => k + 1);
           setDbManagerNotif({ msg: `✅ Loaded SQLite binary "${file.name}".`, ok: true });
           setTimeout(() => setDbManagerNotif(null), 4000);
@@ -290,12 +295,12 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   // Editor cursor tracking & dynamic catalog autocomplete
   const [cursorPos, setCursorPos] = useState<{ line: number; col: number }>({ line: 1, col: 1 });
 
-  const catalog = executor.getCatalog();
+  const catalog = propCatalog || (executor ? executor.getCatalog() : new ReadOnlyCatalogAdapter({ databases: ['default'], tables: [], version: 0 }));
   const catalogSchemaMap = React.useMemo(() => {
     const map: Record<string, string[]> = {};
-    const entries = catalog.getAll();
+    const entries = catalog.getAll ? catalog.getAll() : [];
     for (const entry of entries) {
-      map[entry.tableName] = entry.schema.columns.map((c) => c.name);
+      map[entry.tableName] = entry.schema?.columns ? entry.schema.columns.map((c: any) => c.name) : [];
     }
     return map;
   }, [catalog, refreshKey, initialResult]);
@@ -1116,6 +1121,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         onFormatSql={handleFormatSql}
         onTranslateDialect={handleTranslateDialect}
         onOpenExplainPlan={() => setIsExplainPlanOpen(true)}
+        onOpenCopilot={() => setIsCopilotOpen(true)}
+        onOpenSnapshots={() => setIsSnapshotsOpen(true)}
         onInsertTemplate={handleInsertTemplate}
         onToggleHistory={() => setIsHistoryOpen(true)}
         onOpenERD={handleOpenERD}
@@ -1648,7 +1655,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       )}
 
       {/* Interactive ERD Diagram Viewer */}
-      {isERDOpen && <ERDViewer catalog={catalog} executor={executor} onClose={() => setIsERDOpen(false)} />}
+      {isERDOpen && <ERDViewer catalog={catalog} onClose={() => setIsERDOpen(false)} />}
 
       {/* Share SQL Query Playground Modal */}
       <ShareDialog
@@ -1693,6 +1700,15 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         executor={executor}
       />
 
+      {/* Gemini SQL Copilot Modal */}
+      <CopilotDialog
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+        dialect={dialect}
+        schemaContext={catalog.getAll().map((t: any) => `${t.tableName} (${t.columns.map((c: any) => `${c.name} ${c.logicalType}`).join(', ')})`).join('\n')}
+        onInsertSql={(sql) => handleInsertTemplate(sql)}
+      />
+
       {/* ── Visual Database Manager Modals ─────────────────────────────────── */}
 
       {/* DB Manager: Success/Error notification (auto-dismiss handled inside SchemaTree, duplicate here for tab-level context) */}
@@ -1712,8 +1728,8 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       {showCreateDbDialog && (
         <CreateDatabaseDialog
           existingDatabases={catalog.getDatabaseNames()}
-          onConfirm={(dbName) => {
-            const ok = executor.createUserDatabase(dbName);
+          onConfirm={async (dbName) => {
+            const ok = await sqlWorkerClient.createUserDatabase(dbName);
             setShowCreateDbDialog(false);
             if (ok) {
               setDbManagerNotif({ msg: `✅ Database "${dbName}" created.`, ok: true });
@@ -1737,7 +1753,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
           initialRows={rowsPerTable}
           onConfirm={async (tableName, ddlSql, columns, dbName, rowsToGenerate) => {
             setShowCreateTableWizard(false);
-            const result = await executor.createUserTable(tableName, ddlSql, columns, dbName, rowsToGenerate);
+            const result = await sqlWorkerClient.createUserTable(tableName, ddlSql, columns, dbName, rowsToGenerate);
             if (result.ok) {
               setDbManagerNotif({ msg: `✅ Table "${tableName}" created with ${result.rowCount} rows.`, ok: true });
               setTimeout(() => setDbManagerNotif(null), 4000);
@@ -1792,6 +1808,14 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         zIndex={zIndex + 20}
         onClose={() => setIsImportModalOpen(false)}
         onImport={handleConfirmImport}
+      />
+
+      {/* ── Time-Travel Database Snapshots & Checkpoints Modal ────────────────── */}
+      <SnapshotsDialog
+        isOpen={isSnapshotsOpen}
+        onClose={() => setIsSnapshotsOpen(false)}
+        onRestored={() => setRefreshKey((k) => k + 1)}
+        zIndex={zIndex + 10}
       />
     </div>
   );

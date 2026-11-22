@@ -1,14 +1,42 @@
 import { describe, it, expect } from 'vitest';
 import { DetectiveEvaluator } from '../../engine/detective_evaluator';
 import { CASE_1_DOSSIER } from '../../data/cases/case1_blackwood_manor';
+import { CASE_3_DOSSIER } from '../../data/cases/case3_wallstreet_phantom';
 
 describe('DetectiveEvaluator — Zero Auto-Progression & Voucher Verification', () => {
   const vouchers = CASE_1_DOSSIER.deductionVouchers;
+  const vouchers3 = CASE_3_DOSSIER.deductionVouchers;
 
   it('rejects verification if no row is selected', () => {
     const result = DetectiveEvaluator.evaluateVoucher(vouchers[0], null);
     expect(result.status).toBe('REJECTED');
     expect(result.title).toBe('NO RECORD ISOLATED');
+  });
+
+  it('validates Case 3 Wall Street Phantom keycard alibi shattering voucher', () => {
+    const keycardRow = {
+      log_id: 106,
+      badge_id: 'BADGE_GV_02',
+      employee_name: 'Gregory Vance',
+      door_location: '44th Floor Executive Suite',
+      access_time: '21:48:00',
+    };
+    const result = DetectiveEvaluator.evaluateVoucher(vouchers3[0], keycardRow);
+    expect(result.status).toBe('ADMITTED');
+    expect(result.message).toContain('ALIBI SHATTERED');
+  });
+
+  it('validates Case 3 Wall Street Phantom $42M Cayman wire voucher', () => {
+    const wireRow = {
+      transfer_id: 'WT-95-8804',
+      origin_account: 'ACCT_SPECIAL_RESERVE',
+      destination_bank: 'Grand Cayman Offshore Commerce Bank',
+      destination_country: 'Cayman Islands',
+      amount_usd: 42000000,
+    };
+    const result = DetectiveEvaluator.evaluateVoucher(vouchers3[1], wireRow);
+    expect(result.status).toBe('ADMITTED');
+    expect(result.message).toContain('$42M EMBEZZLEMENT EXPOSED');
   });
 
   it('catches red herring when user submits Chef Gordon arsenic for cause of death', () => {

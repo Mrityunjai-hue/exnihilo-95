@@ -7,8 +7,8 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { SQLExecutor } from '../../engine/executor';
 import { Dialect } from '../../engine/parser';
+import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
 import { useTheme } from '../../hooks/useTheme';
 
 interface ExplainPlanViewerProps {
@@ -16,16 +16,95 @@ interface ExplainPlanViewerProps {
   onClose: () => void;
   queryText: string;
   dialect: Dialect;
-  executor: SQLExecutor;
+  executor?: any;
 }
 
-interface PlanNode {
+export interface PlanNode {
   id: number;
   parent: number;
   notused: number;
   detail: string;
   depth: number;
   opType: 'SCAN' | 'INDEX' | 'SORT' | 'COROUTINE' | 'JOIN' | 'OP';
+}
+
+export function parsePlanNodes(rawRows: any[]): PlanNode[] {
+  const rawNodes = rawRows.map((r: any) => ({
+    id: Number(Array.isArray(r) ? r[0] : (r.id ?? r.selectid ?? 0)),
+    parent: Number(Array.isArray(r) ? r[1] : (r.parent ?? r.order ?? 0)),
+    notused: Number(Array.isArray(r) ? r[2] : (r.notused ?? 0)),
+    detail: String(Array.isArray(r) ? (r[3] || r[2] || '') : (r.detail ?? '')),
+  }));
+
+  return rawNodes.map((n: any) => {
+    let depth = 0;
+    let currParent = n.parent;
+    const visited = new Set<number>();
+    while (currParent > 0 && !visited.has(currParent)) {
+      visited.add(currParent);
+      depth++;
+      const parentObj = rawNodes.find((x: any) => x.id === currParent);
+      currParent = parentObj ? parentObj.parent : 0;
+    }
+
+    let opType: PlanNode['opType'] = 'OP';
+    if (/SCAN/i.test(n.detail)) opType = 'SCAN';
+    else if (/INDEX|COVERING/i.test(n.detail)) opType = 'INDEX';
+    else if (/TEMP B-TREE|ORDER BY|SORT/i.test(n.detail)) opType = 'SORT';
+    else if (/CO-ROUTINE|SUBQUERY/i.test(n.detail)) opType = 'COROUTINE';
+    else if (/JOIN|NESTED/i.test(n.detail)) opType = 'JOIN';
+
+    return {
+      ...n,
+      depth,
+      opType,
+    };
+  });
+}
+
+export function inferRecommendedIndex(sql: string, scannedTables: string[]): { table: string; column: string; indexSql: string } | null {
+  if (!scannedTables || scannedTables.length === 0) return null;
+  const targetTable = scannedTables[0];
+
+  const whereMatch = sql.match(/WHERE\s+([\s\S]+?)(?:ORDER\s+BY|GROUP\s+BY|LIMIT|;|$)/i);
+  if (whereMatch) {
+    const whereClause = whereMatch[1];
+    const colMatch = whereClause.match(new RegExp(`(?:${targetTable}\\.)?([a-zA-Z0-9_]+)\\s*(?:=|>|<|>=|<=|IN|LIKE|BETWEEN)`, 'i'));
+    if (colMatch && colMatch[1] && !['AND', 'OR', 'NOT'].includes(colMatch[1].toUpperCase())) {
+      const col = colMatch[1];
+      return {
+        table: targetTable,
+        column: col,
+        indexSql: `CREATE INDEX idx_${targetTable}_${col} ON ${targetTable}(${col});`,
+      };
+    }
+  }
+
+  const joinMatch = sql.match(new RegExp(`(?:JOIN\\s+${targetTable}\\s+(?:AS\\s+)?([a-zA-Z0-9_]+)?\\s+ON|ON\\s+[\\s\\S]*?${targetTable}\\.)([a-zA-Z0-9_]+)`, 'i'));
+  if (joinMatch && joinMatch[2]) {
+    const col = joinMatch[2];
+    return {
+      table: targetTable,
+      column: col,
+      indexSql: `CREATE INDEX idx_${targetTable}_${col} ON ${targetTable}(${col});`,
+    };
+  }
+
+  const orderMatch = sql.match(/ORDER\s+BY\s+([a-zA-Z0-9_]+)(?:\.([a-zA-Z0-9_]+))?/i);
+  if (orderMatch) {
+    const col = orderMatch[2] || orderMatch[1];
+    return {
+      table: targetTable,
+      column: col,
+      indexSql: `CREATE INDEX idx_${targetTable}_${col} ON ${targetTable}(${col});`,
+    };
+  }
+
+  return {
+    table: targetTable,
+    column: 'id',
+    indexSql: `CREATE INDEX idx_${targetTable}_id ON ${targetTable}(id);`,
+  };
 }
 
 export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
@@ -46,6 +125,13 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
   const [copyFeedback, setCopyFeedback] = useState(false);
 
+  // What-If Simulation State
+  const [whatIfNodes, setWhatIfNodes] = useState<PlanNode[] | null>(null);
+  const [isWhatIfActive, setIsWhatIfActive] = useState<boolean>(false);
+  const [isSimulating, setIsSimulating] = useState<boolean>(false);
+  const [isApplying, setIsApplying] = useState<boolean>(false);
+  const [indexApplied, setIndexApplied] = useState<boolean>(false);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -53,15 +139,12 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
     setIsLoading(true);
     setErrorMsg(null);
     setSelectedNodeId(null);
+    setWhatIfNodes(null);
+    setIsWhatIfActive(false);
+    setIndexApplied(false);
 
     (async () => {
       try {
-        let db = (executor as any).db;
-        if (!db) {
-          await executor.init();
-          db = (executor as any).db;
-        }
-
         // Clean query text (first executable SELECT query)
         const cleanQuery = queryText
           .replace(/--.*$/gm, '')
@@ -76,56 +159,11 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
           return;
         }
 
-        // Auto-materialize tables if query hasn't been executed yet
-        try {
-          await executor.execute(cleanQuery, dialect);
-          db = (executor as any).db;
-        } catch {
-          // Continue to EXPLAIN attempt
-        }
-
-        if (!db) {
-          throw new Error('Database engine initialization failed.');
-        }
-
         const explainSql = `EXPLAIN QUERY PLAN ${cleanQuery.replace(/;+$/, '')};`;
-        const res = db.exec(explainSql);
+        const res = await sqlWorkerClient.execute(explainSql, dialect);
 
-        if (res && res.length > 0 && res[0].values) {
-          const rawNodes = res[0].values.map((v: any[]) => ({
-            id: Number(v[0]),
-            parent: Number(v[1]),
-            notused: Number(v[2]),
-            detail: String(v[3] || v[2] || ''),
-          }));
-
-          // Calculate depth and operation types for each step
-          const nodes: PlanNode[] = rawNodes.map((n: any) => {
-            // Walk up parents to calculate tree depth
-            let depth = 0;
-            let currParent = n.parent;
-            const visited = new Set<number>();
-            while (currParent > 0 && !visited.has(currParent)) {
-              visited.add(currParent);
-              depth++;
-              const parentObj = rawNodes.find((x: any) => x.id === currParent);
-              currParent = parentObj ? parentObj.parent : 0;
-            }
-
-            // Classify operation type
-            let opType: PlanNode['opType'] = 'OP';
-            if (/SCAN/i.test(n.detail)) opType = 'SCAN';
-            else if (/INDEX|COVERING/i.test(n.detail)) opType = 'INDEX';
-            else if (/TEMP B-TREE|ORDER BY|SORT/i.test(n.detail)) opType = 'SORT';
-            else if (/CO-ROUTINE|SUBQUERY/i.test(n.detail)) opType = 'COROUTINE';
-            else if (/JOIN|NESTED/i.test(n.detail)) opType = 'JOIN';
-
-            return {
-              ...n,
-              depth,
-              opType,
-            };
-          });
+        if (res && res.ok && res.rows && res.rows.length > 0) {
+          const nodes = parsePlanNodes(res.rows);
 
           if (isMounted) {
             setPlanRows(nodes);
@@ -154,7 +192,7 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, queryText, executor]);
+  }, [isOpen, queryText, dialect]);
 
   // Aggregate execution plan metrics
   const metrics = useMemo(() => {
@@ -164,7 +202,6 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
     const indices = planRows.filter((n) => n.opType === 'INDEX');
     const coroutines = planRows.filter((n) => n.opType === 'COROUTINE');
 
-    // Extract table names from scans
     const scannedTables = scans.map((s) => {
       const match = s.detail.match(/SCAN (TABLE\s+)?([a-zA-Z0-9_]+)/i);
       return match ? match[2] : 'table';
@@ -189,6 +226,108 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
       estimatedCostRating,
     };
   }, [planRows]);
+
+  const simulatedMetrics = useMemo(() => {
+    if (!whatIfNodes) return null;
+    const totalSteps = whatIfNodes.length;
+    const scans = whatIfNodes.filter((n) => n.opType === 'SCAN');
+    const sorts = whatIfNodes.filter((n) => n.opType === 'SORT');
+    const indices = whatIfNodes.filter((n) => n.opType === 'INDEX');
+    const coroutines = whatIfNodes.filter((n) => n.opType === 'COROUTINE');
+    const scannedTables = scans.map((s) => {
+      const match = s.detail.match(/SCAN (TABLE\s+)?([a-zA-Z0-9_]+)/i);
+      return match ? match[2] : 'table';
+    });
+    const isHighComplexity = scans.length > 0 && sorts.length > 0;
+    const estimatedCostRating = isHighComplexity
+      ? 'O(N log N) — Sequential Scan & Temp Sort'
+      : scans.length > 0
+      ? 'O(N) — Linear Table Scan'
+      : indices.length > 0
+      ? 'O(log N) — B-Tree Index Seek'
+      : 'O(1) — Direct Scalar Lookup';
+
+    return {
+      totalSteps,
+      scansCount: scans.length,
+      sortsCount: sorts.length,
+      indicesCount: indices.length,
+      coroutinesCount: coroutines.length,
+      scannedTables: Array.from(new Set(scannedTables)),
+      estimatedCostRating,
+    };
+  }, [whatIfNodes]);
+
+  const recommendedIndex = useMemo(() => {
+    return inferRecommendedIndex(queryText, metrics.scannedTables);
+  }, [queryText, metrics.scannedTables]);
+
+  const handleSimulateIndex = async () => {
+    if (!recommendedIndex) return;
+    setIsSimulating(true);
+    try {
+      const cleanQuery = queryText
+        .replace(/--.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .trim()
+        .replace(/;+$/, '');
+
+      // 1. Create temporary savepoint
+      await sqlWorkerClient.execute('SAVEPOINT what_if_idx;', dialect);
+      // 2. Create index in savepoint
+      await sqlWorkerClient.execute(recommendedIndex.indexSql, dialect);
+      // 3. Re-run explain
+      const simRes = await sqlWorkerClient.execute(`EXPLAIN QUERY PLAN ${cleanQuery};`, dialect);
+      // 4. Rollback and release savepoint immediately
+      try {
+        await sqlWorkerClient.execute('ROLLBACK TO what_if_idx;', dialect);
+        await sqlWorkerClient.execute('RELEASE what_if_idx;', dialect);
+      } catch {}
+
+      if (simRes && simRes.ok && simRes.rows) {
+        const nodes = parsePlanNodes(simRes.rows);
+        setWhatIfNodes(nodes);
+        setIsWhatIfActive(true);
+      }
+    } catch (err: any) {
+      try {
+        await sqlWorkerClient.execute('ROLLBACK TO what_if_idx;', dialect);
+        await sqlWorkerClient.execute('RELEASE what_if_idx;', dialect);
+      } catch {}
+      setErrorMsg(`Simulation failed: ${err?.message || err}`);
+    } finally {
+      setIsSimulating(false);
+    }
+  };
+
+  const handleApplyIndex = async () => {
+    if (!recommendedIndex) return;
+    setIsApplying(true);
+    try {
+      const res = await sqlWorkerClient.execute(recommendedIndex.indexSql, dialect);
+      if (res.ok) {
+        setIndexApplied(true);
+        const cleanQuery = queryText
+          .replace(/--.*$/gm, '')
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .trim()
+          .replace(/;+$/, '');
+        const planRes = await sqlWorkerClient.execute(`EXPLAIN QUERY PLAN ${cleanQuery};`, dialect);
+        if (planRes && planRes.ok && planRes.rows) {
+          const nodes = parsePlanNodes(planRes.rows);
+          setPlanRows(nodes);
+          setIsWhatIfActive(false);
+        }
+      }
+    } catch (err: any) {
+      setErrorMsg(`Failed to apply index: ${err?.message || err}`);
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
+  const activeNodes = isWhatIfActive && whatIfNodes ? whatIfNodes : planRows;
+  const activeMetrics = isWhatIfActive && simulatedMetrics ? simulatedMetrics : metrics;
 
   const handleCopyRaw = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -268,14 +407,55 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
               fontWeight: 'bold',
               fontFamily: 'var(--w95-mono)',
               fontSize: '10px',
-              background: metrics.scansCount > 0 ? (isDark ? 'rgba(239, 68, 68, 0.2)' : '#fce8e6') : (isDark ? 'rgba(34, 197, 94, 0.2)' : '#e6f4ea'),
-              color: metrics.scansCount > 0 ? (isDark ? '#f87171' : '#c5221f') : (isDark ? '#4ade80' : '#137333'),
-              border: `1px solid ${metrics.scansCount > 0 ? (isDark ? 'rgba(239,68,68,0.4)' : '#f5c6cb') : (isDark ? 'rgba(34,197,94,0.4)' : '#c3e6cb')}`,
+              background: activeMetrics.scansCount > 0 ? (isDark ? 'rgba(239, 68, 68, 0.2)' : '#fce8e6') : (isDark ? 'rgba(34, 197, 94, 0.2)' : '#e6f4ea'),
+              color: activeMetrics.scansCount > 0 ? (isDark ? '#f87171' : '#c5221f') : (isDark ? '#4ade80' : '#137333'),
+              border: `1px solid ${activeMetrics.scansCount > 0 ? (isDark ? 'rgba(239,68,68,0.4)' : '#f5c6cb') : (isDark ? 'rgba(34,197,94,0.4)' : '#c3e6cb')}`,
             }}
           >
-            {metrics.estimatedCostRating}
+            {activeMetrics.estimatedCostRating}
           </span>
         </div>
+
+        {/* What-If Active Diff Bar */}
+        {isWhatIfActive && simulatedMetrics && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '6px 12px',
+              background: isDark ? 'rgba(34, 197, 94, 0.2)' : '#e6f4ea',
+              borderBottom: '1px solid #34a853',
+              fontSize: '11px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '13px' }}>⚡</span>
+              <span>
+                <strong>What-If Simulation Active:</strong> Scans: <span style={{ color: '#ef4444', textDecoration: 'line-through' }}>{metrics.scansCount}</span> ➔ <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{simulatedMetrics.scansCount}</span> │ Cost: <span style={{ textDecoration: 'line-through' }}>{metrics.estimatedCostRating.split('—')[0]}</span> ➔ <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{simulatedMetrics.estimatedCostRating.split('—')[0]}</span>
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button
+                className="win95-button"
+                style={{ fontSize: '10px', padding: '1px 8px' }}
+                onClick={() => setIsWhatIfActive(false)}
+              >
+                Show Baseline
+              </button>
+              {!indexApplied && (
+                <button
+                  className="win95-button"
+                  style={{ fontSize: '10px', padding: '1px 8px', fontWeight: 'bold' }}
+                  onClick={handleApplyIndex}
+                  disabled={isApplying}
+                >
+                  {isApplying ? 'Applying...' : '💾 Apply Permanently'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Executive Metric Cards Strip */}
         <div
@@ -290,27 +470,27 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
         >
           <div className="win95-sunken" style={{ padding: '6px 8px', background: 'var(--w95-sunken-bg, #ffffff)', borderRadius: isDark ? '4px' : '0' }}>
             <div style={{ fontSize: '9px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>TOTAL STEPS</div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '2px', color: 'var(--w95-text-color)' }}>{metrics.totalSteps}</div>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '2px', color: 'var(--w95-text-color)' }}>{activeMetrics.totalSteps}</div>
           </div>
 
           <div className="win95-sunken" style={{ padding: '6px 8px', background: 'var(--w95-sunken-bg, #ffffff)', borderRadius: isDark ? '4px' : '0' }}>
             <div style={{ fontSize: '9px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>TABLE SCANS</div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '2px', color: metrics.scansCount > 0 ? '#ef4444' : (isDark ? '#4ade80' : '#16a34a') }}>
-              {metrics.scansCount}
+            <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '2px', color: activeMetrics.scansCount > 0 ? '#ef4444' : (isDark ? '#4ade80' : '#16a34a') }}>
+              {activeMetrics.scansCount}
             </div>
           </div>
 
           <div className="win95-sunken" style={{ padding: '6px 8px', background: 'var(--w95-sunken-bg, #ffffff)', borderRadius: isDark ? '4px' : '0' }}>
             <div style={{ fontSize: '9px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>TEMP B-TREES</div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '2px', color: metrics.sortsCount > 0 ? '#eab308' : (isDark ? '#94a3b8' : '#666666') }}>
-              {metrics.sortsCount}
+            <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '2px', color: activeMetrics.sortsCount > 0 ? '#eab308' : (isDark ? '#94a3b8' : '#666666') }}>
+              {activeMetrics.sortsCount}
             </div>
           </div>
 
           <div className="win95-sunken" style={{ padding: '6px 8px', background: 'var(--w95-sunken-bg, #ffffff)', borderRadius: isDark ? '4px' : '0' }}>
             <div style={{ fontSize: '9px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 'bold' }}>INDEX SEEKS</div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '2px', color: metrics.indicesCount > 0 ? '#22c55e' : (isDark ? '#94a3b8' : '#666666') }}>
-              {metrics.indicesCount}
+            <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '2px', color: activeMetrics.indicesCount > 0 ? '#22c55e' : (isDark ? '#94a3b8' : '#666666') }}>
+              {activeMetrics.indicesCount}
             </div>
           </div>
         </div>
@@ -428,12 +608,12 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
                     Execution pipeline evaluated from innermost co-routines to outer projections:
                   </div>
 
-                  {planRows.length === 0 ? (
+                  {activeNodes.length === 0 ? (
                     <div style={{ padding: '24px', textAlign: 'center', opacity: 0.7 }}>
                       No scan or sort operations recorded for this query.
                     </div>
                   ) : (
-                    planRows.map((node, idx) => {
+                    activeNodes.map((node, idx) => {
                       const isSelected = selectedNodeId === node.id;
                       const indentPx = node.depth * 24;
 
@@ -617,7 +797,51 @@ export const ExplainPlanViewer: React.FC<ExplainPlanViewerProps> = ({
                           color: isDark ? '#38bdf8' : '#0369a1',
                         }}
                       >
-                        💡 Recommended Index: <code>CREATE INDEX idx_{metrics.scannedTables[0] || 'tbl'}_lookup ON {metrics.scannedTables[0] || 'table'}(...);</code>
+                        💡 Recommended Index: <code>{recommendedIndex ? recommendedIndex.indexSql : `CREATE INDEX idx_${metrics.scannedTables[0] || 'tbl'}_id ON ${metrics.scannedTables[0] || 'table'}(id);`}</code>
+                      </div>
+
+                      {/* What-If Simulation & Permanent Apply Action Buttons */}
+                      <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <button
+                          className="win95-button"
+                          style={{
+                            fontSize: '11px',
+                            padding: '3px 10px',
+                            fontWeight: 'bold',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            cursor: 'pointer',
+                          }}
+                          onClick={handleSimulateIndex}
+                          disabled={isSimulating}
+                        >
+                          <span>⚡</span>
+                          <span>{isSimulating ? 'Simulating...' : 'Simulate Index (What-If)'}</span>
+                        </button>
+
+                        {!indexApplied ? (
+                          <button
+                            className="win95-button"
+                            style={{
+                              fontSize: '11px',
+                              padding: '3px 10px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              cursor: 'pointer',
+                            }}
+                            onClick={handleApplyIndex}
+                            disabled={isApplying}
+                          >
+                            <span>💾</span>
+                            <span>{isApplying ? 'Creating Index...' : 'Apply Index to Database'}</span>
+                          </button>
+                        ) : (
+                          <span style={{ color: '#16a34a', fontWeight: 'bold', fontSize: '11px' }}>
+                            ✅ Index Applied to Database!
+                          </span>
+                        )}
                       </div>
                     </div>
                   ) : (

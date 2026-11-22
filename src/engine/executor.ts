@@ -919,6 +919,42 @@ export class SQLExecutor {
   }
 
   /**
+   * Return foreign keys for a table from SQLite PRAGMA
+   */
+  getTableForeignKeys(tableName: string): Array<{ from: string; toTable: string; toCol: string }> {
+    if (!this.db) return [];
+    try {
+      const res = this.db.exec(`PRAGMA foreign_key_list("${tableName}");`);
+      if (res && res[0] && res[0].values) {
+        return res[0].values.map((row) => ({
+          from: String(row[3] || '').toLowerCase(),
+          toTable: String(row[2] || '').toLowerCase(),
+          toCol: String(row[4] || 'id').toLowerCase(),
+        }));
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  }
+
+  /**
+   * Return sample rows from a table for ERD preview
+   */
+  getTableSampleRows(tableName: string, limit = 5): unknown[][] {
+    if (!this.db) return [];
+    try {
+      const res = this.db.exec(`SELECT * FROM "${tableName}" LIMIT ${limit};`);
+      if (res && res[0] && res[0].values) {
+        return res[0].values;
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  }
+
+  /**
    * Materialize an imported tabular dataset (CSV, TSV, JSON) directly into SQLite
    * and register it in the session catalog.
    */

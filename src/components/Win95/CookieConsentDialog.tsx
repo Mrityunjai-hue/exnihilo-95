@@ -115,11 +115,11 @@ export const CookieConsentDialog: React.FC<CookieConsentDialogProps> = ({
         className="win95-window"
         style={{
           position: 'fixed',
-          bottom: '34px',
-          right: '12px',
-          width: '380px',
-          maxWidth: 'calc(100vw - 24px)',
-          zIndex,
+          bottom: '58px',
+          right: '14px',
+          width: '320px',
+          maxWidth: 'calc(100vw - 28px)',
+          zIndex: 99990,
           boxShadow: '3px 3px 12px rgba(0, 0, 0, 0.6)',
           boxSizing: 'border-box',
         }}

@@ -13,7 +13,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Dialect } from '../../engine/parser';
-import { SessionCatalog } from '../../engine/catalog';
+import type { SessionCatalog } from '../../engine/catalog';
 import {
   ColumnFormRow,
   TableConstraintForm,
@@ -71,7 +71,7 @@ function getDialectWarnings(columns: ColumnFormRow[], dialect: Dialect): string[
 
 interface CreateTableWizardProps {
   dialect: Dialect;
-  catalog: SessionCatalog;
+  catalog: SessionCatalog | any;
   defaultDb: string;
   initialRows?: number;
   onConfirm: (
@@ -109,12 +109,12 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
   const manifest = DIALECT_TYPE_MANIFEST[dialect];
 
   // List of all existing tables and parent columns for Foreign Key picker
-  const allTables = useMemo(() => catalog.getAll().map(e => e.tableName), [catalog]);
+  const allTables = useMemo(() => (catalog.getAll ? catalog.getAll().map((e: any) => e.tableName) : []), [catalog]);
   const activeCol = columns[activeColIdx] || columns[0];
 
   const parentTableCols = useMemo(() => {
     if (!activeCol?.references?.table) return [];
-    return catalog.get(activeCol.references.table)?.schema.columns.map(c => c.name) ?? [];
+    return (catalog.get(activeCol.references.table)?.schema?.columns || []).map((c: any) => c.name) ?? [];
   }, [activeCol, catalog]);
 
   const warnings = useMemo(() => getDialectWarnings(columns, dialect), [columns, dialect]);
@@ -325,7 +325,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                     onChange={e => setSelectedDb(e.target.value)}
                     style={{ ...inputStyle, width: '100%', padding: '4px 6px', fontSize: 12 }}
                   >
-                    {dbNames.map(db => <option key={db} value={db}>{db}</option>)}
+                    {dbNames.map((db: string) => <option key={db} value={db}>{db}</option>)}
                   </select>
                 </div>
 
@@ -694,7 +694,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                               style={{ ...inputStyle, width: '100%' }}
                             >
                               <option value="">(no Foreign Key reference)</option>
-                              {allTables.map(t => <option key={t} value={t}>{t}</option>)}
+                              {allTables.map((t: string) => <option key={t} value={t}>{t}</option>)}
                             </select>
                           </td>
                         </tr>
@@ -711,7 +711,7 @@ export const CreateTableWizard: React.FC<CreateTableWizardProps> = ({
                               disabled={!activeCol.references?.table}
                             >
                               <option value="">(select parent column)</option>
-                              {parentTableCols.map(c => <option key={c} value={c}>{c}</option>)}
+                              {parentTableCols.map((c: string) => <option key={c} value={c}>{c}</option>)}
                             </select>
                           </td>
                         </tr>

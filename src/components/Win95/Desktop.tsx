@@ -6,8 +6,10 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dialect } from '../../engine/parser';
-import { SQLExecutor, ExecutionSuccess } from '../../engine/executor';
+import type { ExecutionSuccess } from '../../engine/executor';
 import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
+import { ReadOnlyCatalogAdapter, CatalogSnapshotDTO } from '../../engine/worker/catalogAdapter';
+import { loadDatabaseSnapshot } from '../../hooks/useWorkspaceStorage';
 import dynamic from 'next/dynamic';
 import { ClassifiedError, classifyError } from '../../engine/errors';
 import { Taskbar, WindowMeta } from './Taskbar';
@@ -95,7 +97,19 @@ WHERE c.age > 25;`;
 export const Desktop: React.FC = () => {
   const [mounted, setMounted] = useState(false);
   const { activeTheme } = useTheme();
-  const executor = useMemo(() => new SQLExecutor(), []);
+
+  const [catalogSnapshot, setCatalogSnapshot] = useState<CatalogSnapshotDTO>(() =>
+    sqlWorkerClient.getCatalogSnapshot()
+  );
+
+  useEffect(() => {
+    return sqlWorkerClient.onCatalogChange(setCatalogSnapshot);
+  }, []);
+
+  const readOnlyCatalog = useMemo(
+    () => new ReadOnlyCatalogAdapter(catalogSnapshot),
+    [catalogSnapshot]
+  );
 
   // Auth Hook
   const {
@@ -345,10 +359,19 @@ export const Desktop: React.FC = () => {
 
   useEffect(() => {
     setMounted(true);
-    // Initialize DB & worker
-    executor.init().catch(console.error);
-    sqlWorkerClient.init().catch(console.error);
-  }, [executor]);
+    // Initialize worker with auto-restore from IndexedDB if available
+    loadDatabaseSnapshot('autosave_latest')
+      .then((saved) => {
+        if (saved && saved.binary && saved.binary.length > 0) {
+          return sqlWorkerClient.init(saved.binary);
+        }
+        return sqlWorkerClient.init();
+      })
+      .catch((err) => {
+        console.warn('Worker init error:', err);
+        return sqlWorkerClient.init();
+      });
+  }, []);
 
   // Share URL Link Hydration Engine
   useEffect(() => {
@@ -495,7 +518,6 @@ export const Desktop: React.FC = () => {
 
   // Reset Session
   const handleResetSession = () => {
-    executor.reset();
     sqlWorkerClient.reset().catch(console.warn);
     clearWorkspaceStorage();
     setResult(null);
@@ -531,7 +553,7 @@ export const Desktop: React.FC = () => {
         onCancelQuery={handleCancelQuery}
         isLoading={isLoading}
         result={result}
-        catalog={executor.getCatalog()}
+        catalog={readOnlyCatalog}
         onSwitchToDesktop={() => setForceDesktop(true)}
       />
     );
@@ -1054,7 +1076,7 @@ export const Desktop: React.FC = () => {
             isMaximized={Boolean(maximizedWindows.ide)}
             onMaximize={() => handleToggleMaximize('ide')}
             zIndex={getZIndex('ide')}
-            executor={executor}
+            catalog={readOnlyCatalog}
             dialect={dialect}
             rowsPerTable={rowsPerTable}
             onRowsPerTableChange={setRowsPerTable}
@@ -1293,7 +1315,7 @@ export const Desktop: React.FC = () => {
           onMinimize={() => toggleMinimize('challenges')}
           onFocus={() => focusWindow('challenges')}
           onTryInStudio={(sql, ddl, seed) => {
-            executor.execute(ddl + '\n' + seed, dialect).catch(console.error);
+            sqlWorkerClient.execute(ddl + '\n' + seed, dialect).catch(console.error);
             setQueryText(sql);
             closeWindow('challenges');
             focusWindow('ide');
@@ -1323,8 +1345,7 @@ export const Desktop: React.FC = () => {
           isMaximized={Boolean(maximizedWindows.erd)}
           onMaximize={() => handleToggleMaximize('erd')}
           zIndex={getZIndex('erd')}
-          catalog={executor.getCatalog()}
-          executor={executor}
+          catalog={readOnlyCatalog}
           onClose={() => closeWindow('erd')}
           onMinimize={() => toggleMinimize('erd')}
           onFocus={() => focusWindow('erd')}

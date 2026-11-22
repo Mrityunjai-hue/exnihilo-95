@@ -39,7 +39,7 @@ export default function DownloadPage() {
 
   const handleCopyCli = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText('npx exnihilo-sql');
+      navigator.clipboard.writeText('git clone https://github.com/exnihilo-95/exnihilo-95.git && cd exnihilo-95 && npm install && npm run dev');
       setCopiedCli(true);
       setTimeout(() => setCopiedCli(false), 2000);
     }
@@ -379,7 +379,7 @@ FROM employees e;
             {/* Terminal CLI Command */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <div style={{ fontSize: '11px', fontWeight: 'bold' }}>
-                ⚡ Or run instantly via Node.js command line (Zero Installation Required):
+                ⚡ Or run standalone offline locally with Node.js & Next.js:
               </div>
               <div
                 className="win95-inset"
@@ -396,7 +396,7 @@ FROM employees e;
               >
                 <div>
                   <span style={{ color: '#888' }}>$ </span>
-                  <span>npx exnihilo-sql</span>
+                  <span>git clone https://github.com/exnihilo-95/exnihilo-95.git</span>
                 </div>
                 <button
                   type="button"

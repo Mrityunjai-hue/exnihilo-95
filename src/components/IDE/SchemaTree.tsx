@@ -17,19 +17,39 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { SessionCatalog, CatalogEntry } from '../../engine/catalog';
-import { SQLExecutor } from '../../engine/executor';
+import { ReadOnlyCatalogAdapter } from '../../engine/worker/catalogAdapter';
+import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
 import { useTheme } from '../../hooks/useTheme';
 
 interface SchemaTreeProps {
-  catalog:           SessionCatalog;
-  executor:          SQLExecutor;
+  catalog:           ReadOnlyCatalogAdapter | any;
+  executor?:         any;
   onSelectTable:     (tableName: string, querySql?: string) => void;
   onRefresh:         () => void;
   onNewDatabase:     () => void;
   onNewTable:        (targetDb: string) => void;
   onOpenERD?:        () => void;
   onToggleCollapse?: () => void;
+}
+
+export interface SchemaTreeTableEntry {
+  tableName: string;
+  dbName?: string;
+  rowCount: number;
+  isUserDefined?: boolean;
+  schema: {
+    columns: Array<{
+      name: string;
+      logicalType?: string;
+      sqliteType?: string;
+      isPrimaryKey?: boolean;
+      isForeignKey?: boolean;
+      referencesTable?: string;
+      referencesColumn?: string;
+    }>;
+  };
+  sampleRows?: unknown[][];
+  triggers?: string[];
 }
 
 // ── Context Menu ───────────────────────────────────────────────────────────────
@@ -162,21 +182,28 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
   const dbNames = catalog.getDatabaseNames();
 
   // Filter: if search active, show all tables across dbs that match
-  const getFilteredTables = (dbName: string): CatalogEntry[] => {
-    const db = catalog.getDatabase(dbName);
-    if (!db) return [];
-    const tables = Array.from(db.tables.values());
+  const getFilteredTables = (dbName: string): SchemaTreeTableEntry[] => {
+    let tables: SchemaTreeTableEntry[] = [];
+    if (typeof catalog.getDatabase === 'function') {
+      const db = catalog.getDatabase(dbName);
+      if (db?.tables) {
+        tables = Array.from(db.tables.values()) as SchemaTreeTableEntry[];
+      }
+    } else if (typeof catalog.getAll === 'function') {
+      tables = catalog.getAll().filter((t: any) => (t.dbName || 'default').toLowerCase() === dbName.toLowerCase());
+    }
     if (!searchQuery.trim()) return tables;
     const q = searchQuery.toLowerCase().trim();
-    return tables.filter(e =>
-      e.tableName.includes(q) || e.schema.columns.some(c => c.name.toLowerCase().includes(q))
+    return tables.filter((e: any) =>
+      e.tableName.toLowerCase().includes(q) ||
+      (e.schema?.columns || []).some((c: any) => c.name.toLowerCase().includes(q))
     );
   };
 
-  const generateDDL = (entry: CatalogEntry): string => {
-    const cols = entry.schema.columns.map(col => {
+  const generateDDL = (entry: SchemaTreeTableEntry): string => {
+    const cols = (entry.schema?.columns || []).map((col: any) => {
       const isPk = col.name.toLowerCase() === 'id';
-      const t = col.logicalType === 'INTEGER' ? 'INT' : col.logicalType === 'NUMERIC' ? 'DECIMAL' : col.logicalType;
+      const t = col.logicalType === 'INTEGER' ? 'INT' : col.logicalType === 'NUMERIC' ? 'DECIMAL' : (col.logicalType || col.sqliteType || 'TEXT');
       return `  ${col.name.padEnd(20)} ${t}${isPk ? ' PRIMARY KEY' : ''}`;
     }).join(',\n');
     return `CREATE TABLE ${entry.tableName} (\n${cols}\n);`;
@@ -196,8 +223,8 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
     if (action === 'insert_template' && target.kind === 'table') {
       const entry = catalog.get(target.tableName, target.dbName);
       if (entry) {
-        const colNames = entry.schema.columns.map(c => c.name);
-        const placeholders = entry.schema.columns.map(c => {
+        const colNames = (entry.schema?.columns || []).map((c: any) => c.name);
+        const placeholders = (entry.schema?.columns || []).map((c: any) => {
           if (c.logicalType === 'INTEGER') return '1';
           if (c.logicalType === 'NUMERIC') return '99.99';
           if (c.logicalType === 'DATE') return "'2026-01-01'";
@@ -229,7 +256,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
         message: `Drop table "${target.tableName}"? This cannot be undone.`,
         onConfirm: async () => {
           setConfirmDrop(null);
-          const ok = await executor.dropUserTable(target.tableName, target.dbName);
+          const ok = await sqlWorkerClient.dropUserTable(target.tableName, target.dbName);
           showNotif(ok ? `✅ Table "${target.tableName}" dropped.` : `❌ Could not drop "${target.tableName}".`, ok);
           onRefresh();
         },
@@ -243,7 +270,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
         message: `Drop database "${target.dbName}" and ALL its tables? This cannot be undone.`,
         onConfirm: async () => {
           setConfirmDrop(null);
-          const ok = await executor.dropUserDatabase(target.dbName);
+          const ok = await sqlWorkerClient.dropUserDatabase(target.dbName);
           showNotif(ok ? `✅ Database "${target.dbName}" dropped.` : `❌ Could not drop "${target.dbName}".`, ok);
           onRefresh();
         },
@@ -257,9 +284,9 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
     setContextMenu({ x: e.clientX, y: e.clientY, target: { kind: 'db', dbName } });
   };
 
-  const handleTableContextMenu = (e: React.MouseEvent, entry: CatalogEntry) => {
+  const handleTableContextMenu = (e: React.MouseEvent, entry: SchemaTreeTableEntry) => {
     e.preventDefault(); e.stopPropagation();
-    setContextMenu({ x: e.clientX, y: e.clientY, target: { kind: 'table', tableName: entry.tableName, dbName: entry.dbName ?? 'default', isUserDefined: entry.isUserDefined } });
+    setContextMenu({ x: e.clientX, y: e.clientY, target: { kind: 'table', tableName: entry.tableName, dbName: entry.dbName ?? 'default', isUserDefined: Boolean(entry.isUserDefined) } });
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -409,11 +436,11 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
         </div>
 
         {/* Database nodes */}
-        {dbNames.map(dbName => {
+        {dbNames.map((dbName: string) => {
           const isDbExpanded = searchQuery.trim() ? true : Boolean(expandedDbs[dbName]);
           const tables = getFilteredTables(dbName);
-          const db = catalog.getDatabase(dbName);
-          const viewCount = db ? db.views.size : 0;
+          const db = typeof catalog.getDatabase === 'function' ? catalog.getDatabase(dbName) : null;
+          const viewCount = db?.views ? db.views.size : 0;
 
           return (
             <div
@@ -616,9 +643,9 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                   padding: isMac ? '2px 0' : 0,
                                 }}
                               >
-                                📂 Columns ({entry.schema.columns.length})
+                                📂 Columns ({entry.schema?.columns ? entry.schema.columns.length : 0})
                               </div>
-                              {entry.schema.columns.map(col => {
+                              {(entry.schema?.columns || []).map((col: any) => {
                                 const isPk = col.name.toLowerCase() === 'id';
                                 const isFk = col.name.toLowerCase().endsWith('_id') && !isPk;
                                 return (
@@ -682,7 +709,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                   >
                                     ⚡ Triggers ({entry.triggers.length})
                                   </div>
-                                  {entry.triggers.map(tr => (
+                                  {(entry.triggers || []).map((tr: string) => (
                                     <div
                                       key={tr}
                                       style={{

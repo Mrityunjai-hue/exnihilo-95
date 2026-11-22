@@ -43,8 +43,11 @@ export interface ERDGraphData {
   links: ERDLink[];
 }
 
-export function extractERDData(catalog: SessionCatalog): ERDGraphData {
-  const catalogEntries: CatalogEntry[] = catalog.getAll();
+export function extractERDData(catalog: any): ERDGraphData {
+  if (!catalog || typeof catalog.getAll !== 'function') {
+    return { nodes: [], links: [] };
+  }
+  const catalogEntries: any[] = catalog.getAll();
   const nodes: ERDNode[] = [];
   const links: ERDLink[] = [];
   const tableNames = new Set(catalogEntries.map((e) => e.tableName.toLowerCase()));
@@ -58,26 +61,31 @@ export function extractERDData(catalog: SessionCatalog): ERDGraphData {
       ([key, val]) => key.toLowerCase() === tableName || val.aliases?.some((a) => a.toLowerCase() === tableName)
     )?.[1];
 
-    const columns: ERDColumn[] = entry.schema.columns.map((col) => {
+    const columns: ERDColumn[] = entry.schema.columns.map((col: any) => {
       const colNameLower = col.name.toLowerCase();
-      const domainCol = domainSpec?.columns.find((c) => c.name.toLowerCase() === colNameLower);
+      const domainCol = domainSpec?.columns.find((c: any) => c.name.toLowerCase() === colNameLower);
 
       const isPk =
-        (col as any).isPrimaryKey === true ||
+        col.isPrimaryKey === true ||
         domainCol?.isPrimaryKey === true ||
         colNameLower === 'id' ||
         colNameLower === `${tableName}_id` ||
         colNameLower === `${tableName}id`;
 
-      const explicitFk = (col as any).references || domainCol?.references;
+      const explicitFk =
+        col.references ||
+        (col.referencesTable
+          ? { table: col.referencesTable, column: col.referencesColumn || 'id' }
+          : undefined) ||
+        domainCol?.references;
 
       return {
         name: col.name,
-        type: col.logicalType,
+        type: col.logicalType || col.sqliteType || 'TEXT',
         isPrimaryKey: Boolean(isPk),
         isForeignKey: Boolean(explicitFk),
         foreignKeyTarget: explicitFk
-          ? { table: explicitFk.table.toLowerCase(), column: explicitFk.column || 'id' }
+          ? { table: String(explicitFk.table).toLowerCase(), column: explicitFk.column || 'id' }
           : undefined,
       };
     });

@@ -6,10 +6,11 @@ import { SQLExecutor } from '../executor';
 import { classifyError } from '../errors';
 import { evaluateChallengeSubmission } from '../../utils/challengeEvaluator';
 import { buildCreateTableSql } from '../../utils/dbManagerUtils';
-import type { SessionCatalog } from '../catalog';
-import type { WorkerRequest, WorkerResponse, WorkerCatalogTableDTO } from './protocol';
+import type { WorkerRequest, WorkerResponse, CatalogSnapshotDTO, TableEntryDTO, MutationDiffDTO } from './protocol';
 
 let executor: SQLExecutor | null = null;
+let lastPreMutationSnapshot: Uint8Array | null = null;
+let lastMutationDiff: MutationDiffDTO | null = null;
 
 function getExecutor(): SQLExecutor {
   if (!executor) {
@@ -18,18 +19,45 @@ function getExecutor(): SQLExecutor {
   return executor;
 }
 
-function extractCatalogDTO(catalog: SessionCatalog): WorkerCatalogTableDTO[] {
-  return catalog.getAll().map((entry) => ({
-    tableName: entry.tableName,
-    dbName: entry.dbName || 'default',
-    rowCount: entry.rowCount,
-    isUserCreated: entry.isUserDefined,
-    columns: entry.schema.columns.map((col) => ({
-      name: col.name,
-      logicalType: col.logicalType,
-      sqliteType: col.sqliteType,
-    })),
-  }));
+function extractCatalogSnapshot(exec: SQLExecutor): CatalogSnapshotDTO {
+  const cat = exec.getCatalog();
+  const dbNames = cat.getDatabaseNames();
+  const entries = cat.getAll();
+
+  const tables: TableEntryDTO[] = entries.map((entry) => {
+    const fks = exec.getTableForeignKeys(entry.tableName);
+    const fkMap = new Map<string, { table: string; column: string }>();
+    fks.forEach((f) => fkMap.set(f.from.toLowerCase(), { table: f.toTable, column: f.toCol }));
+
+    const sampleRows = exec.getTableSampleRows(entry.tableName, 5);
+
+    return {
+      tableName: entry.tableName,
+      dbName: entry.dbName || 'default',
+      rowCount: entry.rowCount,
+      isUserCreated: entry.isUserDefined,
+      columns: entry.schema.columns.map((col) => {
+        const colLower = col.name.toLowerCase();
+        const fk = fkMap.get(colLower) || (col as any).references;
+        return {
+          name: col.name,
+          logicalType: col.logicalType,
+          sqliteType: col.sqliteType,
+          isPrimaryKey: Boolean((col as any).isPrimaryKey || colLower === 'id' || colLower === `${entry.tableName.toLowerCase()}_id`),
+          isForeignKey: Boolean(fk),
+          referencesTable: fk?.table,
+          referencesColumn: fk?.column || 'id',
+        };
+      }),
+      sampleRows,
+    };
+  });
+
+  return {
+    databases: dbNames.length > 0 ? dbNames : ['default'],
+    tables,
+    version: Date.now(),
+  };
 }
 
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
@@ -46,28 +74,83 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
         if (req.snapshot && req.snapshot.byteLength > 0) {
           await exec.loadDatabaseBinary(req.snapshot);
         }
-        payload = { initialized: true, catalog: extractCatalogDTO(exec.getCatalog()) };
+        payload = { initialized: true, catalog: extractCatalogSnapshot(exec) };
         break;
       }
 
       case 'EXECUTE': {
+        const isMutation = /^\s*(UPDATE|DELETE|INSERT)\b/i.test(req.sql);
+        let preSnapshot: Uint8Array | null = null;
+        let mutationTargetTable = '';
+        let preRows: any[] = [];
+
+        if (isMutation) {
+          preSnapshot = exec.exportDatabaseBinary();
+          const match = req.sql.match(/(?:UPDATE|FROM|INTO)\s+["`]?([a-zA-Z0-9_]+)["`]?/i);
+          if (match && match[1]) {
+            mutationTargetTable = match[1];
+            preRows = exec.getTableSampleRows(mutationTargetTable, 5);
+          }
+        }
+
         const result = await exec.execute(req.sql, req.dialect, req.options);
+
+        if (isMutation && preSnapshot) {
+          lastPreMutationSnapshot = preSnapshot;
+          let postRows: any[] = [];
+          if (mutationTargetTable) {
+            postRows = exec.getTableSampleRows(mutationTargetTable, 5);
+          }
+
+          const mType = req.sql.trim().toUpperCase().startsWith('UPDATE')
+            ? 'UPDATE'
+            : req.sql.trim().toUpperCase().startsWith('DELETE')
+            ? 'DELETE'
+            : 'INSERT';
+
+          lastMutationDiff = {
+            tableName: mutationTargetTable || 'table',
+            type: mType,
+            rowsAffected: result.ok ? result.rowCount : 0,
+            preRows,
+            postRows,
+            timestamp: Date.now(),
+          };
+          (result as any).mutationDiff = lastMutationDiff;
+        }
+
         payload = {
           result,
-          catalog: extractCatalogDTO(exec.getCatalog()),
+          catalog: extractCatalogSnapshot(exec),
         };
+        break;
+      }
+
+      case 'UNDO_LAST_MUTATION': {
+        if (!lastPreMutationSnapshot) {
+          payload = { undone: false, message: 'No mutation checkpoint available to undo.' };
+        } else {
+          await exec.loadDatabaseBinary(lastPreMutationSnapshot);
+          lastPreMutationSnapshot = null;
+          lastMutationDiff = null;
+          payload = {
+            undone: true,
+            message: 'Successfully reverted database to pre-mutation state.',
+            catalog: extractCatalogSnapshot(exec),
+          };
+        }
         break;
       }
 
       case 'CREATE_USER_DB': {
         const ok = exec.createUserDatabase(req.dbName);
-        payload = { ok, catalog: extractCatalogDTO(exec.getCatalog()) };
+        payload = { ok, catalog: extractCatalogSnapshot(exec) };
         break;
       }
 
       case 'DROP_USER_DB': {
         const ok = await exec.dropUserDatabase(req.dbName);
-        payload = { ok, catalog: extractCatalogDTO(exec.getCatalog()) };
+        payload = { ok, catalog: extractCatalogSnapshot(exec) };
         break;
       }
 
@@ -80,25 +163,25 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
           req.dbName || 'default',
           req.seedRows || 20
         );
-        payload = { ...res, catalog: extractCatalogDTO(exec.getCatalog()) };
+        payload = { ...res, catalog: extractCatalogSnapshot(exec) };
         break;
       }
 
       case 'DROP_USER_TABLE': {
         const ok = await exec.dropUserTable(req.tableName, req.dbName || 'default');
-        payload = { ok, catalog: extractCatalogDTO(exec.getCatalog()) };
+        payload = { ok, catalog: extractCatalogSnapshot(exec) };
         break;
       }
 
       case 'IMPORT_TABULAR': {
         const res = await exec.importTabularTable(req.tableName, req.columns, req.rows);
-        payload = { ...res, catalog: extractCatalogDTO(exec.getCatalog()) };
+        payload = { ...res, catalog: extractCatalogSnapshot(exec) };
         break;
       }
 
       case 'IMPORT_SQLITE_BINARY': {
         await exec.loadDatabaseBinary(req.binary);
-        payload = { ok: true, catalog: extractCatalogDTO(exec.getCatalog()) };
+        payload = { ok: true, catalog: extractCatalogSnapshot(exec) };
         break;
       }
 
@@ -108,7 +191,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       }
 
       case 'GET_CATALOG': {
-        payload = extractCatalogDTO(exec.getCatalog());
+        payload = extractCatalogSnapshot(exec);
         break;
       }
 
@@ -119,7 +202,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
 
       case 'RESET': {
         exec.reset();
-        payload = { ok: true, catalog: [] };
+        payload = { ok: true, catalog: extractCatalogSnapshot(exec) };
         break;
       }
 

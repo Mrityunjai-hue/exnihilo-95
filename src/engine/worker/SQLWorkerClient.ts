@@ -8,9 +8,40 @@ import type { ExecutionResult } from '../executor';
 import type { SQLChallenge } from '../../data/challenges/types';
 import type { EvaluationResult } from '../../utils/challengeEvaluator';
 import type { ColumnFormRow } from '../../utils/dbManagerUtils';
-import type { WorkerRequest, WorkerResponse, WorkerCatalogTableDTO } from './protocol';
+import type { WorkerRequest, WorkerResponse, WorkerCatalogTableDTO, CatalogSnapshotDTO } from './protocol';
 
-type CatalogListener = (catalog: WorkerCatalogTableDTO[]) => void;
+type CatalogListener = (catalog: CatalogSnapshotDTO) => void;
+
+function extractFallbackCatalog(exec: any): CatalogSnapshotDTO {
+  try {
+    const cat = exec.getCatalog();
+    const dbNames = cat.getDatabaseNames ? cat.getDatabaseNames() : ['default'];
+    const entries = cat.getAll ? cat.getAll() : [];
+    const tables = entries.map((entry: any) => ({
+      tableName: entry.tableName,
+      dbName: entry.dbName || 'default',
+      rowCount: entry.rowCount,
+      isUserCreated: entry.isUserDefined,
+      columns: entry.schema?.columns?.map((col: any) => ({
+        name: col.name,
+        logicalType: col.logicalType,
+        sqliteType: col.sqliteType,
+        isPrimaryKey: Boolean(col.isPrimaryKey || col.name?.toLowerCase() === 'id'),
+        isForeignKey: Boolean(col.references),
+        referencesTable: col.references?.table,
+        referencesColumn: col.references?.column || 'id',
+      })) || [],
+      sampleRows: [],
+    }));
+    return {
+      databases: dbNames.length > 0 ? dbNames : ['default'],
+      tables,
+      version: Date.now(),
+    };
+  } catch {
+    return { databases: ['default'], tables: [], version: Date.now() };
+  }
+}
 
 export class SQLWorkerClient {
   private static instance: SQLWorkerClient | null = null;
@@ -28,10 +59,13 @@ export class SQLWorkerClient {
   private activeExecutionId: string | null = null;
   private lastKnownSnapshot: Uint8Array | null = null;
   private catalogListeners = new Set<CatalogListener>();
-  private cachedCatalog: WorkerCatalogTableDTO[] = [];
+  private legacyCatalogListeners = new Set<(catalog: WorkerCatalogTableDTO[]) => void>();
+  private cachedCatalogSnapshot: CatalogSnapshotDTO = { databases: ['default'], tables: [], version: 0 };
+  private debouncedAutoSaveTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Fallback direct executor for Node / Vitest SSR environments
   private fallbackExecutor: any = null;
+  private fallbackPreMutationSnapshot: Uint8Array | null = null;
 
   public static getInstance(): SQLWorkerClient {
     if (!SQLWorkerClient.instance) {
@@ -94,10 +128,13 @@ export class SQLWorkerClient {
     if (res.ok) {
       // If response includes updated catalog, broadcast to listeners
       if (res.payload && typeof res.payload === 'object' && 'catalog' in res.payload) {
-        const cat = (res.payload as any).catalog as WorkerCatalogTableDTO[];
-        if (Array.isArray(cat)) {
-          this.cachedCatalog = cat;
+        const cat = (res.payload as any).catalog as CatalogSnapshotDTO;
+        if (cat && typeof cat === 'object') {
+          this.cachedCatalogSnapshot = cat;
           this.notifyCatalogListeners(cat);
+          if (cat.tables && cat.tables.length > 0) {
+            this.triggerAutoSave(cat.tables.length);
+          }
         }
       }
       pending.resolve(res.payload);
@@ -126,22 +163,63 @@ export class SQLWorkerClient {
       // Fallback implementation for Node/Vitest
       return (async () => {
         const exec = await this.getFallbackExecutor();
+        let resPayload: any = null;
         if (type === 'INIT') {
-          return { initialized: true, catalog: [] };
-        }
-        if (type === 'EXECUTE') {
+          resPayload = { initialized: true, catalog: extractFallbackCatalog(exec) };
+        } else if (type === 'EXECUTE') {
+          const isMutation = /^\s*(UPDATE|DELETE|INSERT)\b/i.test(payload.sql);
+          let preSnap: Uint8Array | null = null;
+          let targetTable = '';
+          let preRows: any[] = [];
+          if (isMutation) {
+            preSnap = exec.exportDatabaseBinary();
+            const match = payload.sql.match(/(?:UPDATE|FROM|INTO)\s+["`]?([a-zA-Z0-9_]+)["`]?/i);
+            if (match && match[1]) {
+              targetTable = match[1];
+              preRows = exec.getTableSampleRows(targetTable, 5);
+            }
+          }
           const res = await exec.execute(payload.sql, payload.dialect, payload.options);
-          return { result: res, catalog: [] };
-        }
-        if (type === 'CREATE_USER_DB') {
+          if (isMutation && preSnap) {
+            this.fallbackPreMutationSnapshot = preSnap;
+            let postRows: any[] = [];
+            if (targetTable) {
+              postRows = exec.getTableSampleRows(targetTable, 5);
+            }
+            const mType = payload.sql.trim().toUpperCase().startsWith('UPDATE')
+              ? 'UPDATE'
+              : payload.sql.trim().toUpperCase().startsWith('DELETE')
+              ? 'DELETE'
+              : 'INSERT';
+            (res as any).mutationDiff = {
+              tableName: targetTable || 'table',
+              type: mType,
+              rowsAffected: res.rowCount,
+              preRows,
+              postRows,
+              timestamp: Date.now(),
+            };
+          }
+          resPayload = { result: res, catalog: extractFallbackCatalog(exec) };
+        } else if (type === 'UNDO_LAST_MUTATION') {
+          if (!this.fallbackPreMutationSnapshot) {
+            resPayload = { undone: false, message: 'No mutation checkpoint available to undo.' };
+          } else {
+            await exec.loadDatabaseBinary(this.fallbackPreMutationSnapshot);
+            this.fallbackPreMutationSnapshot = null;
+            resPayload = {
+              undone: true,
+              message: 'Successfully reverted database to pre-mutation state.',
+              catalog: extractFallbackCatalog(exec),
+            };
+          }
+        } else if (type === 'CREATE_USER_DB') {
           const ok = exec.createUserDatabase(payload.dbName);
-          return { ok, catalog: [] };
-        }
-        if (type === 'DROP_USER_DB') {
+          resPayload = { ok, catalog: extractFallbackCatalog(exec) };
+        } else if (type === 'DROP_USER_DB') {
           const ok = await exec.dropUserDatabase(payload.dbName);
-          return { ok, catalog: [] };
-        }
-        if (type === 'CREATE_USER_TABLE') {
+          resPayload = { ok, catalog: extractFallbackCatalog(exec) };
+        } else if (type === 'CREATE_USER_TABLE') {
           const { buildCreateTableSql } = await import('../../utils/dbManagerUtils');
           const ddl = buildCreateTableSql(payload.tableName, payload.columns, [], 'SQLite');
           const res = await exec.createUserTable(
@@ -151,32 +229,35 @@ export class SQLWorkerClient {
             payload.dbName || 'default',
             payload.seedRows || 20
           );
-          return { ...res, catalog: [] };
-        }
-        if (type === 'DROP_USER_TABLE') {
+          resPayload = { ...res, catalog: extractFallbackCatalog(exec) };
+        } else if (type === 'DROP_USER_TABLE') {
           const ok = await exec.dropUserTable(payload.tableName, payload.dbName || 'default');
-          return { ok, catalog: [] };
-        }
-        if (type === 'IMPORT_TABULAR') {
+          resPayload = { ok, catalog: extractFallbackCatalog(exec) };
+        } else if (type === 'IMPORT_TABULAR') {
           const res = await exec.importTabularTable(payload.tableName, payload.columns, payload.rows);
-          return { ...res, catalog: [] };
-        }
-        if (type === 'IMPORT_SQLITE_BINARY') {
+          resPayload = { ...res, catalog: extractFallbackCatalog(exec) };
+        } else if (type === 'IMPORT_SQLITE_BINARY') {
           await exec.loadDatabaseBinary(payload.binary);
-          return { ok: true, catalog: [] };
-        }
-        if (type === 'EXPORT_SNAPSHOT') {
+          resPayload = { ok: true, catalog: extractFallbackCatalog(exec) };
+        } else if (type === 'EXPORT_SNAPSHOT') {
           return exec.exportDatabaseBinary();
-        }
-        if (type === 'EVALUATE_CHALLENGE') {
+        } else if (type === 'EVALUATE_CHALLENGE') {
           const { evaluateChallengeSubmission } = await import('../../utils/challengeEvaluator');
           return evaluateChallengeSubmission(payload.challenge, payload.userSql);
-        }
-        if (type === 'RESET') {
+        } else if (type === 'RESET') {
           exec.reset();
-          return { ok: true, catalog: [] };
+          resPayload = { ok: true, catalog: extractFallbackCatalog(exec) };
+        } else if (type === 'GET_CATALOG') {
+          return extractFallbackCatalog(exec);
+        } else {
+          throw new Error(`Unknown type: ${type}`);
         }
-        throw new Error(`Unknown type: ${type}`);
+
+        if (resPayload && resPayload.catalog) {
+          this.cachedCatalogSnapshot = resPayload.catalog;
+          this.notifyCatalogListeners(resPayload.catalog);
+        }
+        return resPayload;
       })() as Promise<T>;
     }
 
@@ -271,7 +352,7 @@ export class SQLWorkerClient {
     }
     const res = await this.sendRequest('INIT', { snapshot }, 15000);
     if (res?.catalog) {
-      this.cachedCatalog = res.catalog;
+      this.cachedCatalogSnapshot = res.catalog;
       this.notifyCatalogListeners(res.catalog);
     }
     return res;
@@ -308,11 +389,28 @@ export class SQLWorkerClient {
 
   public async createUserTable(
     tableName: string,
-    columns: ColumnFormRow[],
-    dbName?: string,
+    ddlSqlOrColumns: string | ColumnFormRow[],
+    columnsOrDbName?: ColumnFormRow[] | string,
+    dbNameOrSeedRows?: string | number,
     seedRows?: number
   ): Promise<any> {
-    const res = await this.sendRequest('CREATE_USER_TABLE', { tableName, columns, dbName, seedRows });
+    let ddlSql = '';
+    let columns: ColumnFormRow[] = [];
+    let dbName = 'default';
+    let rows = 20;
+
+    if (typeof ddlSqlOrColumns === 'string') {
+      ddlSql = ddlSqlOrColumns;
+      columns = Array.isArray(columnsOrDbName) ? columnsOrDbName : [];
+      dbName = typeof dbNameOrSeedRows === 'string' ? dbNameOrSeedRows : 'default';
+      rows = typeof seedRows === 'number' ? seedRows : 20;
+    } else {
+      columns = ddlSqlOrColumns;
+      dbName = typeof columnsOrDbName === 'string' ? columnsOrDbName : 'default';
+      rows = typeof dbNameOrSeedRows === 'number' ? dbNameOrSeedRows : 20;
+    }
+
+    const res = await this.sendRequest('CREATE_USER_TABLE', { tableName, ddlSql, columns, dbName, seedRows: rows });
     this.exportSnapshot().then((snap) => { if (snap) this.lastKnownSnapshot = snap; }).catch(() => {});
     return res;
   }
@@ -326,9 +424,10 @@ export class SQLWorkerClient {
   public async importTabular(
     tableName: string,
     columns: Array<{ name: string; sqliteType: string }>,
-    rows: unknown[][]
+    rows: unknown[][],
+    dbName?: string
   ): Promise<any> {
-    const res = await this.sendRequest('IMPORT_TABULAR', { tableName, columns, rows }, 20000);
+    const res = await this.sendRequest('IMPORT_TABULAR', { tableName, columns, rows, dbName }, 20000);
     this.exportSnapshot().then((snap) => { if (snap) this.lastKnownSnapshot = snap; }).catch(() => {});
     return res;
   }
@@ -339,24 +438,59 @@ export class SQLWorkerClient {
     return Boolean(res?.ok);
   }
 
+  public async loadSqliteBinary(binary: Uint8Array): Promise<boolean> {
+    return this.importSqliteBinary(binary);
+  }
+
   public async exportSnapshot(): Promise<Uint8Array | null> {
     const res = await this.sendRequest<Uint8Array | null>('EXPORT_SNAPSHOT', {}, 10000);
     if (res) this.lastKnownSnapshot = res;
     return res;
   }
 
+  public async exportDatabaseBinary(): Promise<Uint8Array | null> {
+    return this.exportSnapshot();
+  }
+
   public async getCatalog(): Promise<WorkerCatalogTableDTO[]> {
-    if (this.cachedCatalog.length > 0) return this.cachedCatalog;
-    const res = await this.sendRequest<WorkerCatalogTableDTO[]>('GET_CATALOG');
-    if (Array.isArray(res)) {
-      this.cachedCatalog = res;
+    if (this.cachedCatalogSnapshot.tables.length > 0) return this.cachedCatalogSnapshot.tables;
+    const res = await this.sendRequest<CatalogSnapshotDTO>('GET_CATALOG');
+    if (res && res.tables) {
+      this.cachedCatalogSnapshot = res;
       this.notifyCatalogListeners(res);
     }
-    return res || [];
+    return this.cachedCatalogSnapshot.tables;
   }
 
   public getCachedCatalog(): WorkerCatalogTableDTO[] {
-    return this.cachedCatalog;
+    return this.cachedCatalogSnapshot.tables;
+  }
+
+  public getCatalogSnapshot(): CatalogSnapshotDTO {
+    return this.cachedCatalogSnapshot;
+  }
+
+  public onCatalogChange(listener: CatalogListener): () => void {
+    this.catalogListeners.add(listener);
+    if (this.cachedCatalogSnapshot) {
+      try {
+        listener(this.cachedCatalogSnapshot);
+      } catch (e) {
+        console.error('Initial catalog listener error:', e);
+      }
+    }
+    return () => {
+      this.catalogListeners.delete(listener);
+    };
+  }
+
+  public async undoLastMutation(): Promise<{ undone: boolean; message: string }> {
+    const res = await this.sendRequest<{ undone: boolean; message: string; catalog?: CatalogSnapshotDTO }>('UNDO_LAST_MUTATION');
+    if (res && res.catalog) {
+      this.cachedCatalogSnapshot = res.catalog;
+      this.notifyCatalogListeners(res.catalog);
+    }
+    return res;
   }
 
   public async evaluateChallenge(
@@ -370,27 +504,52 @@ export class SQLWorkerClient {
   public async reset(): Promise<boolean> {
     this.lastKnownSnapshot = null;
     const res = await this.sendRequest('RESET');
-    this.cachedCatalog = [];
-    this.notifyCatalogListeners([]);
+    this.cachedCatalogSnapshot = { databases: ['default'], tables: [], version: Date.now() };
+    this.notifyCatalogListeners(this.cachedCatalogSnapshot);
     return Boolean(res?.ok);
   }
 
-  public subscribeCatalog(listener: CatalogListener): () => void {
-    this.catalogListeners.add(listener);
-    if (this.cachedCatalog.length > 0) {
-      listener(this.cachedCatalog);
+  public subscribeCatalog(listener: (catalog: WorkerCatalogTableDTO[]) => void): () => void {
+    this.legacyCatalogListeners.add(listener);
+    if (this.cachedCatalogSnapshot.tables.length > 0) {
+      listener(this.cachedCatalogSnapshot.tables);
     }
     return () => {
-      this.catalogListeners.delete(listener);
+      this.legacyCatalogListeners.delete(listener);
     };
   }
 
-  private notifyCatalogListeners(catalog: WorkerCatalogTableDTO[]): void {
+  private triggerAutoSave(tableCount: number) {
+    if (!this.isBrowser) return;
+    if (this.debouncedAutoSaveTimer) {
+      clearTimeout(this.debouncedAutoSaveTimer);
+    }
+    this.debouncedAutoSaveTimer = setTimeout(async () => {
+      try {
+        const binary = await this.exportSnapshot();
+        if (binary && binary.byteLength > 0 && binary.byteLength <= 25 * 1024 * 1024) {
+          const { saveDatabaseSnapshot } = await import('../../hooks/useWorkspaceStorage');
+          await saveDatabaseSnapshot('autosave_latest', binary, tableCount);
+        }
+      } catch (err) {
+        console.warn('Auto-save database snapshot failed:', err);
+      }
+    }, 1200);
+  }
+
+  private notifyCatalogListeners(catalog: CatalogSnapshotDTO): void {
     for (const listener of this.catalogListeners) {
       try {
         listener(catalog);
       } catch (e) {
         console.error('Catalog listener error:', e);
+      }
+    }
+    for (const legacy of this.legacyCatalogListeners) {
+      try {
+        legacy(catalog.tables || []);
+      } catch (e) {
+        console.error('Legacy catalog listener error:', e);
       }
     }
   }
