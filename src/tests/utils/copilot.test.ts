@@ -68,4 +68,37 @@ describe('Phase 13 — Gemini SQL Copilot API Route', () => {
       vi.unstubAllGlobals();
     }
   });
+
+  it('strips markdown codeblock fence syntax (including ```sqlite)', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [{ text: '```sqlite\nSELECT id, name FROM users;\n```' }],
+            },
+          },
+        ],
+      }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    try {
+      const req = new NextRequest('http://localhost:3000/api/copilot', {
+        method: 'POST',
+        body: JSON.stringify({
+          prompt: 'Get users',
+          userApiKey: 'testKey',
+        }),
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.ok).toBe(true);
+      expect(data.sql).toBe('SELECT id, name FROM users;');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });

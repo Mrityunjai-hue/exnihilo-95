@@ -31,7 +31,8 @@ Generate ONLY syntactically valid ${dialect} SQL for the user request.
 Do not wrap in markdown codeblocks (no \`\`\`sql). Output pure, executable SQL only.
 ${schema ? `Existing Schema Context:\n${schema}` : ''}`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -63,7 +64,7 @@ ${schema ? `Existing Schema Context:\n${schema}` : ''}`;
 
     const data = await response.json();
     let generatedSql = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    generatedSql = generatedSql.replace(/^```(?:sql)?\n?/i, '').replace(/```$/i, '').trim();
+    generatedSql = generatedSql.replace(/^```[a-zA-Z0-9_-]*\r?\n?/i, '').replace(/\r?\n?```$/i, '').trim();
 
     return NextResponse.json({ ok: true, sql: generatedSql });
   } catch (error: any) {
