@@ -9,7 +9,7 @@
 import { DomainColumnSpec } from './domain_catalog_data';
 import { normalizeTableName } from './morphology';
 import { LogicalType } from './inference';
-import { faker } from '@faker-js/faker';
+import { fakerEN as faker } from '@faker-js/faker';
 
 export interface LearnedColumn {
   name: string;

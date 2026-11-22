@@ -9,7 +9,7 @@
  * 5. Dynamic Procedural Schema Synthesizer for arbitrary unknown tables
  */
 
-import { faker } from '@faker-js/faker';
+import { fakerEN as faker } from '@faker-js/faker';
 import { LogicalType } from './inference';
 import { matchColumnToken } from './token_dictionary';
 import { normalizeTableName } from './morphology';

@@ -5,8 +5,10 @@
 import React, { useState, useEffect } from 'react';
 import {
   SQLChallenge,
-  SQL_CHALLENGES,
-  getFilteredChallenges,
+  CHALLENGE_INDEX,
+  loadChallengeById,
+  getFilteredChallengeMetadata,
+  ChallengeMetadata,
   ChallengeDifficulty,
   ChallengeDomain,
 } from '../../data/challenges';
@@ -54,8 +56,10 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
     }
   };
   const [solvedIds, setSolvedIds] = useState<number[]>([]);
-  const [selectedChallenge, setSelectedChallenge] = useState<SQLChallenge>(SQL_CHALLENGES[0]);
-  const [userSql, setUserSql] = useState<string>(SQL_CHALLENGES[0].starterSql);
+  const [selectedId, setSelectedId] = useState<number>(CHALLENGE_INDEX[0]?.id ?? 175);
+  const [selectedChallenge, setSelectedChallenge] = useState<SQLChallenge | null>(null);
+  const [isLoadingChallenge, setIsLoadingChallenge] = useState<boolean>(true);
+  const [userSql, setUserSql] = useState<string>('');
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
 
@@ -83,29 +87,42 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
     }
   }, []);
 
-  const filteredChallenges = getFilteredChallenges(
+  // Asynchronously load challenge shard on selection
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoadingChallenge(true);
+    loadChallengeById(selectedId).then((c) => {
+      if (isMounted && c) {
+        setSelectedChallenge(c);
+        setUserSql(c.starterSql);
+        setEvaluation(null);
+        setRevealedHints({});
+        setShowSolution(false);
+        setIsLoadingChallenge(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedId]);
+
+  const filteredChallenges = getFilteredChallengeMetadata(
     searchQuery,
     diffFilter,
     domainFilter,
     companyFilter
   );
 
-  useEffect(() => {
-    if (selectedChallenge) {
-      setUserSql(selectedChallenge.starterSql);
-      setEvaluation(null);
-      setRevealedHints({});
-      setShowSolution(false);
-    }
-  }, [selectedChallenge]);
+  const progressPercent = Math.round((solvedIds.length / (CHALLENGE_INDEX.length || 1)) * 100);
 
   if (!isOpen || isMinimized) return null;
 
-  const handleSelectChallenge = (c: SQLChallenge) => {
-    setSelectedChallenge(c);
+  const handleSelectChallenge = (meta: ChallengeMetadata) => {
+    setSelectedId(meta.id);
   };
 
   const handleRunTest = async () => {
+    if (!selectedChallenge) return;
     setIsEvaluating(true);
     setEvaluation(null);
     try {
@@ -136,18 +153,10 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
     }
   };
 
-
   const handleTryInStudioClick = () => {
-    if (onTryInStudio) {
-      onTryInStudio(
-        userSql,
-        selectedChallenge.inputSchemaSql,
-        selectedChallenge.seedDataSql
-      );
-    }
+    if (!selectedChallenge || !onTryInStudio) return;
+    onTryInStudio(userSql, selectedChallenge.inputSchemaSql, selectedChallenge.seedDataSql);
   };
-
-  const progressPercent = Math.round((solvedIds.length / SQL_CHALLENGES.length) * 100);
 
   return (
     <div
@@ -197,7 +206,7 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
       >
         <div className="win95-titlebar-text">
           <ExNihiloLogo size={16} showText={false} />
-          <span>ExNihilo SQL Challenge Arena — #{selectedChallenge.id}. {selectedChallenge.title}</span>
+          <span>ExNihilo SQL Challenge Arena — {selectedChallenge ? `#${selectedChallenge.id}. ${selectedChallenge.title}` : `Loading #${selectedId}...`}</span>
         </div>
         <WindowControls
           onMinimize={onMinimize}
@@ -294,7 +303,7 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
         >
           <span>🏆 Progress:</span>
           <span style={{ color: '#008000' }}>
-            {solvedIds.length} / {SQL_CHALLENGES.length} Solved ({progressPercent}%)
+            {solvedIds.length} / {CHALLENGE_INDEX.length} Solved ({progressPercent}%)
           </span>
         </div>
       </div>
@@ -328,7 +337,7 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
               </div>
             ) : (
               filteredChallenges.map((c) => {
-                const isSelected = selectedChallenge.id === c.id;
+                const isSelected = selectedId === c.id;
                 const isSolved = solvedIds.includes(c.id);
 
                 return (
@@ -385,66 +394,97 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
               lineHeight: '1.5',
             }}
           >
-            {/* Metadata Header */}
-            <div style={{ borderBottom: '1px solid #c0c0c0', paddingBottom: '6px', marginBottom: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h3 style={{ margin: 0, fontSize: '13px', color: '#000080' }}>
-                  #{selectedChallenge.id}. {selectedChallenge.title}
-                </h3>
-                <span
-                  style={{
-                    padding: '2px 6px',
-                    fontSize: '10px',
-                    fontWeight: 'bold',
-                    borderRadius: '3px',
-                    background: selectedChallenge.difficulty === 'Easy' ? '#d4edda' : selectedChallenge.difficulty === 'Medium' ? '#fff3cd' : '#f8d7da',
-                    color: selectedChallenge.difficulty === 'Easy' ? '#155724' : selectedChallenge.difficulty === 'Medium' ? '#856404' : '#721c24',
-                  }}
-                >
-                  {selectedChallenge.difficulty}
-                </span>
+            {!selectedChallenge || isLoadingChallenge ? (
+              <div style={{ padding: '30px', textAlign: 'center', fontSize: '12px', color: '#666' }}>
+                ⏳ Loading challenge #{selectedId}...
               </div>
-
-              {/* Tags */}
-              <div style={{ display: 'flex', gap: '4px', marginTop: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '9px', background: '#e0e0e0', padding: '1px 5px', borderRadius: '2px' }}>
-                  🏷️ {selectedChallenge.domain}
-                </span>
-                {selectedChallenge.companyTags.map((tag) => (
-                  <span
-                    key={tag}
-                    style={{ fontSize: '9px', background: '#d0e0f0', color: '#004080', padding: '1px 5px', borderRadius: '2px', fontWeight: 'bold' }}
-                  >
-                    🏢 {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Problem Description */}
-            <div style={{ whiteSpace: 'pre-line', marginBottom: '12px' }}>
-              {selectedChallenge.description}
-            </div>
-
-            {/* Sample Input Tables */}
-            <div style={{ marginBottom: '12px' }}>
-              <h4 style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#333' }}>📊 Sample Input Data:</h4>
-              {selectedChallenge.inputTables.map((tbl) => (
-                <div key={tbl.tableName} style={{ marginBottom: '8px' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#000080' }}>
-                    Table: <code>{tbl.tableName}</code>
+            ) : (
+              <>
+                {/* Metadata Header */}
+                <div style={{ borderBottom: '1px solid #c0c0c0', paddingBottom: '6px', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <h3 style={{ margin: 0, fontSize: '13px', color: '#000080' }}>
+                      #{selectedChallenge.id}. {selectedChallenge.title}
+                    </h3>
+                    <span
+                      style={{
+                        padding: '2px 6px',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        borderRadius: '3px',
+                        background: selectedChallenge.difficulty === 'Easy' ? '#d4edda' : selectedChallenge.difficulty === 'Medium' ? '#fff3cd' : '#f8d7da',
+                        color: selectedChallenge.difficulty === 'Easy' ? '#155724' : selectedChallenge.difficulty === 'Medium' ? '#856404' : '#721c24',
+                      }}
+                    >
+                      {selectedChallenge.difficulty}
+                    </span>
                   </div>
-                  <table className="win95-grid" style={{ width: '100%', fontSize: '10px', marginTop: '2px' }}>
+
+                  {/* Tags */}
+                  <div style={{ display: 'flex', gap: '4px', marginTop: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '9px', background: '#e0e0e0', padding: '1px 5px', borderRadius: '2px' }}>
+                      🏷️ {selectedChallenge.domain}
+                    </span>
+                    {selectedChallenge.companyTags.map((tag) => (
+                      <span
+                        key={tag}
+                        style={{ fontSize: '9px', background: '#d0e0f0', color: '#004080', padding: '1px 5px', borderRadius: '2px', fontWeight: 'bold' }}
+                      >
+                        🏢 {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Problem Description */}
+                <div style={{ whiteSpace: 'pre-line', marginBottom: '12px' }}>
+                  {selectedChallenge.description}
+                </div>
+
+                {/* Sample Input Tables */}
+                <div style={{ marginBottom: '12px' }}>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#333' }}>📊 Sample Input Data:</h4>
+                  {selectedChallenge.inputTables.map((tbl) => (
+                    <div key={tbl.tableName} style={{ marginBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#000080' }}>
+                        Table: <code>{tbl.tableName}</code>
+                      </div>
+                      <table className="win95-grid" style={{ width: '100%', fontSize: '10px', marginTop: '2px' }}>
+                        <thead>
+                          <tr>
+                            {tbl.columns.map((c) => (
+                              <th key={c.name}>{c.name}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tbl.rows.map((row, idx) => (
+                            <tr key={idx}>
+                              {row.map((cell, cIdx) => (
+                                <td key={cIdx}>{cell === null ? <i style={{ color: '#808080' }}>NULL</i> : String(cell)}</td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Expected Output Grid */}
+                <div style={{ marginBottom: '12px' }}>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#333' }}>🎯 Expected Output Table:</h4>
+                  <table className="win95-grid" style={{ width: '100%', fontSize: '10px' }}>
                     <thead>
                       <tr>
-                        {tbl.columns.map((c) => (
-                          <th key={c.name}>{c.name}</th>
+                        {selectedChallenge.expectedOutput.columns.map((col) => (
+                          <th key={col}>{col}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {tbl.rows.map((row, idx) => (
-                        <tr key={idx}>
+                      {selectedChallenge.expectedOutput.rows.map((row, rIdx) => (
+                        <tr key={rIdx}>
                           {row.map((cell, cIdx) => (
                             <td key={cIdx}>{cell === null ? <i style={{ color: '#808080' }}>NULL</i> : String(cell)}</td>
                           ))}
@@ -453,108 +493,85 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
                     </tbody>
                   </table>
                 </div>
-              ))}
-            </div>
 
-            {/* Expected Output Grid */}
-            <div style={{ marginBottom: '12px' }}>
-              <h4 style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#333' }}>🎯 Expected Output Table:</h4>
-              <table className="win95-grid" style={{ width: '100%', fontSize: '10px' }}>
-                <thead>
-                  <tr>
-                    {selectedChallenge.expectedOutput.columns.map((col) => (
-                      <th key={col}>{col}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedChallenge.expectedOutput.rows.map((row, rIdx) => (
-                    <tr key={rIdx}>
-                      {row.map((cell, cIdx) => (
-                        <td key={cIdx}>{cell === null ? <i style={{ color: '#808080' }}>NULL</i> : String(cell)}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                {/* Hints Accordion */}
+                <div style={{ borderTop: '1px solid #c0c0c0', paddingTop: '8px' }}>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '11px' }}>💡 Hints & Canonical Solution:</h4>
+                  {selectedChallenge.hints.map((hint, idx) => {
+                    const isRevealed = revealedHints[idx];
+                    return (
+                      <div key={idx} style={{ marginBottom: '4px' }}>
+                        <button
+                          className="win95-button"
+                          style={{ fontSize: '10px', padding: '1px 6px', textAlign: 'left', width: '100%' }}
+                          onClick={() =>
+                            setRevealedHints((prev) => ({ ...prev, [idx]: !prev[idx] }))
+                          }
+                        >
+                          {isRevealed ? `▼ Hint #${idx + 1}` : `► Reveal Hint #${idx + 1}`}
+                        </button>
+                        {isRevealed && (
+                          <div
+                            style={{
+                              padding: '6px',
+                              background: '#ffffcc',
+                              border: '1px solid #cccc00',
+                              fontSize: '10px',
+                              marginTop: '2px',
+                            }}
+                          >
+                            {hint}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
 
-            {/* Hints Accordion */}
-            <div style={{ borderTop: '1px solid #c0c0c0', paddingTop: '8px' }}>
-              <h4 style={{ margin: '0 0 6px 0', fontSize: '11px' }}>💡 Hints & Canonical Solution:</h4>
-              {selectedChallenge.hints.map((hint, idx) => {
-                const isRevealed = revealedHints[idx];
-                return (
-                  <div key={idx} style={{ marginBottom: '4px' }}>
-                    <button
-                      className="win95-button"
-                      style={{ fontSize: '10px', padding: '1px 6px', textAlign: 'left', width: '100%' }}
-                      onClick={() =>
-                        setRevealedHints((prev) => ({ ...prev, [idx]: !prev[idx] }))
-                      }
-                    >
-                      {isRevealed ? `▼ Hint #${idx + 1}` : `► Reveal Hint #${idx + 1}`}
-                    </button>
-                    {isRevealed && (
+                  {/* Reveal Solution Button (Only Unlocked After Solving) */}
+                  <div style={{ marginTop: '6px' }}>
+                    {solvedIds.includes(selectedChallenge.id) ? (
+                      <>
+                        <button
+                          className="win95-button"
+                          style={{ fontSize: '10px', padding: '1px 6px', width: '100%', fontWeight: 'bold' }}
+                          onClick={() => setShowSolution((prev) => !prev)}
+                        >
+                          {showSolution ? '▲ Hide Canonical Solution' : '🔓 Reveal Canonical Solution SQL (Unlocked)'}
+                        </button>
+                        {showSolution && (
+                          <pre
+                            className="win95-sunken"
+                            style={{
+                              padding: '6px',
+                              fontSize: '10px',
+                              fontFamily: 'var(--w95-mono)',
+                              background: '#f4f4f4',
+                              overflowX: 'auto',
+                              marginTop: '2px',
+                            }}
+                          >
+                            {selectedChallenge.solutionSql}
+                          </pre>
+                        )}
+                      </>
+                    ) : (
                       <div
                         style={{
-                          padding: '6px',
-                          background: '#ffffcc',
-                          border: '1px solid #cccc00',
                           fontSize: '10px',
-                          marginTop: '2px',
+                          color: '#808080',
+                          textAlign: 'center',
+                          padding: '4px',
+                          background: '#f0f0f0',
+                          border: '1px dashed #a0a0a0',
                         }}
                       >
-                        {hint}
+                        🔒 Solution unlocks after you submit an accepted query!
                       </div>
                     )}
                   </div>
-                );
-              })}
-
-              {/* Reveal Solution Button (Only Unlocked After Solving) */}
-              <div style={{ marginTop: '6px' }}>
-                {solvedIds.includes(selectedChallenge.id) ? (
-                  <>
-                    <button
-                      className="win95-button"
-                      style={{ fontSize: '10px', padding: '1px 6px', width: '100%', fontWeight: 'bold' }}
-                      onClick={() => setShowSolution((prev) => !prev)}
-                    >
-                      {showSolution ? '▲ Hide Canonical Solution' : '🔓 Reveal Canonical Solution SQL (Unlocked)'}
-                    </button>
-                    {showSolution && (
-                      <pre
-                        className="win95-sunken"
-                        style={{
-                          padding: '6px',
-                          fontSize: '10px',
-                          fontFamily: 'var(--w95-mono)',
-                          background: '#f4f4f4',
-                          overflowX: 'auto',
-                          marginTop: '2px',
-                        }}
-                      >
-                        {selectedChallenge.solutionSql}
-                      </pre>
-                    )}
-                  </>
-                ) : (
-                  <div
-                    style={{
-                      fontSize: '10px',
-                      color: '#808080',
-                      textAlign: 'center',
-                      padding: '4px',
-                      background: '#f0f0f0',
-                      border: '1px dashed #a0a0a0',
-                    }}
-                  >
-                    🔒 Solution unlocks after you submit an accepted query!
-                  </div>
-                )}
-              </div>
-            </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

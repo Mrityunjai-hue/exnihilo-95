@@ -5,7 +5,7 @@
  * and exact prefix/suffix rules to eliminate substring collisions (e.g. country vs count, discount vs count, manager vs age).
  */
 
-import { faker } from '@faker-js/faker';
+import { fakerEN as faker } from '@faker-js/faker';
 import { LogicalType } from './inference';
 
 // ── Exact Canonical Column Map (O(1) Lookup) ─────────────────────────────────

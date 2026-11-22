@@ -19,7 +19,7 @@
  *  - DELETE: .table + optionally .from
  */
 
-import { Parser, AST, Option } from 'node-sql-parser';
+import type { AST, Option } from 'node-sql-parser';
 
 // ── Supported dialects ────────────────────────────────────────────────────────
 
@@ -71,9 +71,65 @@ export interface ParseError {
 
 export type ParseResult = ParseSuccess | ParseError;
 
-// ── Parser singleton ──────────────────────────────────────────────────────────
+// ── On-Demand Lazy Dialect Parser Loader ──────────────────────────────────────
 
-const _parser = new Parser();
+const parserCache = new Map<string, any>();
+
+export async function getDialectParser(dialect: Dialect): Promise<any> {
+  const norm = dialect === 'SSMS' ? 'TransactSQL' : dialect;
+  if (parserCache.has(norm)) return parserCache.get(norm);
+  let mod: any;
+  switch (norm) {
+    case 'MySQL':
+      mod = await import('node-sql-parser/build/mysql');
+      break;
+    case 'PostgreSQL':
+      mod = await import('node-sql-parser/build/postgresql');
+      break;
+    case 'SQLite':
+      mod = await import('node-sql-parser/build/sqlite');
+      break;
+    case 'TransactSQL':
+      mod = await import('node-sql-parser/build/transactsql');
+      break;
+    default:
+      mod = await import('node-sql-parser/build/mysql');
+  }
+  const ParserCtor = mod.Parser ?? mod.default?.Parser ?? mod.default;
+  const instance = new ParserCtor();
+  parserCache.set(norm, instance);
+  return instance;
+}
+
+export function getSyncDialectParser(dialect: Dialect): any {
+  const norm = dialect === 'SSMS' ? 'TransactSQL' : dialect;
+  if (parserCache.has(norm)) return parserCache.get(norm);
+  try {
+    let mod: any;
+    switch (norm) {
+      case 'MySQL':
+        mod = require('node-sql-parser/build/mysql');
+        break;
+      case 'PostgreSQL':
+        mod = require('node-sql-parser/build/postgresql');
+        break;
+      case 'SQLite':
+        mod = require('node-sql-parser/build/sqlite');
+        break;
+      case 'TransactSQL':
+        mod = require('node-sql-parser/build/transactsql');
+        break;
+      default:
+        mod = require('node-sql-parser/build/mysql');
+    }
+    const ParserCtor = mod.Parser ?? mod.default?.Parser ?? mod.default;
+    const instance = new ParserCtor();
+    parserCache.set(norm, instance);
+    return instance;
+  } catch {
+    return null;
+  }
+}
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
@@ -88,11 +144,42 @@ const _parser = new Parser();
  * by the Schema Inference Engine (Phase 2+).
  */
 export function parse(queryText: string, dialect: Dialect): ParseResult {
+  const p = getSyncDialectParser(dialect);
+  if (!p) {
+    return {
+      ok: false,
+      message: `Parser failed to load for dialect: ${dialect}`,
+      raw: new Error(`Parser failed to load for dialect: ${dialect}`),
+    };
+  }
   const dbOption = DIALECT_MAP[dialect];
   const opt: Option = { database: dbOption };
 
   try {
-    const parsed = _parser.parse(queryText.trim(), opt);
+    const parsed = p.parse(queryText.trim(), opt);
+    return {
+      ok: true,
+      ast: parsed.ast,
+      tableList: parsed.tableList,
+      columnList: parsed.columnList,
+    };
+  } catch (err) {
+    const e = err as Error;
+    return {
+      ok: false,
+      message: e.message,
+      raw: e,
+    };
+  }
+}
+
+export async function parseAsync(queryText: string, dialect: Dialect): Promise<ParseResult> {
+  const p = await getDialectParser(dialect);
+  const dbOption = DIALECT_MAP[dialect];
+  const opt: Option = { database: dbOption };
+
+  try {
+    const parsed = p.parse(queryText.trim(), opt);
     return {
       ok: true,
       ast: parsed.ast,

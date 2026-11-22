@@ -14,7 +14,7 @@
  *  - Configurable row caps (default 20 rows/table) and identifier sanitization
  */
 
-import { faker } from '@faker-js/faker';
+import { fakerEN as faker } from '@faker-js/faker';
 import { TableSchema, ColumnDef, LogicalType } from './inference';
 import { ForeignKeyRelationship, TableGenerationPlan } from './relationships';
 import { resolveDomainSchema, inferFakerFromColumnName } from './domain_dictionary';

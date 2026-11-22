@@ -6,7 +6,7 @@
  * entity morphology, syntactic roles, and contextual archetypes.
  */
 
-import { faker } from '@faker-js/faker';
+import { fakerEN as faker } from '@faker-js/faker';
 import { DomainColumnSpec } from './domain_catalog_data';
 import { NormalizedTableInfo } from './morphology';
 

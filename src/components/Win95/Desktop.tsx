@@ -7,33 +7,60 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dialect } from '../../engine/parser';
 import { SQLExecutor, ExecutionSuccess } from '../../engine/executor';
+import dynamic from 'next/dynamic';
 import { ClassifiedError, classifyError } from '../../engine/errors';
 import { Taskbar, WindowMeta } from './Taskbar';
 import { IDEShell } from '../IDE/IDEShell';
-import { HelpWindow } from './HelpWindow';
-import { SetupWizard } from './SetupWizard';
-import { SettingsDialog } from './SettingsDialog';
 import { ErrorDialog } from './ErrorDialog';
-import { WelcomeWindow } from './WelcomeWindow';
-import { Win95Tour } from '../Tour/Win95Tour';
-import { BootAnimation } from './BootAnimation';
-import { ShutDownDialog } from './ShutDownDialog';
-import { ContributorsWindow } from './ContributorsWindow';
 import { MobileLanding } from './MobileLanding';
-import { LegalWindow, TabId as LegalTabId } from './LegalWindow';
 import { CookieConsentDialog, getStoredCookiePreferences } from './CookieConsentDialog';
-import { NetworkStatusDialog } from './NetworkStatusDialog';
 import { useAuth } from '../../hooks/useAuth';
-import { AuthWindow } from './AuthWindow';
-import { AdminDashboard, SessionStats } from './AdminDashboard';
 import { ErrorBoundary } from './ErrorBoundary';
-import { SQLDictionaryWindow } from './SQLDictionaryWindow';
-import { ChallengeWindow } from './ChallengeWindow';
-import { ERDViewer } from '../IDE/ERDViewer';
-import { DetectiveWindow } from '../Detective/DetectiveWindow';
 import { DialectName } from '../../data/dialectCommands';
 import { clearWorkspaceStorage } from '../../hooks/useWorkspaceStorage';
 import { decodeSharePayload } from '../../utils/shareEncoder';
+import type { SessionStats } from './AdminDashboard';
+import type { TabId as LegalTabId } from './LegalWindow';
+
+const WindowLoader = () => (
+  <div className="win95-window" style={{ padding: 16, fontSize: 12 }}>
+    ⏳ Loading module...
+  </div>
+);
+
+const ChallengeWindow = dynamic(
+  () => import('./ChallengeWindow').then((m) => m.ChallengeWindow),
+  { ssr: false, loading: WindowLoader }
+);
+const DetectiveWindow = dynamic(
+  () => import('../Detective/DetectiveWindow').then((m) => m.DetectiveWindow),
+  { ssr: false, loading: WindowLoader }
+);
+const ERDViewer = dynamic(
+  () => import('../IDE/ERDViewer').then((m) => m.ERDViewer),
+  { ssr: false, loading: WindowLoader }
+);
+const AdminDashboard = dynamic(
+  () => import('./AdminDashboard').then((m) => m.AdminDashboard),
+  { ssr: false, loading: WindowLoader }
+);
+const SQLDictionaryWindow = dynamic(
+  () => import('./SQLDictionaryWindow').then((m) => m.SQLDictionaryWindow),
+  { ssr: false, loading: WindowLoader }
+);
+const HelpWindow = dynamic(() => import('./HelpWindow').then((m) => m.HelpWindow), { ssr: false });
+const SetupWizard = dynamic(() => import('./SetupWizard').then((m) => m.SetupWizard), { ssr: false });
+const SettingsDialog = dynamic(() => import('./SettingsDialog').then((m) => m.SettingsDialog), { ssr: false });
+const WelcomeWindow = dynamic(() => import('./WelcomeWindow').then((m) => m.WelcomeWindow), { ssr: false });
+const LegalWindow = dynamic(() => import('./LegalWindow').then((m) => m.LegalWindow), { ssr: false });
+const ContributorsWindow = dynamic(() => import('./ContributorsWindow').then((m) => m.ContributorsWindow), { ssr: false });
+const AuthWindow = dynamic(() => import('./AuthWindow').then((m) => m.AuthWindow), { ssr: false });
+const BootAnimation = dynamic(() => import('./BootAnimation').then((m) => m.BootAnimation), { ssr: false });
+const Win95Tour = dynamic(() => import('../Tour/Win95Tour').then((m) => m.Win95Tour), { ssr: false });
+const ShutDownDialog = dynamic(() => import('./ShutDownDialog').then((m) => m.ShutDownDialog), { ssr: false });
+const NetworkStatusDialog = dynamic(() => import('./NetworkStatusDialog').then((m) => m.NetworkStatusDialog), { ssr: false });
+const MacLaunchpad = dynamic(() => import('../Mac/MacLaunchpad').then((m) => m.MacLaunchpad), { ssr: false });
+
 import {
   AuthorShieldIcon,
   RebootIcon,
@@ -51,11 +78,8 @@ import {
   DetectiveIcon,
 } from './Win95Icons';
 
-
-
 import { useTheme } from '../../hooks/useTheme';
 import { MacMenuBar } from '../Mac/MacMenuBar';
-import { MacLaunchpad } from '../Mac/MacLaunchpad';
 import { ExNihiloLogo } from '../Brand/ExNihiloLogo';
 
 const DEFAULT_QUERY = `-- Welcome to ExNihilo 95!
@@ -95,11 +119,11 @@ export const Desktop: React.FC = () => {
   });
 
   // Window State with LocalStorage Persistence
-  const [windowOrder, setWindowOrder] = useState<string[]>(['ide', 'welcome']);
+  const [windowOrder, setWindowOrder] = useState<string[]>(['ide']);
   const [openWindows, setOpenWindows] = useState<Record<string, boolean>>(() => {
     const defaults = {
       ide: true,
-      welcome: true,
+      welcome: false,
       help: false,
       sqlDictionary: false,
       wizard: false,
@@ -985,15 +1009,17 @@ export const Desktop: React.FC = () => {
       )}
 
       {/* Landing / Welcome Information Dialog */}
-      <WelcomeWindow
-        isOpen={openWindows.welcome}
-        zIndex={getZIndex('welcome')}
-        onClose={() => closeWindow('welcome')}
-        onStartTour={handleStartGuidedTour}
-        onOpenHelp={() => focusWindow('help')}
-        onOpenIDE={() => focusWindow('ide')}
-        onFocus={() => focusWindow('welcome')}
-      />
+      {openWindows.welcome && (
+        <WelcomeWindow
+          isOpen={openWindows.welcome}
+          zIndex={getZIndex('welcome')}
+          onClose={() => closeWindow('welcome')}
+          onStartTour={handleStartGuidedTour}
+          onOpenHelp={() => focusWindow('help')}
+          onOpenIDE={() => focusWindow('ide')}
+          onFocus={() => focusWindow('welcome')}
+        />
+      )}
 
       {/* SQL IDE Shell Window */}
       {openWindows.ide && (
@@ -1032,112 +1058,122 @@ export const Desktop: React.FC = () => {
       )}
 
       {/* Auth Window (Log In & Create Account) */}
-      <AuthWindow
-        isOpen={openWindows.auth}
-        isMinimized={minimizedWindows.auth}
-        zIndex={getZIndex('auth')}
-        isSecureContext={isSecureContext}
-        onClose={() => closeWindow('auth')}
-        onMinimize={() => toggleMinimize('auth')}
-        onFocus={() => focusWindow('auth')}
-        onSignUp={signUp}
-        onLogin={async (user, pass) => {
-          const res = await login(user, pass);
-          if (res.success) {
-            closeWindow('auth');
-            focusWindow('admin');
-          }
-          return res;
-        }}
-        currentUser={currentUser}
-        onOpenLegal={(tab) => {
-          if (tab) setLegalInitialTab(tab);
-          focusWindow('legal');
-        }}
-      />
+      {openWindows.auth && (
+        <AuthWindow
+          isOpen={openWindows.auth}
+          isMinimized={minimizedWindows.auth}
+          zIndex={getZIndex('auth')}
+          isSecureContext={isSecureContext}
+          onClose={() => closeWindow('auth')}
+          onMinimize={() => toggleMinimize('auth')}
+          onFocus={() => focusWindow('auth')}
+          onSignUp={signUp}
+          onLogin={async (user, pass) => {
+            const res = await login(user, pass);
+            if (res.success) {
+              closeWindow('auth');
+              focusWindow('admin');
+            }
+            return res;
+          }}
+          currentUser={currentUser}
+          onOpenLegal={(tab) => {
+            if (tab) setLegalInitialTab(tab);
+            focusWindow('legal');
+          }}
+        />
+      )}
 
       {/* Admin Dashboard Window */}
-      <AdminDashboard
-        isOpen={openWindows.admin}
-        isMinimized={minimizedWindows.admin}
-        zIndex={getZIndex('admin')}
-        currentUser={currentUser}
-        activeSession={activeSession}
-        sessionStats={sessionStats}
-        onClose={() => closeWindow('admin')}
-        onMinimize={() => toggleMinimize('admin')}
-        onFocus={() => focusWindow('admin')}
-        onLogout={handleLogout}
-        onDeleteAccount={async () => {
-          const res = await deleteAccount();
-          if (res.success) {
-            handleLogout();
-          }
-          return res;
-        }}
-        onChangePassword={changePassword}
-        onClearHistory={() => setSessionStats((prev) => ({ ...prev, queryHistory: [] }))}
-      />
+      {openWindows.admin && (
+        <AdminDashboard
+          isOpen={openWindows.admin}
+          isMinimized={minimizedWindows.admin}
+          zIndex={getZIndex('admin')}
+          currentUser={currentUser}
+          activeSession={activeSession}
+          sessionStats={sessionStats}
+          onClose={() => closeWindow('admin')}
+          onMinimize={() => toggleMinimize('admin')}
+          onFocus={() => focusWindow('admin')}
+          onLogout={handleLogout}
+          onDeleteAccount={async () => {
+            const res = await deleteAccount();
+            if (res.success) {
+              handleLogout();
+            }
+            return res;
+          }}
+          onChangePassword={changePassword}
+          onClearHistory={() => setSessionStats((prev) => ({ ...prev, queryHistory: [] }))}
+        />
+      )}
 
       {/* SQL Dictionary & Dialect Reference Window */}
-      <SQLDictionaryWindow
-        isOpen={openWindows.sqlDictionary}
-        isMinimized={minimizedWindows.sqlDictionary}
-        isMaximized={Boolean(maximizedWindows.sqlDictionary)}
-        onMaximize={() => handleToggleMaximize('sqlDictionary')}
-        zIndex={getZIndex('sqlDictionary')}
-        onClose={() => closeWindow('sqlDictionary')}
-        onMinimize={() => toggleMinimize('sqlDictionary')}
-        onFocus={() => focusWindow('sqlDictionary')}
-        onTryInIde={handleTryInIde}
-      />
-
+      {openWindows.sqlDictionary && (
+        <SQLDictionaryWindow
+          isOpen={openWindows.sqlDictionary}
+          isMinimized={minimizedWindows.sqlDictionary}
+          isMaximized={Boolean(maximizedWindows.sqlDictionary)}
+          onMaximize={() => handleToggleMaximize('sqlDictionary')}
+          zIndex={getZIndex('sqlDictionary')}
+          onClose={() => closeWindow('sqlDictionary')}
+          onMinimize={() => toggleMinimize('sqlDictionary')}
+          onFocus={() => focusWindow('sqlDictionary')}
+          onTryInIde={handleTryInIde}
+        />
+      )}
 
       {/* Help / Query Tutorial Window */}
-      <HelpWindow
-        isOpen={openWindows.help}
-        isMinimized={minimizedWindows.help}
-        zIndex={getZIndex('help')}
-        onClose={() => closeWindow('help')}
-        onMinimize={() => toggleMinimize('help')}
-        onFocus={() => focusWindow('help')}
-        onLoadQuery={handleLoadQuery}
-      />
-
+      {openWindows.help && (
+        <HelpWindow
+          isOpen={openWindows.help}
+          isMinimized={minimizedWindows.help}
+          zIndex={getZIndex('help')}
+          onClose={() => closeWindow('help')}
+          onMinimize={() => toggleMinimize('help')}
+          onFocus={() => focusWindow('help')}
+          onLoadQuery={handleLoadQuery}
+        />
+      )}
 
       {/* Setup Wizard Window */}
-      <SetupWizard
-        isOpen={openWindows.wizard}
-        isMinimized={minimizedWindows.wizard}
-        zIndex={getZIndex('wizard')}
-        onClose={() => closeWindow('wizard')}
-        onMinimize={() => toggleMinimize('wizard')}
-        onFocus={() => focusWindow('wizard')}
-        onFinish={() => focusWindow('ide')}
-      />
+      {openWindows.wizard && (
+        <SetupWizard
+          isOpen={openWindows.wizard}
+          isMinimized={minimizedWindows.wizard}
+          zIndex={getZIndex('wizard')}
+          onClose={() => closeWindow('wizard')}
+          onMinimize={() => toggleMinimize('wizard')}
+          onFocus={() => focusWindow('wizard')}
+          onFinish={() => focusWindow('ide')}
+        />
+      )}
 
       {/* Settings / Options Dialog */}
-      <SettingsDialog
-        isOpen={openWindows.settings}
-        zIndex={getZIndex('settings')}
-        currentDialect={dialect}
-        rowsPerTable={rowsPerTable}
-        tableCap={tableCap}
-        crtEnabled={crtEnabled}
-        onToggleCrt={handleToggleCrt}
-        onSave={(r, c, d) => {
-          setRowsPerTable(r);
-          setTableCap(c);
-          setDialect(d);
-        }}
-        onClose={() => closeWindow('settings')}
-        onFocus={() => focusWindow('settings')}
-        onOpenCookies={() => setCookieConsentOpen(true)}
-        onOpenLegal={(tab) => {
-          if (tab) setLegalInitialTab(tab);
-          focusWindow('legal');
-        }}
-      />
+      {openWindows.settings && (
+        <SettingsDialog
+          isOpen={openWindows.settings}
+          zIndex={getZIndex('settings')}
+          currentDialect={dialect}
+          rowsPerTable={rowsPerTable}
+          tableCap={tableCap}
+          crtEnabled={crtEnabled}
+          onToggleCrt={handleToggleCrt}
+          onSave={(r, c, d) => {
+            setRowsPerTable(r);
+            setTableCap(c);
+            setDialect(d);
+          }}
+          onClose={() => closeWindow('settings')}
+          onFocus={() => focusWindow('settings')}
+          onOpenCookies={() => setCookieConsentOpen(true)}
+          onOpenLegal={(tab) => {
+            if (tab) setLegalInitialTab(tab);
+            focusWindow('legal');
+          }}
+        />
+      )}
 
       {/* Retro CRT Monitor Filter Overlay */}
       {crtEnabled && <div className="win95-crt-overlay" aria-hidden="true" />}
@@ -1151,52 +1187,58 @@ export const Desktop: React.FC = () => {
       />
 
       {/* Authentic Shut Down Dialog */}
-      <ShutDownDialog
-        isOpen={openWindows.shutdown}
-        zIndex={getZIndex('shutdown')}
-        onClose={() => closeWindow('shutdown')}
-        onFocus={() => focusWindow('shutdown')}
-        onRestart={() => setShowBootAnimation(true)}
-        onClearAndRestart={() => {
-          handleResetSession();
-          setShowBootAnimation(true);
-        }}
-        onCloseAllWindows={() => {
-          setOpenWindows({
-            ide: false,
-            welcome: false,
-            help: false,
-            wizard: false,
-            settings: false,
-            shutdown: false,
-            contributors: false,
-            legal: false,
-            auth: false,
-            admin: false,
-          });
-        }}
-      />
+      {openWindows.shutdown && (
+        <ShutDownDialog
+          isOpen={openWindows.shutdown}
+          zIndex={getZIndex('shutdown')}
+          onClose={() => closeWindow('shutdown')}
+          onFocus={() => focusWindow('shutdown')}
+          onRestart={() => setShowBootAnimation(true)}
+          onClearAndRestart={() => {
+            handleResetSession();
+            setShowBootAnimation(true);
+          }}
+          onCloseAllWindows={() => {
+            setOpenWindows({
+              ide: false,
+              welcome: false,
+              help: false,
+              wizard: false,
+              settings: false,
+              shutdown: false,
+              contributors: false,
+              legal: false,
+              auth: false,
+              admin: false,
+            });
+          }}
+        />
+      )}
 
       {/* Contributors / Join the Team Window */}
-      <ContributorsWindow
-        isOpen={openWindows.contributors}
-        isMinimized={minimizedWindows.contributors}
-        zIndex={getZIndex('contributors')}
-        onClose={() => closeWindow('contributors')}
-        onMinimize={() => toggleMinimize('contributors')}
-        onFocus={() => focusWindow('contributors')}
-      />
+      {openWindows.contributors && (
+        <ContributorsWindow
+          isOpen={openWindows.contributors}
+          isMinimized={minimizedWindows.contributors}
+          zIndex={getZIndex('contributors')}
+          onClose={() => closeWindow('contributors')}
+          onMinimize={() => toggleMinimize('contributors')}
+          onFocus={() => focusWindow('contributors')}
+        />
+      )}
 
       {/* Legal & IP Protection Window */}
-      <LegalWindow
-        isOpen={openWindows.legal}
-        isMinimized={minimizedWindows.legal}
-        zIndex={getZIndex('legal')}
-        initialTab={legalInitialTab}
-        onClose={() => closeWindow('legal')}
-        onMinimize={() => toggleMinimize('legal')}
-        onFocus={() => focusWindow('legal')}
-      />
+      {openWindows.legal && (
+        <LegalWindow
+          isOpen={openWindows.legal}
+          isMinimized={minimizedWindows.legal}
+          zIndex={getZIndex('legal')}
+          initialTab={legalInitialTab}
+          onClose={() => closeWindow('legal')}
+          onMinimize={() => toggleMinimize('legal')}
+          onFocus={() => focusWindow('legal')}
+        />
+      )}
 
       {/* Cookie & Local Storage Consent Dialog */}
       <CookieConsentDialog
@@ -1210,60 +1252,68 @@ export const Desktop: React.FC = () => {
       />
 
       {/* Flagship SQL Challenge Arena Window */}
-      <ChallengeWindow
-        isOpen={openWindows.challenges}
-        isMinimized={minimizedWindows.challenges}
-        isMaximized={Boolean(maximizedWindows.challenges)}
-        onMaximize={() => handleToggleMaximize('challenges')}
-        zIndex={getZIndex('challenges')}
-        onClose={() => closeWindow('challenges')}
-        onMinimize={() => toggleMinimize('challenges')}
-        onFocus={() => focusWindow('challenges')}
-        onTryInStudio={(sql, ddl, seed) => {
-          executor.execute(ddl + '\n' + seed, dialect).catch(console.error);
-          setQueryText(sql);
-          closeWindow('challenges');
-          focusWindow('ide');
-        }}
-      />
+      {openWindows.challenges && (
+        <ChallengeWindow
+          isOpen={openWindows.challenges}
+          isMinimized={minimizedWindows.challenges}
+          isMaximized={Boolean(maximizedWindows.challenges)}
+          onMaximize={() => handleToggleMaximize('challenges')}
+          zIndex={getZIndex('challenges')}
+          onClose={() => closeWindow('challenges')}
+          onMinimize={() => toggleMinimize('challenges')}
+          onFocus={() => focusWindow('challenges')}
+          onTryInStudio={(sql, ddl, seed) => {
+            executor.execute(ddl + '\n' + seed, dialect).catch(console.error);
+            setQueryText(sql);
+            closeWindow('challenges');
+            focusWindow('ide');
+          }}
+        />
+      )}
 
       {/* SQL Noir: Department of Unsolved Homicides */}
-      <DetectiveWindow
-        isOpen={openWindows.detective}
-        isMinimized={minimizedWindows.detective}
-        isMaximized={Boolean(maximizedWindows.detective)}
-        onMaximize={() => handleToggleMaximize('detective')}
-        zIndex={getZIndex('detective')}
-        onClose={() => closeWindow('detective')}
-        onMinimize={() => toggleMinimize('detective')}
-        onFocus={() => focusWindow('detective')}
-      />
+      {openWindows.detective && (
+        <DetectiveWindow
+          isOpen={openWindows.detective}
+          isMinimized={minimizedWindows.detective}
+          isMaximized={Boolean(maximizedWindows.detective)}
+          onMaximize={() => handleToggleMaximize('detective')}
+          zIndex={getZIndex('detective')}
+          onClose={() => closeWindow('detective')}
+          onMinimize={() => toggleMinimize('detective')}
+          onFocus={() => focusWindow('detective')}
+        />
+      )}
 
       {/* Database Relation Visualizer (ERD) Window */}
-      <ERDViewer
-        isOpen={openWindows.erd}
-        isMinimized={minimizedWindows.erd}
-        isMaximized={Boolean(maximizedWindows.erd)}
-        onMaximize={() => handleToggleMaximize('erd')}
-        zIndex={getZIndex('erd')}
-        catalog={executor.getCatalog()}
-        executor={executor}
-        onClose={() => closeWindow('erd')}
-        onMinimize={() => toggleMinimize('erd')}
-        onFocus={() => focusWindow('erd')}
-      />
+      {openWindows.erd && (
+        <ERDViewer
+          isOpen={openWindows.erd}
+          isMinimized={minimizedWindows.erd}
+          isMaximized={Boolean(maximizedWindows.erd)}
+          onMaximize={() => handleToggleMaximize('erd')}
+          zIndex={getZIndex('erd')}
+          catalog={executor.getCatalog()}
+          executor={executor}
+          onClose={() => closeWindow('erd')}
+          onMinimize={() => toggleMinimize('erd')}
+          onFocus={() => focusWindow('erd')}
+        />
+      )}
 
       {/* Interactive Tour Balloon */}
-      <Win95Tour
-        isOpen={tourOpen}
-        onClose={() => setTourOpen(false)}
-        onOpenHelp={() => focusWindow('help')}
-        onEnsureIDEOpen={() => focusWindow('ide')}
-        onOpenSettings={() => focusWindow('settings')}
-        onOpenAuth={() => focusWindow('auth')}
-        onOpenERD={() => focusWindow('erd')}
-        onOpenChallenges={() => focusWindow('challenges')}
-      />
+      {tourOpen && (
+        <Win95Tour
+          isOpen={tourOpen}
+          onClose={() => setTourOpen(false)}
+          onOpenHelp={() => focusWindow('help')}
+          onEnsureIDEOpen={() => focusWindow('ide')}
+          onOpenSettings={() => focusWindow('settings')}
+          onOpenAuth={() => focusWindow('auth')}
+          onOpenERD={() => focusWindow('erd')}
+          onOpenChallenges={() => focusWindow('challenges')}
+        />
+      )}
 
       {/* Session Expired Win95 Notification Modal */}
       {sessionExpiredNotice && (
@@ -1352,17 +1402,19 @@ export const Desktop: React.FC = () => {
       />
 
       {/* Dial-Up Networking & Autonomous Mode Status Dialog */}
-      <NetworkStatusDialog
-        isOpen={networkDialogOpen}
-        onClose={() => setNetworkDialogOpen(false)}
-        isOnline={isOnline}
-        onRedial={() => {
-          if (typeof navigator !== 'undefined') {
-            setIsOnline(navigator.onLine);
-          }
-        }}
-        zIndex={100000}
-      />
+      {networkDialogOpen && (
+        <NetworkStatusDialog
+          isOpen={networkDialogOpen}
+          onClose={() => setNetworkDialogOpen(false)}
+          isOnline={isOnline}
+          onRedial={() => {
+            if (typeof navigator !== 'undefined') {
+              setIsOnline(navigator.onLine);
+            }
+          }}
+          zIndex={100000}
+        />
+      )}
     </div>
   );
 };

@@ -5,7 +5,7 @@
  * Automotive, DevOps & SaaS, Real Estate, Healthcare, Logistics, and Social Networks.
  */
 
-import { faker } from '@faker-js/faker';
+import { fakerEN as faker } from '@faker-js/faker';
 import { LogicalType } from './inference';
 
 export interface DomainColumnSpec {
