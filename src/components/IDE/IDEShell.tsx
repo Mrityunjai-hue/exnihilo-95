@@ -94,6 +94,7 @@ interface IDEShellProps {
   onOpenChallenges?:       () => void;
   onOpenDetective?:        () => void;
   onOpenERD?:              () => void;
+  openCopilotSignal?:      number;
   onStartTour:             () => void;
   crtEnabled?:             boolean;
   onToggleCrt?:            () => void;
@@ -128,6 +129,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   onOpenChallenges,
   onOpenDetective,
   onOpenERD,
+  openCopilotSignal,
   onStartTour,
   crtEnabled,
   onToggleCrt,
@@ -778,12 +780,22 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         e.preventDefault();
         e.stopPropagation();
         handleOpenFile();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'i' || e.key === 'I')) {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsCopilotOpen(true);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [isOpen, isMinimized, handleExecute, activeTab.isLoading, onCancelQuery]);
+
+  useEffect(() => {
+    if (openCopilotSignal) {
+      setIsCopilotOpen(true);
+    }
+  }, [openCopilotSignal]);
 
   const handleDownloadSql = () => {
     const blob = new Blob([activeTab.queryText], { type: 'text/sql' });
@@ -987,6 +999,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               <div className="win95-dropdown-item" onClick={handleExecute}>
                 <span>▶ Run All / Active (F5)</span>
               </div>
+              <div className="win95-dropdown-item" onClick={() => { setIsCopilotOpen(true); setActiveMenu(null); }}>
+                <span>✨ Ask Gemini AI Copilot... (Ctrl+I)</span>
+              </div>
               <div className="win95-dropdown-item" onClick={() => { handleTranslateDialect(); setActiveMenu(null); }}>
                 <span>🌐 Translate Dialect...</span>
               </div>
@@ -1053,6 +1068,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
             <div className="win95-dropdown-menu">
               <div className="win95-dropdown-item" onClick={() => { handleOpenERD(); setActiveMenu(null); }}>
                 <span>🌐 Entity Relationship Diagram (ERD)</span>
+              </div>
+              <div className="win95-dropdown-item" onClick={() => { setIsCopilotOpen(true); setActiveMenu(null); }}>
+                <span>✨ Gemini SQL Copilot (Natural Language)...</span>
               </div>
               <div className="win95-dropdown-item" onClick={() => { setIsSnippetsOpen(true); setActiveMenu(null); }}>
                 <span>📚 Saved Queries & Snippets...</span>

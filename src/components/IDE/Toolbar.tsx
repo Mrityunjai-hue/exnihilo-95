@@ -7,6 +7,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialect } from '../../engine/parser';
 import { useTheme } from '../../hooks/useTheme';
+import { CopilotIcon } from '../Win95/Win95Icons';
 
 interface ToolbarProps {
   dialect:              Dialect;
@@ -214,6 +215,29 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <span>⚡</span>
           <span>Format</span>
         </button>
+
+        {/* AI Copilot Button — Front and Center in Primary Execution Toolbar */}
+        {onOpenCopilot && (
+          <button
+            id="btn-copilot"
+            className="win95-button"
+            onClick={onOpenCopilot}
+            title="Ask Gemini SQL Copilot (Natural Language to SQL) — Ctrl+I"
+            style={{
+              padding: isMac ? '3px 10px' : '2px 8px',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              color: isDark ? '#67e8f9' : '#000080',
+              cursor: 'pointer',
+            }}
+          >
+            <CopilotIcon size={14} />
+            <span>AI Copilot</span>
+          </button>
+        )}
 
         {/* Translate Dialect Sugar Button */}
         {onTranslateDialect && (
@@ -425,19 +449,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           </button>
         )}
 
-        {onOpenCopilot && (
-          <button
-            id="btn-copilot"
-            className="win95-button"
-            onClick={onOpenCopilot}
-            title="Ask Gemini SQL Copilot (Natural Language to SQL)"
-            style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
-          >
-            <span>✨</span>
-            <span>AI Copilot</span>
-          </button>
-        )}
-
         {/* Consolidated "More ⋯" Dropdown (History, Share, Settings) */}
         <div ref={moreMenuRef} style={{ position: 'relative' }}>
           <button
@@ -484,7 +495,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   onClick={() => { onOpenCopilot(); setMoreMenuOpen(false); }}
                   style={{ padding: isMac ? '6px 10px' : '4px 8px', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
-                  <span>✨</span>
+                  <CopilotIcon size={14} />
                   <span>Gemini SQL Copilot</span>
                 </div>
               )}

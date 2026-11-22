@@ -392,6 +392,17 @@ export const Taskbar: React.FC<TaskbarProps> = ({
 
             <div
               className="win95-start-item"
+              onClick={() => { onOpenWindow('ide'); setStartMenuOpen(false); }}
+            >
+              <span style={{ fontSize: '16px' }}>✨</span>
+              <div>
+                <strong>Gemini SQL Copilot</strong>
+                <div style={{ fontSize: '10px', color: '#555' }}>Natural Language Query Assistant</div>
+              </div>
+            </div>
+
+            <div
+              className="win95-start-item"
               onClick={() => { onOpenWindow('erd'); setStartMenuOpen(false); }}
             >
               <span style={{ fontSize: '16px' }}>🌐</span>

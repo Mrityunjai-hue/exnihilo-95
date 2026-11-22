@@ -80,6 +80,7 @@ import {
   TourIcon,
   ChallengeIcon,
   DetectiveIcon,
+  CopilotIcon,
 } from './Win95Icons';
 
 import { useTheme } from '../../hooks/useTheme';
@@ -136,6 +137,7 @@ export const Desktop: React.FC = () => {
 
   // Window State with LocalStorage Persistence
   const [windowOrder, setWindowOrder] = useState<string[]>(['ide']);
+  const [copilotSignal, setCopilotSignal] = useState(0);
   const [openWindows, setOpenWindows] = useState<Record<string, boolean>>(() => {
     const defaults = {
       ide: true,
@@ -912,6 +914,16 @@ export const Desktop: React.FC = () => {
 
           <div
             className="win95-desktop-icon"
+            onDoubleClick={() => { focusWindow('ide'); setCopilotSignal((prev) => prev + 1); }}
+            onClick={() => { focusWindow('ide'); setCopilotSignal((prev) => prev + 1); }}
+            title="Ask Gemini SQL Copilot (Natural Language to SQL)"
+          >
+            <CopilotIcon size={36} />
+            <span>AI Copilot</span>
+          </div>
+
+          <div
+            className="win95-desktop-icon"
             onDoubleClick={() => focusWindow('challenges')}
             onClick={() => focusWindow('challenges')}
             title="SQL Challenge Arena (130+ LeetCode Puzzles)"
@@ -1097,6 +1109,7 @@ export const Desktop: React.FC = () => {
             onOpenChallenges={() => focusWindow('challenges')}
             onOpenDetective={() => focusWindow('detective')}
             onOpenERD={() => focusWindow('erd')}
+            openCopilotSignal={copilotSignal}
             onStartTour={handleStartGuidedTour}
             crtEnabled={crtEnabled}
             onToggleCrt={handleToggleCrt}

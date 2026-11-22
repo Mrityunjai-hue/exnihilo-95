@@ -224,3 +224,19 @@ export const DetectiveIcon: React.FC<{ size?: number }> = ({ size = 36 }) => (
     <line x1="28.5" y1="27.5" x2="32" y2="31" stroke="#d4af37" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
+
+// 15. Gemini SQL Copilot Icon (Windows 95 Retro AI Robot Assistant)
+export const CopilotIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="8" y1="1" x2="8" y2="4" stroke="#d97706" strokeWidth="1.2" strokeLinecap="round" />
+    <circle cx="8" cy="1.5" r="1.2" fill="#ef4444" stroke="#7f1d1d" strokeWidth="0.5" />
+    <rect x="2.5" y="4" width="11" height="9" rx="1" fill="#c0c0c0" stroke="#000000" strokeWidth="1" />
+    <line x1="3" y1="4.5" x2="13" y2="4.5" stroke="#ffffff" strokeWidth="0.8" />
+    <rect x="4" y="6" width="8" height="4" fill="#000080" stroke="#000000" strokeWidth="0.6" />
+    <rect x="5.5" y="7" width="2" height="2" fill="#00ffff" />
+    <rect x="8.5" y="7" width="2" height="2" fill="#00ffff" />
+    <rect x="1" y="7" width="1.5" height="3" fill="#808080" stroke="#000000" strokeWidth="0.5" />
+    <rect x="13.5" y="7" width="1.5" height="3" fill="#808080" stroke="#000000" strokeWidth="0.5" />
+    <rect x="5" y="13.5" width="6" height="1.5" fill="#475569" stroke="#000000" strokeWidth="0.5" />
+  </svg>
+);

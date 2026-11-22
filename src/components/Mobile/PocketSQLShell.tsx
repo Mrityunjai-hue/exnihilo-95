@@ -12,6 +12,7 @@ import type { ExecutionSuccess } from '../../engine/executor';
 import type { SessionCatalog } from '../../engine/catalog';
 import { QueryEditor } from '../IDE/QueryEditor';
 import { SnapshotsDialog } from '../IDE/SnapshotsDialog';
+import { CopilotDialog } from '../IDE/CopilotDialog';
 
 interface PocketSQLShellProps {
   dialect: Dialect;
@@ -40,6 +41,7 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'query' | 'results' | 'schema'>('query');
   const [isSnapshotsOpen, setIsSnapshotsOpen] = useState(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
 
   const catalogTables = catalog.getAll ? catalog.getAll() : [];
   const rowCount = result?.rowCount ?? 0;
@@ -169,8 +171,19 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
           </select>
         </div>
 
-        <div style={{ fontSize: '10px', opacity: 0.8 }}>
-          {result ? `${rowCount} rows (${result.executionTimeMs.toFixed(0)}ms)` : 'WASM Ready'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button
+            type="button"
+            className="win95-button"
+            onClick={() => setIsCopilotOpen(true)}
+            style={{ fontSize: '10px', padding: '2px 6px', fontWeight: 'bold' }}
+            title="Ask Gemini SQL Copilot"
+          >
+            ✨ Copilot
+          </button>
+          <div style={{ fontSize: '10px', opacity: 0.8 }}>
+            {result ? `${rowCount} rows (${result.executionTimeMs.toFixed(0)}ms)` : 'WASM Ready'}
+          </div>
         </div>
       </div>
 
@@ -368,6 +381,18 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
       <SnapshotsDialog
         isOpen={isSnapshotsOpen}
         onClose={() => setIsSnapshotsOpen(false)}
+      />
+
+      {/* Gemini SQL Copilot Modal */}
+      <CopilotDialog
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+        dialect={dialect}
+        schemaContext={catalog.getAll ? catalog.getAll().map((t: any) => `${t.tableName} (${t.columns.map((c: any) => `${c.name} ${c.logicalType}`).join(', ')})`).join('\n') : ''}
+        onInsertSql={(sql) => {
+          onQueryChange(sql);
+          setActiveTab('query');
+        }}
       />
     </div>
   );
