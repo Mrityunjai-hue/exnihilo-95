@@ -36,7 +36,7 @@ function extractCatalogSnapshot(exec: SQLExecutor): CatalogSnapshotDTO {
       dbName: entry.dbName || 'default',
       rowCount: entry.rowCount,
       isUserCreated: entry.isUserDefined,
-      columns: entry.schema.columns.map((col) => {
+      columns: (entry.schema?.columns || []).map((col) => {
         const colLower = col.name.toLowerCase();
         const fk = fkMap.get(colLower) || (col as any).references;
         return {

@@ -61,7 +61,7 @@ export function extractERDData(catalog: any): ERDGraphData {
       ([key, val]) => key.toLowerCase() === tableName || val.aliases?.some((a) => a.toLowerCase() === tableName)
     )?.[1];
 
-    const columns: ERDColumn[] = entry.schema.columns.map((col: any) => {
+    const columns: ERDColumn[] = (entry.schema?.columns || []).map((col: any) => {
       const colNameLower = col.name.toLowerCase();
       const domainCol = domainSpec?.columns.find((c: any) => c.name.toLowerCase() === colNameLower);
 
