@@ -17,6 +17,7 @@ import type { SessionCatalog } from '../../engine/catalog';
 import { SnapshotsDialog } from '../IDE/SnapshotsDialog';
 import { MobileCatalogDrawer } from './MobileCatalogDrawer';
 import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
+import { useMessageAudio } from '../../hooks/useMessageAudio';
 
 export interface ChatMessage {
   id: string;
@@ -73,8 +74,23 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
   const [expandedTableId, setExpandedTableId] = useState<string | null>(null);
   const [fullscreenTable, setFullscreenTable] = useState<ExecutionSuccess | null>(null);
 
+  const { playSendSound, playReceiveSound, isMuted, toggleMute } = useMessageAudio();
+  const lastAudibleMsgIdRef = useRef<string>('welcome-1');
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Play iMessage-style receive chime when a new kernel, copilot, or error message arrives
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const latestMsg = messages[messages.length - 1];
+    if (latestMsg && latestMsg.id !== lastAudibleMsgIdRef.current) {
+      lastAudibleMsgIdRef.current = latestMsg.id;
+      if (latestMsg.sender === 'kernel' || latestMsg.sender === 'copilot' || latestMsg.sender === 'error') {
+        playReceiveSound();
+      }
+    }
+  }, [messages, playReceiveSound]);
 
   // Auto-grow textarea height dynamically based on input (like iMessage/WhatsApp/ChatGPT)
   useEffect(() => {
@@ -136,6 +152,9 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     const raw = (forcedQuery || inputVal).trim();
     if (!raw) return;
 
+    // Trigger instant procedural iMessage send swoosh sound
+    playSendSound();
+
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     // Check if input is standard SQL or a natural language prompt
@@ -185,10 +204,12 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
   const handleAskCopilot = async (promptText: string) => {
     setIsAiLoading(true);
     try {
-      const schemaCtx = catalogTables
+      const schemaCtx = (catalogTables || [])
         .map((t: any) => {
-          const cols = t.schema?.columns || t.columns || [];
-          return `${t.tableName} (${cols.map((c: any) => c.name).join(', ')})`;
+          const rawCols = t?.schema?.columns || t?.columns || [];
+          const cols = Array.isArray(rawCols) ? rawCols : [];
+          const colList = cols.map((c: any) => c?.name || String(c)).join(', ');
+          return `${t?.tableName || 'table'} (${colList})`;
         })
         .join('\n');
 
@@ -342,6 +363,16 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
           <button
             type="button"
             className="win95-button"
+            onClick={toggleMute}
+            style={{ fontSize: '11px', padding: '2px 5px' }}
+            title={isMuted ? 'Unmute Audio (iMessage sounds)' : 'Mute Audio'}
+          >
+            {isMuted ? '🔇' : '🔊'}
+          </button>
+
+          <button
+            type="button"
+            className="win95-button"
             onClick={() => setMessages([])}
             style={{ fontSize: '11px', padding: '2px 5px' }}
             title="Clear Chat History"
@@ -381,7 +412,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
       >
         {messages.map((msg) => {
           if (msg.sender === 'user') {
-            // USER MESSAGE BUBBLE (STRICTLY ON THE RIGHT SIDE)
+            // USER MESSAGE BUBBLE (STRICTLY ON THE RIGHT SIDE - iMESSAGE CONTOUR IN WIN95 HIGH-COLOR GRADIENT)
             return (
               <div
                 key={msg.id}
@@ -391,52 +422,54 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   width: '100%',
                 }}
               >
-                <div
-                  style={{
-                    width: 'fit-content',
-                    minWidth: '60px',
-                    maxWidth: '85%',
-                    background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)',
-                    color: '#ffffff',
-                    borderRadius: '16px 16px 2px 16px',
-                    padding: '8px 12px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.22)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', opacity: 0.8, fontSize: '9px' }}>
-                    <span style={{ fontWeight: 'bold' }}>You</span>
-                    <span>{msg.timestamp}</span>
-                  </div>
-
-                  {msg.text && (
-                    <div style={{ fontSize: '12px', wordBreak: 'break-word', lineHeight: 1.35, whiteSpace: 'pre-wrap' }}>
-                      {msg.text}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', maxWidth: '85%' }}>
+                  <div
+                    style={{
+                      width: 'fit-content',
+                      minWidth: '60px',
+                      background: 'linear-gradient(135deg, #000080 0%, #1084d0 100%)',
+                      color: '#ffffff',
+                      borderRadius: '18px 18px 3px 18px',
+                      padding: '8px 13px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
+                      border: '1px solid rgba(255, 255, 255, 0.25)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', opacity: 0.85, fontSize: '9px' }}>
+                      <span style={{ fontWeight: 'bold' }}>You</span>
+                      <span>{msg.timestamp}</span>
                     </div>
-                  )}
 
-                  {msg.sql && (
-                    <pre
-                      style={{
-                        margin: 0,
-                        padding: '6px 8px',
-                        backgroundColor: 'rgba(0, 0, 0, 0.28)',
-                        color: '#86efac',
-                        fontSize: '11px',
-                        fontFamily: 'Consolas, monospace',
-                        borderRadius: '4px',
-                        overflowX: 'auto',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                      }}
-                    >
-                      {msg.sql}
-                    </pre>
-                  )}
+                    {msg.text && (
+                      <div style={{ fontSize: '12px', wordBreak: 'break-word', lineHeight: 1.35, whiteSpace: 'pre-wrap' }}>
+                        {msg.text}
+                      </div>
+                    )}
+
+                    {msg.sql && (
+                      <pre
+                        style={{
+                          margin: 0,
+                          padding: '6px 8px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.35)',
+                          color: '#86efac',
+                          fontSize: '11px',
+                          fontFamily: 'Consolas, monospace',
+                          borderRadius: '6px',
+                          overflowX: 'auto',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
+                          border: '1px solid rgba(255, 255, 255, 0.15)',
+                        }}
+                      >
+                        {msg.sql}
+                      </pre>
+                    )}
 
                   {/* Icon Actions */}
                   {msg.sql && (
@@ -495,9 +528,13 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                     </div>
                   )}
                 </div>
+                <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px', marginRight: '4px', letterSpacing: '0.02em' }}>
+                  Delivered
+                </div>
               </div>
-            );
-          }
+            </div>
+          );
+        }
 
           if (msg.sender === 'copilot') {
             // AI COPILOT SUGGESTION CARD (LEFT ALIGNED)
@@ -510,65 +547,73 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   width: '100%',
                 }}
               >
-                <div
-                  className="win95-window"
-                  style={{
-                    maxWidth: '92%',
-                    backgroundColor: '#f3e8ff',
-                    border: '2px outset #ffffff',
-                    padding: '8px 10px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px' }}>
-                    <span style={{ fontWeight: 'bold', color: '#6b21a8' }}>✨ Gemini Copilot</span>
-                    <span style={{ color: '#666', fontSize: '9px' }}>{msg.timestamp}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', maxWidth: '92%' }}>
+                  <div
+                    className="win95-window"
+                    style={{
+                      width: 'fit-content',
+                      backgroundColor: '#f5f0ff',
+                      borderRadius: '18px 18px 18px 3px',
+                      border: '2px outset #c084fc',
+                      padding: '8px 10px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.16)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px' }}>
+                      <span style={{ fontWeight: 'bold', color: '#6b21a8' }}>✨ Gemini Copilot</span>
+                      <span style={{ color: '#666', fontSize: '9px' }}>{msg.timestamp}</span>
+                    </div>
+
+                    {msg.text && <div style={{ fontSize: '11px', color: '#333' }}>{msg.text}</div>}
+
+                    {msg.sql && (
+                      <pre
+                        style={{
+                          margin: 0,
+                          padding: '6px 8px',
+                          backgroundColor: '#ffffff',
+                          border: '1px solid #c084fc',
+                          color: '#000000',
+                          fontSize: '11px',
+                          fontFamily: 'Consolas, monospace',
+                          borderRadius: '6px',
+                          overflowX: 'auto',
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        {msg.sql}
+                      </pre>
+                    )}
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                      <button
+                        type="button"
+                        className="win95-button"
+                        style={{ fontSize: '10px', padding: '2px 6px' }}
+                        onClick={() => {
+                          setInputVal(msg.sql!);
+                          textareaRef.current?.focus();
+                        }}
+                        title="Edit in Input Bar"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        className="win95-button"
+                        style={{ fontSize: '11px', padding: '2px 8px', fontWeight: 'bold', color: '#15803d' }}
+                        onClick={() => handleSend(msg.sql)}
+                        title="Execute SQL"
+                      >
+                        ➤
+                      </button>
+                    </div>
                   </div>
-
-                  {msg.text && <div style={{ fontSize: '11px', color: '#333' }}>{msg.text}</div>}
-
-                  {msg.sql && (
-                    <pre
-                      style={{
-                        margin: 0,
-                        padding: '6px 8px',
-                        backgroundColor: '#ffffff',
-                        border: '1px solid #c084fc',
-                        color: '#000000',
-                        fontSize: '11px',
-                        fontFamily: 'Consolas, monospace',
-                        overflowX: 'auto',
-                        whiteSpace: 'pre-wrap',
-                      }}
-                    >
-                      {msg.sql}
-                    </pre>
-                  )}
-
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                    <button
-                      type="button"
-                      className="win95-button"
-                      style={{ fontSize: '10px', padding: '2px 6px' }}
-                      onClick={() => {
-                        setInputVal(msg.sql!);
-                        textareaRef.current?.focus();
-                      }}
-                      title="Edit in Input Bar"
-                    >
-                      ✎
-                    </button>
-                    <button
-                      type="button"
-                      className="win95-button"
-                      style={{ fontSize: '11px', padding: '2px 8px', fontWeight: 'bold', color: '#15803d' }}
-                      onClick={() => handleSend(msg.sql)}
-                      title="Execute SQL"
-                    >
-                      ➤
-                    </button>
+                  <div style={{ fontSize: '9px', color: '#7e22ce', marginTop: '2px', marginLeft: '6px' }}>
+                    Gemini AI • {msg.timestamp}
                   </div>
                 </div>
               </div>
@@ -591,8 +636,10 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   style={{
                     maxWidth: '90%',
                     backgroundColor: '#fee2e2',
+                    borderRadius: '18px 18px 18px 3px',
                     border: '2px outset #ffffff',
                     padding: '8px 10px',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.16)',
                   }}
                 >
                   <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#b91c1c', marginBottom: '2px' }}>
@@ -604,7 +651,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             );
           }
 
-          // KERNEL RESULT BUBBLE (STRICTLY ON THE LEFT SIDE)
+          // KERNEL RESULT BUBBLE (STRICTLY ON THE LEFT SIDE - iMESSAGE CONTOUR IN WIN95 CHROME)
           const res = msg.result;
           const isExpanded = expandedTableId === msg.id;
           return (
@@ -616,21 +663,21 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                 width: '100%',
               }}
             >
-              <div
-                className="win95-window"
-                style={{
-                  width: 'fit-content',
-                  minWidth: '260px',
-                  maxWidth: '96%',
-                  backgroundColor: '#ece9d8',
-                  padding: '8px 10px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.18)',
-                  borderRadius: '6px',
-                }}
-              >
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', maxWidth: '96%' }}>
+                <div
+                  className="win95-window"
+                  style={{
+                    width: 'fit-content',
+                    minWidth: '260px',
+                    backgroundColor: '#ece9d8',
+                    padding: '8px 10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                    borderRadius: '18px 18px 18px 3px',
+                  }}
+                >
                 {/* Kernel Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
@@ -778,8 +825,14 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   </div>
                 )}
               </div>
+              {res && (
+                <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px', marginLeft: '6px' }}>
+                  Executed in {res.executionTimeMs.toFixed(0)}ms • {msg.timestamp}
+                </div>
+              )}
             </div>
-          );
+          </div>
+        );
         })}
 
         {/* Loading Spinner Indicator */}

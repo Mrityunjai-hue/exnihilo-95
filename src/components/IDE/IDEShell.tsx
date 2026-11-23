@@ -139,7 +139,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const { position, handleMouseDown: handleHeaderDrag } = useDraggable(propPosition || { x: 40, y: 30 });
   const [activeMenu, setActiveMenu] = useState<'file' | 'edit' | 'query' | 'view' | 'tools' | 'help' | null>(null);
   const [showExplorer, setShowExplorer] = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(190);
+  const sidebarWidth = 220; // Fixed non-shrinkable navigator width (fully open or minimized)
   const [editorHeightPercent, setEditorHeightPercent] = useState(42); // 42% height for editor
   const [hasSelection, setHasSelection] = useState(false);
   const [selectedText, setSelectedText] = useState('');
@@ -317,8 +317,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     );
   }, [queryHistory, historySearch]);
 
-  // Drag Resizing State
-  const [isResizingSidebar, setIsResizingSidebar] = useState(false);
+  // Drag Resizing State (vertical editor/results splitter)
   const [isResizingVertical, setIsResizingVertical] = useState(false);
 
   const menuBarRef = useRef<HTMLDivElement>(null);
@@ -540,14 +539,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     }
   }, [initialQueryText, initialResult, initialIsLoading, initialExecutionTimeMs, activeTabId]);
 
-  // Handle Drag Resizing for Split Panes
+  // Handle Drag Resizing for Vertical Editor/Results Splitter
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isResizingSidebar && studioBodyRef.current) {
-        const rect = studioBodyRef.current.getBoundingClientRect();
-        const newWidth = Math.max(140, Math.min(420, e.clientX - rect.left));
-        setSidebarWidth(newWidth);
-      }
       if (isResizingVertical && studioBodyRef.current) {
         const rect = studioBodyRef.current.getBoundingClientRect();
         const relativeY = e.clientY - rect.top;
@@ -557,11 +551,10 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     };
 
     const handleMouseUp = () => {
-      setIsResizingSidebar(false);
       setIsResizingVertical(false);
     };
 
-    if (isResizingSidebar || isResizingVertical) {
+    if (isResizingVertical) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     }
@@ -569,7 +562,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isResizingSidebar, isResizingVertical]);
+  }, [isResizingVertical]);
 
   // Close menus on outside click
   useEffect(() => {
@@ -1160,9 +1153,20 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
       {/* Main Studio Body Layout with Resizable Split Panes */}
       <div ref={studioBodyRef} style={{ display: 'flex', flex: 1, padding: '4px', gap: '2px', overflow: 'hidden', position: 'relative' }}>
-        {/* Left Explorer Pane (Schema Tree) */}
+        {/* Left Explorer Pane (Schema Tree) - Non-shrinkable fixed width, either fully open or minimized */}
         {showExplorer && (
-          <div id="tour-schema-tree" style={{ width: `${sidebarWidth}px`, height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div
+            id="tour-schema-tree"
+            style={{
+              width: '220px',
+              minWidth: '220px',
+              maxWidth: '220px',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              flexShrink: 0,
+            }}
+          >
             <SchemaTree
               catalog={catalog}
               executor={executor}
@@ -1174,21 +1178,6 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               onToggleCollapse={() => setShowExplorer(false)}
             />
           </div>
-        )}
-
-        {/* Sidebar Drag Resizer Handle */}
-        {showExplorer && (
-          <div
-            onMouseDown={() => setIsResizingSidebar(true)}
-            style={{
-              width: '6px',
-              cursor: 'col-resize',
-              background: '#c0c0c0',
-              borderLeft: '1px solid #ffffff',
-              borderRight: '1px solid #808080',
-              userSelect: 'none',
-            }}
-          />
         )}
 
         {/* Collapsed Sidebar Restore Button */}

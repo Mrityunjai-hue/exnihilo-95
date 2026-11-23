@@ -233,13 +233,15 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
     if (action === 'insert_template' && target.kind === 'table') {
       const entry = catalog.get(target.tableName, target.dbName);
       if (entry) {
-        const colNames = (entry.schema?.columns || []).map((c: any) => c.name);
-        const placeholders = (entry.schema?.columns || []).map((c: any) => {
-          if (c.logicalType === 'INTEGER') return '1';
-          if (c.logicalType === 'NUMERIC') return '99.99';
-          if (c.logicalType === 'DATE') return "'2026-01-01'";
-          if (c.logicalType === 'BOOLEAN') return '1';
-          return `'Sample ${c.name}'`;
+        const rawCols = (entry.schema?.columns || entry.columns || []);
+        const colList = Array.isArray(rawCols) ? rawCols : [];
+        const colNames = colList.map((c: any) => c?.name || String(c));
+        const placeholders = colList.map((c: any) => {
+          if (c?.logicalType === 'INTEGER') return '1';
+          if (c?.logicalType === 'NUMERIC') return '99.99';
+          if (c?.logicalType === 'DATE') return "'2026-01-01'";
+          if (c?.logicalType === 'BOOLEAN') return '1';
+          return `'Sample ${c?.name || 'val'}'`;
         });
         const sql = `INSERT INTO ${target.tableName} (${colNames.join(', ')})\nVALUES (${placeholders.join(', ')});`;
         onSelectTable(target.tableName, sql);
@@ -275,7 +277,21 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
     }
 
     if (action === 'drop_db' && target.kind === 'db') {
-      if (target.dbName === 'default') { showNotif('❌ Cannot drop the default database.', false); return; }
+      if (target.dbName === 'default') {
+        setConfirmDrop({
+          message: `Clear all synthesized and user tables in the "default" session?`,
+          onConfirm: async () => {
+            setConfirmDrop(null);
+            const tables = getFilteredTables('default');
+            for (const t of tables) {
+              await sqlWorkerClient.dropUserTable(t.tableName, 'default');
+            }
+            showNotif('✅ Tables in default session dropped.', true);
+            onRefresh();
+          },
+        });
+        return;
+      }
       setConfirmDrop({
         message: `Drop database "${target.dbName}" and ALL its tables? This cannot be undone.`,
         onConfirm: async () => {
@@ -511,6 +527,26 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                 >
                   ({tables.length} tbl{tables.length !== 1 ? 's' : ''}{viewCount > 0 ? `, ${viewCount} views` : ''})
                 </span>
+                <button
+                  type="button"
+                  className="win95-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleContextAction('drop_db', { kind: 'db', dbName });
+                  }}
+                  style={{
+                    padding: '0 4px',
+                    fontSize: '9px',
+                    minHeight: '16px',
+                    cursor: 'pointer',
+                    color: '#b91c1c',
+                    fontWeight: 'bold',
+                    marginLeft: '2px',
+                  }}
+                  title={dbName === 'default' ? 'Clear all tables in default database' : `Drop database "${dbName}"`}
+                >
+                  🗑️
+                </button>
               </div>
 
               {/* Tables sub-tree */}
@@ -556,7 +592,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                       {searchQuery ? 'No matches.' : 'No tables yet.'}
                     </div>
                   ) : (
-                    tables.map(entry => {
+                    (tables || []).map(entry => {
                       const key = `${dbName}.${entry.tableName}`;
                       const isTableExpanded = Boolean(expandedTables[key]) || Boolean(searchQuery.trim());
 
@@ -632,6 +668,31 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                 usr
                               </span>
                             )}
+                            <button
+                              type="button"
+                              className="win95-button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleContextAction('drop_table', {
+                                  kind: 'table',
+                                  tableName: entry.tableName,
+                                  dbName: entry.dbName ?? dbName ?? 'default',
+                                  isUserDefined: Boolean(entry.isUserDefined),
+                                });
+                              }}
+                              style={{
+                                padding: '0 4px',
+                                fontSize: '9px',
+                                minHeight: '16px',
+                                cursor: 'pointer',
+                                color: '#b91c1c',
+                                fontWeight: 'bold',
+                                marginLeft: '2px',
+                              }}
+                              title={`Drop Table "${entry.tableName}"`}
+                            >
+                              🗑️
+                            </button>
                           </div>
 
                           {/* Columns sub-tree */}

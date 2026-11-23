@@ -104,24 +104,26 @@ export const MobileCatalogDrawer: React.FC<MobileCatalogDrawerProps> = ({
               </span>
             </div>
           ) : (
-            tables.map((t: any) => {
-              const cols = t.schema?.columns || t.columns || [];
+            (tables || []).map((t: any) => {
+              const rawCols = t?.schema?.columns || t?.columns || [];
+              const cols = Array.isArray(rawCols) ? rawCols : [];
+              const colListStr = cols.map((c: any) => c?.name || String(c)).join(', ');
               return (
                 <div
-                  key={t.tableName}
+                  key={t?.tableName || Math.random()}
                   className="win95-window"
                   style={{ padding: '6px 8px', background: '#ece9d8' }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#000' }}>
-                      📊 {t.tableName}
+                      📊 {t?.tableName || 'table'}
                     </span>
                     <button
                       type="button"
                       className="win95-button"
                       style={{ fontSize: '10px', padding: '1px 6px' }}
                       onClick={() => {
-                        onSelectTable(t.tableName);
+                        if (t?.tableName) onSelectTable(t.tableName);
                         onClose();
                       }}
                       title="Generate SELECT Query"
@@ -130,7 +132,7 @@ export const MobileCatalogDrawer: React.FC<MobileCatalogDrawerProps> = ({
                     </button>
                   </div>
                   <div style={{ fontSize: '10px', color: '#555', marginTop: '3px' }}>
-                    <strong>{t.rowCount ?? 0} rows</strong> • {cols.length} cols
+                    <strong>{t?.rowCount ?? 0} rows</strong> • {cols.length} cols
                   </div>
                   <div
                     style={{
@@ -141,9 +143,9 @@ export const MobileCatalogDrawer: React.FC<MobileCatalogDrawerProps> = ({
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                     }}
-                    title={cols.map((c: any) => c.name).join(', ')}
+                    title={colListStr}
                   >
-                    {cols.map((c: any) => c.name).join(', ')}
+                    {colListStr}
                   </div>
                 </div>
               );

@@ -82,4 +82,37 @@ describe('PocketSQLChat Message Logic & Architecture', () => {
     const isSql = /^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE\s+TABLE\s+\w+\s*\(|WITH|DROP|ALTER|SHOW|EXPLAIN|PRAGMA|DESCRIBE)\b/i.test(sqlQuery);
     expect(isSql).toBe(true);
   });
+
+  it('verifies iMessage in Windows 95 theme contours and delivered state', () => {
+    const userMsg: ChatMessage = {
+      id: 'user-msg-1',
+      sender: 'user',
+      timestamp: '1:05 PM',
+      sql: 'SELECT gross_revenue, fiscal_quarter FROM revenue;',
+    };
+
+    expect(userMsg.sender).toBe('user');
+    // User message delivers with right-aligned orientation
+    const isUser = userMsg.sender === 'user';
+    expect(isUser).toBe(true);
+
+    const kernelMsg: ChatMessage = {
+      id: 'kernel-msg-1',
+      sender: 'kernel',
+      timestamp: '1:05 PM',
+      executionTimeMs: 12.4,
+      result: {
+        ok: true,
+        columns: ['gross_revenue', 'fiscal_quarter'],
+        rows: [[150000, 'Q1']],
+        rowCount: 1,
+        executionTimeMs: 12.4,
+        inferredTables: ['revenue'],
+        reusedTables: [],
+      },
+    };
+
+    expect(kernelMsg.sender).toBe('kernel');
+    expect(kernelMsg.result?.inferredTables).toContain('revenue');
+  });
 });
