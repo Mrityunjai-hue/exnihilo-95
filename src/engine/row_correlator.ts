@@ -5,6 +5,14 @@
  * across columns within the same synthetic row.
  */
 
+function formatTimestampLike(sourceStr: string, date: Date): string {
+  if (sourceStr.includes('T') || sourceStr.endsWith('Z')) {
+    return date.toISOString().replace('T', ' ').substring(0, 19);
+  }
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
 export function correlateRow(row: Record<string, any>, _tableName = ''): Record<string, any> {
   const keys = Object.keys(row);
   const keyMap = new Map<string, string>();
@@ -89,7 +97,7 @@ export function correlateRow(row: Record<string, any>, _tableName = ''): Record<
     if (!isNaN(createdMs) && !isNaN(updatedMs) && updatedMs < createdMs) {
       // Advance updated_at by 1-72 hours after created_at
       const advanced = new Date(createdMs + (Math.floor(Math.random() * 72) + 1) * 3600 * 1000);
-      row[updatedKey] = advanced.toISOString().replace('T', ' ').substring(0, 19);
+      row[updatedKey] = formatTimestampLike(String(row[createdKey]), advanced);
     }
   }
 
@@ -104,8 +112,8 @@ export function correlateRow(row: Record<string, any>, _tableName = ''): Record<
       // Advance end date by 1-14 days
       const advanced = new Date(startMs + (Math.floor(Math.random() * 14) + 1) * 86400 * 1000);
       row[endKey] = row[startKey].includes(':')
-        ? advanced.toISOString().replace('T', ' ').substring(0, 19)
-        : advanced.toISOString().split('T')[0];
+        ? formatTimestampLike(String(row[startKey]), advanced)
+        : formatTimestampLike(String(row[startKey]), advanced).split(' ')[0];
     }
   }
 

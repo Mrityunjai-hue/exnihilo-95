@@ -40,31 +40,46 @@ export async function POST(req: NextRequest) {
       ? buildSchemaSystemPrompt(tableName || targetPrompt.replace(/^create table\s*/i, '').trim(), dialect)
       : buildSystemPrompt(dialect, schema);
 
-    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const primaryModel = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+    let url = `https://generativelanguage.googleapis.com/v1beta/models/${primaryModel}:generateContent?key=${apiKey}`;
 
-    const response = await fetch(url, {
+    const requestBody = JSON.stringify({
+      systemInstruction: {
+        parts: [{ text: systemPrompt }],
+      },
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: targetPrompt.trim() }],
+        },
+      ],
+      generationConfig: {
+        temperature: isSchemaMode ? 0.2 : 0.1,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 2048,
+        responseMimeType: isSchemaMode ? 'application/json' : undefined,
+      },
+    });
+
+    let response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: systemPrompt }],
-        },
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: targetPrompt.trim() }],
-          },
-        ],
-        generationConfig: {
-          temperature: isSchemaMode ? 0.2 : 0.1,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
-          responseMimeType: isSchemaMode ? 'application/json' : undefined,
-        },
-      }),
+      body: requestBody,
     });
+
+    // Graceful fallback to gemini-1.5-flash if 2.0-flash returns 404/400
+    if (!response.ok && (response.status === 404 || response.status === 400) && primaryModel !== 'gemini-1.5-flash') {
+      const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      const fallbackRes = await fetch(fallbackUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: requestBody,
+      });
+      if (fallbackRes.ok) {
+        response = fallbackRes;
+      }
+    }
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));

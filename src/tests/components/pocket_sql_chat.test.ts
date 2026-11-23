@@ -72,4 +72,14 @@ describe('PocketSQLChat Message Logic & Architecture', () => {
     expect(largeResultMsg.result?.rowCount).toBe(25);
     expect(largeResultMsg.result?.columns).toHaveLength(5);
   });
+
+  it('routes natural language prompts without SQL syntax errors', () => {
+    const rawPrompt = 'table for cardiology heart patients';
+    const isSqlStatement = /^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE\s+TABLE\s+\w+\s*\(|WITH|DROP|ALTER|SHOW|EXPLAIN|PRAGMA|DESCRIBE)\b/i.test(rawPrompt);
+    expect(isSqlStatement).toBe(false);
+
+    const sqlQuery = 'SELECT heart_rate, blood_pressure FROM heart;';
+    const isSql = /^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE\s+TABLE\s+\w+\s*\(|WITH|DROP|ALTER|SHOW|EXPLAIN|PRAGMA|DESCRIBE)\b/i.test(sqlQuery);
+    expect(isSql).toBe(true);
+  });
 });

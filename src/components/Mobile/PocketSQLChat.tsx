@@ -71,6 +71,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [catalogVersion, setCatalogVersion] = useState(0);
   const [expandedTableId, setExpandedTableId] = useState<string | null>(null);
+  const [fullscreenTable, setFullscreenTable] = useState<ExecutionSuccess | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -80,7 +81,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       const scrollHeight = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${Math.min(Math.max(38, scrollHeight), 160)}px`;
+      textareaRef.current.style.height = `${Math.min(Math.max(38, scrollHeight), 140)}px`;
     }
   }, [inputVal]);
 
@@ -137,9 +138,13 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
 
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Handle @ai or /ai natural language prompt
-    if (raw.startsWith('@ai') || raw.startsWith('/ai')) {
-      const aiPrompt = raw.replace(/^[@/]ai\s*/i, '').trim();
+    // Check if input is standard SQL or a natural language prompt
+    const isExplicitAi = raw.startsWith('@ai') || raw.startsWith('/ai');
+    const isSqlStatement = /^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE\s+TABLE\s+\w+\s*\(|WITH|DROP|ALTER|SHOW|EXPLAIN|PRAGMA|DESCRIBE)\b/i.test(raw);
+
+    // If input is natural language (e.g. "dinosaurs", "table for revenue", "heart patients") or explicit @ai, route to Copilot
+    if (isExplicitAi || !isSqlStatement) {
+      const aiPrompt = isExplicitAi ? raw.replace(/^[@/]ai\s*/i, '').trim() : raw;
       setMessages((prev) => [
         ...prev,
         {
@@ -360,14 +365,18 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
       <div
         className="win95-inset"
         style={{
-          flex: 1,
+          flex: '1 1 auto',
+          minHeight: 0,
           margin: '2px',
           backgroundColor: '#ffffff',
           overflowY: 'auto',
-          padding: '10px 8px',
+          overflowX: 'hidden',
+          padding: '12px 8px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '10px',
+          gap: '12px',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
         }}
       >
         {messages.map((msg) => {
@@ -386,16 +395,17 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   style={{
                     width: 'fit-content',
                     minWidth: '60px',
-                    maxWidth: '88%',
-                    backgroundColor: '#000080',
+                    maxWidth: '85%',
+                    background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)',
                     color: '#ffffff',
-                    borderRadius: '12px 12px 2px 12px',
+                    borderRadius: '16px 16px 2px 16px',
                     padding: '8px 12px',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.22)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.22)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '4px',
                     wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', opacity: 0.8, fontSize: '9px' }}>
@@ -631,17 +641,28 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                       </span>
                     )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {res && res.columns && res.columns.length > 0 && (
-                      <button
-                        type="button"
-                        className="win95-button"
-                        style={{ fontSize: '9px', padding: '1px 5px', fontWeight: 'bold' }}
-                        onClick={() => setExpandedTableId(isExpanded ? null : msg.id)}
-                        title={isExpanded ? 'Collapse Table' : 'Expand Table View'}
-                      >
-                        {isExpanded ? '⛶ Collapse' : '⛶ Expand'}
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          className="win95-button"
+                          style={{ fontSize: '9px', padding: '1px 5px', fontWeight: 'bold' }}
+                          onClick={() => setExpandedTableId(isExpanded ? null : msg.id)}
+                          title={isExpanded ? 'Collapse Table' : 'Expand Table View'}
+                        >
+                          {isExpanded ? '⛶ Collapse' : '⛶ Expand'}
+                        </button>
+                        <button
+                          type="button"
+                          className="win95-button"
+                          style={{ fontSize: '9px', padding: '1px 5px', fontWeight: 'bold' }}
+                          onClick={() => setFullscreenTable(res)}
+                          title="Open Fullscreen Data Sheet"
+                        >
+                          🗖 Full
+                        </button>
+                      </>
                     )}
                     <span style={{ color: '#666', fontSize: '9px' }}>{msg.timestamp}</span>
                   </div>
@@ -658,7 +679,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   <div
                     className="win95-sunken"
                     style={{
-                      maxHeight: isExpanded ? '75vh' : 'min(50vh, 380px)',
+                      maxHeight: isExpanded ? '60vh' : '240px',
                       overflow: 'auto',
                       backgroundColor: '#ffffff',
                       margin: '2px 0',
@@ -725,8 +746,17 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
 
                 {/* Summary & Inferred Badges */}
                 {res && res.inferredTables && res.inferredTables.length > 0 && (
-                  <div style={{ fontSize: '9px', color: '#555' }}>
-                    ⚡ Inferred & Synthesized: <strong>{res.inferredTables.join(', ')}</strong>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', fontSize: '9px', color: '#555', marginTop: '2px', flexWrap: 'wrap' }}>
+                    <span>⚡ Inferred: <strong>{res.inferredTables.join(', ')}</strong></span>
+                    <button
+                      type="button"
+                      className="win95-button"
+                      style={{ fontSize: '9px', padding: '1px 6px', color: '#6b21a8', fontWeight: 'bold' }}
+                      onClick={() => handleAskCopilot(`table for ${res.inferredTables[0]}`)}
+                      title="Calibrate schema using Gemini AI"
+                    >
+                      ✨ Calibrate with Gemini
+                    </button>
                   </div>
                 )}
 
@@ -871,7 +901,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             onChange={(e) => setInputVal(e.target.value)}
             onSelect={handleSelectText}
             onKeyUp={handleSelectText}
-            placeholder="Enter your SQL query or prompt here..."
+            placeholder="Type SQL query or ask Copilot here..."
             style={{
               flex: 1,
               resize: 'none',
@@ -1002,6 +1032,154 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
         onClose={() => setIsSnapshotsOpen(false)}
         onRestored={handleRefreshCatalog}
       />
+
+      {/* ── Fullscreen Data Sheet Modal ────────────────────────────── */}
+      {fullscreenTable && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '8px',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div
+            className="win95-window"
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+            }}
+          >
+            <div
+              className="win95-titlebar"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '4px 8px',
+                flexShrink: 0,
+              }}
+            >
+              <div className="win95-titlebar-text" style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                <span>📊 Fullscreen Data Sheet</span>
+                <span style={{ opacity: 0.85, marginLeft: '6px' }}>
+                  ({fullscreenTable.rowCount} rows, {fullscreenTable.columns.length} columns)
+                </span>
+              </div>
+              <button
+                type="button"
+                className="win95-button"
+                onClick={() => setFullscreenTable(null)}
+                style={{ fontSize: '11px', padding: '1px 6px', fontWeight: 'bold' }}
+                title="Close Fullscreen View"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div
+              className="win95-sunken"
+              style={{
+                flex: 1,
+                overflow: 'auto',
+                backgroundColor: '#ffffff',
+                margin: '2px',
+                WebkitOverflowScrolling: 'touch',
+              }}
+            >
+              <table
+                style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  fontSize: '11px',
+                  fontFamily: 'Consolas, monospace',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <thead style={{ position: 'sticky', top: 0, backgroundColor: '#d4d0c8', zIndex: 1 }}>
+                  <tr>
+                    {(fullscreenTable.columns || []).map((col, cIdx) => (
+                      <th
+                        key={cIdx}
+                        style={{
+                          border: '1px solid #808080',
+                          padding: '4px 8px',
+                          textAlign: 'left',
+                          fontWeight: 'bold',
+                          color: '#000',
+                          fontSize: '11px',
+                        }}
+                      >
+                        {col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(fullscreenTable.rows || []).map((row, rIdx) => (
+                    <tr
+                      key={rIdx}
+                      style={{
+                        backgroundColor: rIdx % 2 === 0 ? '#ffffff' : '#f8f8f8',
+                      }}
+                    >
+                      {(fullscreenTable.columns || []).map((_, cIdx) => {
+                        const val = Array.isArray(row) ? row[cIdx] : undefined;
+                        return (
+                          <td
+                            key={cIdx}
+                            style={{
+                              border: '1px solid #e0e0e0',
+                              padding: '3px 8px',
+                              color: val === null || val === undefined ? '#888' : '#000',
+                            }}
+                          >
+                            {val === null || val === undefined ? 'NULL' : String(val)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              style={{
+                padding: '4px 8px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: '#d4d0c8',
+                borderTop: '1px solid #808080',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontSize: '10px', color: '#444' }}>
+                Execution: {fullscreenTable.executionTimeMs.toFixed(0)}ms
+              </span>
+              <button
+                type="button"
+                className="win95-button"
+                onClick={() => {
+                  const csv = [(fullscreenTable.columns || []).join(','), ...(fullscreenTable.rows || []).map((r) => Array.isArray(r) ? r.join(',') : '')].join('\n');
+                  copyToClipboard(csv);
+                }}
+                style={{ fontSize: '10px', padding: '2px 8px' }}
+              >
+                📋 Copy CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
