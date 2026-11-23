@@ -240,7 +240,7 @@ export function generateInsertStatements(
     lines.push(`INSERT INTO ${targetTable} (${colListStr}) VALUES`);
 
     const valueTuples = batch.map((row) => {
-      const formattedVals = row.map((val) => formatSqlValue(val, dialect));
+      const formattedVals = (Array.isArray(row) ? row : []).map((val) => formatSqlValue(val, dialect));
       return `  (${formattedVals.join(', ')})`;
     });
 

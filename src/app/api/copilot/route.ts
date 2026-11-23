@@ -1,18 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { buildSystemPrompt, cleanCopilotResponse } from '../../../utils/copilotHelper';
+import {
+  buildSystemPrompt,
+  cleanCopilotResponse,
+  buildSchemaSystemPrompt,
+  parseSchemaResponse,
+} from '../../../utils/copilotHelper';
 
 /**
- * route.ts — Grounded Gemini SQL Copilot API Route (v2.0)
+ * route.ts — Grounded Gemini SQL Copilot API Route (v2.1)
  * Uses native Gemini systemInstruction REST payload, dialect few-shot calibration,
- * and ExNihilo zero-config relational synthesis awareness.
+ * ExNihilo zero-config relational synthesis awareness, and on-demand table schema synthesis.
  */
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { prompt, schema, dialect = 'SQLite', userApiKey } = body;
+    const { prompt, schema, dialect = 'SQLite', userApiKey, mode, tableName } = body;
 
-    if (!prompt || typeof prompt !== 'string') {
+    const isSchemaMode = mode === 'schema' || Boolean(tableName);
+    const targetPrompt = prompt || tableName || '';
+
+    if (!targetPrompt || typeof targetPrompt !== 'string') {
       return NextResponse.json({ ok: false, error: 'Prompt is required' }, { status: 400 });
     }
 
@@ -28,7 +36,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const systemPrompt = buildSystemPrompt(dialect, schema);
+    const systemPrompt = isSchemaMode
+      ? buildSchemaSystemPrompt(tableName || targetPrompt.replace(/^create table\s*/i, '').trim(), dialect)
+      : buildSystemPrompt(dialect, schema);
+
     const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
@@ -42,14 +53,15 @@ export async function POST(req: NextRequest) {
         contents: [
           {
             role: 'user',
-            parts: [{ text: prompt.trim() }],
+            parts: [{ text: targetPrompt.trim() }],
           },
         ],
         generationConfig: {
-          temperature: 0.1,
+          temperature: isSchemaMode ? 0.2 : 0.1,
           topK: 40,
           topP: 0.95,
           maxOutputTokens: 2048,
+          responseMimeType: isSchemaMode ? 'application/json' : undefined,
         },
       }),
     });
@@ -67,9 +79,20 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await response.json();
-    const rawSql = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const generatedSql = cleanCopilotResponse(rawSql);
+    const rawOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
+    if (isSchemaMode) {
+      const parsedSchema = parseSchemaResponse(rawOutput);
+      return NextResponse.json({
+        ok: true,
+        mode: 'schema',
+        tableName: parsedSchema?.tableName || targetPrompt,
+        schema: parsedSchema,
+        sql: parsedSchema?.createSql || `CREATE TABLE ${parsedSchema?.tableName || targetPrompt} (id INT PRIMARY KEY);`,
+      });
+    }
+
+    const generatedSql = cleanCopilotResponse(rawOutput);
     return NextResponse.json({ ok: true, sql: generatedSql });
   } catch (error: any) {
     return NextResponse.json(

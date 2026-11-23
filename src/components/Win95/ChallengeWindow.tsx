@@ -444,7 +444,7 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
                 {/* Sample Input Tables */}
                 <div style={{ marginBottom: '12px' }}>
                   <h4 style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#333' }}>📊 Sample Input Data:</h4>
-                  {selectedChallenge.inputTables.map((tbl) => (
+                  {(selectedChallenge.inputTables || []).map((tbl) => (
                     <div key={tbl.tableName} style={{ marginBottom: '8px' }}>
                       <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#000080' }}>
                         Table: <code>{tbl.tableName}</code>
@@ -452,15 +452,15 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
                       <table className="win95-grid" style={{ width: '100%', fontSize: '10px', marginTop: '2px' }}>
                         <thead>
                           <tr>
-                            {tbl.columns.map((c) => (
+                            {(tbl.columns || []).map((c) => (
                               <th key={c.name}>{c.name}</th>
                             ))}
                           </tr>
                         </thead>
                         <tbody>
-                          {tbl.rows.map((row, idx) => (
+                          {(tbl.rows || []).map((row, idx) => (
                             <tr key={idx}>
-                              {row.map((cell, cIdx) => (
+                              {(Array.isArray(row) ? row : []).map((cell, cIdx) => (
                                 <td key={cIdx}>{cell === null ? <i style={{ color: '#808080' }}>NULL</i> : String(cell)}</td>
                               ))}
                             </tr>
@@ -477,15 +477,15 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
                   <table className="win95-grid" style={{ width: '100%', fontSize: '10px' }}>
                     <thead>
                       <tr>
-                        {selectedChallenge.expectedOutput.columns.map((col) => (
+                        {(selectedChallenge.expectedOutput?.columns || []).map((col) => (
                           <th key={col}>{col}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedChallenge.expectedOutput.rows.map((row, rIdx) => (
+                      {(selectedChallenge.expectedOutput?.rows || []).map((row, rIdx) => (
                         <tr key={rIdx}>
-                          {row.map((cell, cIdx) => (
+                          {(Array.isArray(row) ? row : []).map((cell, cIdx) => (
                             <td key={cIdx}>{cell === null ? <i style={{ color: '#808080' }}>NULL</i> : String(cell)}</td>
                           ))}
                         </tr>
@@ -497,7 +497,7 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
                 {/* Hints Accordion */}
                 <div style={{ borderTop: '1px solid #c0c0c0', paddingTop: '8px' }}>
                   <h4 style={{ margin: '0 0 6px 0', fontSize: '11px' }}>💡 Hints & Canonical Solution:</h4>
-                  {selectedChallenge.hints.map((hint, idx) => {
+                  {(selectedChallenge.hints || []).map((hint, idx) => {
                     const isRevealed = revealedHints[idx];
                     return (
                       <div key={idx} style={{ marginBottom: '4px' }}>
@@ -656,21 +656,21 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
                 </p>
 
                 {/* User Result Table */}
-                {evaluation.userResult && (
+                {evaluation.userResult && Array.isArray(evaluation.userResult.columns) && (
                   <div style={{ marginTop: '8px' }}>
                     <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#155724' }}>Your Output:</div>
                     <table className="win95-grid" style={{ width: '100%', fontSize: '10px', marginTop: '2px' }}>
                       <thead>
                         <tr>
-                          {evaluation.userResult.columns.map((c) => (
+                          {(evaluation.userResult.columns || []).map((c) => (
                             <th key={c}>{c}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {evaluation.userResult.rows.map((row, rIdx) => (
+                        {(evaluation.userResult.rows || []).map((row, rIdx) => (
                           <tr key={rIdx}>
-                            {row.map((cell, cIdx) => (
+                            {(Array.isArray(row) ? row : []).map((cell, cIdx) => (
                               <td key={cIdx}>{cell === null ? 'NULL' : String(cell)}</td>
                             ))}
                           </tr>
@@ -690,22 +690,22 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
                 </p>
 
                 {/* Diff Comparison Grid if user query returned output */}
-                {evaluation.userResult && (
+                {evaluation.userResult && Array.isArray(evaluation.userResult.columns) && (
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#cc0000' }}>Your Output:</div>
                       <table className="win95-grid" style={{ width: '100%', fontSize: '10px' }}>
                         <thead>
                           <tr>
-                            {evaluation.userResult.columns.map((c) => (
+                            {(evaluation.userResult.columns || []).map((c) => (
                               <th key={c}>{c}</th>
                             ))}
                           </tr>
                         </thead>
                         <tbody>
-                          {evaluation.userResult.rows.map((row, rIdx) => (
+                          {(evaluation.userResult.rows || []).map((row, rIdx) => (
                             <tr key={rIdx}>
-                              {row.map((cell, cIdx) => {
+                              {(Array.isArray(row) ? row : []).map((cell, cIdx) => {
                                 const isMismatched = evaluation.mismatches?.some(
                                   (m) => m.rowIdx === rIdx + 1 && m.colIdx === cIdx
                                 );
@@ -733,15 +733,15 @@ export const ChallengeWindow: React.FC<ChallengeWindowProps> = ({
                       <table className="win95-grid" style={{ width: '100%', fontSize: '10px' }}>
                         <thead>
                           <tr>
-                            {evaluation.expectedOutput.columns.map((c) => (
+                            {(evaluation.expectedOutput?.columns || []).map((c) => (
                               <th key={c}>{c}</th>
                             ))}
                           </tr>
                         </thead>
                         <tbody>
-                          {evaluation.expectedOutput.rows.map((row, rIdx) => (
+                          {(evaluation.expectedOutput?.rows || []).map((row, rIdx) => (
                             <tr key={rIdx}>
-                              {row.map((cell, cIdx) => (
+                              {(Array.isArray(row) ? row : []).map((cell, cIdx) => (
                                 <td key={cIdx}>{cell === null ? 'NULL' : String(cell)}</td>
                               ))}
                             </tr>

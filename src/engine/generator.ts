@@ -78,13 +78,55 @@ function generateVarchar(colName: string, tableName: string): string {
   if (n === 'last_name' || n === 'lastname') return faker.person.lastName();
 
   if (n === 'name' || n.endsWith('_name')) {
-    if (t.includes('cust') || t.includes('user') || t.includes('emp') || t.includes('person') || t.includes('lead') || t.includes('contact')) {
+    if (t.includes('cust') || t.includes('user') || t.includes('emp') || t.includes('person') || t.includes('lead') || t.includes('contact') || t.includes('patient') || t.includes('doctor') || t.includes('author') || t.includes('driver')) {
       return faker.person.fullName();
     }
-    if (t.includes('prod') || t.includes('item')) return faker.commerce.productName();
-    if (t.includes('dept') || t.includes('department')) return faker.commerce.department();
-    if (t.includes('comp') || t.includes('org') || t.includes('vendor')) return faker.company.name();
-    return faker.commerce.productName();
+    if (t.includes('heart') || t.includes('cardio') || t.includes('organ') || t.includes('lung') || t.includes('tissue') || t.includes('cell') || t.includes('anatomy') || t.includes('medical')) {
+      return faker.helpers.arrayElement([
+        'Left Ventricular Wall', 'Myocardial Complex', 'Aortic Arch Root', 'Sinus Node Cluster',
+        'Mitral Valve Apparatus', 'Coronary Vessel Branch', 'Pericardial Sac Segment', 'Endocardial Endothelium'
+      ]);
+    }
+    if (t.includes('revenue') || t.includes('income') || t.includes('earnings') || t.includes('ledger') || t.includes('budget') || t.includes('finance') || t.includes('fiscal') || t.includes('sales')) {
+      return faker.helpers.arrayElement([
+        'Enterprise SaaS ARR', 'Direct Marketplace Fees', 'Recurring Platform Subscription',
+        'Professional Deployment Services', 'Wholesale API Royalty', 'Commercial Cloud Licensing',
+        'Corporate Annual Retainer', 'Transactional Gateway Spread'
+      ]);
+    }
+    if (t.includes('earth') || t.includes('planet') || t.includes('geology') || t.includes('terrain') || t.includes('crust') || t.includes('continent') || t.includes('land')) {
+      return faker.helpers.arrayElement([
+        'Continental Lithosphere', 'Oceanic Crust Section', 'Mantle Transition Zone',
+        'Sedimentary Basin Unit', 'Tectonic Boundary Ridge', 'Geothermal Hydrothermal Field',
+        'Stratospheric Shield Layer', 'Subduction Zone Arc'
+      ]);
+    }
+    if (t.includes('museum') || t.includes('gallery') || t.includes('exhibit') || t.includes('artifact') || t.includes('monument') || t.includes('heritage')) {
+      return faker.helpers.arrayElement([
+        'Antiquity Sculpture Hall', 'Renaissance Masterwork Wing', 'Paleolithic Artifact Vault',
+        'Ancient Maritime Gallery', 'Impressionist Fine Arts Pavilion', 'Numismatic Heritage Chamber',
+        'Bronze Age Curator Repository', 'Classical Architecture Rotunda'
+      ]);
+    }
+    if (t.includes('astro') || t.includes('space') || t.includes('galaxy') || t.includes('star') || t.includes('orbit') || t.includes('cosmos') || t.includes('nebula')) {
+      return faker.helpers.arrayElement([
+        'Messier Spiral Complex', 'Andromeda Stellar Cluster', 'Kepler Exoplanet Zone',
+        'Orion Molecular Cloud', 'Perseus Arm Transit', 'Cygnus High-Energy Source'
+      ]);
+    }
+    if (t.includes('prod') || t.includes('item') || t.includes('sku') || t.includes('merch')) {
+      return faker.commerce.productName();
+    }
+    if (t.includes('dept') || t.includes('department')) {
+      return faker.commerce.department();
+    }
+    if (t.includes('comp') || t.includes('org') || t.includes('vendor') || t.includes('agency')) {
+      return faker.company.name();
+    }
+    // Contextual domain label
+    const cleanTbl = t.replace(/[^a-zA-Z0-9]/g, '');
+    const tblTitle = cleanTbl ? cleanTbl.charAt(0).toUpperCase() + cleanTbl.slice(1) : 'Entity';
+    return `${tblTitle} ${faker.helpers.arrayElement(['Alpha', 'Prime', 'Nexus', 'Spectrum', 'Apex', 'Matrix', 'Pro', 'Elite'])} #${faker.number.int({ min: 10, max: 99 })}`;
   }
 
   if (n === 'title' || n === 'job_title') return faker.person.jobTitle();
@@ -294,7 +336,7 @@ export function generateSyntheticDataset(
     const tableSeed = stringToSeed(tableName, seedOffset);
     faker.seed(tableSeed);
 
-    const columns = schema.columns.map(c => c.name);
+    const columns = (schema?.columns || []).map(c => c.name);
     const rows: Record<string, any>[] = [];
 
     // Find incoming relationships where this table is the CHILD

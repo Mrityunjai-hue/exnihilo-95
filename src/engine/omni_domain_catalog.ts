@@ -311,4 +311,86 @@ export const OMNI_DOMAINS: Record<string, OmniDomainEntry> = {
       { name: 'contract_value_m', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.number.float({ min: 2.5, max: 45.0, fractionDigits: 1 }).toFixed(1)) },
     ],
   },
+
+  // ── 7. CULTURE, MUSEUM & FINE ARTS ──────────────────────────────────────────
+  museum_arts: {
+    domainId: 'museum_arts',
+    category: 'arts_culture',
+    keywords: ['museum', 'museums', 'gallery', 'galleries', 'exhibition', 'exhibits', 'artifact', 'artifacts', 'curator', 'monument', 'sculpture', 'painting'],
+    columns: [
+      { name: 'exhibit_id', logicalType: 'INTEGER', isPrimaryKey: true, fakerGenerator: () => faker.number.int({ min: 1001, max: 9999 }) },
+      { name: 'artifact_title', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Winged Victory of Samothrace', 'Rosetta Stone Replica', 'Renaissance Gold Chalice', 'Etruscan Terracotta Urn', 'Neolithic Ceremonial Jade', 'Baroque Marble Bust', 'Imperial Dynasty Scroll']) },
+      { name: 'origin_civilization', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Ancient Greece', 'Hellenistic Egypt', 'Tang Dynasty China', 'Mesoamerican Mayan', 'Mesopotamian Sumer', 'Etruscan Central Italy']) },
+      { name: 'creation_century', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['4th Century BCE', '2nd Century BCE', '1st Century CE', '12th Century CE', '16th Century CE']) },
+      { name: 'gallery_wing', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Classical Antiquities Pavilion', 'Near Eastern Heritage Hall', 'Renaissance Masterworks Wing', 'Asian Sculpture Rotunda']) },
+      { name: 'appraised_value_usd', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.number.float({ min: 150000.0, max: 12500000.0, fractionDigits: 2 }).toFixed(2)) },
+      { name: 'conservation_status', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['PRISTINE_VAULT', 'STABILIZED_EXHIBIT', 'RESTORATION_LAB', 'CLIMATE_CONTROLLED']) },
+    ],
+  },
+
+  // ── 8. PLANETARY, EARTH & GEOLOGICAL SCIENCES ──────────────────────────────
+  earth_geology: {
+    domainId: 'earth_geology',
+    category: 'planetary_science',
+    keywords: ['earth', 'planet', 'planets', 'geology', 'crust', 'mantle', 'lithosphere', 'tectonic', 'continent', 'continents', 'basin', 'stratigraphy'],
+    columns: [
+      { name: 'region_id', logicalType: 'INTEGER', isPrimaryKey: true, fakerGenerator: () => faker.number.int({ min: 101, max: 999 }) },
+      { name: 'plate_or_basin', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Pacific Plate Ring', 'North American Craton', 'Eurasian Intraplate Rift', 'Indo-Australian Trench', 'East African Rift Valley', 'Antarctic Continental Shield']) },
+      { name: 'crust_type', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Continental Granitic', 'Oceanic Basaltic', 'Transitional Rift Margin', 'Subduction Ophiolite']) },
+      { name: 'crust_thickness_km', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.number.float({ min: 6.5, max: 55.0, fractionDigits: 1 }).toFixed(1)) },
+      { name: 'surface_elevation_m', logicalType: 'INTEGER', fakerGenerator: () => faker.number.int({ min: -4150, max: 4800 }) },
+      { name: 'geothermal_gradient_c_km', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.number.float({ min: 21.0, max: 36.5, fractionDigits: 1 }).toFixed(1)) },
+      { name: 'tectonic_activity', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['ACTIVE_SUBDUCTION', 'PASSIVE_MARGIN', 'TRANSFORM_FAULT', 'STABLE_CRATONIC']) },
+    ],
+  },
+
+  // ── 9. MUSIC, SOUND & MEDIA STREAMING ───────────────────────────────────────
+  music_media: {
+    domainId: 'music_media',
+    category: 'media_arts',
+    keywords: ['song', 'songs', 'music', 'track', 'tracks', 'album', 'albums', 'artist', 'artists', 'genre', 'audio', 'playlist'],
+    columns: [
+      { name: 'track_id', logicalType: 'INTEGER', isPrimaryKey: true, fakerGenerator: () => faker.number.int({ min: 1001, max: 99999 }) },
+      { name: 'track_title', logicalType: 'VARCHAR', fakerGenerator: () => `${faker.word.adjective()} ${faker.word.noun()}`.replace(/\b\w/g, l => l.toUpperCase()) },
+      { name: 'artist_name', logicalType: 'VARCHAR', fakerGenerator: () => faker.person.fullName() },
+      { name: 'genre', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Synthwave', 'Indie Rock', 'Neo-Classical', 'Ambient Lo-Fi', 'Progressive Electronic', 'Soul Jazz']) },
+      { name: 'duration_seconds', logicalType: 'INTEGER', fakerGenerator: () => faker.number.int({ min: 140, max: 380 }) },
+      { name: 'tempo_bpm', logicalType: 'INTEGER', fakerGenerator: () => faker.number.int({ min: 80, max: 145 }) },
+      { name: 'total_streams', logicalType: 'INTEGER', fakerGenerator: () => faker.number.int({ min: 25000, max: 4800000 }) },
+      { name: 'release_year', logicalType: 'INTEGER', fakerGenerator: () => faker.helpers.arrayElement([2023, 2024, 2025, 2026]) },
+    ],
+  },
+
+  // ── 10. REAL ESTATE, HOUSING & LEASING ──────────────────────────────────────
+  real_estate: {
+    domainId: 'real_estate',
+    category: 'property_commerce',
+    keywords: ['property', 'properties', 'house', 'houses', 'apartment', 'apartments', 'realty', 'estate', 'mortgage', 'lease', 'tenant', 'landlord'],
+    columns: [
+      { name: 'property_id', logicalType: 'INTEGER', isPrimaryKey: true, fakerGenerator: () => faker.number.int({ min: 10001, max: 99999 }) },
+      { name: 'street_address', logicalType: 'VARCHAR', fakerGenerator: () => faker.location.streetAddress() },
+      { name: 'city', logicalType: 'VARCHAR', fakerGenerator: () => faker.location.city() },
+      { name: 'property_type', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Single Family Home', 'Luxury Condominium', 'Townhouse Unit', 'Commercial Penthouse', 'Multi-Family Duplex']) },
+      { name: 'bedrooms', logicalType: 'INTEGER', fakerGenerator: () => faker.number.int({ min: 1, max: 5 }) },
+      { name: 'square_feet', logicalType: 'INTEGER', fakerGenerator: () => faker.number.int({ min: 650, max: 4800 }) },
+      { name: 'list_price_usd', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.number.float({ min: 220000.0, max: 1850000.0, fractionDigits: 2 }).toFixed(2)) },
+      { name: 'listing_status', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['ACTIVE_LISTING', 'PENDING_OFFER', 'CLOSED_ESCROW', 'OFF_MARKET']) },
+    ],
+  },
+
+  // ── 11. MARITIME & CARGO LOGISTICS ──────────────────────────────────────────
+  maritime_logistics: {
+    domainId: 'maritime_logistics',
+    category: 'transportation',
+    keywords: ['ship', 'ships', 'vessel', 'vessels', 'cargo', 'freight', 'port', 'harbor', 'maritime', 'dock', 'fleet'],
+    columns: [
+      { name: 'vessel_id', logicalType: 'VARCHAR', isPrimaryKey: true, fakerGenerator: () => `IMO-${faker.number.int({ min: 9000000, max: 9999999 })}` },
+      { name: 'vessel_name', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Ever Forward', 'Maersk Mc-Kinney', 'MSC Mediterranean Pride', 'Cosco Shipping Galaxy', 'CMA CGM Antoine']) },
+      { name: 'vessel_type', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Ultra Large Container Vessel', 'Capesize Bulk Carrier', 'LNG Cryogenic Tanker', 'Ro-Ro Vehicle Carrier']) },
+      { name: 'gross_tonnage', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.number.float({ min: 45000.0, max: 235000.0, fractionDigits: 1 }).toFixed(1)) },
+      { name: 'current_speed_knots', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.number.float({ min: 11.5, max: 22.8, fractionDigits: 1 }).toFixed(1)) },
+      { name: 'destination_port', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['Port of Singapore', 'Rotterdam Europort', 'Port of Shanghai', 'Los Angeles Gateway', 'Hamburg Harbor']) },
+      { name: 'navigation_status', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['UNDERWAY_USING_ENGINE', 'AT_ANCHOR', 'MOORED_BERTH', 'RESTRICTED_MANEUVER']) },
+    ],
+  },
 };

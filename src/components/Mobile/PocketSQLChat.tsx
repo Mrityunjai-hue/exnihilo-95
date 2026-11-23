@@ -63,15 +63,26 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     },
   ]);
 
-  const [inputVal, setInputVal] = useState(queryText || 'SELECT heart_rate, beating_frequency, blood_o2_level, blood_pressure FROM hearts;');
+  // Start with clean empty input box (no hardcoded preloaded query)
+  const [inputVal, setInputVal] = useState('');
   const [selectedText, setSelectedText] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSnapshotsOpen, setIsSnapshotsOpen] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [catalogVersion, setCatalogVersion] = useState(0);
+  const [expandedTableId, setExpandedTableId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-grow textarea height dynamically based on input (like iMessage/WhatsApp/ChatGPT)
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${Math.min(Math.max(38, scrollHeight), 160)}px`;
+    }
+  }, [inputVal]);
 
   // Sync catalog updates from worker
   useEffect(() => {
@@ -157,6 +168,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
 
     onQueryChange(raw);
     onRun(raw);
+    setInputVal('');
     setSelectedText('');
   };
 
@@ -176,6 +188,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
         .join('\n');
 
       const savedKey = typeof window !== 'undefined' ? localStorage.getItem('exnihilo_gemini_api_key') || '' : '';
+      const isTableRequest = /^(table|create table|schema for|synthesize table)\b/i.test(promptText.trim());
 
       const res = await fetch('/api/copilot', {
         method: 'POST',
@@ -185,6 +198,8 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
           dialect,
           schema: schemaCtx,
           userApiKey: savedKey || undefined,
+          mode: isTableRequest ? 'schema' : undefined,
+          tableName: isTableRequest ? promptText.replace(/^(table|create table|schema for|synthesize table)\s*/i, '').trim() : undefined,
         }),
       });
 
@@ -199,9 +214,18 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             sender: 'copilot',
             timestamp: timeStr,
             sql: data.sql,
-            text: 'I generated this query for you:',
+            text: data.mode === 'schema'
+              ? `✨ Synthesized authentic schema for "${data.tableName}":`
+              : 'I generated this query for you:',
           },
         ]);
+
+        // Ingest Gemini schema into continual on-device learner
+        if (data.schema?.columns && typeof window !== 'undefined') {
+          import('../../engine/continual_learner').then(({ continualLearner }) => {
+            continualLearner.recordTableExperience(data.tableName || 'table', data.schema.columns);
+          }).catch(() => {});
+        }
       } else {
         setMessages((prev) => [
           ...prev,
@@ -360,15 +384,18 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
               >
                 <div
                   style={{
-                    maxWidth: '85%',
+                    width: 'fit-content',
+                    minWidth: '60px',
+                    maxWidth: '88%',
                     backgroundColor: '#000080',
                     color: '#ffffff',
-                    borderRadius: '6px 6px 0 6px',
-                    padding: '8px 10px',
-                    boxShadow: '1px 2px 4px rgba(0,0,0,0.25)',
+                    borderRadius: '12px 12px 2px 12px',
+                    padding: '8px 12px',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.22)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '4px',
+                    wordBreak: 'break-word',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', opacity: 0.8, fontSize: '9px' }}>
@@ -377,7 +404,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   </div>
 
                   {msg.text && (
-                    <div style={{ fontSize: '12px', wordBreak: 'break-word', lineHeight: 1.3 }}>
+                    <div style={{ fontSize: '12px', wordBreak: 'break-word', lineHeight: 1.35, whiteSpace: 'pre-wrap' }}>
                       {msg.text}
                     </div>
                   )}
@@ -387,11 +414,11 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                       style={{
                         margin: 0,
                         padding: '6px 8px',
-                        backgroundColor: '#001040',
-                        color: '#a6e22e',
+                        backgroundColor: 'rgba(0, 0, 0, 0.28)',
+                        color: '#86efac',
                         fontSize: '11px',
                         fontFamily: 'Consolas, monospace',
-                        borderRadius: '3px',
+                        borderRadius: '4px',
                         overflowX: 'auto',
                         whiteSpace: 'pre-wrap',
                         wordBreak: 'break-word',
@@ -569,6 +596,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
 
           // KERNEL RESULT BUBBLE (STRICTLY ON THE LEFT SIDE)
           const res = msg.result;
+          const isExpanded = expandedTableId === msg.id;
           return (
             <div
               key={msg.id}
@@ -581,44 +609,60 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
               <div
                 className="win95-window"
                 style={{
-                  width: '95%',
-                  maxWidth: '95%',
+                  width: 'fit-content',
+                  minWidth: '260px',
+                  maxWidth: '96%',
                   backgroundColor: '#ece9d8',
-                  padding: '6px 8px',
+                  padding: '8px 10px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '4px',
-                  boxShadow: '1px 2px 4px rgba(0,0,0,0.15)',
+                  gap: '6px',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.18)',
+                  borderRadius: '6px',
                 }}
               >
                 {/* Kernel Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                     <span style={{ fontWeight: 'bold', color: '#000080' }}>💾 ExNihilo Kernel</span>
                     {res && (
                       <span style={{ color: '#15803d', fontWeight: 'bold' }}>
-                        • {res.rowCount} rows ({res.executionTimeMs.toFixed(0)}ms)
+                        • {res.rowCount} row{res.rowCount === 1 ? '' : 's'} ({res.executionTimeMs.toFixed(0)}ms)
                       </span>
                     )}
                   </div>
-                  <span style={{ color: '#666', fontSize: '9px' }}>{msg.timestamp}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {res && res.columns && res.columns.length > 0 && (
+                      <button
+                        type="button"
+                        className="win95-button"
+                        style={{ fontSize: '9px', padding: '1px 5px', fontWeight: 'bold' }}
+                        onClick={() => setExpandedTableId(isExpanded ? null : msg.id)}
+                        title={isExpanded ? 'Collapse Table' : 'Expand Table View'}
+                      >
+                        {isExpanded ? '⛶ Collapse' : '⛶ Expand'}
+                      </button>
+                    )}
+                    <span style={{ color: '#666', fontSize: '9px' }}>{msg.timestamp}</span>
+                  </div>
                 </div>
 
                 {msg.text && (
-                  <div style={{ fontSize: '11px', color: '#222', lineHeight: 1.3 }}>
+                  <div style={{ fontSize: '11px', color: '#222', lineHeight: 1.35, whiteSpace: 'pre-wrap' }}>
                     {msg.text}
                   </div>
                 )}
 
-                {/* Bounded Data Grid Container */}
+                {/* Dynamic Data Grid Container with Smooth Momentum Scrolling */}
                 {res && res.columns.length > 0 && (
                   <div
                     className="win95-sunken"
                     style={{
-                      maxHeight: '220px',
+                      maxHeight: isExpanded ? '75vh' : 'min(50vh, 380px)',
                       overflow: 'auto',
                       backgroundColor: '#ffffff',
                       margin: '2px 0',
+                      WebkitOverflowScrolling: 'touch',
                     }}
                   >
                     <table
@@ -737,7 +781,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
         className="win95-window"
         style={{
           margin: '2px',
-          padding: '6px',
+          padding: '6px 8px',
           display: 'flex',
           flexDirection: 'column',
           gap: '4px',
@@ -745,6 +789,80 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
           background: '#d4d0c8',
         }}
       >
+        {/* Quick Suggestion Pills when input is empty */}
+        {!inputVal.trim() && (
+          <div
+            style={{
+              display: 'flex',
+              gap: '4px',
+              overflowX: 'auto',
+              paddingBottom: '2px',
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            <button
+              type="button"
+              className="win95-button"
+              style={{ fontSize: '10px', padding: '2px 8px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '3px' }}
+              onClick={() => {
+                setInputVal('SELECT * FROM customers LIMIT 10;');
+                textareaRef.current?.focus();
+              }}
+            >
+              <span>📋</span>
+              <span>customers</span>
+            </button>
+            <button
+              type="button"
+              className="win95-button"
+              style={{ fontSize: '10px', padding: '2px 8px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '3px' }}
+              onClick={() => {
+                setInputVal('SELECT * FROM orders LIMIT 10;');
+                textareaRef.current?.focus();
+              }}
+            >
+              <span>📊</span>
+              <span>orders</span>
+            </button>
+            <button
+              type="button"
+              className="win95-button"
+              style={{ fontSize: '10px', padding: '2px 8px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '3px' }}
+              onClick={() => {
+                setInputVal('SELECT * FROM revenue;');
+                textareaRef.current?.focus();
+              }}
+            >
+              <span>💰</span>
+              <span>revenue</span>
+            </button>
+            <button
+              type="button"
+              className="win95-button"
+              style={{ fontSize: '10px', padding: '2px 8px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '3px' }}
+              onClick={() => {
+                setInputVal('SELECT * FROM heart;');
+                textareaRef.current?.focus();
+              }}
+            >
+              <span>❤️</span>
+              <span>heart</span>
+            </button>
+            <button
+              type="button"
+              className="win95-button"
+              style={{ fontSize: '10px', padding: '2px 8px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '3px', color: '#6b21a8' }}
+              onClick={() => {
+                setInputVal('@ai table for ');
+                textareaRef.current?.focus();
+              }}
+            >
+              <span>✨</span>
+              <span>@ai table...</span>
+            </button>
+          </div>
+        )}
+
         <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-end' }}>
           <textarea
             ref={textareaRef}
@@ -753,17 +871,20 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             onChange={(e) => setInputVal(e.target.value)}
             onSelect={handleSelectText}
             onKeyUp={handleSelectText}
-            placeholder="Type SQL or @ai prompt..."
-            rows={2}
+            placeholder="Enter your SQL query or prompt here..."
             style={{
               flex: 1,
               resize: 'none',
+              minHeight: '38px',
+              maxHeight: '160px',
+              height: '38px',
               padding: '6px 8px',
               fontSize: '12px',
               fontFamily: 'Consolas, monospace',
               backgroundColor: '#ffffff',
               color: '#000000',
               boxSizing: 'border-box',
+              overflowY: 'auto',
             }}
             onKeyDown={(e) => {
               if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -804,6 +925,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   color: '#ffffff',
                   backgroundColor: '#b91c1c',
                   padding: '6px 12px',
+                  minHeight: '36px',
                 }}
                 title="Stop Execution"
               >
@@ -820,6 +942,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   fontWeight: 'bold',
                   color: '#15803d',
                   padding: '6px 12px',
+                  minHeight: '36px',
                 }}
                 title="Send / Run SQL (Ctrl+Enter)"
               >

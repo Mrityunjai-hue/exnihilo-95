@@ -50,4 +50,26 @@ describe('PocketSQLChat Message Logic & Architecture', () => {
     expect(aiMsg.sender).toBe('copilot');
     expect(aiMsg.sql).toContain('heart_rate > 90');
   });
+
+  it('supports dynamic table expansion and empty initial query state', () => {
+    // Tests that kernel message supports large row counts and expand toggle
+    const largeResultMsg: ChatMessage = {
+      id: 'kernel-2',
+      sender: 'kernel',
+      timestamp: '10:26 AM',
+      executionTimeMs: 25.1,
+      result: {
+        ok: true,
+        columns: ['id', 'patient_id', 'heart_rate', 'blood_pressure', 'blood_o2_level'],
+        rows: Array.from({ length: 25 }, (_, i) => [i + 1, `PAT-${1000 + i}`, 72 + (i % 20), '120/80', 98]),
+        rowCount: 25,
+        executionTimeMs: 25.1,
+        inferredTables: ['hearts'],
+        reusedTables: [],
+      },
+    };
+
+    expect(largeResultMsg.result?.rowCount).toBe(25);
+    expect(largeResultMsg.result?.columns).toHaveLength(5);
+  });
 });

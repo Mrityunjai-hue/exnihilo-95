@@ -759,9 +759,9 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
                 </marker>
               </defs>
 
-              {erdData.links.map((link) => {
-                const sourceNode = erdData.nodes.find((n) => n.id === link.sourceTable);
-                const targetNode = erdData.nodes.find((n) => n.id === link.targetTable);
+              {(erdData.links || []).map((link) => {
+                const sourceNode = (erdData.nodes || []).find((n) => n.id === link.sourceTable);
+                const targetNode = (erdData.nodes || []).find((n) => n.id === link.targetTable);
                 if (!sourceNode || !targetNode) return null;
 
                 const sourcePos = positions[link.sourceTable] || { x: sourceNode.x, y: sourceNode.y };
@@ -769,11 +769,11 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
 
                 const sourceColIdx = Math.max(
                   0,
-                  sourceNode.columns.findIndex((c) => c.name.toLowerCase() === link.sourceColumn.toLowerCase())
+                  (sourceNode.columns || []).findIndex((c) => c.name.toLowerCase() === link.sourceColumn.toLowerCase())
                 );
                 const targetColIdx = Math.max(
                   0,
-                  targetNode.columns.findIndex((c) => c.name.toLowerCase() === link.targetColumn.toLowerCase())
+                  (targetNode.columns || []).findIndex((c) => c.name.toLowerCase() === link.targetColumn.toLowerCase())
                 );
 
                 const cardWidth = 280;
@@ -1265,7 +1265,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
                       <table className="win95-grid" style={{ width: '100%', fontSize: '10px', borderCollapse: 'collapse' }}>
                         <thead>
                           <tr style={{ background: isMac ? 'rgba(255,255,255,0.08)' : '#e0e0e0' }}>
-                            {sampleCols.map((col) => (
+                            {(sampleCols || []).map((col) => (
                               <th key={col} style={{ padding: '3px 6px', textAlign: 'left', whiteSpace: 'nowrap' }}>
                                 {col}
                               </th>
@@ -1273,9 +1273,9 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
                           </tr>
                         </thead>
                         <tbody>
-                          {sampleRows.map((row, idx) => (
+                          {(sampleRows || []).map((row, idx) => (
                             <tr key={idx} style={{ background: idx % 2 === 0 ? 'transparent' : isMac ? 'rgba(255,255,255,0.02)' : '#f9f9f9' }}>
-                              {sampleCols.map((col) => (
+                              {(sampleCols || []).map((col) => (
                                 <td key={col} style={{ padding: '3px 6px', whiteSpace: 'nowrap', fontFamily: 'var(--w95-mono)' }}>
                                   {String(row[col] ?? 'NULL')}
                                 </td>
@@ -1332,17 +1332,17 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
                 <div className="win95-sunken" style={{ padding: '10px', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)' }}>
                   <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11px' }}>Catalog Statistics:</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
-                    <div>Total Tables: <strong>{erdData.nodes.length}</strong></div>
-                    <div>Foreign Keys: <strong>{erdData.links.length}</strong></div>
-                    <div>Total Columns: <strong>{erdData.nodes.reduce((acc, n) => acc + n.columns.length, 0)}</strong></div>
-                    <div>Namespaces: <strong>{new Set(erdData.nodes.map((n) => n.dbName || 'default')).size}</strong></div>
+                    <div>Total Tables: <strong>{(erdData?.nodes || []).length}</strong></div>
+                    <div>Foreign Keys: <strong>{(erdData?.links || []).length}</strong></div>
+                    <div>Total Columns: <strong>{(erdData?.nodes || []).reduce((acc, n) => acc + (n.columns?.length || 0), 0)}</strong></div>
+                    <div>Namespaces: <strong>{new Set((erdData?.nodes || []).map((n) => n.dbName || 'default')).size}</strong></div>
                   </div>
                 </div>
 
                 {/* Table Quick Navigation List */}
                 <div style={{ fontSize: '11px', fontWeight: 'bold' }}>All Registered Tables:</div>
                 <div className="win95-sunken" style={{ maxHeight: '240px', overflowY: 'auto', background: 'var(--w95-sunken-bg, #ffffff)', color: 'var(--w95-sunken-text, #000000)', padding: '4px' }}>
-                  {erdData.nodes.map((n) => (
+                  {(erdData?.nodes || []).map((n) => (
                     <div
                       key={n.id}
                       onClick={() => setSelectedTableId(n.id)}

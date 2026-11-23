@@ -123,10 +123,37 @@ export function resolveOmniDomainSchema(rawTableName: string): DomainColumnSpec[
  * Dynamically synthesizes an authentic, astonishing relational schema for any
  * unforeseen table name with meaningful, domain-specific column names.
  */
-function generateContextualSchema(singularName: string): DomainColumnSpec[] {
+export function generateContextualSchema(singularName: string): DomainColumnSpec[] {
   const clean = singularName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'entity';
   const label = clean.charAt(0).toUpperCase() + clean.slice(1);
 
+  // Semantic category inference from tokens / morphology:
+  const isBio = ['organ', 'cell', 'tissue', 'bio', 'specimen', 'heart', 'lung', 'brain', 'blood', 'body'].some(k => clean.includes(k));
+  if (isBio) {
+    return [
+      { name: 'id', logicalType: 'INTEGER', isPrimaryKey: true, fakerGenerator: () => faker.number.int({ min: 1001, max: 9999 }) },
+      { name: `${clean}_id`, logicalType: 'VARCHAR', fakerGenerator: () => `BIO-${faker.string.alphanumeric(6).toUpperCase()}` },
+      { name: `${clean}_name`, logicalType: 'VARCHAR', fakerGenerator: () => `${label} ${faker.helpers.arrayElement(['Tissue Section', 'Biopsy Sample', 'Cell Line', 'Vascular Cluster'])}` },
+      { name: 'biomarker_level', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.number.float({ min: 12.0, max: 98.5, fractionDigits: 1 }).toFixed(1)) },
+      { name: 'cell_viability_pct', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.number.float({ min: 88.0, max: 99.8, fractionDigits: 1 }).toFixed(1)) },
+      { name: 'status', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['VIABLE_ACTIVE', 'CRYOPRESERVED', 'INCUBATION_STAGE']) },
+      { name: 'recorded_at', logicalType: 'TIMESTAMP', fakerGenerator: () => faker.date.recent().toISOString().replace('T', ' ').substring(0, 19) },
+    ];
+  }
+
+  const isFinancial = ['finance', 'money', 'cost', 'fee', 'charge', 'rate', 'price', 'profit', 'tax', 'fund'].some(k => clean.includes(k));
+  if (isFinancial) {
+    return [
+      { name: 'id', logicalType: 'INTEGER', isPrimaryKey: true, fakerGenerator: () => faker.number.int({ min: 1001, max: 9999 }) },
+      { name: `${clean}_id`, logicalType: 'VARCHAR', fakerGenerator: () => `TX-${faker.string.alphanumeric(8).toUpperCase()}` },
+      { name: 'amount_usd', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat(faker.number.float({ min: 100.0, max: 85000.0, fractionDigits: 2 }).toFixed(2)) },
+      { name: 'currency', logicalType: 'VARCHAR', fakerGenerator: () => 'USD' },
+      { name: 'payment_status', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['SETTLED', 'PENDING_CLEARANCE', 'RECONCILED']) },
+      { name: 'settled_at', logicalType: 'TIMESTAMP', fakerGenerator: () => faker.date.recent().toISOString().replace('T', ' ').substring(0, 19) },
+    ];
+  }
+
+  // Universal Contextual Entity Schema (Zero Slop)
   return [
     {
       name: 'id',
@@ -140,34 +167,25 @@ function generateContextualSchema(singularName: string): DomainColumnSpec[] {
       fakerGenerator: () => `${clean.slice(0, 3).toUpperCase()}-${faker.string.alphanumeric(6).toUpperCase()}`,
     },
     {
-      name: `${clean}_title`,
+      name: `${clean}_name`,
       logicalType: 'VARCHAR',
-      fakerGenerator: () => `${label} ${faker.helpers.arrayElement(['Prime', 'Nexus', 'Spectrum', 'Apex', 'Matrix', 'Vector', 'Alpha', 'Pro'])} #${faker.number.int({ min: 10, max: 99 })}`,
+      fakerGenerator: () => `${label} ${faker.helpers.arrayElement(['Alpha', 'Prime', 'Nexus', 'Spectrum', 'Apex', 'Matrix', 'Pro', 'Elite'])} #${faker.number.int({ min: 10, max: 99 })}`,
     },
     {
       name: 'category',
       logicalType: 'VARCHAR',
-      fakerGenerator: () => faker.helpers.arrayElement(['PRIMARY_SPEC', 'SECONDARY_TIER', 'ENTERPRISE_GRADE', 'STANDARD']),
+      fakerGenerator: () => faker.helpers.arrayElement(['Primary Tier', 'Standard Spec', 'Enterprise Grade', 'Archive Series']),
     },
     {
       name: 'status',
       logicalType: 'VARCHAR',
-      fakerGenerator: () => faker.helpers.arrayElement(['ACTIVE_OPTIMAL', 'PENDING_VERIFICATION', 'COMPLETED', 'ARCHIVED']),
+      fakerGenerator: () => faker.helpers.arrayElement(['ACTIVE', 'PENDING', 'VERIFIED', 'ARCHIVED']),
     },
     {
-      name: 'operational_capacity',
-      logicalType: 'INTEGER',
-      fakerGenerator: () => faker.number.int({ min: 50, max: 2500 }),
-    },
-    {
-      name: 'performance_metric',
-      logicalType: 'NUMERIC',
-      fakerGenerator: () => parseFloat(faker.number.float({ min: 75.0, max: 99.5, fractionDigits: 2 }).toFixed(2)),
-    },
-    {
-      name: 'last_calibrated_at',
+      name: 'created_at',
       logicalType: 'TIMESTAMP',
       fakerGenerator: () => faker.date.recent({ days: 60 }).toISOString().replace('T', ' ').substring(0, 19),
     },
   ];
 }
+

@@ -37,13 +37,14 @@ function extractCatalogSnapshot(exec: SQLExecutor): CatalogSnapshotDTO {
       rowCount: entry.rowCount,
       isUserCreated: entry.isUserDefined,
       columns: (entry.schema?.columns || []).map((col) => {
-        const colLower = col.name.toLowerCase();
-        const fk = fkMap.get(colLower) || (col as any).references;
+        const colName = col?.name || String(col);
+        const colLower = colName.toLowerCase();
+        const fk = fkMap.get(colLower) || (col as any)?.references;
         return {
-          name: col.name,
-          logicalType: col.logicalType,
-          sqliteType: col.sqliteType,
-          isPrimaryKey: Boolean((col as any).isPrimaryKey || colLower === 'id' || colLower === `${entry.tableName.toLowerCase()}_id`),
+          name: colName,
+          logicalType: col?.logicalType || 'VARCHAR',
+          sqliteType: col?.sqliteType || 'TEXT',
+          isPrimaryKey: Boolean((col as any)?.isPrimaryKey || colLower === 'id' || colLower === `${entry.tableName.toLowerCase()}_id`),
           isForeignKey: Boolean(fk),
           referencesTable: fk?.table,
           referencesColumn: fk?.column || 'id',

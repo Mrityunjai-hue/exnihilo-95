@@ -300,9 +300,11 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const catalog = propCatalog || (executor ? executor.getCatalog() : new ReadOnlyCatalogAdapter({ databases: ['default'], tables: [], version: 0 }));
   const catalogSchemaMap = React.useMemo(() => {
     const map: Record<string, string[]> = {};
-    const entries = catalog.getAll ? catalog.getAll() : [];
-    for (const entry of entries) {
-      map[entry.tableName] = entry.schema?.columns ? entry.schema.columns.map((c: any) => c.name) : [];
+    const entries = catalog?.getAll ? catalog.getAll() : [];
+    for (const entry of (entries || [])) {
+      if (entry && entry.tableName) {
+        map[entry.tableName] = (entry.schema?.columns || entry.columns || []).map((c: any) => c?.name || String(c));
+      }
     }
     return map;
   }, [catalog, refreshKey, initialResult]);
@@ -1725,9 +1727,9 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         dialect={dialect}
         schemaContext={
           catalog?.getAll
-            ? catalog.getAll().map((t: any) => {
-                const cols = t.schema?.columns || t.columns || [];
-                return `${t.tableName} (${cols.map((c: any) => `${c.name} ${c.logicalType || c.type || ''}`).join(', ')})`;
+            ? (catalog.getAll() || []).map((t: any) => {
+                const cols = t?.schema?.columns || t?.columns || [];
+                return `${t?.tableName || 'table'} (${(Array.isArray(cols) ? cols : []).map((c: any) => `${c?.name || c} ${c?.logicalType || c?.type || ''}`).join(', ')})`;
               }).join('\n')
             : ''
         }

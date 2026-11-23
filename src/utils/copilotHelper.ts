@@ -83,3 +83,39 @@ export function cleanCopilotResponse(rawText: string): string {
 
   return cleaned.trim();
 }
+
+export function buildSchemaSystemPrompt(tableName: string, dialect: string = 'SQLite'): string {
+  return `You are the lead database architect and domain ontologist for ExNihilo 95.
+When given a table name or domain topic ("${tableName}"), generate an authentic, realistic, production-grade relational database schema for ${dialect}.
+Return ONLY valid JSON matching this schema:
+{
+  "tableName": "${tableName}",
+  "columns": [
+    { "name": "id", "logicalType": "INTEGER", "description": "Primary key", "sampleValue": 1 },
+    { "name": "...", "logicalType": "VARCHAR" | "INTEGER" | "NUMERIC" | "TIMESTAMP" | "BOOLEAN", "description": "...", "sampleValue": "..." }
+  ],
+  "createSql": "CREATE TABLE ..."
+}
+Provide 5 to 8 highly authentic, domain-appropriate columns. Output strictly pure JSON. No markdown fences, no conversational prose.`;
+}
+
+export function parseSchemaResponse(rawText: string): any {
+  if (!rawText) return null;
+  const cleaned = rawText
+    .replace(/^```[a-zA-Z0-9_-]*\r?\n?/i, '')
+    .replace(/\r?\n?```\s*$/i, '')
+    .trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+}

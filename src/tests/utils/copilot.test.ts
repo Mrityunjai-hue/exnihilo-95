@@ -118,4 +118,51 @@ describe('Phase 13 — Gemini SQL Copilot API Route', () => {
     const raw = 'Here is the SQL query:\n```sql\nSELECT * FROM orders;\n```';
     expect(cleanCopilotResponse(raw)).toBe('SELECT * FROM orders;');
   });
+
+  it('supports schema mode to synthesize out-of-context table ontologies with Gemini', async () => {
+    const mockSchema = {
+      tableName: 'ancient_mayan_calendars',
+      columns: [
+        { name: 'id', logicalType: 'INTEGER', description: 'Primary key' },
+        { name: 'baktun_cycle', logicalType: 'INTEGER', description: 'Calendar cycle' },
+        { name: 'glyph_notation', logicalType: 'VARCHAR', description: 'Hieroglyph' },
+      ],
+      createSql: 'CREATE TABLE ancient_mayan_calendars (id INT PRIMARY KEY, baktun_cycle INT, glyph_notation TEXT);',
+    };
+
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [{ text: JSON.stringify(mockSchema) }],
+            },
+          },
+        ],
+      }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    try {
+      const req = new NextRequest('http://localhost:3000/api/copilot', {
+        method: 'POST',
+        body: JSON.stringify({
+          mode: 'schema',
+          tableName: 'ancient_mayan_calendars',
+          userApiKey: 'testKey123',
+        }),
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.ok).toBe(true);
+      expect(data.mode).toBe('schema');
+      expect(data.tableName).toBe('ancient_mayan_calendars');
+      expect(data.schema.columns).toHaveLength(3);
+      expect(data.sql).toContain('CREATE TABLE ancient_mayan_calendars');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });

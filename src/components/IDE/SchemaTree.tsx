@@ -37,8 +37,8 @@ export interface SchemaTreeTableEntry {
   dbName?: string;
   rowCount: number;
   isUserDefined?: boolean;
-  schema: {
-    columns: Array<{
+  schema?: {
+    columns?: Array<{
       name: string;
       logicalType?: string;
       sqliteType?: string;
@@ -48,6 +48,15 @@ export interface SchemaTreeTableEntry {
       referencesColumn?: string;
     }>;
   };
+  columns?: Array<{
+    name: string;
+    logicalType?: string;
+    sqliteType?: string;
+    isPrimaryKey?: boolean;
+    isForeignKey?: boolean;
+    referencesTable?: string;
+    referencesColumn?: string;
+  }>;
   sampleRows?: unknown[][];
   triggers?: string[];
 }
@@ -179,34 +188,35 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
 
   const showNotif = (msg: string, ok = true) => setNotification({ msg, ok });
 
-  const dbNames = catalog.getDatabaseNames();
+  const dbNames = (catalog?.getDatabaseNames ? catalog.getDatabaseNames() : []) || ['default'];
 
   // Filter: if search active, show all tables across dbs that match
   const getFilteredTables = (dbName: string): SchemaTreeTableEntry[] => {
     let tables: SchemaTreeTableEntry[] = [];
-    if (typeof catalog.getDatabase === 'function') {
+    if (typeof catalog?.getDatabase === 'function') {
       const db = catalog.getDatabase(dbName);
       if (db?.tables) {
         tables = Array.from(db.tables.values()) as SchemaTreeTableEntry[];
       }
-    } else if (typeof catalog.getAll === 'function') {
-      tables = catalog.getAll().filter((t: any) => (t.dbName || 'default').toLowerCase() === dbName.toLowerCase());
+    } else if (typeof catalog?.getAll === 'function') {
+      tables = (catalog.getAll() || []).filter((t: any) => (t?.dbName || 'default').toLowerCase() === dbName.toLowerCase());
     }
     if (!searchQuery.trim()) return tables;
     const q = searchQuery.toLowerCase().trim();
     return tables.filter((e: any) =>
-      e.tableName.toLowerCase().includes(q) ||
-      (e.schema?.columns || []).some((c: any) => c.name.toLowerCase().includes(q))
+      (e?.tableName || '').toLowerCase().includes(q) ||
+      (e?.schema?.columns || e?.columns || []).some((c: any) => (c?.name || String(c)).toLowerCase().includes(q))
     );
   };
 
   const generateDDL = (entry: SchemaTreeTableEntry): string => {
-    const cols = (entry.schema?.columns || []).map((col: any) => {
-      const isPk = col.name.toLowerCase() === 'id';
-      const t = col.logicalType === 'INTEGER' ? 'INT' : col.logicalType === 'NUMERIC' ? 'DECIMAL' : (col.logicalType || col.sqliteType || 'TEXT');
-      return `  ${col.name.padEnd(20)} ${t}${isPk ? ' PRIMARY KEY' : ''}`;
+    const cols = (entry?.schema?.columns || entry?.columns || []).map((col: any) => {
+      const colName = col?.name || String(col);
+      const isPk = colName.toLowerCase() === 'id';
+      const t = col?.logicalType === 'INTEGER' ? 'INT' : col?.logicalType === 'NUMERIC' ? 'DECIMAL' : (col?.logicalType || col?.sqliteType || 'TEXT');
+      return `  ${colName.padEnd(20)} ${t}${isPk ? ' PRIMARY KEY' : ''}`;
     }).join(',\n');
-    return `CREATE TABLE ${entry.tableName} (\n${cols}\n);`;
+    return `CREATE TABLE ${entry?.tableName || 'table'} (\n${cols}\n);`;
   };
 
   // ── Context Menu actions ───────────────────────────────────────────────────
@@ -643,17 +653,18 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                   padding: isMac ? '2px 0' : 0,
                                 }}
                               >
-                                📂 Columns ({entry.schema?.columns ? entry.schema.columns.length : 0})
+                                📂 Columns ({(entry?.schema?.columns || entry?.columns || []).length})
                               </div>
-                              {(entry.schema?.columns || []).map((col: any) => {
-                                const isPk = col.name.toLowerCase() === 'id';
-                                const isFk = col.name.toLowerCase().endsWith('_id') && !isPk;
+                              {(entry?.schema?.columns || entry?.columns || []).map((col: any) => {
+                                const colName = col?.name || String(col);
+                                const isPk = colName.toLowerCase() === 'id';
+                                const isFk = colName.toLowerCase().endsWith('_id') && !isPk;
                                 return (
                                   <div
-                                    key={col.name}
+                                    key={colName}
                                     draggable={true}
                                     onDragStart={(e) => {
-                                      e.dataTransfer.setData('text/plain', col.name);
+                                      e.dataTransfer.setData('text/plain', colName);
                                       e.dataTransfer.effectAllowed = 'copy';
                                     }}
                                     style={{
@@ -664,8 +675,8 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                       cursor: 'pointer',
                                       borderRadius: isMac ? 4 : 0,
                                     }}
-                                    onClick={e => { e.stopPropagation(); onSelectTable(entry.tableName, `SELECT ${col.name} FROM ${entry.tableName};`); }}
-                                    title={`Click to SELECT • Drag "${col.name}" into SQL Editor`}
+                                    onClick={e => { e.stopPropagation(); onSelectTable(entry.tableName, `SELECT ${colName} FROM ${entry.tableName};`); }}
+                                    title={`Click to SELECT • Drag "${colName}" into SQL Editor`}
                                   >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: isMac ? 5 : 3 }}>
                                       <span style={{ fontSize: isMac ? 13 : 11 }}>{isPk ? '🔑' : isFk ? '🔗' : '📄'}</span>
@@ -675,7 +686,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                           color: isDark ? '#e2e8f0' : 'var(--w95-sunken-text,#000)',
                                         }}
                                       >
-                                        {col.name}
+                                        {colName}
                                       </span>
                                     </div>
                                     <span
@@ -685,7 +696,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                         fontStyle: 'italic',
                                       }}
                                     >
-                                      {(col.logicalType || col.sqliteType || "text").toLowerCase()}
+                                      {(col?.logicalType || col?.sqliteType || "text").toLowerCase()}
                                     </span>
                                   </div>
                                 );
