@@ -24,6 +24,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Prompt is required' }, { status: 400 });
     }
 
+    const trimmed = targetPrompt.trim().toLowerCase();
+
+    // 1. Conversational Greeting & Capability Interceptor
+    const isGreeting = /^(hello|hi|hey|greetings|help|who are you|what can you do|good morning|good evening|good afternoon)\b/i.test(trimmed);
+    if (isGreeting && !isSchemaMode) {
+      return NextResponse.json({
+        ok: true,
+        text: `Hello! 👋 I'm your ExNihilo SQL Copilot. I can write ${dialect} queries for you or synthesize realistic relational tables.\n\nTry asking:\n• "Show top 10 customers by revenue"\n• "Find patients with high heart rate"\n• "@ai table for cyber security events"`,
+        sql: `SELECT 'Hello from ExNihilo Copilot!' AS message, '${dialect}' AS dialect;`,
+      });
+    }
+
     const apiKey = userApiKey || process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -40,9 +52,10 @@ export async function POST(req: NextRequest) {
       ? buildSchemaSystemPrompt(tableName || targetPrompt.replace(/^create table\s*/i, '').trim(), dialect)
       : buildSystemPrompt(dialect, schema);
 
-    // Modern Gemini model cascade with automatic deprecation recovery
+    // Modern Gemini model cascade: prioritize gemini-3.8-flash and gemini-2.5-flash
     const candidateModels = [
       process.env.GEMINI_MODEL,
+      'gemini-3.8-flash',
       'gemini-2.5-flash',
       'gemini-1.5-flash',
       'gemini-2.0-flash-exp',
@@ -127,7 +140,14 @@ export async function POST(req: NextRequest) {
     }
 
     const generatedSql = cleanCopilotResponse(rawOutput);
-    return NextResponse.json({ ok: true, sql: generatedSql });
+    const isSql = /^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|WITH|ALTER|DROP|SHOW|EXPLAIN|PRAGMA|DESCRIBE)\b/i.test(generatedSql);
+    const extractedSql = isSql ? generatedSql : (rawOutput.match(/(SELECT|INSERT|UPDATE|DELETE|CREATE|WITH)\b[\s\S]*?;/i)?.[0] || '');
+
+    return NextResponse.json({
+      ok: true,
+      sql: extractedSql,
+      text: isSql ? undefined : rawOutput,
+    });
   } catch (error: any) {
     return NextResponse.json(
       { ok: false, error: 'INTERNAL_ERROR', message: error?.message || 'Failed to generate SQL' },

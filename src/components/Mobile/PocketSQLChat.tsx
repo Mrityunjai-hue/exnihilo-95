@@ -232,17 +232,17 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
       const data = await res.json();
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      if (data.ok && data.sql) {
+      if (data.ok && (data.sql || data.text)) {
         setMessages((prev) => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'copilot',
             timestamp: timeStr,
-            sql: data.sql,
-            text: data.mode === 'schema'
+            sql: data.sql || undefined,
+            text: data.text || (data.mode === 'schema'
               ? `✨ Synthesized authentic schema for "${data.tableName}":`
-              : 'I generated this query for you:',
+              : 'I generated this query for you:'),
           },
         ]);
 
@@ -253,15 +253,31 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
           }).catch(() => {});
         }
       } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `ai-err-${Date.now()}`,
-            sender: 'error',
-            timestamp: timeStr,
-            error: data.message || data.error || 'Failed to generate query.',
-          },
-        ]);
+        const isKeyMissing = data.error === 'GEMINI_API_KEY_REQUIRED';
+        if (isKeyMissing) {
+          const cleanWord = promptText.replace(/^(show|find|list|get|select|query|give me|table for|table)\s+/i, '').trim().split(/\s+/)[0] || 'customers';
+          const fallbackTable = cleanWord.toLowerCase().replace(/[^a-z0-9_]/g, '') || 'customers';
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `ai-${Date.now()}`,
+              sender: 'copilot',
+              timestamp: timeStr,
+              sql: `SELECT * FROM ${fallbackTable} LIMIT 20;`,
+              text: '🔑 No Gemini API key configured in Vercel. In the meantime, I generated this query for you:',
+            },
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `ai-err-${Date.now()}`,
+              sender: 'error',
+              timestamp: timeStr,
+              error: data.message || data.error || 'Failed to generate query.',
+            },
+          ]);
+        }
       }
     } catch (err: any) {
       setMessages((prev) => [
@@ -603,29 +619,31 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                       </pre>
                     )}
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                      <button
-                        type="button"
-                        className="win95-button"
-                        style={{ fontSize: '10px', padding: '2px 6px' }}
-                        onClick={() => {
-                          setInputVal(msg.sql!);
-                          textareaRef.current?.focus();
-                        }}
-                        title="Edit in Input Bar"
-                      >
-                        ✎
-                      </button>
-                      <button
-                        type="button"
-                        className="win95-button"
-                        style={{ fontSize: '11px', padding: '2px 8px', fontWeight: 'bold', color: '#15803d' }}
-                        onClick={() => handleSend(msg.sql)}
-                        title="Execute SQL"
-                      >
-                        ➤
-                      </button>
-                    </div>
+                    {msg.sql && (
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                        <button
+                          type="button"
+                          className="win95-button"
+                          style={{ fontSize: '10px', padding: '2px 6px' }}
+                          onClick={() => {
+                            setInputVal(msg.sql!);
+                            textareaRef.current?.focus();
+                          }}
+                          title="Edit in Input Bar"
+                        >
+                          ✎
+                        </button>
+                        <button
+                          type="button"
+                          className="win95-button"
+                          style={{ fontSize: '11px', padding: '2px 8px', fontWeight: 'bold', color: '#15803d' }}
+                          onClick={() => handleSend(msg.sql)}
+                          title="Execute SQL"
+                        >
+                          ➤
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div style={{ fontSize: '9px', color: '#7e22ce', marginTop: '2px', marginLeft: '6px' }}>
                     Gemini AI • {msg.timestamp}
