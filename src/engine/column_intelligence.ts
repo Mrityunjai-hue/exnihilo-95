@@ -6,6 +6,7 @@
  */
 
 import { fakerEN as faker } from '@faker-js/faker';
+import { decomposeColumnStem } from './stem_decomposer';
 
 export interface SemanticColumnInference {
   semanticType: string;
@@ -160,8 +161,18 @@ const SEMANTIC_DICTIONARY: Record<string, SemanticColumnInference> = {
   memory_mb: { semanticType: 'memory_mb', logicalType: 'INTEGER', generate: () => faker.number.int({ min: 256, max: 16384 }) },
   log_level: { semanticType: 'log_level', logicalType: 'VARCHAR', generate: () => faker.helpers.arrayElement(['DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL']) },
 
-  // 6. Healthcare & Science
-  heart_rate_bpm: { semanticType: 'heart_rate', logicalType: 'INTEGER', generate: () => faker.number.int({ min: 58, max: 102 }) },
+  // 6. Healthcare, Biometrics & Science
+  heart_rate: { semanticType: 'heart_rate', logicalType: 'INTEGER', generate: () => faker.number.int({ min: 62, max: 96 }) },
+  heart_rate_bpm: { semanticType: 'heart_rate', logicalType: 'INTEGER', generate: () => faker.number.int({ min: 62, max: 96 }) },
+  beating_frequency: { semanticType: 'beating_frequency', logicalType: 'NUMERIC', generate: () => parseFloat((faker.number.float({ min: 1.05, max: 1.6, fractionDigits: 2 })).toFixed(2)) },
+  blood_pressure: {
+    semanticType: 'blood_pressure',
+    logicalType: 'VARCHAR',
+    generate: () => `${faker.number.int({ min: 110, max: 135 })}/${faker.number.int({ min: 70, max: 88 })}`,
+  },
+  blood_o2_level: { semanticType: 'blood_o2_level', logicalType: 'NUMERIC', generate: () => parseFloat((faker.number.float({ min: 95.0, max: 99.5, fractionDigits: 1 })).toFixed(1)) },
+  blood_o2: { semanticType: 'blood_o2_level', logicalType: 'NUMERIC', generate: () => parseFloat((faker.number.float({ min: 95.0, max: 99.5, fractionDigits: 1 })).toFixed(1)) },
+  spo2: { semanticType: 'blood_o2_level', logicalType: 'NUMERIC', generate: () => parseFloat((faker.number.float({ min: 95.0, max: 99.5, fractionDigits: 1 })).toFixed(1)) },
   systolic_bp: { semanticType: 'blood_pressure', logicalType: 'INTEGER', generate: () => faker.number.int({ min: 105, max: 140 }) },
   diastolic_bp: { semanticType: 'blood_pressure', logicalType: 'INTEGER', generate: () => faker.number.int({ min: 65, max: 90 }) },
   temperature_c: { semanticType: 'temperature', logicalType: 'NUMERIC', generate: () => parseFloat(faker.number.float({ min: 36.2, max: 38.5, fractionDigits: 1 }).toFixed(1)) },
@@ -210,6 +221,16 @@ export function inferColumnIntelligence(
         generate: (rowIndex) => p.generate(rowIndex, clean),
       };
     }
+  }
+
+  // 4. Morphological Stem & Physical Unit Decomposer (v3.0)
+  const decomposed = decomposeColumnStem(clean, _tableName);
+  if (decomposed) {
+    return {
+      semanticType: decomposed.semanticCategory,
+      logicalType: decomposed.logicalType,
+      generate: decomposed.generate,
+    };
   }
 
   return null;

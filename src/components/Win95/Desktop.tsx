@@ -14,7 +14,7 @@ import dynamic from 'next/dynamic';
 import { ClassifiedError, classifyError } from '../../engine/errors';
 import { Taskbar, WindowMeta } from './Taskbar';
 import { IDEShell } from '../IDE/IDEShell';
-import { PocketSQLShell } from '../Mobile/PocketSQLShell';
+import { PocketSQLChat } from '../Mobile/PocketSQLChat';
 import { ErrorDialog } from './ErrorDialog';
 import { MobileLanding } from './MobileLanding';
 import { CookieConsentDialog, getStoredCookiePreferences } from './CookieConsentDialog';
@@ -546,12 +546,12 @@ export const Desktop: React.FC = () => {
   // Mobile Pocket SQL Mode (< 1024px or touch device)
   if (isMobileViewport && !forceDesktop) {
     return (
-      <PocketSQLShell
+      <PocketSQLChat
         dialect={dialect}
         onDialectChange={setDialect}
         queryText={queryText}
         onQueryChange={setQueryText}
-        onRun={() => handleRunQuery()}
+        onRun={(customSql) => handleRunQuery(customSql)}
         onCancelQuery={handleCancelQuery}
         isLoading={isLoading}
         result={result}

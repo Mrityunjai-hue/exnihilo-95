@@ -7,6 +7,7 @@
 
 import { fakerEN as faker } from '@faker-js/faker';
 import { LogicalType } from './inference';
+import { decomposeColumnStem } from './stem_decomposer';
 
 // ── Exact Canonical Column Map (O(1) Lookup) ─────────────────────────────────
 const EXACT_VARCHAR_COLS = new Set([
@@ -100,6 +101,16 @@ export function matchColumnToken(colName: string): ColumnMatchResult | null {
     };
   }
 
+  // Tier 2.5: Physical, Biological & Sensor Stem Decomposer (v3.0)
+  const stemMatch = decomposeColumnStem(colName);
+  if (stemMatch) {
+    return {
+      logicalType: stemMatch.logicalType,
+      fakerGenerator: () => stemMatch.generate(0),
+      source: `stem decomposer: calibrated ${stemMatch.semanticCategory} → ${stemMatch.logicalType}`
+    };
+  }
+
   // Tier 3: Strict Suffix Rules
   if (n.endsWith('_country') || n.endsWith('_city') || n.endsWith('_state') || n.endsWith('_name') || n.endsWith('_email') || n.endsWith('_phone') || n.endsWith('_code') || n.endsWith('_author') || n.endsWith('_title')) {
     return { logicalType: 'VARCHAR', fakerGenerator: getFakerGeneratorForToken(n), source: `token dictionary: suffix rule → VARCHAR` };
@@ -171,6 +182,10 @@ export function matchColumnToken(colName: string): ColumnMatchResult | null {
 
 export function getFakerGeneratorForToken(colName: string): () => any {
   const n = colName.toLowerCase().trim();
+
+  // Check stem decomposer first for calibrated domain values
+  const stem = decomposeColumnStem(colName);
+  if (stem) return () => stem.generate(0);
 
   // Books & Literature Generators
   if (n === 'author' || n.includes('author') || n === 'writer') {

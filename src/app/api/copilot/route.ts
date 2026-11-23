@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { buildSystemPrompt, cleanCopilotResponse } from '../../../utils/copilotHelper';
 
 /**
- * route.ts — Opt-In Gemini SQL Copilot API Route
- * Zero heavyweight SDK dependencies — uses native fetch directly to Google's REST API.
+ * route.ts — Grounded Gemini SQL Copilot API Route (v2.0)
+ * Uses native Gemini systemInstruction REST payload, dialect few-shot calibration,
+ * and ExNihilo zero-config relational synthesis awareness.
  */
 
 export async function POST(req: NextRequest) {
@@ -20,32 +22,34 @@ export async function POST(req: NextRequest) {
         {
           ok: false,
           error: 'GEMINI_API_KEY_REQUIRED',
-          message: 'No Gemini API key configured. Enter your Gemini API key in the Copilot dialog or set the GEMINI_API_KEY environment variable.',
+          message: 'No Gemini API key configured. Enter your Gemini API key in the Copilot dialog or set the GEMINI_API_KEY environment variable in Vercel.',
         },
         { status: 401 }
       );
     }
 
-    const systemInstruction = `You are an expert SQL assistant for the retro ExNihilo 95 IDE.
-Generate ONLY syntactically valid ${dialect} SQL for the user request.
-Do not wrap in markdown codeblocks (no \`\`\`sql). Output pure, executable SQL only.
-${schema ? `Existing Schema Context:\n${schema}` : ''}`;
-
+    const systemPrompt = buildSystemPrompt(dialect, schema);
     const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: systemPrompt }],
+        },
         contents: [
           {
             role: 'user',
-            parts: [{ text: `${systemInstruction}\n\nUser Request: ${prompt}` }],
+            parts: [{ text: prompt.trim() }],
           },
         ],
         generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 1000,
+          temperature: 0.1,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
         },
       }),
     });
@@ -63,8 +67,8 @@ ${schema ? `Existing Schema Context:\n${schema}` : ''}`;
     }
 
     const data = await response.json();
-    let generatedSql = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    generatedSql = generatedSql.replace(/^```[a-zA-Z0-9_-]*\r?\n?/i, '').replace(/\r?\n?```$/i, '').trim();
+    const rawSql = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const generatedSql = cleanCopilotResponse(rawSql);
 
     return NextResponse.json({ ok: true, sql: generatedSql });
   } catch (error: any) {

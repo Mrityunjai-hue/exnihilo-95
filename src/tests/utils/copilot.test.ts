@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { POST } from '../../app/api/copilot/route';
+import { buildSystemPrompt, cleanCopilotResponse } from '../../utils/copilotHelper';
 import { NextRequest } from 'next/server';
 
 describe('Phase 13 — Gemini SQL Copilot API Route', () => {
@@ -100,5 +101,21 @@ describe('Phase 13 — Gemini SQL Copilot API Route', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('builds grounded system prompt with dialect rules and zero-config awareness', () => {
+    const pgPrompt = buildSystemPrompt('PostgreSQL', 'users (id, email)');
+    expect(pgPrompt).toContain('ZERO-CONFIG SYNTHESIS AWARENESS');
+    expect(pgPrompt).toContain('ILIKE');
+    expect(pgPrompt).toContain('users (id, email)');
+
+    const myPrompt = buildSystemPrompt('MySQL');
+    expect(myPrompt).toContain('CONCAT()');
+    expect(myPrompt).toContain('DATE_FORMAT');
+  });
+
+  it('cleans conversational prefixes from copilot responses', () => {
+    const raw = 'Here is the SQL query:\n```sql\nSELECT * FROM orders;\n```';
+    expect(cleanCopilotResponse(raw)).toBe('SELECT * FROM orders;');
   });
 });

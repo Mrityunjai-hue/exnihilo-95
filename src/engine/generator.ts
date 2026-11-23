@@ -99,8 +99,12 @@ function generateVarchar(colName: string, tableName: string): string {
   if (n === 'status') return faker.helpers.arrayElement(['active', 'pending', 'completed', 'shipped', 'cancelled', 'processing']);
   if (n === 'role') return faker.helpers.arrayElement(['admin', 'user', 'manager', 'editor', 'viewer']);
   if (n === 'type' || n === 'category') return faker.helpers.arrayElement(['standard', 'premium', 'basic', 'enterprise']);
-  const words = faker.lorem.words(2);
-  return words.charAt(0).toUpperCase() + words.slice(1);
+  
+  // Non-Latin sensible title descriptor for arbitrary columns
+  const clean = colName.replace(/[_.\-]+/g, ' ').trim();
+  const label = clean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const code = faker.number.int({ min: 100, max: 999 });
+  return `${label} #${code}`;
 }
 
 function generateNumeric(colName: string, rowIndex: number): number {
@@ -227,7 +231,7 @@ function generateScalarValue(
     case 'DATE':      return generateDate(col.name);
     case 'TIMESTAMP': return generateTimestamp(col.name);
     case 'BOOLEAN':   return generateBoolean();
-    default:          return faker.word.sample();
+    default:          return `${col.name} #${rowIndex + 1}`;
   }
 }
 

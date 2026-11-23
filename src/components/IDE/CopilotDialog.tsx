@@ -138,6 +138,11 @@ export const CopilotDialog: React.FC<CopilotDialogProps> = ({
               placeholder="e.g. Find top 5 customers with total order value > 1000 in 1995, ordered by total spent..."
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                  handleGenerate();
+                }
+              }}
               rows={3}
               style={{
                 width: '100%',
@@ -148,6 +153,25 @@ export const CopilotDialog: React.FC<CopilotDialogProps> = ({
                 boxSizing: 'border-box',
               }}
             />
+            {/* Quick Prompt Presets */}
+            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+              {[
+                'Top 5 customers by spend',
+                'Join orders with customers',
+                'Monthly revenue trend',
+                'Cardiac vitals with high heart rate',
+              ].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  className="win95-button"
+                  style={{ fontSize: '9px', padding: '1px 5px', opacity: 0.9 }}
+                  onClick={() => setPrompt(preset)}
+                >
+                  ⚡ {preset}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
