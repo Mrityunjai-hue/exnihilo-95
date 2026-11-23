@@ -153,7 +153,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
 
     const activeNode = erdData.nodes.find((n) => n.id === selectedTableId);
     if (activeNode) {
-      setSampleCols(activeNode.columns.map((c) => c.name));
+      setSampleCols((activeNode.columns || []).map((c) => c.name));
       const maybeNodeAny = activeNode as any;
       if (maybeNodeAny.sampleRows && maybeNodeAny.sampleRows.length > 0) {
         setSampleRows(maybeNodeAny.sampleRows);
@@ -919,7 +919,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
                       fontSize: '11px',
                     }}
                   >
-                    {node.columns.map((col, idx) => (
+                    {(node.columns || []).map((col, idx) => (
                       <div
                         key={idx}
                         style={{
@@ -1044,7 +1044,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
                     className="win95-button"
                     style={{ flex: 1, padding: '3px 6px', fontSize: '10px' }}
                     onClick={() => {
-                      const ddl = `CREATE TABLE ${selectedNode.tableName} (\n${selectedNode.columns.map((c) => `  ${c.name} ${c.type}${c.isPrimaryKey ? ' PRIMARY KEY' : ''}`).join(',\n')}\n);`;
+                      const ddl = `CREATE TABLE ${selectedNode.tableName} (\n${(selectedNode.columns || []).map((c) => `  ${c.name} ${c.type}${c.isPrimaryKey ? ' PRIMARY KEY' : ''}`).join(',\n')}\n);`;
                       copyToClipboard(ddl, 'DDL');
                     }}
                   >
@@ -1068,7 +1068,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
                     }}
                     onClick={() => setInspectorTab('columns')}
                   >
-                    Columns ({selectedNode.columns.length})
+                    Columns ({selectedNode.columns?.length || 0})
                   </button>
 
                   <button
@@ -1118,7 +1118,7 @@ export const ERDViewer: React.FC<ERDViewerProps> = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedNode.columns.map((c, i) => (
+                        {(selectedNode.columns || []).map((c, i) => (
                           <tr
                             key={i}
                             style={{

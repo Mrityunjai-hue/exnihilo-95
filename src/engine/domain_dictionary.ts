@@ -17,6 +17,7 @@ import { EXPANDED_DOMAIN_CATALOG, DomainColumnSpec, DomainTableSpec } from './do
 import { predictDomainWithML } from './ml_schema_predictor';
 import { synthesizeProceduralSchema } from './procedural_synthesizer';
 import { continualLearner } from './continual_learner';
+import { resolveOmniDomainSchema } from './omni_domain_classifier';
 
 export type { DomainColumnSpec, DomainTableSpec };
 
@@ -46,7 +47,7 @@ export function resolveDomainSchema(rawTableName: string): DomainColumnSpec[] | 
   const info = normalizeTableName(rawTableName);
   const { cleanedName, singularName, tokens, entityHead } = info;
 
-  // ── Step 3: Exact & Alias Matching in 50+ Domain Catalog ──────────────────
+  // ── Step 3: Exact & Curated Alias Matching in 50+ Domain Catalog ──────────
   for (const key of Object.keys(EXPANDED_DOMAIN_CATALOG)) {
     const spec = EXPANDED_DOMAIN_CATALOG[key];
     const isExact = spec.aliases.some((alias) => {
@@ -59,6 +60,12 @@ export function resolveDomainSchema(rawTableName: string): DomainColumnSpec[] | 
       );
     });
     if (isExact) return spec.columns;
+  }
+
+  // ── Step 4: Omni-Domain Semantic Knowledge Base (OSI 500+) ───────────────
+  const omniMatch = resolveOmniDomainSchema(rawTableName);
+  if (omniMatch && omniMatch.length > 0) {
+    return omniMatch;
   }
 
   // Token matching (e.g. 'hospital_patients' -> matches 'patients' catalog)

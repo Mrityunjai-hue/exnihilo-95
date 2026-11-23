@@ -161,13 +161,15 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   // Security Guardrail: Case-insensitive plain .includes() matching to prevent ReDoS
   const processedRows = useMemo(() => {
     if (!rawRows || rawRows.length === 0) return [];
-    let list = rawRows.map((row, originalIndex) => ({ row, originalIndex }));
+    let list = rawRows
+      .filter((r): r is any[] => Array.isArray(r))
+      .map((row, originalIndex) => ({ row, originalIndex }));
 
     // Search filter (ReDoS Immunity: plain .includes())
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(({ row }) =>
-        row.some((cell) => cell !== null && cell !== undefined && String(cell).toLowerCase().includes(q))
+        Array.isArray(row) && row.some((cell) => cell !== null && cell !== undefined && String(cell).toLowerCase().includes(q))
       );
     }
 
@@ -208,6 +210,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   const columnTypes = useMemo(() => {
     return columns.map((_, colIdx) => {
       for (const row of rawRows) {
+        if (!Array.isArray(row)) continue;
         const val = row[colIdx];
         if (val !== null && val !== undefined) {
           if (typeof val === 'number') {
@@ -439,7 +442,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
 
   // Export handlers
   const handleExportCSV = () => {
-    const rowsToExport = rawRows;
+    const rowsToExport = rawRows.filter((r): r is any[] => Array.isArray(r));
     if (rowsToExport.length === 0) return;
     const header = columns.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',');
     const body = rowsToExport
@@ -466,7 +469,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   };
 
   const handleExportJSON = () => {
-    const rowsToExport = rawRows;
+    const rowsToExport = rawRows.filter((r): r is any[] => Array.isArray(r));
     if (rowsToExport.length === 0) return;
     const jsonArr = rowsToExport.map((r) => {
       const obj: Record<string, any> = {};
@@ -488,7 +491,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
   };
 
   const handleExportExcel = () => {
-    const rowsToExport = rawRows;
+    const rowsToExport = rawRows.filter((r): r is any[] => Array.isArray(r));
     if (rowsToExport.length === 0) return;
 
     let xml = `<?xml version="1.0"?>
@@ -1324,7 +1327,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                     <td style={{ textAlign: 'center', color: 'var(--w95-text-color, #888)', background: 'var(--w95-gray, #f5f5f5)', fontWeight: 'bold', fontSize: '10px' }}>
                       {originalIndex + 1}
                     </td>
-                    {row.map((val, colIdx) => {
+                    {Array.isArray(row) ? row.map((val, colIdx) => {
                       const isNum = typeof val === 'number';
                       return (
                         <td
@@ -1354,7 +1357,7 @@ export const ResultsGrid: React.FC<ResultsGridProps> = ({
                           )}
                         </td>
                       );
-                    })}
+                    }) : null}
                   </tr>
                 ))}
 

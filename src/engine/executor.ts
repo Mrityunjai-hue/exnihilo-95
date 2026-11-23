@@ -1435,17 +1435,17 @@ export class SQLExecutor {
 
       const allResults: SingleQueryResult[] = results.map((r, idx) => ({
         queryIndex: idx + 1,
-        columns:    r.columns,
-        rows:       r.values,
-        rowCount:   r.values.length,
+        columns:    r.columns || [],
+        rows:       r.values || [],
+        rowCount:   r.values ? r.values.length : 0,
       }));
 
       const firstResult = results[0];
       return {
         ok: true,
-        columns: firstResult.columns,
-        rows: firstResult.values,
-        rowCount: firstResult.values.length,
+        columns: firstResult?.columns || [],
+        rows: firstResult?.values || [],
+        rowCount: firstResult?.values ? firstResult.values.length : 0,
         executionTimeMs,
         inferredTables,
         reusedTables,
@@ -1521,16 +1521,16 @@ export class SQLExecutor {
 
               const allRetryResults: SingleQueryResult[] = retryResults.map((r, idx) => ({
                 queryIndex: idx + 1,
-                columns:    r.columns,
-                rows:       r.values,
-                rowCount:   r.values.length,
+                columns:    r.columns || [],
+                rows:       r.values || [],
+                rowCount:   r.values ? r.values.length : 0,
               }));
 
               return {
                 ok: true,
-                columns: retryResults[0].columns,
-                rows: retryResults[0].values,
-                rowCount: retryResults[0].values.length,
+                columns: retryResults[0]?.columns || [],
+                rows: retryResults[0]?.values || [],
+                rowCount: retryResults[0]?.values ? retryResults[0].values.length : 0,
                 executionTimeMs,
                 inferredTables,
                 reusedTables,

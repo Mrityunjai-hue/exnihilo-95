@@ -632,7 +632,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                     >
                       <thead style={{ position: 'sticky', top: 0, backgroundColor: '#d4d0c8', zIndex: 1 }}>
                         <tr>
-                          {res.columns.map((col, cIdx) => (
+                          {(res.columns || []).map((col, cIdx) => (
                             <th
                               key={cIdx}
                               style={{
@@ -650,15 +650,15 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {res.rows.map((row, rIdx) => (
+                        {(res.rows || []).map((row, rIdx) => (
                           <tr
                             key={rIdx}
                             style={{
                               backgroundColor: rIdx % 2 === 0 ? '#ffffff' : '#f8f8f8',
                             }}
                           >
-                            {res.columns.map((_, cIdx) => {
-                              const val = row[cIdx];
+                            {(res.columns || []).map((_, cIdx) => {
+                              const val = Array.isArray(row) ? row[cIdx] : undefined;
                               return (
                                 <td
                                   key={cIdx}
@@ -694,7 +694,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                       className="win95-button"
                       style={{ fontSize: '10px', padding: '1px 6px' }}
                       onClick={() => {
-                        const csv = [res.columns.join(','), ...res.rows.map((r) => r.join(','))].join('\n');
+                        const csv = [(res.columns || []).join(','), ...(res.rows || []).map((r) => Array.isArray(r) ? r.join(',') : '')].join('\n');
                         copyToClipboard(csv);
                       }}
                       title="Copy Results as CSV"

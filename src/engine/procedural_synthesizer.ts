@@ -9,6 +9,7 @@
 import { fakerEN as faker } from '@faker-js/faker';
 import { DomainColumnSpec } from './domain_catalog_data';
 import { NormalizedTableInfo } from './morphology';
+import { resolveOmniDomainSchema } from './omni_domain_classifier';
 
 export function synthesizeProceduralSchema(info: NormalizedTableInfo): DomainColumnSpec[] {
   const { cleanedName, singularName, tokens, entityHead } = info;
@@ -60,17 +61,6 @@ export function synthesizeProceduralSchema(info: NormalizedTableInfo): DomainCol
     ];
   }
 
-  // ── Archetype 4: Master Contextual Entity ─────────────────────────────────
-  const labelCol = `${singularName}_name`;
-  const codeCol = `${singularName}_code`;
-
-  return [
-    { name: 'id', logicalType: 'INTEGER', isPrimaryKey: true, fakerGenerator: () => 1 },
-    { name: labelCol, logicalType: 'VARCHAR', fakerGenerator: () => `${faker.word.adjective()} ${faker.word.noun()}`.replace(/\b\w/g, l => l.toUpperCase()) },
-    { name: codeCol, logicalType: 'VARCHAR', fakerGenerator: () => `${singularName.substring(0, 3).toUpperCase()}-${faker.string.alphanumeric(5).toUpperCase()}` },
-    { name: 'category', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['General', 'Premium', 'Standard', 'Archived']) },
-    { name: 'status', logicalType: 'VARCHAR', fakerGenerator: () => faker.helpers.arrayElement(['ACTIVE', 'PENDING', 'COMPLETED', 'ARCHIVED']) },
-    { name: 'rating_score', logicalType: 'NUMERIC', fakerGenerator: () => parseFloat((faker.number.float({ min: 1.0, max: 5.0, fractionDigits: 1 })).toFixed(1)) },
-    { name: 'created_at', logicalType: 'TIMESTAMP', fakerGenerator: () => faker.date.past({ years: 1 }).toISOString().replace('T', ' ').substring(0, 19) }
-  ];
+  // ── Archetype 4: Omni-Domain Contextual Entity ─────────────────────────────
+  return resolveOmniDomainSchema(singularName || cleanedName);
 }

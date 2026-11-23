@@ -285,7 +285,7 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
                 <thead>
                   <tr style={{ background: '#c0c0c0', borderBottom: '1px solid #808080' }}>
                     <th style={{ padding: '3px 6px', textAlign: 'center', color: '#555' }}>#</th>
-                    {result.columns.map((col, idx) => (
+                    {(result.columns || []).map((col, idx) => (
                       <th key={idx} style={{ padding: '3px 8px', textAlign: 'left', fontWeight: 'bold' }}>
                         {col}
                       </th>
@@ -293,7 +293,7 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {result.rows.map((row, rIdx) => (
+                  {(result.rows || []).map((row, rIdx) => (
                     <tr
                       key={rIdx}
                       style={{
@@ -304,7 +304,7 @@ export const PocketSQLShell: React.FC<PocketSQLShellProps> = ({
                       <td style={{ padding: '2px 6px', textAlign: 'center', color: '#888', borderRight: '1px solid #eee' }}>
                         {rIdx + 1}
                       </td>
-                      {result.columns.map((_, cIdx) => (
+                      {(result.columns || []).map((_, cIdx) => (
                         <td key={cIdx} style={{ padding: '2px 8px', borderRight: '1px solid #eee' }}>
                           {row[cIdx] !== null && row[cIdx] !== undefined ? (
                             String(row[cIdx])

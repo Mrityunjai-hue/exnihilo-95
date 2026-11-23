@@ -685,7 +685,7 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
                                         fontStyle: 'italic',
                                       }}
                                     >
-                                      {col.logicalType.toLowerCase()}
+                                      {(col.logicalType || col.sqliteType || "text").toLowerCase()}
                                     </span>
                                   </div>
                                 );
