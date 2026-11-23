@@ -1,9 +1,18 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ServiceWorkerRegistration } from "../components/PWA/ServiceWorkerRegistration";
 import "../styles/win95.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#008080",
+};
 
 const inter = Inter({
   subsets: ["latin"],
@@ -59,7 +68,7 @@ export default function RootLayout({
     <html lang="en" data-theme="win95-classic" data-typography="hybrid" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         <link rel="icon" type="image/svg+xml" href="/icon.svg" />
         <link rel="icon" href="/favicon.ico" />
         <script

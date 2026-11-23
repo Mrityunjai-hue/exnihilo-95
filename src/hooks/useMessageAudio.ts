@@ -5,10 +5,11 @@
  * 1. Send Sound: iMessage upward swoosh / pop-whoosh (rising frequency + bandpass air burst)
  * 2. Receive Sound: iMessage signature two-tone chime / marimba bell (C6 -> G6)
  *
- * Edge cases handled:
- * - Zero network latency / zero broken asset URLs (100% procedural)
- * - Intelligent collision avoidance: if query executes in <200ms, receive chime is queued
- *   until send swoosh completes so both sounds never clash or play simultaneously.
+ * Robust Collision Avoidance:
+ * - Uses Web Audio hardware timeline (ctx.currentTime) rather than unreliable setTimeout.
+ * - Enforces strict non-overlap: receive chime is hardware-scheduled to play only AFTER
+ *   the send swoosh has fully completed + a natural 100ms conversational acoustic pause.
+ * - Software debounce prevents double-triggers from React StrictMode or rapid state updates.
  * - Single AudioContext instance with automatic resumption on user interaction.
  * - Persistent mute preference toggle stored in localStorage.
  */
@@ -19,8 +20,9 @@ import { useRef, useCallback, useState, useEffect } from 'react';
 
 export function useMessageAudio() {
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const lastSendTimeRef = useRef<number>(0);
-  const scheduledReceiveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Hardware audio timeline marker (seconds in ctx.currentTime)
+  const audioFinishTimeRef = useRef<number>(0);
+  const lastReceiveCallTimeRef = useRef<number>(0);
 
   const [isMuted, setIsMuted] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -67,31 +69,27 @@ export function useMessageAudio() {
 
     try {
       const now = ctx.currentTime;
-      lastSendTimeRef.current = performance.now();
-
-      // Clear any pending receive chime to avoid overlaps
-      if (scheduledReceiveTimerRef.current) {
-        clearTimeout(scheduledReceiveTimerRef.current);
-        scheduledReceiveTimerRef.current = null;
-      }
+      const startTime = Math.max(now, audioFinishTimeRef.current);
+      // Mark send sound duration (160ms total)
+      audioFinishTimeRef.current = startTime + 0.18;
 
       // 1. Core tonal sweep: smooth upward frequency glissando (240Hz -> 680Hz)
       const osc = ctx.createOscillator();
       const oscGain = ctx.createGain();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(240, now);
-      osc.frequency.exponentialRampToValueAtTime(680, now + 0.12);
+      osc.frequency.setValueAtTime(240, startTime);
+      osc.frequency.exponentialRampToValueAtTime(680, startTime + 0.12);
 
-      oscGain.gain.setValueAtTime(0.001, now);
-      oscGain.gain.linearRampToValueAtTime(0.16, now + 0.03);
-      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+      oscGain.gain.setValueAtTime(0.001, startTime);
+      oscGain.gain.linearRampToValueAtTime(0.16, startTime + 0.03);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.14);
 
       osc.connect(oscGain);
       oscGain.connect(ctx.destination);
 
-      osc.start(now);
-      osc.stop(now + 0.15);
+      osc.start(startTime);
+      osc.stop(startTime + 0.15);
 
       // 2. Breathy air-swoosh layer (bandpass filtered noise burst)
       const bufferSize = Math.floor(ctx.sampleRate * 0.12);
@@ -106,21 +104,21 @@ export function useMessageAudio() {
 
       const filter = ctx.createBiquadFilter();
       filter.type = 'bandpass';
-      filter.frequency.setValueAtTime(900, now);
-      filter.frequency.exponentialRampToValueAtTime(1800, now + 0.12);
-      filter.Q.setValueAtTime(1.8, now);
+      filter.frequency.setValueAtTime(900, startTime);
+      filter.frequency.exponentialRampToValueAtTime(1800, startTime + 0.12);
+      filter.Q.setValueAtTime(1.8, startTime);
 
       const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.001, now);
-      noiseGain.gain.linearRampToValueAtTime(0.09, now + 0.03);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+      noiseGain.gain.setValueAtTime(0.001, startTime);
+      noiseGain.gain.linearRampToValueAtTime(0.09, startTime + 0.03);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.13);
 
       noise.connect(filter);
       filter.connect(noiseGain);
       noiseGain.connect(ctx.destination);
 
-      noise.start(now);
-      noise.stop(now + 0.14);
+      noise.start(startTime);
+      noise.stop(startTime + 0.14);
     } catch {
       // Audio failure is non-fatal
     }
@@ -128,32 +126,45 @@ export function useMessageAudio() {
 
   /**
    * Procedural iMessage Receive Chime (Crisp marimba two-tone: C6 -> G6)
+   * Guaranteed never to clash with send sound via hardware timeline scheduling.
    */
-  const playReceiveChimeInternal = useCallback(() => {
+  const playReceiveSound = useCallback(() => {
     if (isMuted) return;
     const ctx = getAudioContext();
     if (!ctx) return;
 
+    // Software debounce: prevent multiple chime calls within 300ms
+    const nowMs = performance.now();
+    if (nowMs - lastReceiveCallTimeRef.current < 300) {
+      return;
+    }
+    lastReceiveCallTimeRef.current = nowMs;
+
     try {
       const now = ctx.currentTime;
+      // Hardware non-overlap guarantee:
+      // If send sound is still playing, schedule chime to start 100ms AFTER send finishes.
+      const startTime = Math.max(now + 0.02, audioFinishTimeRef.current + 0.10);
+      // Mark audio timeline busy until chime finishes (420ms duration)
+      audioFinishTimeRef.current = startTime + 0.42;
 
       // Tone 1: C6 (1046.5 Hz) - bright woody strike
       const osc1 = ctx.createOscillator();
       const gain1 = ctx.createGain();
       osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(1046.5, now);
+      osc1.frequency.setValueAtTime(1046.5, startTime);
 
-      gain1.gain.setValueAtTime(0.001, now);
-      gain1.gain.linearRampToValueAtTime(0.18, now + 0.015);
-      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+      gain1.gain.setValueAtTime(0.001, startTime);
+      gain1.gain.linearRampToValueAtTime(0.18, startTime + 0.015);
+      gain1.gain.exponentialRampToValueAtTime(0.001, startTime + 0.16);
 
       osc1.connect(gain1);
       gain1.connect(ctx.destination);
-      osc1.start(now);
-      osc1.stop(now + 0.18);
+      osc1.start(startTime);
+      osc1.stop(startTime + 0.18);
 
-      // Tone 2: G6 (1567.98 Hz) - delayed by 85ms for the signature iMessage double-tone
-      const note2Start = now + 0.085;
+      // Tone 2: G6 (1567.98 Hz) - delayed by 85ms for signature iMessage double-tone
+      const note2Start = startTime + 0.085;
       const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = 'sine';
@@ -186,40 +197,6 @@ export function useMessageAudio() {
       // Audio failure is non-fatal
     }
   }, [getAudioContext, isMuted]);
-
-  /**
-   * Collision-aware receive sound dispatcher.
-   * Guarantees at least 220ms separation between send swoosh and receive chime,
-   * preventing simultaneous overlapping audio on ultra-fast (<10ms) local queries.
-   */
-  const playReceiveSound = useCallback(() => {
-    if (isMuted) return;
-
-    const elapsedSinceSend = performance.now() - lastSendTimeRef.current;
-    const MIN_SEPARATION_MS = 220;
-
-    if (elapsedSinceSend < MIN_SEPARATION_MS) {
-      const waitMs = MIN_SEPARATION_MS - elapsedSinceSend;
-      if (scheduledReceiveTimerRef.current) {
-        clearTimeout(scheduledReceiveTimerRef.current);
-      }
-      scheduledReceiveTimerRef.current = setTimeout(() => {
-        playReceiveChimeInternal();
-        scheduledReceiveTimerRef.current = null;
-      }, waitMs);
-    } else {
-      playReceiveChimeInternal();
-    }
-  }, [isMuted, playReceiveChimeInternal]);
-
-  // Clean up any pending timer on unmount
-  useEffect(() => {
-    return () => {
-      if (scheduledReceiveTimerRef.current) {
-        clearTimeout(scheduledReceiveTimerRef.current);
-      }
-    };
-  }, []);
 
   return {
     playSendSound,

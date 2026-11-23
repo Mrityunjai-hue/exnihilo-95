@@ -40,8 +40,14 @@ export async function POST(req: NextRequest) {
       ? buildSchemaSystemPrompt(tableName || targetPrompt.replace(/^create table\s*/i, '').trim(), dialect)
       : buildSystemPrompt(dialect, schema);
 
-    const primaryModel = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
-    let url = `https://generativelanguage.googleapis.com/v1beta/models/${primaryModel}:generateContent?key=${apiKey}`;
+    // Modern Gemini model cascade with automatic deprecation recovery
+    const candidateModels = [
+      process.env.GEMINI_MODEL,
+      'gemini-2.5-flash',
+      'gemini-1.5-flash',
+      'gemini-2.0-flash-exp',
+      'gemini-1.5-pro',
+    ].filter(Boolean) as string[];
 
     const requestBody = JSON.stringify({
       systemInstruction: {
@@ -62,34 +68,47 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    let response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: requestBody,
-    });
+    let response: Response | null = null;
+    let lastErrData: any = null;
 
-    // Graceful fallback to gemini-1.5-flash if 2.0-flash returns 404/400
-    if (!response.ok && (response.status === 404 || response.status === 400) && primaryModel !== 'gemini-1.5-flash') {
-      const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-      const fallbackRes = await fetch(fallbackUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: requestBody,
-      });
-      if (fallbackRes.ok) {
-        response = fallbackRes;
+    for (const model of candidateModels) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestBody,
+        });
+
+        if (res.ok) {
+          response = res;
+          break;
+        }
+
+        const errJson = await res.json().catch(() => ({}));
+        lastErrData = errJson;
+
+        // If key is invalid (401/403), stop immediately — no model will succeed
+        if (res.status === 401 || res.status === 403) {
+          response = res;
+          break;
+        }
+
+        // If 404, 400, or deprecation message ("is no longer available"), try next model in cascade
+        continue;
+      } catch {
+        continue;
       }
     }
 
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
+    if (!response || !response.ok) {
       return NextResponse.json(
         {
           ok: false,
           error: 'API_ERROR',
-          message: errData?.error?.message || `Gemini API returned status ${response.status}`,
+          message: lastErrData?.error?.message || `Gemini API returned status ${response?.status || 500}`,
         },
-        { status: response.status }
+        { status: response?.status || 500 }
       );
     }
 

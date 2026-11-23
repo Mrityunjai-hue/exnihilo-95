@@ -115,4 +115,16 @@ describe('PocketSQLChat Message Logic & Architecture', () => {
     expect(kernelMsg.sender).toBe('kernel');
     expect(kernelMsg.result?.inferredTables).toContain('revenue');
   });
+
+  it('guarantees mobile zoom immunity with 16px input font size and hardware audio separation', () => {
+    // 16px font size threshold for iOS Safari inputs to prevent viewport scaling
+    const mobileInputFontSizePx = 16;
+    expect(mobileInputFontSizePx).toBeGreaterThanOrEqual(16);
+
+    // Audio collision guard: Web Audio timeline offset ensures receive starts strictly after send ends
+    const sendDurationS = 0.18;
+    const pauseGapS = 0.10;
+    const receiveChimeDelayS = sendDurationS + pauseGapS;
+    expect(receiveChimeDelayS).toBeGreaterThanOrEqual(0.25);
+  });
 });

@@ -314,29 +314,44 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
       <div
         className="win95-titlebar"
         style={{
-          padding: '4px 8px',
+          padding: '4px 6px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexShrink: 0,
+          gap: '4px',
+          width: '100%',
+          boxSizing: 'border-box',
         }}
       >
-        <div className="win95-titlebar-text" style={{ fontSize: '12px', fontWeight: 'bold' }}>
+        <div
+          className="win95-titlebar-text"
+          style={{
+            fontSize: '11px',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '3px',
+            minWidth: 0,
+            flexShrink: 1,
+            overflow: 'hidden',
+          }}
+        >
           <span>📱</span>
-          <span>ExNihilo Pocket SQL</span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>ExNihilo 95</span>
         </div>
 
-        <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '3px', alignItems: 'center', flexShrink: 0 }}>
           <select
             className="win95-sunken"
             value={dialect}
             onChange={(e) => onDialectChange(e.target.value as Dialect)}
-            style={{ fontSize: '10px', padding: '1px 3px', fontWeight: 'bold' }}
+            style={{ fontSize: '10px', padding: '1px 2px', fontWeight: 'bold', maxWidth: '72px' }}
             title="Active SQL Dialect"
           >
             <option value="SQLite">SQLite</option>
             <option value="MySQL">MySQL</option>
-            <option value="PostgreSQL">PostgreSQL</option>
+            <option value="PostgreSQL">Postgre</option>
             <option value="SSMS">SSMS</option>
           </select>
 
@@ -344,7 +359,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             type="button"
             className="win95-button"
             onClick={() => setIsDrawerOpen(true)}
-            style={{ fontSize: '11px', padding: '2px 6px' }}
+            style={{ fontSize: '10px', padding: '2px 4px' }}
             title={`Database Catalog (${catalogTables.length} tables)`}
           >
             🗄️ {catalogTables.length > 0 && <span style={{ fontSize: '9px', fontWeight: 'bold' }}>{catalogTables.length}</span>}
@@ -663,32 +678,35 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                 width: '100%',
               }}
             >
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', maxWidth: '96%' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }}>
                 <div
                   className="win95-window"
                   style={{
-                    width: 'fit-content',
-                    minWidth: '260px',
+                    width: '100%',
+                    maxWidth: '100%',
+                    minWidth: 0,
+                    boxSizing: 'border-box',
                     backgroundColor: '#ece9d8',
-                    padding: '8px 10px',
+                    padding: '8px 8px',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '6px',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
                     borderRadius: '18px 18px 18px 3px',
+                    overflow: 'hidden',
                   }}
                 >
                 {/* Kernel Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-                    <span style={{ fontWeight: 'bold', color: '#000080' }}>💾 ExNihilo Kernel</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', gap: '4px', width: '100%', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px', flexWrap: 'wrap', minWidth: 0, flexShrink: 1 }}>
+                    <span style={{ fontWeight: 'bold', color: '#000080', whiteSpace: 'nowrap' }}>💾 Kernel</span>
                     {res && (
-                      <span style={{ color: '#15803d', fontWeight: 'bold' }}>
+                      <span style={{ color: '#15803d', fontWeight: 'bold', fontSize: '9px', whiteSpace: 'nowrap' }}>
                         • {res.rowCount} row{res.rowCount === 1 ? '' : 's'} ({res.executionTimeMs.toFixed(0)}ms)
                       </span>
                     )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
                     {res && res.columns && res.columns.length > 0 && (
                       <>
                         <button
@@ -696,9 +714,9 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                           className="win95-button"
                           style={{ fontSize: '9px', padding: '1px 5px', fontWeight: 'bold' }}
                           onClick={() => setExpandedTableId(isExpanded ? null : msg.id)}
-                          title={isExpanded ? 'Collapse Table' : 'Expand Table View'}
+                          title={isExpanded ? 'Collapse Table View' : 'Expand Table View'}
                         >
-                          {isExpanded ? '⛶ Collapse' : '⛶ Expand'}
+                          {isExpanded ? '⛶ Less' : '⛶ Expand'}
                         </button>
                         <button
                           type="button"
@@ -711,7 +729,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                         </button>
                       </>
                     )}
-                    <span style={{ color: '#666', fontSize: '9px' }}>{msg.timestamp}</span>
+                    <span style={{ color: '#666', fontSize: '9px', whiteSpace: 'nowrap' }}>{msg.timestamp}</span>
                   </div>
                 </div>
 
@@ -726,16 +744,23 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   <div
                     className="win95-sunken"
                     style={{
-                      maxHeight: isExpanded ? '60vh' : '240px',
-                      overflow: 'auto',
+                      width: '100%',
+                      maxWidth: '100%',
+                      maxHeight: isExpanded ? '60vh' : '220px',
+                      overflowX: 'auto',
+                      overflowY: 'auto',
                       backgroundColor: '#ffffff',
                       margin: '2px 0',
                       WebkitOverflowScrolling: 'touch',
+                      overscrollBehavior: 'contain',
+                      touchAction: 'pan-x pan-y',
+                      boxSizing: 'border-box',
                     }}
                   >
                     <table
                       style={{
-                        width: '100%',
+                        minWidth: '100%',
+                        width: 'max-content',
                         borderCollapse: 'collapse',
                         fontSize: '11px',
                         fontFamily: 'Consolas, monospace',
@@ -864,12 +889,16 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
         className="win95-window"
         style={{
           margin: '2px',
-          padding: '6px 8px',
+          padding: '6px 6px',
+          paddingBottom: 'calc(6px + env(safe-area-inset-bottom, 0px))',
           display: 'flex',
           flexDirection: 'column',
           gap: '4px',
           flexShrink: 0,
           background: '#d4d0c8',
+          width: 'calc(100% - 4px)',
+          maxWidth: '100%',
+          boxSizing: 'border-box',
         }}
       >
         {/* Quick Suggestion Pills when input is empty */}
@@ -881,6 +910,9 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
               overflowX: 'auto',
               paddingBottom: '2px',
               WebkitOverflowScrolling: 'touch',
+              width: '100%',
+              maxWidth: '100%',
+              boxSizing: 'border-box',
             }}
           >
             <button
@@ -946,7 +978,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-end', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
           <textarea
             ref={textareaRef}
             className="win95-sunken"
@@ -954,15 +986,23 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             onChange={(e) => setInputVal(e.target.value)}
             onSelect={handleSelectText}
             onKeyUp={handleSelectText}
+            onBlur={() => {
+              // Ensure viewport returns to baseline when iOS keyboard dismisses
+              if (typeof window !== 'undefined') {
+                window.scrollTo(0, 0);
+              }
+            }}
             placeholder="Type SQL query or ask Copilot here..."
             style={{
-              flex: 1,
+              flex: '1 1 auto',
+              minWidth: 0,
               resize: 'none',
               minHeight: '38px',
-              maxHeight: '160px',
+              maxHeight: '140px',
               height: '38px',
-              padding: '6px 8px',
-              fontSize: '12px',
+              padding: '8px 10px',
+              fontSize: '16px', // 16px minimum prevents iOS Safari from auto-zooming
+              lineHeight: '1.4',
               fontFamily: 'Consolas, monospace',
               backgroundColor: '#ffffff',
               color: '#000000',
@@ -977,7 +1017,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             }}
           />
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
             {/* Run Selection (⚡) appears dynamically when user highlights a snippet */}
             {selectedText && (
               <button
@@ -989,6 +1029,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   fontWeight: 'bold',
                   color: '#b45309',
                   padding: '4px 10px',
+                  flexShrink: 0,
                 }}
                 title={`⚡ Run Selected: "${selectedText.slice(0, 20)}..."`}
               >
@@ -1009,6 +1050,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                   backgroundColor: '#b91c1c',
                   padding: '6px 12px',
                   minHeight: '36px',
+                  flexShrink: 0,
                 }}
                 title="Stop Execution"
               >
@@ -1021,11 +1063,12 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                 onClick={() => handleSend()}
                 disabled={!inputVal.trim() || isAiLoading}
                 style={{
-                  fontSize: '14px',
+                  fontSize: '15px',
                   fontWeight: 'bold',
                   color: '#15803d',
-                  padding: '6px 12px',
+                  padding: '6px 14px',
                   minHeight: '36px',
+                  flexShrink: 0,
                 }}
                 title="Send / Run SQL (Ctrl+Enter)"
               >
