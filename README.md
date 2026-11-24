@@ -22,7 +22,10 @@
   <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Unit_Tests-328%2F328_Passed-brightgreen?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Unit Tests" /></a>
   <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/TypeScript-0_Errors-3178c6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 0 Errors" /></a>
   <a href="https://sql.js.org/"><img src="https://img.shields.io/badge/WebAssembly-SQLite_3.49.1-8A2BE2?style=for-the-badge&logo=webassembly&logoColor=white" alt="WebAssembly" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License: MIT" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/Code_License-MIT-blue?style=for-the-badge" alt="License: MIT" /></a>
+  <a href="#-multi-tier-licensing--open-source-governance"><img src="https://img.shields.io/badge/Creative_Assets-CC--BY--4.0-orange?style=for-the-badge&logo=creativecommons&logoColor=white" alt="Assets: CC-BY-4.0" /></a>
+  <a href="#-multi-tier-licensing--open-source-governance"><img src="https://img.shields.io/badge/Schemas_%26_Data-ODC--By_1.0-9cf?style=for-the-badge" alt="Data: ODC-By" /></a>
+  <a href="COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md"><img src="https://img.shields.io/badge/IP_Protection-Anti--Theft_Protected-red?style=for-the-badge" alt="Anti-Theft" /></a>
 </p>
 
 ---
@@ -30,6 +33,9 @@
 ## 📑 Table of Contents
 
 - [💡 Core Architectural Manifesto: Self-Made Engine](#-core-architectural-manifesto-self-made-engine)
+- [🖼️ Visual Showcase: Desktop Workstation & Mobile Pocket SQL](#%EF%B8%8F-visual-showcase-desktop-workstation--mobile-pocket-sql)
+  - [🖥️ Desktop Workstation: Multi-Window SQL Operating System](#%EF%B8%8F-desktop-workstation-multi-window-sql-operating-system)
+  - [📱 Mobile Workstation: Pocket SQL Chat (iMessage + Win95)](#-mobile-workstation-pocket-sql-chat-imessage--win95)
 - [✨ What Makes ExNihilo 95 Revolutionary](#-what-makes-exnihilo-95-revolutionary)
 - [🌟 Flagship Features & Workstations](#-flagship-features--workstations)
   - [1. Zero-Setup Database Engine & Relational Synthesis](#1-zero-setup-database-engine--relational-synthesis)
@@ -47,6 +53,7 @@
 - [🧑‍💻 Getting Started: Setup and Running Instructions](#-getting-started-setup-and-running-instructions)
 - [🧪 Quality Assurance & Test Verification](#-quality-assurance--test-verification)
 - [🤝 How to Contribute and Report Issues](#-how-to-contribute-and-report-issues)
+- [📜 Multi-Tier Licensing & Open Source Governance](#-multi-tier-licensing--open-source-governance)
 - [⚖️ Intellectual Property, Credits & License](#%EF%B8%8F-intellectual-property-credits--license)
 
 ---
@@ -62,7 +69,71 @@
 > - **The Universal Multi-Dialect Transpiler:** Normalizes T-SQL, Oracle, Postgres, and MySQL dialect idioms into high-performance ANSI SQLite WebAssembly bytecodes locally.
 >
 > **Where is AI used?**  
-> AI (**Gemini Copilot**) is integrated **strictly and solely as a user-facing helper/copilot** (drafting SQL queries from natural language questions, suggesting optimization tips, and offering interview coaching). Even if you are completely offline, in airplane mode, or have zero API keys, **ExNihilo's self-made engine runs 100% locally in your browser with zero performance degradation!**
+> AI (**Gemini Copilot**) is integrated **strictly and solely as an optional user-facing helper/copilot** (drafting SQL queries from natural language questions, suggesting optimization tips, and offering interview coaching). Even if you are completely offline, in airplane mode, or have zero API keys, **ExNihilo's self-made engine runs 100% locally in your browser with zero performance degradation!**
+
+---
+
+## 🖼️ Visual Showcase: Desktop Workstation & Mobile Pocket SQL
+
+Experience the rich visual contrast between our **Nostalgic Desktop Multi-Window Operating System** and our **Ultra-Fluid Mobile Pocket SQL Chat**:
+
+### 🖥️ Desktop Workstation: Multi-Window SQL Operating System
+
+<p align="center">
+  <img src="public/screenshots/screenshot-1-desktop.png" alt="ExNihilo 95 Complete Desktop Environment" width="850" />
+</p>
+
+<p align="center">
+  <em>The complete 1995 desktop environment with interactive taskbar, start menu, desktop icons, and floating multi-window architecture.</em>
+</p>
+
+<table align="center" width="100%">
+  <tr>
+    <td width="50%" align="center">
+      <strong>💻 SQL Studio & Results Data Grid</strong><br />
+      <img src="public/screenshots/2-sql-studio.png" alt="SQL Studio and Results Grid" width="420" />
+      <p align="left"><sub>Interactive CodeMirror 6 query editor with dialect switcher, live results data grid, column sorting, and instant 1-click CSV/JSON/XLS exports.</sub></p>
+    </td>
+    <td width="50%" align="center">
+      <strong>🏆 SQL Challenge Arena (130 Questions)</strong><br />
+      <img src="public/screenshots/3-challenge-arena.png" alt="SQL Challenge Arena" width="420" />
+      <p align="left"><sub>130 real LeetCode & HackerRank SQL interview problems evaluated live against ephemeral in-browser WebAssembly testbeds with mismatch diffing.</sub></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <strong>🗂️ Interactive SQL Dictionary & Schema Tree</strong><br />
+      <img src="public/screenshots/4-sql-dictionary.png" alt="SQL Dictionary" width="420" />
+      <p align="left"><sub>Live SQLite schema introspection tree with 2-tier responsive action bar and drag-to-resize database navigator panel.</sub></p>
+    </td>
+    <td width="50%" align="center">
+      <strong>🪟 Authentic Windows 95 Desktop Icons & Window Shell</strong><br />
+      <img src="public/screenshots/1-exnihilo-desktop.png" alt="Windows 95 Shell" width="420" />
+      <p align="left"><sub>Pixel-perfect 3D beveled borders, tactile system chimes, vintage CRT scanline filters, and retro system properties control panels.</sub></p>
+    </td>
+  </tr>
+</table>
+
+---
+
+### 📱 Mobile Workstation: Pocket SQL Chat (iMessage + Win95)
+
+ExNihilo 95 reimagines database engineering for handheld smartphones with **Pocket SQL Chat**, blending the tactile nostalgia of Windows 95 with the fluid, curved minimalism of modern messenger platforms:
+
+<p align="center">
+  <img src="public/screenshots/pocket-sql-mobile.jpg" alt="Pocket SQL Chat Mobile Experience" width="420" style="border-radius: 28px; box-shadow: 0 16px 40px rgba(0,0,0,0.35); border: 4px solid #141416;" />
+</p>
+
+<p align="center">
+  <em><strong>Pocket SQL Chat in action:</strong> Floating dialect switcher pill, interactive Copilot conversation bubbles, inline expandable Kernel result grids, and one-tap table selector bar.</em>
+</p>
+
+#### 🌟 Key Mobile Ergonomics Innovations:
+- **Floating Dialect Pill:** Switch between `SSMS`, `MySQL`, `PostgreSQL`, and `SQLite` directly inside the top status pill with zero UI displacement.
+- **Curved iMessage Query Bubbles:** Sent queries, AI Copilot responses, and execution results live in a chronological, conversational stream.
+- **Embedded WebAssembly Kernel Cards:** View live SQL result rows inside compact, expandable Win95 tables with inline sorting and CSV export.
+- **⚡ 1-Tap Error Auto-Repair:** Tapping *Ask AI Copilot to Fix* automatically extracts the failed query, repairs syntax across dialects, and delivers the working query without hallucinations.
+- **Virtual Viewport Lock:** Eliminates mobile keyboard jumping and keeps input elements pinned during typing on Safari, Chrome, and Firefox mobile.
 
 ---
 
@@ -119,44 +190,7 @@ Seamlessly write queries in your preferred dialect without worrying about SQLite
 ---
 
 ### 3. Pocket SQL Chat (Mobile Experience)
-A fluid mobile database client combining retro Windows 95 aesthetics with contemporary iMessage ergonomics:
-
-```
-┌────────────────────────────────────────────────────────┐
-│  [ 💾 ExNihilo 95  • SSMS ▾ ]                  [ 💾 ] │
-├────────────────────────────────────────────────────────┤
-│                                                        │
-│  (You)                                      12:45 PM   │
-│  ╭──────────────────────────────────────────────────╮  │
-│  │ ✨ Show celestial objects with largest distance  │  │
-│  ╰──────────────────────────────────────────────────╯  │
-│                                                        │
-│  (Gemini Copilot)                           12:45 PM   │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │ SELECT TOP 1 [name] FROM [celestial_objects]     │  │
-│  │ ORDER BY [distance_light_years] DESC;            │  │
-│  │                                       [ ✏️ ] [ > ]│  │
-│  └──────────────────────────────────────────────────┘  │
-│                                                        │
-│  [ Kernel • 1 row (4ms) ]           [ ⛶ Expand ] [ CSV]│
-│  ┌────────────────────────┬─────────────────────────┐  │
-│  │ name                   │ distance_light_years    │  │
-│  ├────────────────────────┼─────────────────────────┤  │
-│  │ Andromeda Core Galaxy  │ 2537000.0               │  │
-│  └────────────────────────┴─────────────────────────┘  │
-│                                                        │
-├────────────────────────────────────────────────────────┤
-│ [ customers ] [ orders ] [ revenue ] [ heart ] [ + @ai]│
-│ ┌───────────────────────────────────────────┬────────┐ │
-│ │ Type SQL query or ask Copilot here...     │   ▶    │ │
-│ └───────────────────────────────────────────┴────────┘ │
-└────────────────────────────────────────────────────────┘
-```
-
-- **Floating Dialect Pill:** Switch dialects on the fly directly inside the chat header without obscuring content.
-- **Tactile SQL Bubbles:** Copy, run, or edit Copilot queries with one tap.
-- **⚡ 1-Click Error Auto-Repair:** If a query fails, tap *Ask AI Copilot to Fix* to repair the exact failed statement with zero hallucinations.
-- **Zero Viewport Shifting:** Mobile keyboard handling locks `visualViewport.offsetTop` to ensure zero screen jump or scrolling anomalies on iOS and Android.
+A fluid mobile database client combining retro Windows 95 aesthetics with contemporary iMessage ergonomics. Features full mobile keyboard stabilization, floating dialect pills, tactile result cards, and 1-tap query error repair.
 
 ---
 
@@ -357,12 +391,27 @@ We welcome contributions, bug reports, and suggestions from fellow engineers and
 
 ---
 
+## 📜 Multi-Tier Licensing & Open Source Governance
+
+To safeguard the original engineering, design assets, and community data while remaining open for developers, ExNihilo 95 operates under a clear, multi-faceted open source licensing framework:
+
+| Component Scope | Governing License | Terms & Permissions |
+| :--- | :--- | :--- |
+| **Application Source Code** | **MIT License with Attribution** | Permissive open-source code use. Modification, distribution, and private use are granted provided original copyright notices and author credit to Mrityunjai are preserved. |
+| **Creative Assets & UI Artwork** | **Creative Commons CC BY 4.0** | Applies to retro 8-bit icons, audio sound effects, graphic design assets, forensic case narratives, and documentation. You may share and adapt with visible attribution. |
+| **Schemas & Challenge Datasets** | **ODC-By v1.0 (Open Data Commons)** | Applies to the 130 LeetCode & HackerRank challenge question sets and simulated domain catalog specifications. Free to use, adapt, and distribute with attribution. |
+| **Patent & Non-Theft Covenant** | **Apache 2.0 Patent Grant Clause** | Contributors and distributors grant users an express, perpetual, irrevocable patent license for all self-made relational synthesis algorithms. Deceptive re-branding is strictly barred. |
+
+---
+
 ## ⚖️ Intellectual Property, Credits & License
 
 - **Creator & Lead Architect:** **Mrityunjai** ([@Mrityunjai-hue](https://github.com/Mrityunjai-hue))
 - **Live Deployment:** [https://exnihilo-95.vercel.app](https://exnihilo-95.vercel.app)
 - **Community:** [N8N Data Science Community](https://n8n-ds-community.netlify.app/)
-- **License:** Licensed under the [MIT License](LICENSE).
+- **License Documents:**
+  - Code License: [LICENSE](LICENSE)
+  - Anti-Theft & IP Notice: [COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md](COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md)
 
 <p align="center">
   <sub>Designed with relentless craftsmanship by Mrityunjai. If you find ExNihilo 95 useful, please star ⭐ the repository!</sub>
