@@ -151,10 +151,14 @@ if (result.success) {
 }
 ```
 
-#### Option 6: Python Client SDK (`pip install exnihilo-95`)
+#### Option 6: Python Client SDK (`exnihilo-95`)
 Execute queries *ex nihilo* from Python scripts, Jupyter Notebooks, or Pandas data processing pipelines:
 ```bash
-pip install exnihilo-95
+# Direct install from GitHub:
+pip install "git+https://github.com/Mrityunjai-hue/exnihilo-95.git#subdirectory=python"
+
+# Or from local clone:
+pip install ./python
 ```
 ```python
 from exnihilo_95 import execute_sql

@@ -9,7 +9,11 @@
 
 ### Installation
 ```bash
-pip install exnihilo-95
+# Direct install from GitHub repository:
+pip install "git+https://github.com/Mrityunjai-hue/exnihilo-95.git#subdirectory=python"
+
+# Or from local source:
+pip install .
 ```
 
 ### Basic Query Synthesis
