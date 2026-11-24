@@ -139,7 +139,28 @@ export const IDEShell: React.FC<IDEShellProps> = ({
   const { position, handleMouseDown: handleHeaderDrag } = useDraggable(propPosition || { x: 40, y: 30 });
   const [activeMenu, setActiveMenu] = useState<'file' | 'edit' | 'query' | 'view' | 'tools' | 'help' | null>(null);
   const [showExplorer, setShowExplorer] = useState(true);
-  const sidebarWidth = 220; // Fixed non-shrinkable navigator width (fully open or minimized)
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('exnihilo_navigator_width');
+        if (saved) {
+          const parsed = Number(saved);
+          if (parsed >= 240 && parsed <= 480) return parsed;
+        }
+      } catch {}
+    }
+    return 280;
+  });
+  const [isResizingHorizontal, setIsResizingHorizontal] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('exnihilo_navigator_width', String(sidebarWidth));
+      } catch {}
+    }
+  }, [sidebarWidth]);
+
   const [editorHeightPercent, setEditorHeightPercent] = useState(42); // 42% height for editor
   const [hasSelection, setHasSelection] = useState(false);
   const [selectedText, setSelectedText] = useState('');
@@ -539,7 +560,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
     }
   }, [initialQueryText, initialResult, initialIsLoading, initialExecutionTimeMs, activeTabId]);
 
-  // Handle Drag Resizing for Vertical Editor/Results Splitter
+  // Handle Drag Resizing for Vertical (Editor/Results) and Horizontal (Navigator) Splitters
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isResizingVertical && studioBodyRef.current) {
@@ -548,13 +569,20 @@ export const IDEShell: React.FC<IDEShellProps> = ({
         const newPercent = Math.max(20, Math.min(75, (relativeY / rect.height) * 100));
         setEditorHeightPercent(newPercent);
       }
+      if (isResizingHorizontal && studioBodyRef.current) {
+        const rect = studioBodyRef.current.getBoundingClientRect();
+        const relativeX = e.clientX - rect.left;
+        const newWidth = Math.max(240, Math.min(480, relativeX));
+        setSidebarWidth(newWidth);
+      }
     };
 
     const handleMouseUp = () => {
       setIsResizingVertical(false);
+      setIsResizingHorizontal(false);
     };
 
-    if (isResizingVertical) {
+    if (isResizingVertical || isResizingHorizontal) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     }
@@ -562,7 +590,7 @@ export const IDEShell: React.FC<IDEShellProps> = ({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isResizingVertical]);
+  }, [isResizingVertical, isResizingHorizontal]);
 
   // Close menus on outside click
   useEffect(() => {
@@ -1153,14 +1181,14 @@ export const IDEShell: React.FC<IDEShellProps> = ({
 
       {/* Main Studio Body Layout with Resizable Split Panes */}
       <div ref={studioBodyRef} style={{ display: 'flex', flex: 1, padding: '4px', gap: '2px', overflow: 'hidden', position: 'relative' }}>
-        {/* Left Explorer Pane (Schema Tree) - Non-shrinkable fixed width, either fully open or minimized */}
+        {/* Left Explorer Pane (Schema Tree) - Resizable Database Navigator */}
         {showExplorer && (
           <div
             id="tour-schema-tree"
             style={{
-              width: '220px',
-              minWidth: '220px',
-              maxWidth: '220px',
+              width: `${sidebarWidth}px`,
+              minWidth: '240px',
+              maxWidth: '480px',
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
@@ -1178,6 +1206,28 @@ export const IDEShell: React.FC<IDEShellProps> = ({
               onToggleCollapse={() => setShowExplorer(false)}
             />
           </div>
+        )}
+
+        {/* Horizontal Drag Resizer Splitter Handle */}
+        {showExplorer && (
+          <div
+            onMouseDown={() => setIsResizingHorizontal(true)}
+            style={{
+              width: '5px',
+              cursor: 'col-resize',
+              background: isMac ? 'rgba(255, 255, 255, 0.08)' : 'var(--w95-gray, #c0c0c0)',
+              borderLeft: isMac ? 'none' : '1px solid var(--w95-white, #ffffff)',
+              borderRight: isMac ? 'none' : '1px solid var(--w95-dark-gray, #808080)',
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              userSelect: 'none',
+              zIndex: 10,
+              transition: 'background 0.1s ease',
+            }}
+            title="Drag to resize Database Navigator (240px - 480px)"
+          />
         )}
 
         {/* Collapsed Sidebar Restore Button */}

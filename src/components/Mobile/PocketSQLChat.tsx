@@ -117,6 +117,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
   const [expandedTableId, setExpandedTableId] = useState<string | null>(null);
   const [fullscreenTable, setFullscreenTable] = useState<ExecutionSuccess | null>(null);
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  const [viewportOffsetTop, setViewportOffsetTop] = useState<number>(0);
 
   // Lock body and html scroll so mobile Safari never scrolls the layout viewport
   useEffect(() => {
@@ -144,12 +145,21 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     const updateViewport = () => {
       if (window.visualViewport) {
         setViewportHeight(window.visualViewport.height);
+        setViewportOffsetTop(window.visualViewport.offsetTop || 0);
+        // Force window.scrollY to stay at 0 to completely eliminate Safari's phantom page scroll
+        if (window.scrollY !== 0) {
+          window.scrollTo(0, 0);
+        }
       }
     };
     window.visualViewport.addEventListener('resize', updateViewport);
+    window.visualViewport.addEventListener('scroll', updateViewport);
+    window.addEventListener('scroll', updateViewport);
     updateViewport();
     return () => {
       window.visualViewport?.removeEventListener('resize', updateViewport);
+      window.visualViewport?.removeEventListener('scroll', updateViewport);
+      window.removeEventListener('scroll', updateViewport);
     };
   }, []);
 
@@ -486,7 +496,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     <div
       style={{
         position: 'fixed',
-        top: 0,
+        top: `${viewportOffsetTop}px`,
         left: 0,
         right: 0,
         height: viewportHeight ? `${viewportHeight}px` : '100dvh',
@@ -966,7 +976,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                         }}
                         onClick={() => {
                           setInputVal(msg.sql!);
-                          textareaRef.current?.focus();
+                          textareaRef.current?.focus({ preventScroll: true });
                         }}
                         title="Edit in Input Bar"
                       >
@@ -1059,7 +1069,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                           style={{ fontSize: '10px', padding: '2px 6px' }}
                           onClick={() => {
                             setInputVal(msg.sql!);
-                            textareaRef.current?.focus();
+                            textareaRef.current?.focus({ preventScroll: true });
                           }}
                           title="Edit in Input Bar"
                         >
@@ -1431,14 +1441,17 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             onSelect={handleSelectText}
             onKeyUp={handleSelectText}
             onFocus={() => {
+              if (typeof window !== 'undefined') {
+                window.scrollTo(0, 0);
+              }
               setTimeout(() => {
-                if (chatScrollContainerRef.current) {
-                  chatScrollContainerRef.current.scrollTo({
-                    top: chatScrollContainerRef.current.scrollHeight,
-                    behavior: 'smooth',
-                  });
+                if (typeof window !== 'undefined') {
+                  window.scrollTo(0, 0);
                 }
-              }, 120);
+                if (chatScrollContainerRef.current) {
+                  chatScrollContainerRef.current.scrollTop = chatScrollContainerRef.current.scrollHeight;
+                }
+              }, 50);
             }}
             placeholder="Type SQL query or ask Copilot here..."
             style={{
@@ -1534,7 +1547,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
               className="win95-button"
               onClick={() => {
                 setInputVal('@ai ');
-                textareaRef.current?.focus();
+                textareaRef.current?.focus({ preventScroll: true });
               }}
               style={{ fontSize: '11px', padding: '1px 6px' }}
               title="Ask Gemini Copilot (@ai)"
@@ -1566,7 +1579,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
         onRefresh={handleRefreshCatalog}
         onSelectTable={(tableName) => {
           setInputVal(`SELECT * FROM "${tableName}" LIMIT 20;`);
-          textareaRef.current?.focus();
+          textareaRef.current?.focus({ preventScroll: true });
         }}
       />
 

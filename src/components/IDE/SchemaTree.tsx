@@ -322,13 +322,13 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
       className="win95-inset"
       style={{ width: '100%', height: '100%', background: 'var(--w95-sunken-bg,#fff)', color: 'var(--w95-sunken-text,#000)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
     >
-      {/* Header */}
+      {/* Header Tier 1: Title & Collapse Button */}
       <div
         style={{
           background: isMac ? 'rgba(255, 255, 255, 0.04)' : 'var(--w95-gray,#c0c0c0)',
           color: isMac ? '#f8fafc' : 'var(--w95-text-color,#000)',
-          padding: isMac ? '6px 10px' : '3px 5px',
-          borderBottom: isMac ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid var(--w95-dark-gray,#808080)',
+          padding: isMac ? '6px 10px' : '4px 6px',
+          borderBottom: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid var(--w95-dark-gray,#808080)',
           fontWeight: isMac ? 700 : 'bold',
           fontSize: isMac ? 12 : 11,
           letterSpacing: isMac ? '0.03em' : 'normal',
@@ -339,70 +339,113 @@ export const SchemaTree: React.FC<SchemaTreeProps> = ({
           flexShrink: 0,
         }}
       >
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>🗂️ DATABASE NAVIGATOR</span>
-        <div style={{ display: 'flex', gap: 4 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <span>🗂️</span>
+          <span>DATABASE NAVIGATOR</span>
+        </span>
+        {onToggleCollapse && (
           <button
+            type="button"
             className="win95-button"
             style={{
-              padding: isMac ? '2px 8px' : '0 5px',
-              fontSize: isMac ? 11 : 9,
+              padding: isMac ? '2px 8px' : '1px 6px',
+              fontSize: isMac ? 11 : 10,
               minHeight: isMac ? 22 : 18,
               borderRadius: isMac ? 6 : 0,
               cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 3,
+              flexShrink: 0,
             }}
-            onClick={onNewDatabase}
-            title="Create new database"
+            onClick={onToggleCollapse}
+            title="Collapse Database Navigator"
           >
-            🗄️ New DB
+            <span>◀</span>
           </button>
-          {onOpenERD && (
-            <button
-              className="win95-button"
-              style={{
-                padding: isMac ? '2px 8px' : '0 5px',
-                fontSize: isMac ? 11 : 9,
-                minHeight: isMac ? 22 : 18,
-                borderRadius: isMac ? 6 : 0,
-                cursor: 'pointer',
-                fontWeight: 'bold',
-              }}
-              onClick={onOpenERD}
-              title="Open Entity-Relationship Diagram (ERD) & Relation Visualizer"
-            >
-              🌐 ERD
-            </button>
-          )}
+        )}
+      </div>
+
+      {/* Header Tier 2: Action Command Strip */}
+      <div
+        style={{
+          background: isMac ? 'rgba(255, 255, 255, 0.02)' : 'var(--w95-light-gray,#e0e0e0)',
+          padding: isMac ? '4px 8px' : '3px 4px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          flexWrap: 'wrap',
+          borderBottom: isMac ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid var(--w95-dark-gray,#808080)',
+          flexShrink: 0,
+        }}
+      >
+        <button
+          type="button"
+          className="win95-button"
+          style={{
+            padding: isMac ? '3px 8px' : '2px 6px',
+            fontSize: isMac ? 11 : 10,
+            minHeight: isMac ? 22 : 20,
+            borderRadius: isMac ? 6 : 0,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 3,
+            whiteSpace: 'nowrap',
+            flex: '1 1 auto',
+            justifyContent: 'center',
+          }}
+          onClick={onNewDatabase}
+          title="Create new database"
+        >
+          <span>🗄️</span>
+          <span>New DB</span>
+        </button>
+        {onOpenERD && (
           <button
+            type="button"
             className="win95-button"
             style={{
-              padding: isMac ? '2px 6px' : '0 4px',
-              fontSize: isMac ? 11 : 9,
-              minHeight: isMac ? 22 : 18,
+              padding: isMac ? '3px 8px' : '2px 6px',
+              fontSize: isMac ? 11 : 10,
+              minHeight: isMac ? 22 : 20,
               borderRadius: isMac ? 6 : 0,
               cursor: 'pointer',
+              fontWeight: 'bold',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 3,
+              whiteSpace: 'nowrap',
+              flex: '1 1 auto',
+              justifyContent: 'center',
             }}
-            onClick={onRefresh}
-            title="Refresh"
+            onClick={onOpenERD}
+            title="Open Entity-Relationship Diagram (ERD) & Relation Visualizer"
           >
-            🔄
+            <span>🌐</span>
+            <span>ERD</span>
           </button>
-          {onToggleCollapse && (
-            <button
-              className="win95-button"
-              style={{
-                padding: isMac ? '2px 6px' : '0 4px',
-                fontSize: isMac ? 11 : 9,
-                minHeight: isMac ? 22 : 18,
-                borderRadius: isMac ? 6 : 0,
-                cursor: 'pointer',
-              }}
-              onClick={onToggleCollapse}
-              title="Collapse Database Navigator"
-            >
-              ◀
-            </button>
-          )}
-        </div>
+        )}
+        <button
+          type="button"
+          className="win95-button"
+          style={{
+            padding: isMac ? '3px 8px' : '2px 6px',
+            fontSize: isMac ? 11 : 10,
+            minHeight: isMac ? 22 : 20,
+            borderRadius: isMac ? 6 : 0,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 3,
+            whiteSpace: 'nowrap',
+          }}
+          onClick={onRefresh}
+          title="Refresh Catalog"
+        >
+          <span>🔄</span>
+          <span>Refresh</span>
+        </button>
       </div>
 
       {/* Search */}
