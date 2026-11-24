@@ -49,9 +49,28 @@ let _sqlJsModulePromise: Promise<SqlJsStatic> | null = null;
 export async function getOrInitSqlJs(): Promise<SqlJsStatic> {
   if (!_sqlJsModulePromise) {
     const isBrowserOrWorker = typeof window !== 'undefined' || (typeof self !== 'undefined' && typeof (process as any)?.versions?.node === 'undefined');
-    _sqlJsModulePromise = initSqlJs(
-      isBrowserOrWorker ? { locateFile: () => '/sql-wasm.wasm' } : undefined
-    );
+    if (isBrowserOrWorker) {
+      _sqlJsModulePromise = initSqlJs({ locateFile: () => '/sql-wasm.wasm' });
+    } else {
+      let config: any = undefined;
+      try {
+        const fs = await import('fs');
+        const path = await import('path');
+        const candidatePaths = [
+          path.join(process.cwd(), 'public', 'sql-wasm.wasm'),
+          path.join(process.cwd(), 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm'),
+        ];
+        for (const p of candidatePaths) {
+          if (fs.existsSync(p)) {
+            config = { wasmBinary: fs.readFileSync(p) };
+            break;
+          }
+        }
+      } catch {
+        // Fall back to default sql.js Node loading
+      }
+      _sqlJsModulePromise = initSqlJs(config);
+    }
     _sqlJsModulePromise.catch(() => {
       _sqlJsModulePromise = null; // Clear cached rejection to allow retry on next call
     });

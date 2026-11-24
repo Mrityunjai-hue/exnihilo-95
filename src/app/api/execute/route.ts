@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result, { headers: CORS_HEADERS });
   } catch (err: any) {
+    console.error('API Execute error:', err);
     return NextResponse.json(
       { success: false, error: err?.message || 'Execution error' },
       { status: 500, headers: CORS_HEADERS }
