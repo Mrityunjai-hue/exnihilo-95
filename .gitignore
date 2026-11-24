@@ -48,4 +48,11 @@ next-env.d.ts
 *.mp4
 brag-output/
 
+# python
+python/dist/
+python/build/
+*.egg-info/
+__pycache__/
+*.pyc
+
 
