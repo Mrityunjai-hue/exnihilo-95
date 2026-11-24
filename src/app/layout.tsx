@@ -12,6 +12,7 @@ export const viewport: Viewport = {
   userScalable: false,
   viewportFit: "cover",
   themeColor: "#008080",
+  interactiveWidget: "resizes-content",
 };
 
 const inter = Inter({

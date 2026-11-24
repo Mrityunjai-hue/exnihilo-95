@@ -19,6 +19,7 @@ import { MobileCatalogDrawer } from './MobileCatalogDrawer';
 import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
 import { useMessageAudio } from '../../hooks/useMessageAudio';
 import { resolveOmniDomainSchema } from '../../engine/omni_domain_classifier';
+import { parseSemanticQuery } from '../../engine/semantic_query_parser';
 
 export interface ChatMessage {
   id: string;
@@ -40,6 +41,7 @@ interface PocketSQLChatProps {
   onCancelQuery?: () => void;
   isLoading: boolean;
   result: ExecutionSuccess | null;
+  activeError?: any;
   catalog: SessionCatalog | any;
   onSwitchToDesktop: () => void;
 }
@@ -53,6 +55,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
   onCancelQuery,
   isLoading,
   result,
+  activeError,
   catalog,
   onSwitchToDesktop,
 }) => {
@@ -111,6 +114,35 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
   const [expandedTableId, setExpandedTableId] = useState<string | null>(null);
   const [fullscreenTable, setFullscreenTable] = useState<ExecutionSuccess | null>(null);
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  const [viewportOffsetTop, setViewportOffsetTop] = useState<number>(0);
+
+  // Lock body and html scroll so mobile Safari never scrolls the layout viewport
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const origHtmlOverflow = document.documentElement.style.overflow;
+    const origBodyOverflow = document.body.style.overflow;
+    const origBodyPosition = document.body.style.position;
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+
+    const resetScroll = () => {
+      if (window.scrollX !== 0 || window.scrollY !== 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+    window.addEventListener('scroll', resetScroll, { passive: true });
+
+    return () => {
+      document.documentElement.style.overflow = origHtmlOverflow;
+      document.body.style.overflow = origBodyOverflow;
+      document.body.style.position = origBodyPosition;
+      window.removeEventListener('scroll', resetScroll);
+    };
+  }, []);
 
   // Track iOS / Android visual viewport to keep input bar pinned above virtual keyboard without clipping
   useEffect(() => {
@@ -118,6 +150,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     const updateViewport = () => {
       if (window.visualViewport) {
         setViewportHeight(window.visualViewport.height);
+        setViewportOffsetTop(window.visualViewport.offsetTop || 0);
       }
     };
     window.visualViewport.addEventListener('resize', updateViewport);
@@ -186,6 +219,24 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     }
   }, [result]);
 
+  // Append query execution errors to chat
+  const lastErrorRef = useRef<any>(null);
+  useEffect(() => {
+    if (activeError && activeError !== lastErrorRef.current) {
+      lastErrorRef.current = activeError;
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          sender: 'error',
+          timestamp: timeStr,
+          error: activeError.message || activeError.rawMessage || 'SQL Execution failed.',
+        },
+      ]);
+    }
+  }, [activeError]);
+
   // Auto-scroll chat to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -214,7 +265,11 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
 
     // Check if input is standard SQL or a natural language prompt
     const isExplicitAi = raw.startsWith('@ai') || raw.startsWith('/ai');
-    const isSqlStatement = /^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE\s+TABLE\s+\w+\s*\(|WITH|DROP|ALTER|SHOW|EXPLAIN|PRAGMA|DESCRIBE)\b/i.test(raw);
+    // Administrative SHOW in SQL is only valid followed by database metadata keywords (e.g. SHOW TABLES, SHOW COLUMNS).
+    // Conversational phrases like "Show me...", "Show top...", "Show all..." are natural language prompts!
+    const isSqlAdminShow = /^\s*SHOW\s+(TABLES|COLUMNS|DATABASES|CREATE\s+TABLE|PROCESSLIST|STATUS|VARIABLES|INDEX)\b/i.test(raw);
+    const isStandardSql = /^\s*(SELECT\b|INSERT\s+INTO\b|UPDATE\b|DELETE\s+FROM\b|CREATE\s+TABLE\b|WITH\b|DROP\s+TABLE\b|ALTER\s+TABLE\b|EXPLAIN\b|PRAGMA\b|DESCRIBE\b)/i.test(raw);
+    const isSqlStatement = isSqlAdminShow || isStandardSql;
 
     // If input is natural language (e.g. "dinosaurs", "table for revenue", "heart patients") or explicit @ai, route to Copilot
     if (isExplicitAi || !isSqlStatement) {
@@ -326,8 +381,9 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     } catch {
       // Instant on-device synthesis fallback: zero loading hang, instant astonish response
       try {
-        if (isTableRequest || !promptText.includes(' ')) {
-          const tbl = (cleanPromptName || promptText).replace(/[^a-zA-Z0-9_]/g, '') || 'entity';
+        const semantic = parseSemanticQuery(promptText);
+        if (semantic.isTableCreation || isTableRequest) {
+          const tbl = semantic.tableName;
           const cols = resolveOmniDomainSchema(tbl);
           const colDefs = cols.map(c => `  "${c.name}" ${c.logicalType === 'INTEGER' ? 'INTEGER' : c.logicalType === 'NUMERIC' ? 'NUMERIC' : c.logicalType === 'TIMESTAMP' ? 'TIMESTAMP' : c.logicalType === 'BOOLEAN' ? 'BOOLEAN' : 'VARCHAR(255)'}${c.isPrimaryKey ? ' PRIMARY KEY' : ''}`).join(',\n');
           const ddl = `CREATE TABLE IF NOT EXISTS "${tbl}" (\n${colDefs}\n);`;
@@ -343,15 +399,13 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             },
           ]);
         } else {
-          const targetWord = promptText.replace(/^(show|find|list|get|select|query|give me|calculate|display|search|table for|table)\s+/i, '').trim();
-          const inferredTable = targetWord.split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9_]/g, '') || 'customers';
           setMessages((prev) => [
             ...prev,
             {
               id: `ai-${Date.now()}`,
               sender: 'copilot',
               timestamp: timeStr,
-              sql: `SELECT * FROM "${inferredTable}" LIMIT 20;`,
+              sql: semantic.sql,
               text: 'I generated this query for you:',
             },
           ]);
@@ -435,7 +489,10 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     <div
       style={{
         position: 'fixed',
-        inset: 0,
+        top: `${viewportOffsetTop}px`,
+        left: 0,
+        right: 0,
+        bottom: 0,
         height: viewportHeight ? `${viewportHeight}px` : '100dvh',
         maxHeight: viewportHeight ? `${viewportHeight}px` : '100dvh',
         width: '100vw',
@@ -801,6 +858,14 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                     ⚠️ Execution / AI Error ({msg.timestamp})
                   </div>
                   <div style={{ fontSize: '11px', color: '#7f1d1d' }}>{msg.error}</div>
+                  <button
+                    type="button"
+                    className="win95-button"
+                    style={{ fontSize: '10px', padding: '2px 8px', marginTop: '6px', fontWeight: 'bold', color: '#1e40af' }}
+                    onClick={() => handleAskCopilot(`Fix this SQL error: ${msg.error}\nOriginal query: ${queryText || ''}`)}
+                  >
+                    ⚡ Ask AI Copilot to Fix
+                  </button>
                 </div>
               </div>
             );
@@ -1059,10 +1124,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
               type="button"
               className="win95-button"
               style={{ fontSize: '10px', padding: '2px 8px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '3px' }}
-              onClick={() => {
-                setInputVal('SELECT * FROM customers LIMIT 10;');
-                textareaRef.current?.focus();
-              }}
+              onClick={() => handleSend('SELECT * FROM "customers" LIMIT 20;')}
             >
               <span>📋</span>
               <span>customers</span>
@@ -1071,10 +1133,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
               type="button"
               className="win95-button"
               style={{ fontSize: '10px', padding: '2px 8px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '3px' }}
-              onClick={() => {
-                setInputVal('SELECT * FROM orders LIMIT 10;');
-                textareaRef.current?.focus();
-              }}
+              onClick={() => handleSend('SELECT * FROM "orders" LIMIT 20;')}
             >
               <span>📊</span>
               <span>orders</span>
@@ -1083,10 +1142,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
               type="button"
               className="win95-button"
               style={{ fontSize: '10px', padding: '2px 8px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '3px' }}
-              onClick={() => {
-                setInputVal('SELECT * FROM revenue;');
-                textareaRef.current?.focus();
-              }}
+              onClick={() => handleSend('SELECT * FROM "revenue" LIMIT 20;')}
             >
               <span>💰</span>
               <span>revenue</span>
@@ -1095,10 +1151,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
               type="button"
               className="win95-button"
               style={{ fontSize: '10px', padding: '2px 8px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '3px' }}
-              onClick={() => {
-                setInputVal('SELECT * FROM heart;');
-                textareaRef.current?.focus();
-              }}
+              onClick={() => handleSend('SELECT * FROM "heart" LIMIT 20;')}
             >
               <span>❤️</span>
               <span>heart</span>
@@ -1107,10 +1160,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
               type="button"
               className="win95-button"
               style={{ fontSize: '10px', padding: '2px 8px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '3px', color: '#6b21a8' }}
-              onClick={() => {
-                setInputVal('@ai table for ');
-                textareaRef.current?.focus();
-              }}
+              onClick={() => handleAskCopilot('Create table for user profiles with activity metrics')}
             >
               <span>✨</span>
               <span>@ai table...</span>
@@ -1126,6 +1176,19 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             onChange={(e) => setInputVal(e.target.value)}
             onSelect={handleSelectText}
             onKeyUp={handleSelectText}
+            onFocus={() => {
+              if (typeof window !== 'undefined') {
+                window.scrollTo(0, 0);
+                document.body.scrollTop = 0;
+              }
+              setTimeout(() => {
+                if (typeof window !== 'undefined') {
+                  window.scrollTo(0, 0);
+                  document.body.scrollTop = 0;
+                }
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+              }, 80);
+            }}
             onBlur={() => {
               // Ensure viewport returns to baseline when iOS keyboard dismisses
               if (typeof window !== 'undefined') {

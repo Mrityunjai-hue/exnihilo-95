@@ -40,7 +40,12 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
   const [newSnapshotName, setNewSnapshotName] = useState('');
   const [feedback, setFeedback] = useState<{ msg: string; ok: boolean } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
 
   useEffect(() => {
     const checkMobile = () => {
@@ -269,7 +274,7 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
               </div>
             </div>
           ) : (
-            <table style={{ width: '100%', minWidth: '400px', borderCollapse: 'collapse', fontSize: '11px' }}>
+            <table style={{ width: '100%', minWidth: isMobile ? '100%' : '400px', borderCollapse: 'collapse', fontSize: '11px' }}>
               <thead>
                 <tr style={{ background: '#d0d0d0', borderBottom: '1px solid #999', textAlign: 'left', position: 'sticky', top: 0, zIndex: 2 }}>
                   <th style={{ padding: '4px 8px' }}>Checkpoint Name</th>

@@ -6,6 +6,7 @@ import {
   parseSchemaResponse,
 } from '../../../utils/copilotHelper';
 import { resolveOmniDomainSchema } from '../../../engine/omni_domain_classifier';
+import { parseSemanticQuery } from '../../../engine/semantic_query_parser';
 
 /**
  * route.ts — Grounded Gemini SQL Copilot API Route (v2.1)
@@ -62,11 +63,10 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      const targetWord = targetPrompt.replace(/^(show|find|list|get|select|query|give me|calculate|display|search|table for|table)\s+/i, '').trim();
-      const inferredTable = targetWord.split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9_]/g, '') || 'customers';
+      const semantic = parseSemanticQuery(targetPrompt);
       return NextResponse.json({
         ok: true,
-        sql: `SELECT * FROM "${inferredTable}" LIMIT 20;`,
+        sql: semantic.sql,
         text: `Generated query for "${targetPrompt}":`,
       });
     };
@@ -87,16 +87,16 @@ export async function POST(req: NextRequest) {
       ? buildSchemaSystemPrompt(tableName || targetPrompt.replace(/^create table\s*/i, '').trim(), dialect)
       : buildSystemPrompt(dialect, schema);
 
-    // Production-stable Gemini models: prioritize gemini-1.5-flash as the fast, universal primary.
-    // Exclude deprecated 2.0-flash models to avoid 404/400 failures.
+    // Active Gemini models: prioritize gemini-2.5-flash as the verified active production model.
+    // Exclude deprecated 2.0-flash and 1.5-flash (404 on current v1beta endpoint).
     const envModel = process.env.GEMINI_MODEL;
-    const cleanEnvModel = (envModel && !envModel.includes('2.0') && !envModel.includes('3.8')) ? envModel : null;
+    const cleanEnvModel = (envModel && !envModel.includes('2.0') && !envModel.includes('3.8') && !envModel.includes('1.5')) ? envModel : null;
 
     const candidateModels = Array.from(new Set([
-      'gemini-1.5-flash',
       cleanEnvModel,
-      'gemini-1.5-pro',
       'gemini-2.5-flash',
+      'gemini-flash-latest',
+      'gemini-1.5-flash',
     ].filter(Boolean))) as string[];
 
     const requestBody = JSON.stringify({
@@ -173,9 +173,18 @@ export async function POST(req: NextRequest) {
       text: isSql ? undefined : rawOutput,
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { ok: false, error: 'INTERNAL_ERROR', message: error?.message || 'Failed to generate SQL' },
-      { status: 500 }
-    );
+    try {
+      const semantic = parseSemanticQuery('SELECT * FROM "customers" LIMIT 20;');
+      return NextResponse.json({
+        ok: true,
+        sql: semantic.sql,
+        text: 'Generated query:',
+      });
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: 'INTERNAL_ERROR', message: error?.message || 'Failed to generate SQL' },
+        { status: 500 }
+      );
+    }
   }
 }

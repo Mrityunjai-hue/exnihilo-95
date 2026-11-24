@@ -555,6 +555,7 @@ export const Desktop: React.FC = () => {
         onCancelQuery={handleCancelQuery}
         isLoading={isLoading}
         result={result}
+        activeError={activeError}
         catalog={readOnlyCatalog}
         onSwitchToDesktop={() => setForceDesktop(true)}
       />
