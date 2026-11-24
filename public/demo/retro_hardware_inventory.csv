@@ -1,0 +1,9 @@
+id,sku,product_name,category,stock_qty,unit_price
+1,SKU-9501,486-DX2 66MHz Processor,Hardware,140,199.99
+2,SKU-9502,16MB EDO RAM Module,Memory,320,89.50
+3,SKU-9503,1.44MB 3.5" Floppy Drive,Storage,500,24.00
+4,SKU-9504,SoundBlaster 16 ISA Card,Audio,75,129.95
+5,SKU-9505,14" CRT SVGA Color Monitor,Display,60,249.00
+6,SKU-9506,US Robotics 28.8k Modem,Networking,210,149.95
+7,SKU-9507,Mitsumi 4x IDE CD-ROM Drive,Optical,180,119.50
+8,SKU-9508,Cherry MX Vintage Clicky Keyboard,Peripherals,95,79.00

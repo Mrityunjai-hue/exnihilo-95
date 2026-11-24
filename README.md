@@ -33,11 +33,10 @@
 ## 📑 Table of Contents
 
 - [💡 Core Architectural Manifesto: Self-Made Engine](#-core-architectural-manifesto-self-made-engine)
-- [🖼️ Visual Product Showcase: Real Screenshots](#%EF%B8%8F-visual-product-showcase-real-screenshots)
-  - [🖥️ Desktop Workstations (Windows 95 Classic & Modern Glass)](#%EF%B8%8F-desktop-workstations-windows-95-classic--modern-glass)
+- [💾 Software Distribution Depot: Downloads & Installation](#-software-distribution-depot-downloads--installation)
+- [🖼️ Visual Product Showcase: Real Windows 95 Screenshots](#%EF%B8%8F-visual-product-showcase-real-windows-95-screenshots)
+  - [🖥️ Desktop Workstations (Authentic Windows 95 Shell & SQL Studio)](#%EF%B8%8F-desktop-workstations-authentic-windows-95-shell--sql-studio)
   - [📱 Mobile Pocket SQL Chat (iMessage + Win95)](#-mobile-pocket-sql-chat-imessage--win95)
-  - [🕵️‍♂️ SQL Noir: Forensic Homicide Bureau](#%EF%B8%8F%EF%B8%8F-sql-noir-forensic-homicide-bureau)
-  - [📊 Executive Visual Analytics & Results Grid](#-executive-visual-analytics--results-grid)
 - [✨ What Makes ExNihilo 95 Revolutionary](#-what-makes-exnihilo-95-revolutionary)
 - [🌟 Flagship Features & Workstations](#-flagship-features--workstations)
   - [1. Zero-Setup Database Engine & Relational Synthesis](#1-zero-setup-database-engine--relational-synthesis)
@@ -75,17 +74,72 @@
 
 ---
 
-## 🖼️ Visual Product Showcase: Real Screenshots
+## 💾 Software Distribution Depot: Downloads & Installation
 
-Every view in ExNihilo 95 is built with pixel-perfect authenticity. Below is the real product in action across desktop and mobile:
+ExNihilo 95 is distributed both as a high-speed Progressive Web Application (PWA) that installs natively on your machine without requiring Node.js or Docker, and as an open-source development package.
 
-### 🖥️ Desktop Workstations (Windows 95 Classic & Modern Glass)
+<p align="center">
+  <a href="https://exnihilo-95.vercel.app/download"><img src="https://img.shields.io/badge/Desktop%20PWA-Install%20App-008080?style=for-the-badge&logo=windows&logoColor=white" alt="Install Desktop PWA" /></a>
+  <a href="https://exnihilo-95.vercel.app/"><img src="https://img.shields.io/badge/Mobile%20PWA-Add%20to%20Home-141416?style=for-the-badge&logo=apple&logoColor=white" alt="Mobile Web App" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95/raw/main/public/demo/exnihilo_starter_pack.sql"><img src="https://img.shields.io/badge/SQL%20Kit-Starter%20Pack%20.sql-000080?style=for-the-badge&logo=sqlite&logoColor=white" alt="Download Starter SQL" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95/raw/main/public/demo/retro_hardware_inventory.csv"><img src="https://img.shields.io/badge/Sample%20Data-Inventory%20.csv-2ea44f?style=for-the-badge" alt="Download Sample CSV" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95/releases"><img src="https://img.shields.io/badge/Releases-v1.0.0--Win95-blue?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Releases" /></a>
+</p>
+
+### 📦 Downloadable Assets & Direct Packages
+
+| Package / Resource | Format | Direct Download / Access Link | Description |
+| :--- | :---: | :--- | :--- |
+| **💽 ExNihilo 95 Offline PWA** | Web / PWA | [**Launch Interactive Installer**](https://exnihilo-95.vercel.app/download) | Install standalone app on Windows, macOS, or Linux. Full offline WebAssembly SQLite support. |
+| **📄 SQL Starter Analytics Pack** | `.sql` (827 B) | [**Download `exnihilo_starter_pack.sql`**](https://github.com/Mrityunjai-hue/exnihilo-95/raw/main/public/demo/exnihilo_starter_pack.sql) | Instant multi-table joins, salary window functions, and cross-dialect T-SQL queries ready to run. |
+| **📊 Retro Hardware Inventory** | `.csv` (496 B) | [**Download `retro_hardware_inventory.csv`**](https://github.com/Mrityunjai-hue/exnihilo-95/raw/main/public/demo/retro_hardware_inventory.csv) | Vintage computing inventory dataset (486-DX2, SoundBlaster 16, Floppy Drives) for query practice. |
+| **🏷️ GitHub Release Archive** | `.zip` / `.tar.gz` | [**View GitHub Releases**](https://github.com/Mrityunjai-hue/exnihilo-95/releases) | Tagged releases, source code archives, and standalone distribution bundles. |
+
+---
+
+### 🚀 3 Ways to Run & Install ExNihilo 95
+
+#### Option 1: 1-Click Desktop PWA App (Zero Setup, No Node.js Required)
+1. Open the [ExNihilo 95 Download Depot](https://exnihilo-95.vercel.app/download) in Google Chrome, Microsoft Edge, or Brave.
+2. Click the retro **"Install ExNihilo 95 Desktop App"** button (or click the install icon in your browser's address bar).
+3. Confirm the installation prompt.
+4. ExNihilo 95 will now launch as a dedicated desktop window with its own icon on your Windows Taskbar, macOS Dock, or Linux desktop, running completely offline!
+
+#### Option 2: Mobile Add to Home Screen (iOS & Android)
+- **iPhone / iPad (Safari):** Open [exnihilo-95.vercel.app](https://exnihilo-95.vercel.app) $\to$ Tap the **Share** button $\to$ Select **"Add to Home Screen"**.
+- **Android (Chrome / Edge):** Open [exnihilo-95.vercel.app](https://exnihilo-95.vercel.app) $\to$ Tap the **Three Dots (⋮)** menu $\to$ Select **"Install App"** or **"Add to Home screen"**.
+- Launches directly into full-screen **Pocket SQL Chat** with keyboard virtualization and zero URL bar clutter.
+
+#### Option 3: Local Developer CLI Installation (Full Source)
+For engineers wishing to inspect the WebAssembly engine, extend dialect transpilers, or build custom AST rules:
+```bash
+# 1. Clone repository
+git clone https://github.com/Mrityunjai-hue/exnihilo-95.git
+cd exnihilo-95
+
+# 2. Install dependencies
+npm install
+
+# 3. Start local development server
+npm run dev
+
+# 4. Open in browser
+# Navigate to http://localhost:3000
+```
+
+---
+
+## 🖼️ Visual Product Showcase: Real Windows 95 Screenshots
+
+Every view in ExNihilo 95 is built with pixel-perfect authenticity. Below is the real product in action across desktop and mobile in our signature **Windows 95 Classic** theme:
+
+### 🖥️ Desktop Workstations (Authentic Windows 95 Shell & SQL Studio)
 
 <p align="center">
   <img src="public/screenshots/screenshot-1-desktop.png" alt="ExNihilo 95 Complete Desktop Environment" width="850" style="border: 2px outset #ffffff; box-shadow: 0 12px 30px rgba(0,0,0,0.35);" />
 </p>
 <p align="center">
-  <em>The complete 1995 desktop operating system with interactive taskbar, start menu, draggable desktop icons, and floating multi-window shell.</em>
+  <em>The complete Windows 95 desktop operating system with interactive taskbar, start menu, draggable desktop icons, and floating multi-window shell.</em>
 </p>
 
 <table align="center" width="100%">
@@ -134,37 +188,6 @@ ExNihilo 95 reimagines database engineering for handheld smartphones with **Pock
 - **Embedded WebAssembly Kernel Cards:** View live SQL result rows inside compact, expandable Win95 tables with inline sorting and CSV export.
 - **⚡ 1-Tap Error Auto-Repair:** Tapping *Ask AI Copilot to Fix* automatically extracts the failed query, repairs syntax across dialects, and delivers the working query without hallucinations.
 - **Virtual Viewport Lock:** Eliminates mobile keyboard jumping and keeps input elements pinned during typing on Safari, Chrome, and Firefox mobile.
-
----
-
-### 🕵️‍♂️ SQL Noir: Forensic Homicide Bureau
-
-<p align="center">
-  <img src="public/screenshots/sql-noir-bureau.png" alt="SQL Noir Forensic Homicide Bureau Workstation" width="850" style="border: 2px outset #ffffff; box-shadow: 0 12px 30px rgba(0,0,0,0.35);" />
-</p>
-<p align="center">
-  <em>The SQL Noir retro forensic investigation room: live suspect roster, audit logs, apothecary receipts, evidence lockers, and credibility stamping.</em>
-</p>
-
-- **Case 1: The Midnight Cyanide at Blackwood Manor (1995-CR-0842):** Interrogate 135+ keycard swipe logs, 45+ toxicology panels, apothecary ledgers, and phone dispatches to shatter false train alibis.
-- **Case 2: The Clyde Naval Shipyard Sabotage (1995-CR-1042):** Classified nuclear propulsor blueprints stolen from Vault 4. Audit turnstile records, chemical stores, and foreign wiretaps.
-- **Tactile Paperclip Audio:** Attach query result rows to case files with realistic physical metallic paperclip sound effects (`playPaperclip()`).
-- **Rubber Alibi Stamps & Grand Jury Trials:** Stamp suspect statements as `VERIFIED` or `CONTRADICTED`, present Exhibits A, B, and C in High Court, strike the oak gavel, and generate extra-edition headlines.
-
----
-
-### 📊 Executive Visual Analytics & Results Grid
-
-<p align="center">
-  <img src="public/screenshots/sql-results-analytics.png" alt="Executive Visual Analytics Dashboard and Results Grid" width="850" style="border: 2px outset #ffffff; box-shadow: 0 12px 30px rgba(0,0,0,0.35);" />
-</p>
-<p align="center">
-  <em>Live query results with automated executive analytics, proportional rank bars, SVG gradient area trendlines, and schema profiler metrics.</em>
-</p>
-
-- **Instant KPI Aggregations:** Total Volume, Mean Average, Peak Maximum, and Minimum Floor calculated instantly on client side.
-- **Side-by-Side Dual Visuals:** Horizontal proportional rank bars paired with SVG gradient area trendlines.
-- **Schema Profiler:** Inspect completeness fill rates, distinct cardinality counts, and distribution ranges across every synthesized column.
 
 ---
 
