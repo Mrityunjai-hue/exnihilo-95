@@ -7,6 +7,8 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV === "development",
 });
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  output: process.env.DOCKER_BUILD === "1" ? "standalone" : undefined,
+};
 
 export default withSerwist(nextConfig);

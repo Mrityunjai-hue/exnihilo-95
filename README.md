@@ -76,13 +76,14 @@
 
 ## 💾 Software Distribution Depot: Downloads & Installation
 
-ExNihilo 95 is distributed both as a high-speed Progressive Web Application (PWA) that installs natively on your machine without requiring Node.js or Docker, and as an open-source development package.
+ExNihilo 95 is distributed across multiple channels: as an offline-capable Progressive Web Application (PWA), a 1-line terminal CLI (`npx`), a multi-stage Docker container on GitHub Packages, and a headless TypeScript synthesis engine.
 
 <p align="center">
   <a href="https://exnihilo-95.vercel.app/download"><img src="https://img.shields.io/badge/Desktop%20PWA-Install%20App-008080?style=for-the-badge&logo=windows&logoColor=white" alt="Install Desktop PWA" /></a>
   <a href="https://exnihilo-95.vercel.app/"><img src="https://img.shields.io/badge/Mobile%20PWA-Add%20to%20Home-141416?style=for-the-badge&logo=apple&logoColor=white" alt="Mobile Web App" /></a>
+  <a href="#option-3-instant-terminal-runner-npx-exnihilo-95"><img src="https://img.shields.io/badge/CLI-npx%20exnihilo--95-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="npx exnihilo-95" /></a>
+  <a href="#option-4-docker-container-github-packages-ghcrio"><img src="https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Container" /></a>
   <a href="https://github.com/Mrityunjai-hue/exnihilo-95/raw/main/public/demo/exnihilo_starter_pack.sql"><img src="https://img.shields.io/badge/SQL%20Kit-Starter%20Pack%20.sql-000080?style=for-the-badge&logo=sqlite&logoColor=white" alt="Download Starter SQL" /></a>
-  <a href="https://github.com/Mrityunjai-hue/exnihilo-95/raw/main/public/demo/retro_hardware_inventory.csv"><img src="https://img.shields.io/badge/Sample%20Data-Inventory%20.csv-2ea44f?style=for-the-badge" alt="Download Sample CSV" /></a>
   <a href="https://github.com/Mrityunjai-hue/exnihilo-95/releases"><img src="https://img.shields.io/badge/Releases-v1.0.0--Win95-blue?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Releases" /></a>
 </p>
 
@@ -91,13 +92,15 @@ ExNihilo 95 is distributed both as a high-speed Progressive Web Application (PWA
 | Package / Resource | Format | Direct Download / Access Link | Description |
 | :--- | :---: | :--- | :--- |
 | **💽 ExNihilo 95 Offline PWA** | Web / PWA | [**Launch Interactive Installer**](https://exnihilo-95.vercel.app/download) | Install standalone app on Windows, macOS, or Linux. Full offline WebAssembly SQLite support. |
+| **💻 Terminal CLI Runner** | `npx` / npm | `npx exnihilo-95` | Instant terminal query synthesis and 1-line desktop IDE browser launcher. |
+| **🐳 Docker Container** | OCI Container | `ghcr.io/mrityunjai-hue/exnihilo-95` | Automated multi-stage production container published directly to GitHub Packages. |
 | **📄 SQL Starter Analytics Pack** | `.sql` (827 B) | [**Download `exnihilo_starter_pack.sql`**](https://github.com/Mrityunjai-hue/exnihilo-95/raw/main/public/demo/exnihilo_starter_pack.sql) | Instant multi-table joins, salary window functions, and cross-dialect T-SQL queries ready to run. |
 | **📊 Retro Hardware Inventory** | `.csv` (496 B) | [**Download `retro_hardware_inventory.csv`**](https://github.com/Mrityunjai-hue/exnihilo-95/raw/main/public/demo/retro_hardware_inventory.csv) | Vintage computing inventory dataset (486-DX2, SoundBlaster 16, Floppy Drives) for query practice. |
 | **🏷️ GitHub Release Archive** | `.zip` / `.tar.gz` | [**View GitHub Releases**](https://github.com/Mrityunjai-hue/exnihilo-95/releases) | Tagged releases, source code archives, and standalone distribution bundles. |
 
 ---
 
-### 🚀 3 Ways to Run & Install ExNihilo 95
+### 🚀 5 Ways to Run, Install & Integrate ExNihilo 95
 
 #### Option 1: 1-Click Desktop PWA App (Zero Setup, No Node.js Required)
 1. Open the [ExNihilo 95 Download Depot](https://exnihilo-95.vercel.app/download) in Google Chrome, Microsoft Edge, or Brave.
@@ -110,21 +113,40 @@ ExNihilo 95 is distributed both as a high-speed Progressive Web Application (PWA
 - **Android (Chrome / Edge):** Open [exnihilo-95.vercel.app](https://exnihilo-95.vercel.app) $\to$ Tap the **Three Dots (⋮)** menu $\to$ Select **"Install App"** or **"Add to Home screen"**.
 - Launches directly into full-screen **Pocket SQL Chat** with keyboard virtualization and zero URL bar clutter.
 
-#### Option 3: Local Developer CLI Installation (Full Source)
-For engineers wishing to inspect the WebAssembly engine, extend dialect transpilers, or build custom AST rules:
+#### Option 3: Instant Terminal Runner (`npx exnihilo-95`)
+Execute queries or launch the IDE instantly from anywhere in your terminal without manual cloning:
 ```bash
-# 1. Clone repository
-git clone https://github.com/Mrityunjai-hue/exnihilo-95.git
-cd exnihilo-95
+# 1. Open the desktop web workstation in your browser
+npx exnihilo-95
 
-# 2. Install dependencies
-npm install
+# 2. Or synthesize a query ex nihilo directly:
+npx exnihilo-95 "SELECT * FROM celestial_objects ORDER BY distance_light_years DESC"
 
-# 3. Start local development server
-npm run dev
+# 3. Open the offline PWA download depot
+npx exnihilo-95 --download
+```
 
-# 4. Open in browser
-# Navigate to http://localhost:3000
+#### Option 4: Docker Container (GitHub Packages / `ghcr.io`)
+Deploy ExNihilo 95 on any local server, homelab, or cloud VM with Docker:
+```bash
+docker run -d -p 3000:3000 --name exnihilo-95 ghcr.io/mrityunjai-hue/exnihilo-95:latest
+```
+Open [http://localhost:3000](http://localhost:3000) to access your self-hosted instance.
+
+#### Option 5: Headless Programmatic TypeScript Engine
+Import our synthesis and transpilation engine directly inside your own automated test suites, backend services, or mock DB harnesses:
+```bash
+npm install exnihilo-95
+```
+```typescript
+import { executeSQL, inferSchema, transpileSQL } from 'exnihilo-95';
+
+// Synthesize schema, foreign keys, and mock data automatically
+const result = await executeSQL('SELECT * FROM users JOIN orders ON users.id = orders.user_id');
+if (result.success) {
+  console.log(result.results[0].columns);
+  console.log(result.results[0].rows);
+}
 ```
 
 ---

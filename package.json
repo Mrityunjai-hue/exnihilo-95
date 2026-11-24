@@ -1,7 +1,37 @@
 {
   "name": "exnihilo-95",
   "version": "2.1.0",
-  "private": true,
+  "description": "Zero-Config In-Browser SQL IDE & Relational Synthesis Engine in Windows 95 aesthetic",
+  "author": "Mrityunjai <https://github.com/Mrityunjai-hue>",
+  "license": "MIT",
+  "homepage": "https://exnihilo-95.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mrityunjai-hue/exnihilo-95.git"
+  },
+  "bin": {
+    "exnihilo-95": "./bin/cli.js"
+  },
+  "main": "./src/engine/index.ts",
+  "types": "./src/engine/index.ts",
+  "files": [
+    "bin",
+    "src/engine",
+    "public",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "sql",
+    "sqlite",
+    "webassembly",
+    "windows-95",
+    "database-ide",
+    "relational-synthesis",
+    "mock-data",
+    "ast-parser",
+    "transpiler"
+  ],
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
