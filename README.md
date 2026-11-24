@@ -16,16 +16,16 @@
 </p>
 
 <p align="center">
-  <a href="https://exnihilo-95.vercel.app"><img src="https://img.shields.io/badge/Live_Demo-exnihilo--95.vercel.app-008080?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" /></a>
+  <a href="https://exnihilo-95.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-Vercel-008080?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" /></a>
   <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Build-Passing-2ea44f?style=for-the-badge&logo=githubactions&logoColor=white" alt="Build Status" /></a>
-  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Vitest_Suites-43%2F43_Passed-success?style=for-the-badge&logo=vitest&logoColor=white" alt="Vitest Suites" /></a>
-  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Unit_Tests-328%2F328_Passed-brightgreen?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Unit Tests" /></a>
-  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/TypeScript-0_Errors-3178c6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 0 Errors" /></a>
-  <a href="https://sql.js.org/"><img src="https://img.shields.io/badge/WebAssembly-SQLite_3.49.1-8A2BE2?style=for-the-badge&logo=webassembly&logoColor=white" alt="WebAssembly" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/Code_License-MIT-blue?style=for-the-badge" alt="License: MIT" /></a>
-  <a href="#-multi-tier-licensing--open-source-governance"><img src="https://img.shields.io/badge/Creative_Assets-CC--BY--4.0-orange?style=for-the-badge&logo=creativecommons&logoColor=white" alt="Assets: CC-BY-4.0" /></a>
-  <a href="#-multi-tier-licensing--open-source-governance"><img src="https://img.shields.io/badge/Schemas_%26_Data-ODC--By_1.0-9cf?style=for-the-badge" alt="Data: ODC-By" /></a>
-  <a href="COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md"><img src="https://img.shields.io/badge/IP_Protection-Anti--Theft_Protected-red?style=for-the-badge" alt="Anti-Theft" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Vitest-43%20Suites%20Passed-success?style=for-the-badge&logo=vitest&logoColor=white" alt="Vitest Suites" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/Unit%20Tests-328%20Passed-brightgreen?style=for-the-badge" alt="Unit Tests" /></a>
+  <a href="https://github.com/Mrityunjai-hue/exnihilo-95"><img src="https://img.shields.io/badge/TypeScript-0%20Errors-3178c6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 0 Errors" /></a>
+  <a href="https://sql.js.org/"><img src="https://img.shields.io/badge/WebAssembly-SQLite-8A2BE2?style=for-the-badge&logo=webassembly&logoColor=white" alt="WebAssembly" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/Code%20License-MIT-blue?style=for-the-badge" alt="License: MIT" /></a>
+  <a href="#-multi-tier-licensing--open-source-governance"><img src="https://img.shields.io/badge/Assets-CC--BY--4.0-orange?style=for-the-badge&logo=creativecommons&logoColor=white" alt="Assets: CC-BY-4.0" /></a>
+  <a href="#-multi-tier-licensing--open-source-governance"><img src="https://img.shields.io/badge/Data-ODC--By-blueviolet?style=for-the-badge" alt="Data: ODC-By" /></a>
+  <a href="COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md"><img src="https://img.shields.io/badge/IP%20Protection-Anti--Theft-red?style=for-the-badge" alt="Anti-Theft" /></a>
 </p>
 
 ---
@@ -33,9 +33,11 @@
 ## 📑 Table of Contents
 
 - [💡 Core Architectural Manifesto: Self-Made Engine](#-core-architectural-manifesto-self-made-engine)
-- [🖼️ Visual Showcase: Desktop Workstation & Mobile Pocket SQL](#%EF%B8%8F-visual-showcase-desktop-workstation--mobile-pocket-sql)
-  - [🖥️ Desktop Workstation: Multi-Window SQL Operating System](#%EF%B8%8F-desktop-workstation-multi-window-sql-operating-system)
-  - [📱 Mobile Workstation: Pocket SQL Chat (iMessage + Win95)](#-mobile-workstation-pocket-sql-chat-imessage--win95)
+- [🖼️ Visual Product Showcase: Real Screenshots](#%EF%B8%8F-visual-product-showcase-real-screenshots)
+  - [🖥️ Desktop Workstations (Windows 95 Classic & Modern Glass)](#%EF%B8%8F-desktop-workstations-windows-95-classic--modern-glass)
+  - [📱 Mobile Pocket SQL Chat (iMessage + Win95)](#-mobile-pocket-sql-chat-imessage--win95)
+  - [🕵️‍♂️ SQL Noir: Forensic Homicide Bureau](#%EF%B8%8F%EF%B8%8F-sql-noir-forensic-homicide-bureau)
+  - [📊 Executive Visual Analytics & Results Grid](#-executive-visual-analytics--results-grid)
 - [✨ What Makes ExNihilo 95 Revolutionary](#-what-makes-exnihilo-95-revolutionary)
 - [🌟 Flagship Features & Workstations](#-flagship-features--workstations)
   - [1. Zero-Setup Database Engine & Relational Synthesis](#1-zero-setup-database-engine--relational-synthesis)
@@ -48,7 +50,7 @@
   - [8. 🏆 SQL Challenge Arena (130 Real Interview Questions)](#8--sql-challenge-arena-130-real-interview-questions)
   - [9. 🎨 6 Nostalgic Desktop Themes & CRT Filter](#9--6-nostalgic-desktop-themes--crt-filter)
   - [10. 👤 Offline Security Keyring & User Profiles](#10--offline-security-keyring--user-profiles)
-- [🧠 Engine Architecture & Data Pipeline](#-engine-architecture--data-pipeline)
+- [🧠 Engine Architecture & Systems Flowchart](#-engine-architecture--systems-flowchart)
 - [⛏️ Tech Stack, APIs & Core Specifications](#%EF%B8%8F-tech-stack-apis--core-specifications)
 - [🧑‍💻 Getting Started: Setup and Running Instructions](#-getting-started-setup-and-running-instructions)
 - [🧪 Quality Assurance & Test Verification](#-quality-assurance--test-verification)
@@ -73,42 +75,41 @@
 
 ---
 
-## 🖼️ Visual Showcase: Desktop Workstation & Mobile Pocket SQL
+## 🖼️ Visual Product Showcase: Real Screenshots
 
-Experience the rich visual contrast between our **Nostalgic Desktop Multi-Window Operating System** and our **Ultra-Fluid Mobile Pocket SQL Chat**:
+Every view in ExNihilo 95 is built with pixel-perfect authenticity. Below is the real product in action across desktop and mobile:
 
-### 🖥️ Desktop Workstation: Multi-Window SQL Operating System
+### 🖥️ Desktop Workstations (Windows 95 Classic & Modern Glass)
 
 <p align="center">
-  <img src="public/screenshots/screenshot-1-desktop.png" alt="ExNihilo 95 Complete Desktop Environment" width="850" />
+  <img src="public/screenshots/screenshot-1-desktop.png" alt="ExNihilo 95 Complete Desktop Environment" width="850" style="border: 2px outset #ffffff; box-shadow: 0 12px 30px rgba(0,0,0,0.35);" />
 </p>
-
 <p align="center">
-  <em>The complete 1995 desktop environment with interactive taskbar, start menu, desktop icons, and floating multi-window architecture.</em>
+  <em>The complete 1995 desktop operating system with interactive taskbar, start menu, draggable desktop icons, and floating multi-window shell.</em>
 </p>
 
 <table align="center" width="100%">
   <tr>
     <td width="50%" align="center">
       <strong>💻 SQL Studio & Results Data Grid</strong><br />
-      <img src="public/screenshots/2-sql-studio.png" alt="SQL Studio and Results Grid" width="420" />
+      <img src="public/screenshots/2-sql-studio.png" alt="SQL Studio and Results Grid" width="420" style="border: 2px outset #ffffff; margin-top: 6px;" />
       <p align="left"><sub>Interactive CodeMirror 6 query editor with dialect switcher, live results data grid, column sorting, and instant 1-click CSV/JSON/XLS exports.</sub></p>
     </td>
     <td width="50%" align="center">
       <strong>🏆 SQL Challenge Arena (130 Questions)</strong><br />
-      <img src="public/screenshots/3-challenge-arena.png" alt="SQL Challenge Arena" width="420" />
+      <img src="public/screenshots/3-challenge-arena.png" alt="SQL Challenge Arena" width="420" style="border: 2px outset #ffffff; margin-top: 6px;" />
       <p align="left"><sub>130 real LeetCode & HackerRank SQL interview problems evaluated live against ephemeral in-browser WebAssembly testbeds with mismatch diffing.</sub></p>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
       <strong>🗂️ Interactive SQL Dictionary & Schema Tree</strong><br />
-      <img src="public/screenshots/4-sql-dictionary.png" alt="SQL Dictionary" width="420" />
+      <img src="public/screenshots/4-sql-dictionary.png" alt="SQL Dictionary" width="420" style="border: 2px outset #ffffff; margin-top: 6px;" />
       <p align="left"><sub>Live SQLite schema introspection tree with 2-tier responsive action bar and drag-to-resize database navigator panel.</sub></p>
     </td>
     <td width="50%" align="center">
-      <strong>🪟 Authentic Windows 95 Desktop Icons & Window Shell</strong><br />
-      <img src="public/screenshots/1-exnihilo-desktop.png" alt="Windows 95 Shell" width="420" />
+      <strong>🪟 Authentic Windows 95 Desktop Shell</strong><br />
+      <img src="public/screenshots/1-exnihilo-desktop.png" alt="Windows 95 Shell" width="420" style="border: 2px outset #ffffff; margin-top: 6px;" />
       <p align="left"><sub>Pixel-perfect 3D beveled borders, tactile system chimes, vintage CRT scanline filters, and retro system properties control panels.</sub></p>
     </td>
   </tr>
@@ -116,24 +117,54 @@ Experience the rich visual contrast between our **Nostalgic Desktop Multi-Window
 
 ---
 
-### 📱 Mobile Workstation: Pocket SQL Chat (iMessage + Win95)
+### 📱 Mobile Pocket SQL Chat (iMessage + Win95)
 
 ExNihilo 95 reimagines database engineering for handheld smartphones with **Pocket SQL Chat**, blending the tactile nostalgia of Windows 95 with the fluid, curved minimalism of modern messenger platforms:
 
 <p align="center">
-  <img src="public/screenshots/pocket-sql-mobile.jpg" alt="Pocket SQL Chat Mobile Experience" width="420" style="border-radius: 28px; box-shadow: 0 16px 40px rgba(0,0,0,0.35); border: 4px solid #141416;" />
+  <img src="public/screenshots/pocket-sql-mobile.jpg" alt="Pocket SQL Chat Mobile Experience" width="400" style="border-radius: 28px; box-shadow: 0 16px 40px rgba(0,0,0,0.45); border: 4px solid #141416;" />
 </p>
 
 <p align="center">
-  <em><strong>Pocket SQL Chat in action:</strong> Floating dialect switcher pill, interactive Copilot conversation bubbles, inline expandable Kernel result grids, and one-tap table selector bar.</em>
+  <em><strong>Pocket SQL Chat in live action:</strong> Floating dialect switcher pill, interactive Copilot conversation bubbles, inline expandable Kernel result grids, and one-tap table selector bar.</em>
 </p>
 
-#### 🌟 Key Mobile Ergonomics Innovations:
 - **Floating Dialect Pill:** Switch between `SSMS`, `MySQL`, `PostgreSQL`, and `SQLite` directly inside the top status pill with zero UI displacement.
 - **Curved iMessage Query Bubbles:** Sent queries, AI Copilot responses, and execution results live in a chronological, conversational stream.
 - **Embedded WebAssembly Kernel Cards:** View live SQL result rows inside compact, expandable Win95 tables with inline sorting and CSV export.
 - **⚡ 1-Tap Error Auto-Repair:** Tapping *Ask AI Copilot to Fix* automatically extracts the failed query, repairs syntax across dialects, and delivers the working query without hallucinations.
 - **Virtual Viewport Lock:** Eliminates mobile keyboard jumping and keeps input elements pinned during typing on Safari, Chrome, and Firefox mobile.
+
+---
+
+### 🕵️‍♂️ SQL Noir: Forensic Homicide Bureau
+
+<p align="center">
+  <img src="public/screenshots/sql-noir-bureau.png" alt="SQL Noir Forensic Homicide Bureau Workstation" width="850" style="border: 2px outset #ffffff; box-shadow: 0 12px 30px rgba(0,0,0,0.35);" />
+</p>
+<p align="center">
+  <em>The SQL Noir retro forensic investigation room: live suspect roster, audit logs, apothecary receipts, evidence lockers, and credibility stamping.</em>
+</p>
+
+- **Case 1: The Midnight Cyanide at Blackwood Manor (1995-CR-0842):** Interrogate 135+ keycard swipe logs, 45+ toxicology panels, apothecary ledgers, and phone dispatches to shatter false train alibis.
+- **Case 2: The Clyde Naval Shipyard Sabotage (1995-CR-1042):** Classified nuclear propulsor blueprints stolen from Vault 4. Audit turnstile records, chemical stores, and foreign wiretaps.
+- **Tactile Paperclip Audio:** Attach query result rows to case files with realistic physical metallic paperclip sound effects (`playPaperclip()`).
+- **Rubber Alibi Stamps & Grand Jury Trials:** Stamp suspect statements as `VERIFIED` or `CONTRADICTED`, present Exhibits A, B, and C in High Court, strike the oak gavel, and generate extra-edition headlines.
+
+---
+
+### 📊 Executive Visual Analytics & Results Grid
+
+<p align="center">
+  <img src="public/screenshots/sql-results-analytics.png" alt="Executive Visual Analytics Dashboard and Results Grid" width="850" style="border: 2px outset #ffffff; box-shadow: 0 12px 30px rgba(0,0,0,0.35);" />
+</p>
+<p align="center">
+  <em>Live query results with automated executive analytics, proportional rank bars, SVG gradient area trendlines, and schema profiler metrics.</em>
+</p>
+
+- **Instant KPI Aggregations:** Total Volume, Mean Average, Peak Maximum, and Minimum Floor calculated instantly on client side.
+- **Side-by-Side Dual Visuals:** Horizontal proportional rank bars paired with SVG gradient area trendlines.
+- **Schema Profiler:** Inspect completeness fill rates, distinct cardinality counts, and distribution ranges across every synthesized column.
 
 ---
 
@@ -195,41 +226,12 @@ A fluid mobile database client combining retro Windows 95 aesthetics with contem
 ---
 
 ### 4. 🕵️‍♂️ SQL Noir: Forensic Homicide Bureau
-Step into the role of Lead Forensic Detective in a 1990s law enforcement bureau:
-
-- **Case 1: The Midnight Cyanide at Blackwood Manor (1995-CR-0842):** Interrogate 135+ keycard swipe logs, 45+ toxicology panels, apothecary ledgers, and phone dispatches to shatter false train alibis.
-- **Case 2: The Clyde Naval Shipyard Sabotage (1995-CR-1042):** Classified nuclear propulsor blueprints stolen from Vault 4. Audit turnstile records, chemical stores, and foreign wiretaps.
-- **Authentic Detective Tools:**
-  - **Paperclip Proof Attachments:** Attach query result rows to case files with realistic tactile audio (`playPaperclip()`).
-  - **Rubber Alibi Stamps:** Stamp suspect statements as `VERIFIED` or `CONTRADICTED`.
-  - **Grand Jury Trials:** Present Exhibits A, B, and C in High Court to deliver indictments, strike the oak gavel, and generate extra-edition headlines.
+Step into the role of Lead Forensic Detective in a 1990s law enforcement bureau with live suspect interrogation, paperclip proof attachments, credibility stamping, and grand jury indictment trials.
 
 ---
 
 ### 5. 📊 Executive Visual Analytics Dashboard
-Instantly transform raw table outputs into actionable business intelligence:
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│  TOTAL VALUE           MEAN AVERAGE         PEAK MAXIMUM       FLOOR   │
-│  $148,290.00           $4,943.00            $18,400.00         $120.00 │
-│  Cumulative 30 rows    Per category unit    Top: Electronics   Low: Misc│
-├────────────────────────────────────────┬───────────────────────────────┤
-│ 📶 Category Distribution (Bars)        │ 📈 Trajectory & Trend Area    │
-│  #1 Electronics  ████████████ 38%      │      ▲ +24.5% upward trend    │
-│  #2 Appliances   ████████     24%      │     /\    /\                  │
-│  #3 Home Goods   ████         14%      │    /  \  /  \                 │
-├────────────────────────────────────────┴───────────────────────────────┤
-│ 📋 Column Health & Profiler Matrix                                     │
-│  Column      Type     Completeness          Distinct   Sample / Range  │
-│  id          INT      ██████████ 100% (5/5) 5 unique   Min: 1 | Max: 5 │
-│  value       DEC      ██████████ 100% (5/5) 5 unique   Avg: 4,943.00   │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-- **Instant KPI Aggregations:** Total Volume, Mean Average, Peak Maximum, and Minimum Floor.
-- **Side-by-Side Dual Visuals:** Horizontal proportional rank bars paired with SVG gradient area trendlines.
-- **Schema Profiler:** Inspect completeness fill rates, distinct cardinality counts, and distribution ranges.
+Instant aggregation of Total Volume, Mean Average, Peak Maximum, Floor Minimum, proportional category distribution bars, SVG gradient area trendlines, and deep column profiler health matrix.
 
 ---
 
@@ -281,20 +283,51 @@ Switch themes dynamically via Desktop Right-Click $\rightarrow$ **Properties**:
 
 ---
 
-## 🧠 Engine Architecture & Data Pipeline
+## 🧠 Engine Architecture & Systems Flowchart
 
 ```mermaid
-flowchart TD
-    A["User SQL Input (Any Dialect)"] --> B["AST Parser Engine (node-sql-parser)"]
-    B --> C["Dialect Transpiler (executor.ts)"]
-    C -->|Normalizes TOP, ROWNUM, Quotes| D["Schema Inference & ORDER BY Walker"]
-    D --> E["Relational Dependency DAG Resolver"]
-    E -->|Discovers Foreign Keys| F["Topological Graph Sorter"]
-    F --> G["Column Intelligence & Omni-Domain Catalog"]
-    G -->|Generates Realistic Data| H["WebAssembly SQLite Virtual Machine (sql.js)"]
-    H --> I["Data Grid & Visual Analytics Dashboard"]
-    H --> J["Execution Plan Optimizer Analyzer"]
-    H --> K["ERD Dynamic Diagram Studio"]
+flowchart TB
+    subgraph UI ["1. User Interaction & Query Surfaces"]
+        direction LR
+        A["🖥️ Desktop Studio (CodeMirror 6)"] 
+        B["📱 Pocket SQL Chat (Mobile Web)"]
+    end
+
+    subgraph Compiler ["2. AST Compilation & Multi-Dialect Transpiler"]
+        direction TB
+        C["⚡ AST Visitor (node-sql-parser)"]
+        D["🔄 Cross-Dialect Normalizer (executor.ts)"]
+        C -->|Extracts Tables, Columns, ORDER BY| D
+    end
+
+    subgraph CoreEngine ["3. Relational Synthesis Core (Self-Made Engine)"]
+        direction TB
+        E["🔍 Schema Deduction & Stem Classifier"]
+        F["🕸️ Relational Dependency DAG Resolver"]
+        G["🎲 Calibrated Data Synthesizer (Faker.js)"]
+        E -->|Identifies FK Chains| F
+        F -->|Topologically Ordered Entities| G
+    end
+
+    subgraph WASMVM ["4. In-Memory Execution Layer"]
+        direction TB
+        H["⚙️ WebAssembly SQLite 3.49.1 (sql.js)"]
+        I["🧩 Custom C Extensions (JSON, String, Regex)"]
+        H --- I
+    end
+
+    subgraph Outputs ["5. Presentation & Analytics Suites"]
+        direction LR
+        J["📊 Visual Analytics Dashboard"]
+        K["⚡ Execution Plan Analyzer"]
+        L["🌐 Interactive ERD Studio"]
+        M["🏆 SQL Challenge Arena"]
+    end
+
+    UI --> Compiler
+    Compiler --> CoreEngine
+    CoreEngine -->|Materialized Tables & DDL| WASMVM
+    WASMVM --> Outputs
 ```
 
 ---
