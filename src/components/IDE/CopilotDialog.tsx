@@ -46,6 +46,11 @@ export const CopilotDialog: React.FC<CopilotDialogProps> = ({
     setErrorMessage(null);
     setGeneratedSql('');
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      try { controller.abort(); } catch {}
+    }, 8000);
+
     try {
       if (apiKey.trim()) {
         localStorage.setItem('exnihilo_gemini_api_key', apiKey.trim());
@@ -60,6 +65,7 @@ export const CopilotDialog: React.FC<CopilotDialogProps> = ({
           schema: schemaContext,
           userApiKey: apiKey.trim() || undefined,
         }),
+        signal: controller.signal,
       });
 
       const data = await res.json();
@@ -69,8 +75,13 @@ export const CopilotDialog: React.FC<CopilotDialogProps> = ({
         setErrorMessage(data.message || data.error || 'Failed to generate SQL.');
       }
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Network error communicating with Copilot endpoint.');
+      if (err?.name === 'AbortError') {
+        setErrorMessage('Copilot request timed out after 8 seconds. Please try again.');
+      } else {
+        setErrorMessage(err?.message || 'Network error communicating with Copilot endpoint.');
+      }
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };

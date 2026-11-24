@@ -61,6 +61,7 @@ export function useMessageAudio() {
 
   /**
    * Procedural iMessage Send Swoosh (Upward air sweep)
+   * Plays immediately upon tapping Send for instant responsive feedback.
    */
   const playSendSound = useCallback(() => {
     if (isMuted) return;
@@ -69,8 +70,9 @@ export function useMessageAudio() {
 
     try {
       const now = ctx.currentTime;
-      const startTime = Math.max(now, audioFinishTimeRef.current);
-      // Mark send sound duration (160ms total)
+      // Immediate playback for user tap: always start right now
+      const startTime = now;
+      // Mark audio timeline busy for send duration (180ms total)
       audioFinishTimeRef.current = startTime + 0.18;
 
       // 1. Core tonal sweep: smooth upward frequency glissando (240Hz -> 680Hz)
