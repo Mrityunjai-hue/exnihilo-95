@@ -117,7 +117,6 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
   const [expandedTableId, setExpandedTableId] = useState<string | null>(null);
   const [fullscreenTable, setFullscreenTable] = useState<ExecutionSuccess | null>(null);
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
-  const [viewportOffsetTop, setViewportOffsetTop] = useState<number>(0);
 
   // Lock body and html scroll so mobile Safari never scrolls the layout viewport
   useEffect(() => {
@@ -132,42 +131,32 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     document.body.style.width = '100%';
     document.body.style.height = '100%';
 
-    const resetScroll = () => {
-      if (window.scrollX !== 0 || window.scrollY !== 0) {
-        window.scrollTo(0, 0);
-      }
-    };
-    window.addEventListener('scroll', resetScroll, { passive: true });
-
     return () => {
       document.documentElement.style.overflow = origHtmlOverflow;
       document.body.style.overflow = origBodyOverflow;
       document.body.style.position = origBodyPosition;
-      window.removeEventListener('scroll', resetScroll);
     };
   }, []);
 
-  // Track iOS / Android visual viewport to keep input bar pinned above virtual keyboard without clipping
+  // Track iOS / Android visual viewport to keep entire UI perfectly fitted above virtual keyboard
   useEffect(() => {
     if (typeof window === 'undefined' || !window.visualViewport) return;
     const updateViewport = () => {
       if (window.visualViewport) {
         setViewportHeight(window.visualViewport.height);
-        setViewportOffsetTop(window.visualViewport.offsetTop || 0);
       }
     };
     window.visualViewport.addEventListener('resize', updateViewport);
-    window.visualViewport.addEventListener('scroll', updateViewport);
     updateViewport();
     return () => {
       window.visualViewport?.removeEventListener('resize', updateViewport);
-      window.visualViewport?.removeEventListener('scroll', updateViewport);
     };
   }, []);
 
   const { playSendSound, playReceiveSound, isMuted, toggleMute } = useMessageAudio();
   const lastAudibleMsgIdRef = useRef<string>('welcome-1');
 
+  const chatScrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -240,9 +229,14 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     }
   }, [activeError]);
 
-  // Auto-scroll chat to bottom
+  // Auto-scroll chat to bottom inside inner chat container without displacing mobile viewport
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatScrollContainerRef.current) {
+      chatScrollContainerRef.current.scrollTo({
+        top: chatScrollContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }, [messages, isLoading, isAiLoading]);
 
   // Track text selection in input for "Run Selected" (⚡)
@@ -492,12 +486,10 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
     <div
       style={{
         position: 'fixed',
-        top: `${viewportOffsetTop}px`,
+        top: 0,
         left: 0,
         right: 0,
-        bottom: 0,
         height: viewportHeight ? `${viewportHeight}px` : '100dvh',
-        maxHeight: viewportHeight ? `${viewportHeight}px` : '100dvh',
         width: '100vw',
         backgroundColor: '#008080',
         display: 'flex',
@@ -862,6 +854,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
 
         {/* ── Scrollable Chat Stream (Message History) ── */}
         <div
+          ref={chatScrollContainerRef}
           className="win95-inset"
           style={{
             flex: '1 1 auto',
@@ -1438,23 +1431,14 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             onSelect={handleSelectText}
             onKeyUp={handleSelectText}
             onFocus={() => {
-              if (typeof window !== 'undefined') {
-                window.scrollTo(0, 0);
-                document.body.scrollTop = 0;
-              }
               setTimeout(() => {
-                if (typeof window !== 'undefined') {
-                  window.scrollTo(0, 0);
-                  document.body.scrollTop = 0;
+                if (chatScrollContainerRef.current) {
+                  chatScrollContainerRef.current.scrollTo({
+                    top: chatScrollContainerRef.current.scrollHeight,
+                    behavior: 'smooth',
+                  });
                 }
-                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-              }, 80);
-            }}
-            onBlur={() => {
-              // Ensure viewport returns to baseline when iOS keyboard dismisses
-              if (typeof window !== 'undefined') {
-                window.scrollTo(0, 0);
-              }
+              }, 120);
             }}
             placeholder="Type SQL query or ask Copilot here..."
             style={{

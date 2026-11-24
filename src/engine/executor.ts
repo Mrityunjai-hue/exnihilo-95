@@ -1353,6 +1353,13 @@ export class SQLExecutor {
       .replace(/\bTRUNCATE\s+(?:TABLE\s+)?([a-zA-Z0-9_.]+?);?$/gi, 'DELETE FROM "$1";')
       .replace(/\bTRUNCATE\s+(?:TABLE\s+)?([a-zA-Z0-9_.]+?)\s*;/gi, 'DELETE FROM "$1";')
       .replace(/CREATE\s+(?:DATABASE|SCHEMA)\s+[a-zA-Z0-9_.]+;?/gi, '')
+      // Normalize boolean comparisons so queries like `WHERE is_active = TRUE` match both integer (1/0) and string ('true'/'false') storage
+      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*IS\s+NOT\s+(?:TRUE|true)\b/g, "$1 NOT IN (1, 'true', 'TRUE', 't', '1')")
+      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*IS\s+NOT\s+(?:FALSE|false)\b/g, "$1 NOT IN (0, 'false', 'FALSE', 'f', '0')")
+      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:!=|<>)\s*(?:TRUE|true)\b/g, "$1 NOT IN (1, 'true', 'TRUE', 't', '1')")
+      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:!=|<>)\s*(?:FALSE|false)\b/g, "$1 NOT IN (0, 'false', 'FALSE', 'f', '0')")
+      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:=|IS)\s+(?:TRUE|true)\b/g, "$1 IN (1, 'true', 'TRUE', 't', '1')")
+      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:=|IS)\s+(?:FALSE|false)\b/g, "$1 IN (0, 'false', 'FALSE', 'f', '0')")
       .trim();
 
     if (!executableQuery) {

@@ -306,6 +306,7 @@ export function generateInsertSql(
       const val = row[col];
       if (val === null || val === undefined) return 'NULL';
       if (typeof val === 'number') return String(val);
+      if (typeof val === 'boolean') return val ? '1' : '0';
       // Escape single quotes for SQL string literals
       return `'${String(val).replace(/'/g, "''")}'`;
     });
