@@ -83,6 +83,7 @@ ExNihilo 95 is distributed across multiple channels: as an offline-capable Progr
   <a href="https://exnihilo-95.vercel.app/"><img src="https://img.shields.io/badge/Mobile%20PWA-Add%20to%20Home-141416?style=for-the-badge&logo=apple&logoColor=white" alt="Mobile Web App" /></a>
   <a href="#option-3-instant-terminal-runner-npx-exnihilo-95"><img src="https://img.shields.io/badge/CLI-npx%20exnihilo--95-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="npx exnihilo-95" /></a>
   <a href="#option-4-docker-container-github-packages-ghcrio"><img src="https://img.shields.io/badge/Docker-ghcr.io-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Container" /></a>
+  <a href="#option-6-python-sdk-pip-install-exnihilo-95"><img src="https://img.shields.io/badge/Python-SDK%203.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python SDK" /></a>
   <a href="https://github.com/Mrityunjai-hue/exnihilo-95/raw/main/public/demo/exnihilo_starter_pack.sql"><img src="https://img.shields.io/badge/SQL%20Kit-Starter%20Pack%20.sql-000080?style=for-the-badge&logo=sqlite&logoColor=white" alt="Download Starter SQL" /></a>
   <a href="https://github.com/Mrityunjai-hue/exnihilo-95/releases"><img src="https://img.shields.io/badge/Releases-v1.0.0--Win95-blue?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Releases" /></a>
 </p>
@@ -93,6 +94,7 @@ ExNihilo 95 is distributed across multiple channels: as an offline-capable Progr
 | :--- | :---: | :--- | :--- |
 | **💽 ExNihilo 95 Offline PWA** | Web / PWA | [**Launch Interactive Installer**](https://exnihilo-95.vercel.app/download) | Install standalone app on Windows, macOS, or Linux. Full offline WebAssembly SQLite support. |
 | **💻 Terminal CLI Runner** | `npx` / npm | `npx exnihilo-95` | Instant terminal query synthesis and 1-line desktop IDE browser launcher. |
+| **🐍 Python Client SDK** | Python / `pip` | [**View Python SDK**](python/) | Python package (`from exnihilo_95 import execute_sql`) with pandas DataFrame support. |
 | **🐳 Docker Container** | OCI Container | `ghcr.io/mrityunjai-hue/exnihilo-95` | Automated multi-stage production container published directly to GitHub Packages. |
 | **📄 SQL Starter Analytics Pack** | `.sql` (827 B) | [**Download `exnihilo_starter_pack.sql`**](https://github.com/Mrityunjai-hue/exnihilo-95/raw/main/public/demo/exnihilo_starter_pack.sql) | Instant multi-table joins, salary window functions, and cross-dialect T-SQL queries ready to run. |
 | **📊 Retro Hardware Inventory** | `.csv` (496 B) | [**Download `retro_hardware_inventory.csv`**](https://github.com/Mrityunjai-hue/exnihilo-95/raw/main/public/demo/retro_hardware_inventory.csv) | Vintage computing inventory dataset (486-DX2, SoundBlaster 16, Floppy Drives) for query practice. |
@@ -100,7 +102,7 @@ ExNihilo 95 is distributed across multiple channels: as an offline-capable Progr
 
 ---
 
-### 🚀 5 Ways to Run, Install & Integrate ExNihilo 95
+### 🚀 6 Ways to Run, Install & Integrate ExNihilo 95
 
 #### Option 1: 1-Click Desktop PWA App (Zero Setup, No Node.js Required)
 1. Open the [ExNihilo 95 Download Depot](https://exnihilo-95.vercel.app/download) in Google Chrome, Microsoft Edge, or Brave.
@@ -147,6 +149,25 @@ if (result.success) {
   console.log(result.results[0].columns);
   console.log(result.results[0].rows);
 }
+```
+
+#### Option 6: Python Client SDK (`pip install exnihilo-95`)
+Execute queries *ex nihilo* from Python scripts, Jupyter Notebooks, or Pandas data processing pipelines:
+```bash
+pip install exnihilo-95
+```
+```python
+from exnihilo_95 import execute_sql
+
+# Query tables that don't exist with zero database setup:
+result = execute_sql("SELECT * FROM users JOIN orders ON users.id = orders.user_id")
+
+# Print the vintage ASCII table directly in stdout:
+print(result)
+
+# Convert to Pandas DataFrame for analysis:
+df = result.to_dataframe()
+print(df.head())
 ```
 
 ---

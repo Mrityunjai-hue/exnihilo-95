@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "exnihilo-95"
+version = "2.1.0"
+authors = [
+  { name = "Mrityunjai", email = "mrityunjai@users.noreply.github.com" },
+]
+description = "Zero-Config Relational SQL Synthesis Engine & Database Client"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = ["sql", "sqlite", "relational-synthesis", "mock-data", "faker", "windows-95", "database"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Database",
+    "Topic :: Software Development :: Testing",
+]
+
+[project.optional-dependencies]
+pandas = ["pandas>=1.3.0"]
+
+[project.urls]
+Homepage = "https://exnihilo-95.vercel.app"
+Repository = "https://github.com/Mrityunjai-hue/exnihilo-95"
+"Bug Tracker" = "https://github.com/Mrityunjai-hue/exnihilo-95/issues"
