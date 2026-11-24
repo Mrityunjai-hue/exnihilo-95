@@ -508,210 +508,222 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
-      {/* ── Floating Island Capsules Top Bar (Transparent Backdrop, Pure Teal Desktop) ── */}
+      {/* ── Full-Height Chat Screen Container (Capsules Sit on Top of Chat Screen) ── */}
       <div
         style={{
-          background: 'transparent',
-          padding: '6px 8px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          border: 'none',
-          flexShrink: 0,
           position: 'relative',
-          gap: '6px',
-          zIndex: 100,
-          width: '100%',
-          boxSizing: 'border-box',
+          flex: '1 1 auto',
+          minHeight: 0,
+          margin: '2px',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
         }}
       >
-        {/* Zone 1: Left Navigation Floating Capsule */}
-        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          <button
-            type="button"
-            className="win95-button"
-            onClick={onSwitchToDesktop}
-            style={{
-              height: '38px',
-              borderRadius: '19px',
-              padding: '0 10px',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              backgroundColor: 'rgba(255, 255, 255, 0.92)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.22)',
-              color: '#0f172a',
-              cursor: 'pointer',
-              border: '1px solid rgba(255, 255, 255, 0.6)',
-            }}
-            title="Switch to Desktop IDE Workspace"
-          >
-            <span style={{ fontSize: '10px' }}>◀</span>
-            <span>IDE</span>
-          </button>
-        </div>
-
-        {/* Zone 2: Centered Royal Blue "Sender Hero Pill" (Stacked Identity) */}
+        {/* ── Floating Island Capsules: Sitting Directly on Top of Chat Screen ── */}
         <div
-          onClick={() => {
-            setIsMoreMenuOpen(false);
-            setIsDialectMenuOpen((prev) => !prev);
-          }}
           style={{
-            background: 'linear-gradient(135deg, #007aff 0%, #0051d4 50%, #0038a8 100%)',
-            borderRadius: '21px',
-            padding: '2px 12px 2px 6px',
+            position: 'absolute',
+            top: '6px',
+            left: '6px',
+            right: '6px',
+            zIndex: 100,
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'space-between',
             gap: '6px',
-            cursor: 'pointer',
-            boxShadow: '0 5px 18px rgba(0, 81, 212, 0.45), 0 2px 6px rgba(0, 0, 0, 0.22)',
-            border: '1px solid rgba(255, 255, 255, 0.45)',
-            height: '38px',
-            flexShrink: 0,
-            userSelect: 'none',
+            pointerEvents: 'none',
           }}
-          title="Tap to change SQL dialect & view engine settings"
         >
+          {/* Zone 1: Left Navigation Floating Capsule */}
+          <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0, pointerEvents: 'auto' }}>
+            <button
+              type="button"
+              className="win95-button"
+              onClick={onSwitchToDesktop}
+              style={{
+                height: '38px',
+                borderRadius: '19px',
+                padding: '0 10px',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                backgroundColor: 'rgba(255, 255, 255, 0.94)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.18)',
+                color: '#0f172a',
+                cursor: 'pointer',
+                border: '1px solid rgba(0, 0, 0, 0.15)',
+              }}
+              title="Switch to Desktop IDE Workspace"
+            >
+              <span style={{ fontSize: '10px' }}>◀</span>
+              <span>IDE</span>
+            </button>
+          </div>
+
+          {/* Zone 2: Centered Royal Blue "Sender Hero Pill" (Stacked Identity) */}
           <div
+            onClick={() => {
+              setIsMoreMenuOpen(false);
+              setIsDialectMenuOpen((prev) => !prev);
+            }}
             style={{
-              width: '26px',
-              height: '26px',
-              backgroundColor: '#ffffff',
-              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #007aff 0%, #0051d4 50%, #0038a8 100%)',
+              borderRadius: '21px',
+              padding: '2px 12px 2px 6px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '13px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.25)',
+              gap: '6px',
+              cursor: 'pointer',
+              boxShadow: '0 5px 18px rgba(0, 81, 212, 0.45), 0 2px 6px rgba(0, 0, 0, 0.22)',
+              border: '1px solid rgba(255, 255, 255, 0.45)',
+              height: '38px',
               flexShrink: 0,
+              userSelect: 'none',
+              pointerEvents: 'auto',
             }}
+            title="Tap to change SQL dialect & view engine settings"
           >
-            💾
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              justifyContent: 'center',
-              lineHeight: 1.15,
-            }}
-          >
-            <span
+            <div
               style={{
-                color: '#ffffff',
-                fontSize: '11px',
-                fontWeight: 800,
-                letterSpacing: '0.3px',
-                whiteSpace: 'nowrap',
-                textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                width: '26px',
+                height: '26px',
+                backgroundColor: '#ffffff',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '13px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.25)',
+                flexShrink: 0,
               }}
             >
-              ExNihilo 95
-            </span>
+              💾
+            </div>
             <div
               style={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: '3px',
-                fontSize: '9.5px',
-                color: '#e0f2fe',
-                fontWeight: 700,
-                whiteSpace: 'nowrap',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                justifyContent: 'center',
+                lineHeight: 1.15,
               }}
             >
               <span
                 style={{
-                  width: '5px',
-                  height: '5px',
-                  backgroundColor: '#22c55e',
-                  borderRadius: '50%',
-                  boxShadow: '0 0 5px #22c55e',
-                  display: 'inline-block',
-                }}
-              />
-              <span>{dialect}</span>
-              <span style={{ fontSize: '8px', opacity: 0.85 }}>▾</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Zone 3: Right Action Floating Capsules */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-          <button
-            type="button"
-            className="win95-button"
-            onClick={() => setIsDrawerOpen(true)}
-            style={{
-              height: '38px',
-              borderRadius: '19px',
-              padding: '0 9px',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              backgroundColor: 'rgba(255, 255, 255, 0.92)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.22)',
-              color: '#0f172a',
-              cursor: 'pointer',
-              border: '1px solid rgba(255, 255, 255, 0.6)',
-            }}
-            title={`Database Catalog (${catalogTables.length} tables in memory)`}
-          >
-            <span style={{ fontSize: '12px' }}>🗄️</span>
-            {catalogTables.length > 0 && (
-              <span
-                style={{
-                  backgroundColor: '#007aff',
                   color: '#ffffff',
-                  padding: '1px 5px',
-                  borderRadius: '9px',
-                  fontSize: '9px',
+                  fontSize: '11px',
                   fontWeight: 800,
+                  letterSpacing: '0.3px',
+                  whiteSpace: 'nowrap',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.3)',
                 }}
               >
-                {catalogTables.length}
+                ExNihilo 95
               </span>
-            )}
-          </button>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                  fontSize: '9.5px',
+                  color: '#e0f2fe',
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span
+                  style={{
+                    width: '5px',
+                    height: '5px',
+                    backgroundColor: '#22c55e',
+                    borderRadius: '50%',
+                    boxShadow: '0 0 5px #22c55e',
+                    display: 'inline-block',
+                  }}
+                />
+                <span>{dialect}</span>
+                <span style={{ fontSize: '8px', opacity: 0.85 }}>▾</span>
+              </div>
+            </div>
+          </div>
 
-          <button
-            type="button"
-            className="win95-button"
-            onClick={() => {
-              setIsDialectMenuOpen(false);
-              setIsMoreMenuOpen((prev) => !prev);
-            }}
-            style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '50%',
-              padding: 0,
-              fontSize: '14px',
-              fontWeight: 'bold',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.92)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.22)',
-              color: '#0f172a',
-              cursor: 'pointer',
-              border: '1px solid rgba(255, 255, 255, 0.6)',
-            }}
-            title="More Options"
-          >
-            ⋯
-          </button>
+          {/* Zone 3: Right Action Floating Capsules */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, pointerEvents: 'auto' }}>
+            <button
+              type="button"
+              className="win95-button"
+              onClick={() => setIsDrawerOpen(true)}
+              style={{
+                height: '38px',
+                borderRadius: '19px',
+                padding: '0 9px',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                backgroundColor: 'rgba(255, 255, 255, 0.94)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.18)',
+                color: '#0f172a',
+                cursor: 'pointer',
+                border: '1px solid rgba(0, 0, 0, 0.15)',
+              }}
+              title={`Database Catalog (${catalogTables.length} tables in memory)`}
+            >
+              <span style={{ fontSize: '12px' }}>🗄️</span>
+              {catalogTables.length > 0 && (
+                <span
+                  style={{
+                    backgroundColor: '#007aff',
+                    color: '#ffffff',
+                    padding: '1px 5px',
+                    borderRadius: '9px',
+                    fontSize: '9px',
+                    fontWeight: 800,
+                  }}
+                >
+                  {catalogTables.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="win95-button"
+              onClick={() => {
+                setIsDialectMenuOpen(false);
+                setIsMoreMenuOpen((prev) => !prev);
+              }}
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                padding: 0,
+                fontSize: '14px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.94)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.18)',
+                color: '#0f172a',
+                cursor: 'pointer',
+                border: '1px solid rgba(0, 0, 0, 0.15)',
+              }}
+              title="More Options"
+            >
+              ⋯
+            </button>
+          </div>
         </div>
 
         {/* ── More Options Popover Menu ── */}
@@ -847,27 +859,27 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
             setIsDialectMenuOpen(false);
           }}
         />
-      </div>
 
-      {/* ── Scrollable Chat Stream (Message History) ───────────────── */}
-      <div
-        className="win95-inset"
-        style={{
-          flex: '1 1 auto',
-          minHeight: 0,
-          margin: '0 4px 2px 4px',
-          borderRadius: '18px 18px 6px 6px',
-          backgroundColor: '#ffffff',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          padding: '12px 8px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain',
-        }}
-      >
+        {/* ── Scrollable Chat Stream (Message History) ── */}
+        <div
+          className="win95-inset"
+          style={{
+            flex: '1 1 auto',
+            minHeight: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#ffffff',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            padding: '52px 8px 12px 8px', // 52px top padding keeps initial message cleanly below floating capsules!
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+            boxSizing: 'border-box',
+          }}
+        >
         {messages.map((msg) => {
           if (msg.sender === 'user') {
             // USER MESSAGE BUBBLE (STRICTLY ON THE RIGHT SIDE - iMESSAGE CONTOUR IN WIN95 HIGH-COLOR GRADIENT)
@@ -1335,6 +1347,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
         )}
 
         <div ref={messagesEndRef} />
+      </div>
       </div>
 
       {/* ── Sticky Input Dock (Bottom Composer) ─────────────────────── */}
