@@ -23,7 +23,7 @@ import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
 interface SnapshotsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onRestored?: () => void;
+  onRestored?: (snapshotName?: string) => void;
   zIndex?: number;
 }
 
@@ -40,6 +40,16 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
   const [newSnapshotName, setNewSnapshotName] = useState('');
   const [feedback, setFeedback] = useState<{ msg: string; ok: boolean } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(typeof window !== 'undefined' && window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const { position, handleMouseDown } = useDraggable({ x: 120, y: 80 });
 
@@ -111,7 +121,7 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
       const ok = await sqlWorkerClient.loadSqliteBinary(snap.binary);
       if (ok) {
         showFeedback(`✅ Database restored to checkpoint "${name}".`, true);
-        onRestored?.();
+        onRestored?.(name);
       } else {
         showFeedback(`❌ Worker failed to mount snapshot "${name}".`, false);
       }
@@ -160,58 +170,62 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
     }
   };
 
-  return (
+  const dialogContent = (
     <div
       className="win95-window"
       style={{
-        position: 'fixed',
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        width: '560px',
-        maxWidth: '92vw',
-        zIndex,
-        boxShadow: '4px 4px 16px rgba(0,0,0,0.5)',
+        position: isMobile ? 'relative' : 'fixed',
+        left: isMobile ? 'auto' : `${Math.max(10, Math.min(position.x, (typeof window !== 'undefined' ? window.innerWidth : 800) - 580))}px`,
+        top: isMobile ? 'auto' : `${Math.max(10, Math.min(position.y, (typeof window !== 'undefined' ? window.innerHeight : 600) - 450))}px`,
+        width: isMobile ? '100%' : '560px',
+        maxWidth: isMobile ? '95vw' : '92vw',
+        maxHeight: isMobile ? '86dvh' : '90vh',
+        zIndex: isMobile ? 1 : zIndex,
+        boxShadow: '4px 4px 20px rgba(0,0,0,0.6)',
         display: 'flex',
         flexDirection: 'column',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
       {/* Titlebar */}
       <div
         className="win95-titlebar"
-        onMouseDown={handleMouseDown}
-        style={{ cursor: 'move', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+        onMouseDown={isMobile ? undefined : handleMouseDown}
+        style={{ cursor: isMobile ? 'default' : 'move', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, padding: '4px 6px' }}
       >
-        <div className="win95-titlebar-text" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div className="win95-titlebar-text" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 'bold' }}>
           <span>💾</span>
-          <span>Time-Travel Database Snapshots & Checkpoints</span>
+          <span>Time-Travel Snapshots</span>
         </div>
         <button
           type="button"
           className="win95-button win95-close-btn"
           onClick={onClose}
-          style={{ width: '16px', height: '14px', lineHeight: '10px', fontSize: '10px', padding: 0 }}
+          style={{ width: '18px', height: '16px', lineHeight: '12px', fontSize: '11px', padding: 0, fontWeight: 'bold' }}
+          title="Close Dialog"
         >
           ✕
         </button>
       </div>
 
       {/* Body */}
-      <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
+      <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
         {/* Create Checkpoint Form */}
-        <form onSubmit={handleCreateSnapshot} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <form onSubmit={handleCreateSnapshot} style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
           <input
             type="text"
             className="win95-sunken"
-            placeholder="Checkpoint description (e.g. Before Customer Migration)..."
+            placeholder="Checkpoint description (e.g. Before Migration)..."
             value={newSnapshotName}
             onChange={(e) => setNewSnapshotName(e.target.value)}
-            style={{ flex: 1, padding: '4px 8px', fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)' }}
+            style={{ flex: '1 1 180px', minWidth: 0, padding: '4px 8px', fontSize: '11px', background: 'var(--w95-sunken-bg, #ffffff)' }}
           />
           <button
             type="submit"
             className="win95-button"
             disabled={isProcessing}
-            style={{ padding: '3px 10px', fontSize: '11px', fontWeight: 'bold' }}
+            style={{ padding: '3px 10px', fontSize: '11px', fontWeight: 'bold', whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             📸 Create Checkpoint
           </button>
@@ -226,6 +240,7 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
               background: feedback.ok ? '#e0ffe0' : '#ffe0e0',
               border: `1px solid ${feedback.ok ? '#66bb66' : '#ee6666'}`,
               color: '#000000',
+              fontWeight: 'bold',
             }}
           >
             {feedback.msg}
@@ -236,23 +251,27 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
         <div
           className="win95-inset"
           style={{
-            height: '240px',
+            height: isMobile ? '190px' : '240px',
             overflowY: 'auto',
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
             background: 'var(--w95-sunken-bg, #ffffff)',
             color: 'var(--w95-sunken-text, #000000)',
+            flex: '1 1 auto',
+            minHeight: '120px',
           }}
         >
           {snapshots.length === 0 ? (
             <div style={{ padding: '24px', textAlign: 'center', color: '#666' }}>
               <div>📦 No saved database checkpoints found.</div>
-              <div style={{ fontSize: '11px', marginTop: '4px' }}>
+              <div style={{ fontSize: '10px', marginTop: '4px' }}>
                 Run queries or create a snapshot above to preserve your session.
               </div>
             </div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+            <table style={{ width: '100%', minWidth: '400px', borderCollapse: 'collapse', fontSize: '11px' }}>
               <thead>
-                <tr style={{ background: '#d0d0d0', borderBottom: '1px solid #999', textAlign: 'left' }}>
+                <tr style={{ background: '#d0d0d0', borderBottom: '1px solid #999', textAlign: 'left', position: 'sticky', top: 0, zIndex: 2 }}>
                   <th style={{ padding: '4px 8px' }}>Checkpoint Name</th>
                   <th style={{ padding: '4px 8px' }}>Created</th>
                   <th style={{ padding: '4px 8px' }}>Tables</th>
@@ -278,19 +297,19 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
                         background: isAuto ? (isDark ? '#1e293b' : '#f0fdf4') : 'transparent',
                       }}
                     >
-                      <td style={{ padding: '4px 8px', fontWeight: isAuto ? 'bold' : 'normal' }}>
+                      <td style={{ padding: '4px 8px', fontWeight: isAuto ? 'bold' : 'normal', whiteSpace: 'nowrap' }}>
                         {isAuto ? '⚡ AutoSave (Latest)' : snap.name}
                       </td>
-                      <td style={{ padding: '4px 8px', color: '#666' }}>{dateStr}</td>
+                      <td style={{ padding: '4px 8px', color: '#666', whiteSpace: 'nowrap' }}>{dateStr}</td>
                       <td style={{ padding: '4px 8px' }}>{snap.tablesCount ?? '-'}</td>
-                      <td style={{ padding: '4px 8px' }}>{kb} KB</td>
+                      <td style={{ padding: '4px 8px', whiteSpace: 'nowrap' }}>{kb} KB</td>
                       <td style={{ padding: '4px 8px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                         <button
                           type="button"
                           className="win95-button"
                           onClick={() => handleRestore(snap.id, snap.name)}
                           disabled={isProcessing}
-                          style={{ padding: '1px 6px', fontSize: '10px', marginRight: '4px' }}
+                          style={{ padding: '2px 8px', fontSize: '10px', marginRight: '4px', fontWeight: 'bold' }}
                           title="Restore SQLite in-memory state to this checkpoint"
                         >
                           ⏪ Restore
@@ -299,7 +318,7 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
                           type="button"
                           className="win95-button"
                           onClick={() => handleExport(snap)}
-                          style={{ padding: '1px 6px', fontSize: '10px', marginRight: '4px' }}
+                          style={{ padding: '2px 6px', fontSize: '10px', marginRight: '4px' }}
                           title="Export standalone .sqlite binary"
                         >
                           💾 .sqlite
@@ -310,7 +329,7 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
                             className="win95-button"
                             onClick={() => handleDelete(snap.id, snap.name)}
                             disabled={isProcessing}
-                            style={{ padding: '1px 6px', fontSize: '10px', color: '#c00000' }}
+                            style={{ padding: '2px 6px', fontSize: '10px', color: '#c00000', fontWeight: 'bold' }}
                             title="Delete checkpoint from browser storage"
                           >
                             ✕
@@ -326,15 +345,15 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
         </div>
 
         {/* Footer info & close */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, gap: '6px', flexWrap: 'wrap' }}>
           <div style={{ fontSize: '10px', opacity: 0.7 }}>
-            Checkpoints are saved locally in your browser&apos;s IndexedDB (never leaves device).
+            Saved in local IndexedDB.
           </div>
           <button
             type="button"
             className="win95-button"
             onClick={onClose}
-            style={{ padding: '3px 14px', fontSize: '11px' }}
+            style={{ padding: '3px 14px', fontSize: '11px', fontWeight: 'bold' }}
           >
             Close
           </button>
@@ -342,4 +361,29 @@ export const SnapshotsDialog: React.FC<SnapshotsDialogProps> = ({
       </div>
     </div>
   );
+
+  if (isMobile) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.55)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex,
+          padding: '10px',
+          boxSizing: 'border-box',
+        }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        {dialogContent}
+      </div>
+    );
+  }
+
+  return dialogContent;
 };

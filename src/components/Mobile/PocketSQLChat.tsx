@@ -56,14 +56,50 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
   catalog,
   onSwitchToDesktop,
 }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [
-    {
-      id: 'welcome-1',
-      sender: 'kernel',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      text: 'ExNihilo 95 Pocket SQL Kernel initialized. Type any query or tap 🗄️ to browse tables. Missing tables will be synthesized automatically!',
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('exnihilo_pocket_chat_history');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return [
+      {
+        id: 'welcome-1',
+        sender: 'kernel',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        text: 'ExNihilo 95 Pocket SQL Kernel initialized. Type any query or tap 🗄️ to browse tables. Missing tables will be synthesized automatically!',
+      },
+    ];
+  });
+
+  // Preserve chat history across sessions
+  useEffect(() => {
+    if (typeof window !== 'undefined' && messages.length > 0) {
+      try {
+        const toSave = messages.slice(-40).map((m) => ({
+          ...m,
+          result: m.result ? {
+            columns: m.result.columns,
+            rows: (m.result.rows || []).slice(0, 50),
+            rowCount: m.result.rowCount,
+            executionTimeMs: m.result.executionTimeMs,
+            inferredTables: m.result.inferredTables,
+          } : undefined,
+        }));
+        localStorage.setItem('exnihilo_pocket_chat_history', JSON.stringify(toSave));
+      } catch {
+        // ignore
+      }
+    }
+  }, [messages]);
 
   // Start with clean empty input box (no hardcoded preloaded query)
   const [inputVal, setInputVal] = useState('');
@@ -350,6 +386,48 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
       setCatalogVersion((v) => v + 1);
     } catch {
       // ignore
+    }
+  };
+
+  const handleSnapshotRestored = async (snapshotName?: string) => {
+    try {
+      const refreshedCatalog = await sqlWorkerClient.getCatalog();
+      setCatalogVersion((v) => v + 1);
+
+      const tables = Array.isArray(refreshedCatalog) ? refreshedCatalog : (refreshedCatalog as any)?.tables || [];
+      const tableNames = tables.map((t: any) => t.tableName || t.name).filter(Boolean);
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      playReceiveSound();
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `restore-${Date.now()}`,
+          sender: 'kernel',
+          timestamp: timeStr,
+          text: `💾 Savepoint "${snapshotName || 'Checkpoint'}" loaded successfully!\n📦 Restored tables (${tableNames.length}): ${tableNames.length > 0 ? tableNames.join(', ') : 'None'}.`,
+        },
+      ]);
+
+      if (tableNames.length > 0) {
+        const primaryTable = tableNames[0];
+        const previewQuery = `SELECT * FROM "${primaryTable}" LIMIT 20;`;
+        onQueryChange(previewQuery);
+        await onRun(previewQuery);
+      }
+
+      setIsSnapshotsOpen(false);
+    } catch (err: any) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `restore-err-${Date.now()}`,
+          sender: 'error',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          error: `Failed to load savepoint: ${err?.message || 'Unknown error'}`,
+        },
+      ]);
     }
   };
 
@@ -1188,7 +1266,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
       <SnapshotsDialog
         isOpen={isSnapshotsOpen}
         onClose={() => setIsSnapshotsOpen(false)}
-        onRestored={handleRefreshCatalog}
+        onRestored={handleSnapshotRestored}
       />
 
       {/* ── Fullscreen Data Sheet Modal ────────────────────────────── */}

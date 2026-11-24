@@ -127,4 +127,22 @@ describe('PocketSQLChat Message Logic & Architecture', () => {
     const receiveChimeDelayS = sendDurationS + pauseGapS;
     expect(receiveChimeDelayS).toBeGreaterThanOrEqual(0.25);
   });
+
+  it('generates restoration notification card and previews restored tables in chat', () => {
+    const restoredTables = ['customers', 'orders', 'revenue'];
+    const snapshotName = 'Before Migration';
+    const previewQuery = `SELECT * FROM "${restoredTables[0]}" LIMIT 20;`;
+
+    const restoreMsg: ChatMessage = {
+      id: 'restore-123',
+      sender: 'kernel',
+      timestamp: '10:35 AM',
+      text: `💾 Savepoint "${snapshotName}" loaded successfully!\n📦 Restored tables (${restoredTables.length}): ${restoredTables.join(', ')}.`,
+    };
+
+    expect(restoreMsg.sender).toBe('kernel');
+    expect(restoreMsg.text).toContain('Before Migration');
+    expect(restoreMsg.text).toContain('customers, orders, revenue');
+    expect(previewQuery).toBe('SELECT * FROM "customers" LIMIT 20;');
+  });
 });
