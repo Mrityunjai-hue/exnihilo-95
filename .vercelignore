@@ -1,0 +1,3 @@
+# Ignore Python SDK from Vercel web deployments (it is an SDK library, not a web app)
+python
+scripts
