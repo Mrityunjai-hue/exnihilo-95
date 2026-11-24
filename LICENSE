@@ -1,4 +1,4 @@
-MIT License with Mandatory Attribution & Intellectual Property Protection Addendum
+MIT License
 
 Copyright (c) 2026 Mrityunjai (https://github.com/Mrityunjai-hue)
 
@@ -9,14 +9,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-1. Mandatory Copyright Notice:
-   The above copyright notice, this permission notice, and explicit credit to the original author (Mrityunjai - https://github.com/Mrityunjai-hue) SHALL be included in all copies or substantial portions of the Software.
-
-2. Prohibition of Deceptive Re-Branding & Plagiarism:
-   Users and distributors are strictly prohibited from removing author attribution, stripping copyright notices, or re-publishing this software under a false author name or deceptive branding intended to obscure the original authorship of Mrityunjai.
-
-3. Intellectual Property Protection:
-   Any unauthorized attempt to pass off this Software, its architectural concept, or its custom implementation as an uncredited creation of another party is subject to immediate legal enforcement, DMCA takedown demands, and repository reporting.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -25,3 +19,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## 📜 Multi-Tier Licensing & Intellectual Property Addendum
+
+This repository operates under a unified, multi-tiered licensing framework to keep source code open and accessible while safeguarding creative works, datasets, and author attribution:
+
+### 1. Code Attribution & Anti-Plagiarism Terms
+- **Attribution Requirement:** Any distribution, fork, or public deployment of this Software must preserve all original copyright notices and explicitly credit **Mrityunjai** ([@Mrityunjai-hue](https://github.com/Mrityunjai-hue)) as the original creator.
+- **Prohibition of Deceptive Re-Branding:** Users and distributors may not strip author credits, replace project logos, or re-publish this work under false authorship intended to deceive users or obscure original provenance.
+- For complete legal definitions, refer to [COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md](COPYRIGHT_AND_INTELLECTUAL_PROPERTY.md).
+
+### 2. Creative Assets & Artwork (Creative Commons CC BY 4.0)
+All visual UI themes, retro 8-bit icons, sound design audio effects (`playPaperclip()`, system chimes), forensic crime narratives, and documentation are licensed under the **Creative Commons Attribution 4.0 International License (CC BY 4.0)**. You are free to share and adapt these materials with visible credit.
+
+### 3. Schemas & Benchmark Question Sets (ODC-By v1.0)
+All 130 LeetCode & HackerRank challenge question definitions, reference solutions, and simulated omni-domain relational schemas are licensed under the **Open Data Commons Attribution License (ODC-By v1.0)**.
+
+### 4. Patent Grant Clause (Apache 2.0 Patent Terms)
+Contributors and distributors grant users an express, perpetual, irrevocable patent license covering all self-made relational synthesis, AST schema inference, and multi-dialect transpilation algorithms embodied in the software.

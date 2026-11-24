@@ -432,7 +432,13 @@ npm run build
 
 ## 🤝 How to Contribute and Report Issues
 
-We welcome contributions, bug reports, and suggestions from fellow engineers and SQL enthusiasts!
+We welcome contributions, bug reports, and suggestions from fellow engineers and SQL enthusiasts! For full details on our architecture, directory map, and priority tasks, see our comprehensive **[Contributing Guide (CONTRIBUTING.md)](CONTRIBUTING.md)**.
+
+### Priority Areas Open for Contribution
+- **Dialect Transpiler:** Snowflake (`QUALIFY`), BigQuery, or ClickHouse transpilation rules in `src/engine/executor.ts`.
+- **Omni-Domain Catalog:** Morphological stems and physical units in `src/engine/column_intelligence.ts`.
+- **SQL Noir Cases:** Authoring new retro crime investigation dossiers.
+- **Challenge Arena:** Adding LeetCode Hard SQL scenario testbeds.
 
 ### Reporting Bugs or Requesting Features
 - Please open an issue on the [GitHub Issues Page](https://github.com/Mrityunjai-hue/exnihilo-95/issues).
@@ -443,7 +449,7 @@ We welcome contributions, bug reports, and suggestions from fellow engineers and
 2. Create a feature branch: `git checkout -b feature/amazing-feature`.
 3. Commit your changes: `git commit -m "feat: add amazing feature"`.
 4. Ensure all tests pass: `npm test && npm run typecheck`.
-5. Push to your branch and open a Pull Request.
+5. Push to your branch and open a Pull Request. Check out [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
 
 ---
 
