@@ -20,6 +20,7 @@ import { sqlWorkerClient } from '../../engine/worker/SQLWorkerClient';
 import { useMessageAudio } from '../../hooks/useMessageAudio';
 import { resolveOmniDomainSchema } from '../../engine/omni_domain_classifier';
 import { parseSemanticQuery } from '../../engine/semantic_query_parser';
+import { DialectPopoverMenu } from './DialectPopoverMenu';
 
 export interface ChatMessage {
   id: string;
@@ -109,6 +110,8 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
   const [selectedText, setSelectedText] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSnapshotsOpen, setIsSnapshotsOpen] = useState(false);
+  const [isDialectMenuOpen, setIsDialectMenuOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [catalogVersion, setCatalogVersion] = useState(0);
   const [expandedTableId, setExpandedTableId] = useState<string | null>(null);
@@ -505,101 +508,345 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
-      {/* ── Top Header Bar ─────────────────────────────────────────── */}
+      {/* ── Floating Island Capsules Top Bar (Transparent Backdrop, Pure Teal Desktop) ── */}
       <div
-        className="win95-titlebar"
         style={{
-          padding: '4px 6px',
+          background: 'transparent',
+          padding: '6px 8px',
           display: 'flex',
-          justifyContent: 'space-between',
           alignItems: 'center',
+          justifyContent: 'space-between',
+          border: 'none',
           flexShrink: 0,
-          gap: '4px',
+          position: 'relative',
+          gap: '6px',
+          zIndex: 100,
           width: '100%',
           boxSizing: 'border-box',
         }}
       >
-        <div
-          className="win95-titlebar-text"
-          style={{
-            fontSize: '11px',
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '3px',
-            minWidth: 0,
-            flexShrink: 1,
-            overflow: 'hidden',
-          }}
-        >
-          <span>📱</span>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>ExNihilo 95</span>
-        </div>
-
-        <div style={{ display: 'flex', gap: '3px', alignItems: 'center', flexShrink: 0 }}>
-          <select
-            className="win95-sunken"
-            value={dialect}
-            onChange={(e) => onDialectChange(e.target.value as Dialect)}
-            style={{ fontSize: '10px', padding: '1px 2px', fontWeight: 'bold', maxWidth: '72px' }}
-            title="Active SQL Dialect"
-          >
-            <option value="SQLite">SQLite</option>
-            <option value="MySQL">MySQL</option>
-            <option value="PostgreSQL">Postgre</option>
-            <option value="SSMS">SSMS</option>
-          </select>
-
-          <button
-            type="button"
-            className="win95-button"
-            onClick={() => setIsDrawerOpen(true)}
-            style={{ fontSize: '10px', padding: '2px 4px' }}
-            title={`Database Catalog (${catalogTables.length} tables)`}
-          >
-            🗄️ {catalogTables.length > 0 && <span style={{ fontSize: '9px', fontWeight: 'bold' }}>{catalogTables.length}</span>}
-          </button>
-
-          <button
-            type="button"
-            className="win95-button"
-            onClick={() => setIsSnapshotsOpen(true)}
-            style={{ fontSize: '11px', padding: '2px 5px' }}
-            title="Snapshots Time-Travel"
-          >
-            💾
-          </button>
-
-          <button
-            type="button"
-            className="win95-button"
-            onClick={toggleMute}
-            style={{ fontSize: '11px', padding: '2px 5px' }}
-            title={isMuted ? 'Unmute Audio (iMessage sounds)' : 'Mute Audio'}
-          >
-            {isMuted ? '🔇' : '🔊'}
-          </button>
-
-          <button
-            type="button"
-            className="win95-button"
-            onClick={() => setMessages([])}
-            style={{ fontSize: '11px', padding: '2px 5px' }}
-            title="Clear Chat History"
-          >
-            🗑️
-          </button>
-
+        {/* Zone 1: Left Navigation Floating Capsule */}
+        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           <button
             type="button"
             className="win95-button"
             onClick={onSwitchToDesktop}
-            style={{ fontSize: '11px', padding: '2px 5px' }}
-            title="Switch to Desktop Mode"
+            style={{
+              height: '38px',
+              borderRadius: '19px',
+              padding: '0 10px',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              backgroundColor: 'rgba(255, 255, 255, 0.92)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.22)',
+              color: '#0f172a',
+              cursor: 'pointer',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+            }}
+            title="Switch to Desktop IDE Workspace"
           >
-            🖥️
+            <span style={{ fontSize: '10px' }}>◀</span>
+            <span>IDE</span>
           </button>
         </div>
+
+        {/* Zone 2: Centered Royal Blue "Sender Hero Pill" (Stacked Identity) */}
+        <div
+          onClick={() => {
+            setIsMoreMenuOpen(false);
+            setIsDialectMenuOpen((prev) => !prev);
+          }}
+          style={{
+            background: 'linear-gradient(135deg, #007aff 0%, #0051d4 50%, #0038a8 100%)',
+            borderRadius: '21px',
+            padding: '2px 12px 2px 6px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            cursor: 'pointer',
+            boxShadow: '0 5px 18px rgba(0, 81, 212, 0.45), 0 2px 6px rgba(0, 0, 0, 0.22)',
+            border: '1px solid rgba(255, 255, 255, 0.45)',
+            height: '38px',
+            flexShrink: 0,
+            userSelect: 'none',
+          }}
+          title="Tap to change SQL dialect & view engine settings"
+        >
+          <div
+            style={{
+              width: '26px',
+              height: '26px',
+              backgroundColor: '#ffffff',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '13px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.25)',
+              flexShrink: 0,
+            }}
+          >
+            💾
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              lineHeight: 1.15,
+            }}
+          >
+            <span
+              style={{
+                color: '#ffffff',
+                fontSize: '11px',
+                fontWeight: 800,
+                letterSpacing: '0.3px',
+                whiteSpace: 'nowrap',
+                textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+              }}
+            >
+              ExNihilo 95
+            </span>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                fontSize: '9.5px',
+                color: '#e0f2fe',
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span
+                style={{
+                  width: '5px',
+                  height: '5px',
+                  backgroundColor: '#22c55e',
+                  borderRadius: '50%',
+                  boxShadow: '0 0 5px #22c55e',
+                  display: 'inline-block',
+                }}
+              />
+              <span>{dialect}</span>
+              <span style={{ fontSize: '8px', opacity: 0.85 }}>▾</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Zone 3: Right Action Floating Capsules */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+          <button
+            type="button"
+            className="win95-button"
+            onClick={() => setIsDrawerOpen(true)}
+            style={{
+              height: '38px',
+              borderRadius: '19px',
+              padding: '0 9px',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              backgroundColor: 'rgba(255, 255, 255, 0.92)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.22)',
+              color: '#0f172a',
+              cursor: 'pointer',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+            }}
+            title={`Database Catalog (${catalogTables.length} tables in memory)`}
+          >
+            <span style={{ fontSize: '12px' }}>🗄️</span>
+            {catalogTables.length > 0 && (
+              <span
+                style={{
+                  backgroundColor: '#007aff',
+                  color: '#ffffff',
+                  padding: '1px 5px',
+                  borderRadius: '9px',
+                  fontSize: '9px',
+                  fontWeight: 800,
+                }}
+              >
+                {catalogTables.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            className="win95-button"
+            onClick={() => {
+              setIsDialectMenuOpen(false);
+              setIsMoreMenuOpen((prev) => !prev);
+            }}
+            style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '50%',
+              padding: 0,
+              fontSize: '14px',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.92)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.22)',
+              color: '#0f172a',
+              cursor: 'pointer',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+            }}
+            title="More Options"
+          >
+            ⋯
+          </button>
+        </div>
+
+        {/* ── More Options Popover Menu ── */}
+        {isMoreMenuOpen && (
+          <>
+            <div
+              style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 1999,
+                backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                backdropFilter: 'blur(2px)',
+                WebkitBackdropFilter: 'blur(2px)',
+              }}
+              onClick={() => setIsMoreMenuOpen(false)}
+            />
+            <div
+              style={{
+                position: 'fixed',
+                top: '56px',
+                right: '10px',
+                width: 'calc(100vw - 32px)',
+                maxWidth: '220px',
+                backgroundColor: 'rgba(253, 251, 247, 0.98)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderRadius: '18px',
+                border: '2px solid #808080',
+                boxShadow: '0 20px 45px rgba(0, 0, 0, 0.4)',
+                zIndex: 2000,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                padding: '6px',
+                boxSizing: 'border-box',
+              }}
+            >
+              <div
+                onClick={() => {
+                  setIsMoreMenuOpen(false);
+                  setIsSnapshotsOpen(true);
+                }}
+                style={{
+                  padding: '9px 12px',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#1e293b',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span>💾</span>
+                <span>Checkpoints & Saves</span>
+              </div>
+
+              <div
+                onClick={() => {
+                  toggleMute();
+                }}
+                style={{
+                  padding: '9px 12px',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#1e293b',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span>{isMuted ? '🔇' : '🔊'}</span>
+                <span>{isMuted ? 'Unmute Sound' : 'Mute Sound'}</span>
+              </div>
+
+              <div
+                onClick={() => {
+                  setIsMoreMenuOpen(false);
+                  setMessages([]);
+                }}
+                style={{
+                  padding: '9px 12px',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#b91c1c',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span>🗑️</span>
+                <span>Clear Chat History</span>
+              </div>
+
+              <div
+                onClick={() => {
+                  setIsMoreMenuOpen(false);
+                  onSwitchToDesktop();
+                }}
+                style={{
+                  padding: '9px 12px',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: '#1e293b',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  borderTop: '1px solid #e2ded5',
+                  marginTop: '4px',
+                }}
+              >
+                <span>🖥️</span>
+                <span>Desktop IDE Studio</span>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── Custom Dialect Popover Menu Component ── */}
+        <DialectPopoverMenu
+          isOpen={isDialectMenuOpen}
+          onClose={() => setIsDialectMenuOpen(false)}
+          activeDialect={dialect}
+          onSelectDialect={(d) => {
+            onDialectChange(d);
+            setIsDialectMenuOpen(false);
+          }}
+        />
       </div>
 
       {/* ── Scrollable Chat Stream (Message History) ───────────────── */}
@@ -608,7 +855,8 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
         style={{
           flex: '1 1 auto',
           minHeight: 0,
-          margin: '2px',
+          margin: '0 4px 2px 4px',
+          borderRadius: '18px 18px 6px 6px',
           backgroundColor: '#ffffff',
           overflowY: 'auto',
           overflowX: 'hidden',
