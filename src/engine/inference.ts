@@ -634,7 +634,16 @@ function walkSelect(
     walkExpr(ast.having, aliasMap, scope, signals, colRefs, tableSet, cteNames);
   }
 
-  // 7. Walk UNION / INTERSECT / EXCEPT via _next chain (spec 3.1)
+  // 7. Walk ORDER BY (captures columns in ORDER BY across any query so schemas are fully populated)
+  if (Array.isArray(ast.orderby)) {
+    for (const orderItem of ast.orderby) {
+      if (orderItem?.expr) {
+        walkExpr(orderItem.expr, aliasMap, scope, signals, colRefs, tableSet, cteNames, literalsMap);
+      }
+    }
+  }
+
+  // 8. Walk UNION / INTERSECT / EXCEPT via _next chain (spec 3.1)
   if (ast._next) {
     walkStatement(ast._next, signals, colRefs, tableSet, cteNames, aliasMap);
   }

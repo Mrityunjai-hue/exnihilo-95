@@ -777,6 +777,75 @@ export function evaluateFullOuterJoin<T extends Record<string, any>, U extends R
   return result;
 }
 
+/**
+ * Generic pre-execution SQL dialect transpiler for SQLite WASM.
+ * Normalizes multi-dialect constructs (T-SQL, Oracle, MySQL, Postgres)
+ * to valid ANSI/SQLite SQL so any query on any table runs seamlessly.
+ */
+export function transpileDialectForSqlite(sql: string): string {
+  if (!sql) return '';
+
+  let out = sql;
+
+  // 1. T-SQL bracketed identifiers: [col] or [table] -> "col" / "table"
+  out = out.replace(/\[([a-zA-Z0-9_.]+)\]/g, '"$1"');
+
+  // 2. T-SQL TOP clause: SELECT [DISTINCT] TOP (n) ... -> SELECT ... LIMIT n
+  out = out.replace(
+    /\bSELECT\s+(DISTINCT\s+)?TOP\s*\(?(\d+)\)?\s*(?:PERCENT\s+)?([\s\S]*?)(;|\s*$)/i,
+    (_match, distinct, limitNum, rest, trailing) => {
+      const cleanRest = rest.trim();
+      if (/\bLIMIT\s+\d+/i.test(cleanRest)) {
+        return `SELECT ${distinct || ''}${cleanRest}${trailing}`;
+      }
+      return `SELECT ${distinct || ''}${cleanRest} LIMIT ${limitNum}${trailing}`;
+    }
+  );
+
+  // 3. Oracle ROWNUM filtering: WHERE ROWNUM <= n -> LIMIT n
+  out = out.replace(
+    /\bWHERE\s+ROWNUM\s*<=\s*(\d+)\s*(?:AND\s+([\s\S]*?))?(;|\s*$)/i,
+    (_match, limitNum, remainingWhere, trailing) => {
+      const whereClause = remainingWhere ? `WHERE ${remainingWhere.trim()} ` : '';
+      return `${whereClause}LIMIT ${limitNum}${trailing}`;
+    }
+  );
+  out = out.replace(
+    /\bAND\s+ROWNUM\s*<=\s*(\d+)(;|\s*$)/i,
+    (_match, limitNum, trailing) => {
+      return ` LIMIT ${limitNum}${trailing}`;
+    }
+  );
+
+  // 4. Postgres JSON operators
+  out = out
+    .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->>\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT_TEXT($1, $2)')
+    .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT($1, $2)');
+
+  // 5. String aggregations (SQL Server STRING_AGG / MySQL GROUP_CONCAT)
+  out = out
+    .replace(/\bSTRING_AGG\s*\(\s*([^,]+?)\s*,\s*('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)')
+    .replace(/\bSTRING_AGG\s*\(\s*([^)]+?)\s*\)/gi, 'GROUP_CONCAT($1)')
+    .replace(/\bGROUP_CONCAT\s*\(\s*(.*?)\s+SEPARATOR\s+('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)');
+
+  // 6. DDL & Administration
+  out = out
+    .replace(/\bTRUNCATE\s+(?:TABLE\s+)?([a-zA-Z0-9_.]+?);?$/gi, 'DELETE FROM "$1";')
+    .replace(/\bTRUNCATE\s+(?:TABLE\s+)?([a-zA-Z0-9_.]+?)\s*;/gi, 'DELETE FROM "$1";')
+    .replace(/CREATE\s+(?:DATABASE|SCHEMA)\s+[a-zA-Z0-9_.]+;?/gi, '');
+
+  // 7. Boolean comparison normalization
+  out = out
+    .replace(/(\b[a-zA-Z0-9_.]+\b)\s*IS\s+NOT\s+(?:TRUE|true)\b/g, "$1 NOT IN (1, 'true', 'TRUE', 't', '1')")
+    .replace(/(\b[a-zA-Z0-9_.]+\b)\s*IS\s+NOT\s+(?:FALSE|false)\b/g, "$1 NOT IN (0, 'false', 'FALSE', 'f', '0')")
+    .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:!=|<>)\s*(?:TRUE|true)\b/g, "$1 NOT IN (1, 'true', 'TRUE', 't', '1')")
+    .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:!=|<>)\s*(?:FALSE|false)\b/g, "$1 NOT IN (0, 'false', 'FALSE', 'f', '0')")
+    .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:=|IS)\s+(?:TRUE|true)\b/g, "$1 IN (1, 'true', 'TRUE', 't', '1')")
+    .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:=|IS)\s+(?:FALSE|false)\b/g, "$1 IN (0, 'false', 'FALSE', 'f', '0')");
+
+  return out.trim();
+}
+
 
 
 // ── SQLExecutor Class ─────────────────────────────────────────────────────────
@@ -1344,23 +1413,7 @@ export class SQLExecutor {
     }
 
     // ── 4. Execute Query in SQLite WASM ───────────────────────────────────────
-    let executableQuery = effectiveQuery
-      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->>\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT_TEXT($1, $2)')
-      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*->\s*('[^']+'|\b[a-zA-Z0-9_]+\b)/g, 'PG_JSON_EXTRACT($1, $2)')
-      .replace(/\bSTRING_AGG\s*\(\s*([^,]+?)\s*,\s*('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)')
-      .replace(/\bSTRING_AGG\s*\(\s*([^)]+?)\s*\)/gi, 'GROUP_CONCAT($1)')
-      .replace(/\bGROUP_CONCAT\s*\(\s*(.*?)\s+SEPARATOR\s+('[^']*'|"[^"]*")\s*\)/gi, 'GROUP_CONCAT($1, $2)')
-      .replace(/\bTRUNCATE\s+(?:TABLE\s+)?([a-zA-Z0-9_.]+?);?$/gi, 'DELETE FROM "$1";')
-      .replace(/\bTRUNCATE\s+(?:TABLE\s+)?([a-zA-Z0-9_.]+?)\s*;/gi, 'DELETE FROM "$1";')
-      .replace(/CREATE\s+(?:DATABASE|SCHEMA)\s+[a-zA-Z0-9_.]+;?/gi, '')
-      // Normalize boolean comparisons so queries like `WHERE is_active = TRUE` match both integer (1/0) and string ('true'/'false') storage
-      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*IS\s+NOT\s+(?:TRUE|true)\b/g, "$1 NOT IN (1, 'true', 'TRUE', 't', '1')")
-      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*IS\s+NOT\s+(?:FALSE|false)\b/g, "$1 NOT IN (0, 'false', 'FALSE', 'f', '0')")
-      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:!=|<>)\s*(?:TRUE|true)\b/g, "$1 NOT IN (1, 'true', 'TRUE', 't', '1')")
-      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:!=|<>)\s*(?:FALSE|false)\b/g, "$1 NOT IN (0, 'false', 'FALSE', 'f', '0')")
-      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:=|IS)\s+(?:TRUE|true)\b/g, "$1 IN (1, 'true', 'TRUE', 't', '1')")
-      .replace(/(\b[a-zA-Z0-9_.]+\b)\s*(?:=|IS)\s+(?:FALSE|false)\b/g, "$1 IN (0, 'false', 'FALSE', 'f', '0')")
-      .trim();
+    let executableQuery = transpileDialectForSqlite(effectiveQuery);
 
     if (!executableQuery) {
       return {

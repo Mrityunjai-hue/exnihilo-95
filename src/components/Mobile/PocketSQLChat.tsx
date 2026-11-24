@@ -223,10 +223,12 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
 
   // Append query execution errors to chat
   const lastErrorRef = useRef<any>(null);
+  const lastExecutedQueryRef = useRef<string>('');
   useEffect(() => {
     if (activeError && activeError !== lastErrorRef.current) {
       lastErrorRef.current = activeError;
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const failedSql = lastExecutedQueryRef.current || queryText || '';
       setMessages((prev) => [
         ...prev,
         {
@@ -234,10 +236,11 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
           sender: 'error',
           timestamp: timeStr,
           error: activeError.message || activeError.rawMessage || 'SQL Execution failed.',
+          sql: failedSql,
         },
       ]);
     }
-  }, [activeError]);
+  }, [activeError, queryText]);
 
   // Auto-scroll chat to bottom inside inner chat container without displacing mobile viewport
   useEffect(() => {
@@ -307,6 +310,7 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
       },
     ]);
 
+    lastExecutedQueryRef.current = raw;
     onQueryChange(raw);
     onRun(raw);
     setInputVal('');
@@ -1125,7 +1129,10 @@ export const PocketSQLChat: React.FC<PocketSQLChatProps> = ({
                     type="button"
                     className="win95-button"
                     style={{ fontSize: '10px', padding: '2px 8px', marginTop: '6px', fontWeight: 'bold', color: '#1e40af' }}
-                    onClick={() => handleAskCopilot(`Fix this SQL error: ${msg.error}\nOriginal query: ${queryText || ''}`)}
+                    onClick={() => {
+                      const failedSql = msg.sql || lastExecutedQueryRef.current || queryText || '';
+                      handleAskCopilot(`Fix this SQL query error:\n[ERROR]: ${msg.error}\n[FAILED_QUERY]: ${failedSql}`);
+                    }}
                   >
                     ⚡ Ask AI Copilot to Fix
                   </button>

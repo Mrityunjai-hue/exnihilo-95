@@ -57,6 +57,12 @@ const SUFFIX_PATTERNS: Array<{
     logicalType: 'NUMERIC',
     generate: () => parseFloat((faker.number.float({ min: 1.0, max: 25.0, fractionDigits: 2 })).toFixed(2)),
   },
+  // Physical measurements & scientific metrics (_years, _light_years, _distance, _dist, _km, _miles, _meters, _speed, etc.)
+  {
+    pattern: /(.*_years|.*_light_years|.*_distance|.*_dist|.*_km|.*_miles|.*_meters|.*_depth|.*_height|.*_weight|.*_kg|.*_lbs|.*_mass|.*_speed|.*_velocity|.*_temp|.*_temperature|.*_pressure|.*_freq|.*_frequency|.*_volume|.*_area|.*_length|.*_width|.*_size|.*_score|.*_rank|.*_level|.*_power|.*_energy|.*_joules|.*_watts|.*_capacity|.*_duration)$/i,
+    logicalType: 'NUMERIC',
+    generate: () => parseFloat((faker.number.float({ min: 1.0, max: 9999.0, fractionDigits: 2 })).toFixed(2)),
+  },
   // Monetary Values (_price, _cost, _amount, _fee, _balance, _budget, _total, _sal)
   {
     pattern: /(.*_price|.*_cost|.*_amount|.*_fee|.*_balance|.*_budget|.*_total|.*_subtotal|.*_salary|.*_revenue|.*_profit)$/i,
@@ -201,18 +207,41 @@ export function inferColumnIntelligence(
 ): SemanticColumnInference | null {
   const clean = colName.toLowerCase().trim();
 
-  // 1. Direct dictionary match
+  // 1. Context-aware "name" resolution (distinguishes people from objects/entities)
+  if (clean === 'name' && _tableName) {
+    const tbl = _tableName.toLowerCase();
+    const isHumanEntity = /(cust|user|emp|person|lead|contact|patient|doctor|author|driver|player|client|agent|staff|member|passenger|student|borrower|resident)/i.test(tbl);
+    if (!isHumanEntity) {
+      const decomposed = decomposeColumnStem(clean, _tableName);
+      if (decomposed) {
+        return {
+          semanticType: decomposed.semanticCategory,
+          logicalType: decomposed.logicalType,
+          generate: decomposed.generate,
+        };
+      }
+      const cleanTbl = tbl.replace(/[^a-zA-Z0-9]/g, '');
+      const tblTitle = cleanTbl ? cleanTbl.charAt(0).toUpperCase() + cleanTbl.slice(1) : 'Entity';
+      return {
+        semanticType: 'entity_name',
+        logicalType: 'VARCHAR',
+        generate: () => `${tblTitle} ${faker.helpers.arrayElement(['Alpha', 'Prime', 'Nexus', 'Apex', 'Matrix', 'Pro', 'Nova', 'Pleiades'])} #${faker.number.int({ min: 10, max: 99 })}`,
+      };
+    }
+  }
+
+  // 2. Direct dictionary match
   if (SEMANTIC_DICTIONARY[clean]) {
     return SEMANTIC_DICTIONARY[clean];
   }
 
-  // 2. Normalized clean match (strip common prefixes/suffixes)
+  // 3. Normalized clean match (strip common prefixes/suffixes)
   const stripped = clean.replace(/^(tbl_|col_|usr_|cust_|ord_)/, '');
   if (SEMANTIC_DICTIONARY[stripped]) {
     return SEMANTIC_DICTIONARY[stripped];
   }
 
-  // 3. Pattern / Suffix grammar matcher
+  // 4. Pattern / Suffix grammar matcher
   for (const p of SUFFIX_PATTERNS) {
     if (p.pattern.test(clean)) {
       return {
